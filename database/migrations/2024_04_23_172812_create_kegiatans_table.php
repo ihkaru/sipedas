@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string("nama");
             $table->string("tgl_awal_perjadin");
             $table->string("tgl_akhir_perjadin");
-            $table->string("pj_kegiatan_id");
+            $table->string("pj_kegiatan_id")->nullable();
             $table->foreign("pj_kegiatan_id")->references("nip16")->on("pegawais");
             $table->timestamps();
         });
