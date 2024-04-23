@@ -26,5 +26,10 @@ class DatabaseSeeder extends Seeder
             'email' => 'ihzakarunia@bps.go.id',
             'password'=>Hash::make("fikrizaki2")
         ]);
+        User::factory()->create([
+            'name' => 'Muhammad Adwin, S.Mn.',
+            'email' => 'muh.adwin@bps.go.id',
+            'password'=>Hash::make("muh.adwin")
+        ]);
     }
 }
