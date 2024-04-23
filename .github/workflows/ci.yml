@@ -17,5 +17,5 @@ jobs:
       uses: SamKirkland/FTP-Deploy-Action@4.3.3
       with:
         server: ${{ secrets.FTP_SERVER_DVLP }}
-        username: ${{ secrets.FTP_USERNAME_DEV }}
-        password: ${{ secrets.FTP_PASSWORD_DEV }}
+        username: ${{ secrets.FTP_USERNAME_ADMIN }}
+        password: ${{ secrets.FTP_PASSWORD_ADMIN }}
