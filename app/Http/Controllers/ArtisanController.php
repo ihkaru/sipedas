@@ -55,6 +55,7 @@ class ArtisanController extends Controller
             return $output->fetch();
         }
         if (request("view-clear")) {
+            dd("hahaha");
             Artisan::call("view:clear", [], $output);
             return $output->fetch();
         }
