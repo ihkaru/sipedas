@@ -19,6 +19,7 @@ class ArtisanController extends Controller
         }
         $exitCode = collect([]);
         $exitCode->push($this->migration());
+
         return $this->responsejson(200, ["exitCode" => $exitCode]);
     }
 
@@ -26,6 +27,7 @@ class ArtisanController extends Controller
     {
         $migration = collect([]);
         $output = new \Symfony\Component\Console\Output\BufferedOutput;
+
         if (request("freshseed")) {
             Artisan::call("migrate:fresh --seed", [], $output);
             return $output->fetch();
@@ -54,8 +56,8 @@ class ArtisanController extends Controller
             Artisan::call("config:clear", [], $output);
             return $output->fetch();
         }
+
         if (request("view-clear")) {
-            dd("hahaha");
             Artisan::call("view:clear", [], $output);
             return $output->fetch();
         }
