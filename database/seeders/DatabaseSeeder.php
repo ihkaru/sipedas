@@ -15,21 +15,27 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // User::factory(10)->create();
-
+        $this->call([
+            RoleSeeder::class,
+            ShieldSeeder::class
+        ]);
         User::factory()->create([
             'name' => 'admin',
             'email' => 'admin@admin.com',
             'password'=>Hash::make("password123")
-        ]);
+        ])->assignRole("super_admin");
         User::factory()->create([
             'name' => 'Ihza Fikri Zaki Karunia',
             'email' => 'ihzakarunia@bps.go.id',
             'password'=>Hash::make("fikrizaki2")
-        ]);
+        ])->assignRole(["super_admin","approver"]);
         User::factory()->create([
             'name' => 'Muhammad Adwin, S.Mn.',
             'email' => 'muh.adwin@bps.go.id',
             'password'=>Hash::make("muh.adwin")
-        ]);
+        ])->assignRole(["super_admin","approver"]);
+
+        $this->call([PegawaiSeeder::class]);
+
     }
 }

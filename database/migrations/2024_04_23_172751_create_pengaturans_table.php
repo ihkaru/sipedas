@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('pengaturans', function (Blueprint $table) {
             $table->id();
+            $table->string("nilai");
+            $table->string("key");
+            $table->text("deskripsi");
             $table->timestamps();
         });
     }

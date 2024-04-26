@@ -13,6 +13,14 @@ return new class extends Migration
     {
         Schema::create('master_sls', function (Blueprint $table) {
             $table->id();
+            $table->string("desa_kel_id");
+            $table->string("kec_id");
+            $table->string("sls_id");
+            $table->string("provinsi");
+            $table->string("kabkot");
+            $table->string("kecamatan");
+            $table->string("desa_kel");
+            $table->string("nama");
             $table->timestamps();
         });
     }
