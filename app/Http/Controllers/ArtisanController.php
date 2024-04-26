@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Composer;
+
 use Illuminate\Http\Request;
+use Illuminate\Support\Composer;
 use Illuminate\Support\Facades\Artisan;
 
 class ArtisanController extends Controller
