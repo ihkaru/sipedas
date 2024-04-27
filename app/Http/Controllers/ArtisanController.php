@@ -91,6 +91,10 @@ class ArtisanController extends Controller
             Artisan::call("icons:cache", [], $output);
             return $output->fetch();
         }
+        if (request("icons-clear")) {
+            Artisan::call("icons:clear", [], $output);
+            return $output->fetch();
+        }
         if (request("config-clear")) {
             Artisan::call("config:clear", [], $output);
             return $output->fetch();
