@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\PlhResource\Pages;
-use App\Filament\Resources\PlhResource\RelationManagers;
-use App\Models\Plh;
+use App\Filament\Resources\UserResource\Pages;
+use App\Filament\Resources\UserResource\RelationManagers;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,28 +13,33 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class PlhResource extends Resource
+class UserResource extends Resource
 {
-    protected static ?string $model = Plh::class;
+    protected static ?string $model = User::class;
 
-    protected static ?string $label = "PLH";
-    protected static ?string $navigationLabel = "PLH";
-    protected static ?string $pluralModelLabel = "PLH";
-    protected static ?string $navigationIcon = 'fluentui-people-swap-16-o';
-    protected static ?string $navigationGroup = "Surat Tugas";
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('pegawai_peganti_id')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\TextInput::make('pegawai_diganti_id')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\DateTimePicker::make('tgl_mulai'),
-                Forms\Components\DateTimePicker::make('tgl_selesai'),
+                Forms\Components\TextInput::make('name')
+                    ->required()
+                    ->maxLength(255),
+                Forms\Components\Select::make('roles')
+                    ->relationship('roles', 'name')
+                    ->multiple()
+                    ->preload()
+                    ->searchable(),
+                Forms\Components\TextInput::make('email')
+                    ->email()
+                    ->required()
+                    ->maxLength(255),
+                Forms\Components\DateTimePicker::make('email_verified_at'),
+                Forms\Components\TextInput::make('password')
+                    ->password()
+                    ->required()
+                    ->maxLength(255),
             ]);
     }
 
@@ -42,14 +47,11 @@ class PlhResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('pegawai_peganti_id')
+                Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('pegawai_diganti_id')
+                Tables\Columns\TextColumn::make('email')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('tgl_mulai')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('tgl_selesai')
+                Tables\Columns\TextColumn::make('email_verified_at')
                     ->dateTime()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
@@ -84,9 +86,9 @@ class PlhResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPlhs::route('/'),
-            'create' => Pages\CreatePlh::route('/create'),
-            'edit' => Pages\EditPlh::route('/{record}/edit'),
+            'index' => Pages\ListUsers::route('/'),
+            'create' => Pages\CreateUser::route('/create'),
+            'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }
 }

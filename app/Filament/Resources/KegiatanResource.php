@@ -21,6 +21,8 @@ class KegiatanResource extends Resource
     protected static ?string $navigationLabel = "Kegiatan";
     protected static ?string $pluralModelLabel = "Kegiatan";
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static ?string $navigationGroup = "Surat Tugas";
+
 
     public static function form(Form $form): Form
     {
