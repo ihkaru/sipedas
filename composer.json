@@ -11,6 +11,7 @@
         "php": "^8.2",
         "bezhansalleh/filament-shield": "^3.2",
         "blade-ui-kit/blade-ui-kit": "^0.6.2",
+        "codeat3/blade-fluentui-system-icons": "^1.33",
         "doctrine/dbal": "^4.0",
         "filament/filament": "^3.2",
         "laravel/framework": "^11.0",

@@ -17,7 +17,10 @@ class PenugasanResource extends Resource
 {
     protected static ?string $model = Penugasan::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $label = "Surat Tugas";
+    protected static ?string $navigationLabel = "Surat Tugas";
+    protected static ?string $pluralModelLabel = "Surat Tugas";
+    protected static ?string $navigationIcon = 'fluentui-document-add-24-o';
 
     public static function form(Form $form): Form
     {

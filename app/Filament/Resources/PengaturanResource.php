@@ -17,7 +17,10 @@ class PengaturanResource extends Resource
 {
     protected static ?string $model = Pengaturan::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $label = "Pengaturan";
+    protected static ?string $navigationLabel = "Pengaturan";
+    protected static ?string $pluralModelLabel = "Pengaturan";
+    protected static ?string $navigationIcon = 'fluentui-settings-48-o';
 
     public static function form(Form $form): Form
     {

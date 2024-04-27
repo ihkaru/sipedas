@@ -17,7 +17,11 @@ class MasterSlsResource extends Resource
 {
     protected static ?string $model = MasterSls::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $label = "Master SLS";
+    protected static ?string $navigationLabel = "Master SLS";
+    protected static ?string $pluralModelLabel = "Master SLS";
+    protected static ?string $navigationIcon = 'heroicon-o-map';
+
 
     public static function form(Form $form): Form
     {

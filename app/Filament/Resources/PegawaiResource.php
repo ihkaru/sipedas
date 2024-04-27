@@ -17,7 +17,10 @@ class PegawaiResource extends Resource
 {
     protected static ?string $model = Pegawai::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $label = "Pegawai";
+    protected static ?string $navigationLabel = "Pegawai";
+    protected static ?string $pluralModelLabel = "Pegawai";
+    protected static ?string $navigationIcon = 'heroicon-o-users';
 
     public static function form(Form $form): Form
     {
