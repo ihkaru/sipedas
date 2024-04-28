@@ -5,12 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Kegiatan extends Model
+class RiwayatPengajuan extends Model
 {
     use HasFactory;
-    protected $guarded=[];
 
-    public function pj(){
-        return $this->belongsTo(Pegawai::class,"pj_kegiatan_id","nip");
+    public function penugasan(){
+        return $this->belongsTo(Penugasan::class,"id","penugasan_id");
     }
 }

@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string("tgl_awal_perjadin");
             $table->string("tgl_akhir_perjadin");
             $table->string("pj_kegiatan_id")->nullable();
-            $table->foreign("pj_kegiatan_id")->references("id")->on("pegawais");
             $table->timestamps();
         });
     }

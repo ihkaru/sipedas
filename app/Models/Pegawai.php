@@ -14,4 +14,12 @@ class Pegawai extends Model
         return $this->hasOne(User::class,"email","email");
     }
 
+    public function penugasans(){
+        return $this->hasMany(Penugasan::class,"nip","nip");
+    }
+
+    public function atasanLangsung(){
+        return $this->hasOne(Pegawai::class,"nip","atasan_langsung_id");
+    }
+
 }
