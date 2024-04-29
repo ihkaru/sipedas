@@ -31,11 +31,11 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'nav.group' => 'Filament Shield',
+    'nav.group' => 'Pengguna',
     'nav.role.label' => 'Roles',
     'nav.role.icon' => 'heroicon-o-shield-check',
     'resource.label.role' => 'Role',
-    'resource.label.roles' => 'Roles',
+    'resource.label.roles' => 'Role',
 
     /*
     |--------------------------------------------------------------------------

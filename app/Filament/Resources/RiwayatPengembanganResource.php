@@ -17,7 +17,10 @@ class RiwayatPengembanganResource extends Resource
 {
     protected static ?string $model = RiwayatPengembangan::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $label = "Riwayat Pengembangan";
+    protected static ?string $navigationLabel = "Riwayat Pengembangan";
+    protected static ?string $pluralModelLabel = "Riwayat Pengembangan";
+    protected static ?string $navigationIcon = 'fluentui-branch-request-20';
 
     public static function form(Form $form): Form
     {
