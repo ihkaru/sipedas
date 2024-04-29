@@ -9,6 +9,7 @@ class Pegawai extends Model
 {
     use HasFactory;
     protected $guarded=[];
+    protected $primaryKey="nip";
 
     public function user(){
         return $this->hasOne(User::class,"email","email");
@@ -21,5 +22,6 @@ class Pegawai extends Model
     public function atasanLangsung(){
         return $this->hasOne(Pegawai::class,"nip","atasan_langsung_id");
     }
+
 
 }

@@ -17,5 +17,9 @@ class RoleSeeder extends Seeder
             "name"=>"approver",
             "guard_name"=>"web"
         ]);
+        Role::create([
+            "name"=>"operator_umum",
+            "guard_name"=>"web"
+        ]);
     }
 }

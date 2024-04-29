@@ -24,5 +24,17 @@ class PegawaiSeeder extends Seeder
             "atasan_langsung_id"=>"198008112005021004",
             "unit_kerja"=>"BPS Kabupaten Mempawah"
         ]);
+        Pegawai::create([
+            "nama"=>"Rifky Mullah Syadriawan A.Md.Stat.",
+            "nip"=>"200110202023021003",
+            "nip9"=>"340062230",
+            "pangkat"=>"-",
+            "golongan"=>"-",
+            "jabatan"=>"-",
+            "email"=>"mullahrifky@bps.go.id",
+            "atasan_langsung_id"=>"198008112005021004",
+            "unit_kerja"=>"BPS Kabupaten Mempawah"
+        ]);
+        Pegawai::factory(20)->create();
     }
 }
