@@ -29,7 +29,12 @@ class PegawaiResource extends Resource
                 Forms\Components\TextInput::make('nama')
                     ->required()
                     ->maxLength(255),
+                Forms\Components\TextInput::make('NIP')
+                    ->label("NIP")
+                    ->required()
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('nip9')
+                    ->label("NIP 9")
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('golongan')
@@ -61,8 +66,10 @@ class PegawaiResource extends Resource
                 Tables\Columns\TextColumn::make('nama')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nip')
+                    ->label("NIP")
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nip9')
+                    ->label("NIP 9")
                     ->searchable(),
                 Tables\Columns\TextColumn::make('golongan')
                     ->searchable(),
@@ -72,7 +79,8 @@ class PegawaiResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('atasan_langsung_id')
+                Tables\Columns\TextColumn::make('atasanLangsung.nama')
+                    ->label("Atasan Langsung")
                     ->searchable(),
                 Tables\Columns\TextColumn::make('unit_kerja')
                     ->searchable(),

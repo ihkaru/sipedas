@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string("desa_kel_id");
             $table->string("kec_id");
-            $table->string("prov_id");
             $table->string("kabkot_id");
+            $table->string("prov_id");
             $table->string("sls_id");
             $table->string("provinsi");
             $table->string("kabkot");

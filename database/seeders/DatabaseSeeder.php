@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
 
 
         $this->call([PegawaiSeeder::class]);
+        $this->call([MasterSlsSeeder::class]);
 
     }
 }
