@@ -28,27 +28,33 @@ class MasterSlsResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('desa_kel_id')
+                    ->label("ID Desa")
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('kec_id')
+                    ->label("ID Kecamatan")
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('sls_id')
+                    ->label("ID SLS")
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('provinsi')
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('kabkot')
+                    ->label("Kabupaten/Kota")
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('kecamatan')
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('desa_kel')
+                    ->label("Desa/Kelurahan")
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('nama')
+                    ->label("Nama SLS")
                     ->required()
                     ->maxLength(255),
             ]);
@@ -59,20 +65,28 @@ class MasterSlsResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('desa_kel_id')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label("ID Desa")
                     ->searchable(),
                 Tables\Columns\TextColumn::make('kec_id')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label("ID Kecamatan")
                     ->searchable(),
                 Tables\Columns\TextColumn::make('sls_id')
+                    ->label("ID SLS")
                     ->searchable(),
                 Tables\Columns\TextColumn::make('provinsi')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('kabkot')
+                    ->label("Kabupaten/Kota")
                     ->searchable(),
                 Tables\Columns\TextColumn::make('kecamatan')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('desa_kel')
+                    ->label("Desa/Kelurahan")
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nama')
+                    ->label("Nama SLS")
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

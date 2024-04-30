@@ -32,12 +32,15 @@ class KegiatanResource extends Resource
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('tgl_awal_perjadin')
+                    ->label("Awal Kegiatan")
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('tgl_akhir_perjadin')
+                    ->label("Akhir Kegiatan")
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('pj_kegiatan_id')
+                Forms\Components\TextInput::make('pj.nama')
+                    ->label("PJ Kegiatan")
                     ->maxLength(255)
                     ->default(null),
             ]);
@@ -48,14 +51,24 @@ class KegiatanResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('nama')
+                    ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tgl_awal_perjadin')
+                    ->sortable()
+                    ->label("Awal Kegiatan")
+                    ->date()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tgl_akhir_perjadin')
+                    ->sortable()
+                    ->label("Akhir Kegiatan")
+                    ->date()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('pj_kegiatan_id')
+                    ->sortable()
+                    ->label("PJ Kegiatan")
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->sortable()
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

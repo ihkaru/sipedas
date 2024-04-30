@@ -14,6 +14,27 @@ class PegawaiSeeder extends Seeder
     public function run(): void
     {
         Pegawai::create([
+            "nama"=>"Muh Saichudin S.Si, M.Si",
+            "nip"=>"197109071992111001",
+            "nip9"=>"340013380 ",
+            "pangkat"=>"-",
+            "golongan"=>"-",
+            "jabatan"=>"Kepala BPS Provinsi Kalimantan Barat",
+            "email"=>"saichudin@bps.go.id",
+            "unit_kerja"=>"BPS Provinsi Kalimantan Barat"
+        ]);
+        Pegawai::create([
+            "nama"=>"Munawir, SE.,MM",
+            "nip"=>"196908031992111001",
+            "nip9"=>"340013391",
+            "pangkat"=>"-",
+            "golongan"=>"-",
+            "jabatan"=>"Kepala BPS Kabupaten Mempawah",
+            "email"=>"munawir@bps.go.id",
+            "atasan_langsung_id"=>"197109071992111001",
+            "unit_kerja"=>"BPS Kabupaten Mempawah"
+        ]);
+        Pegawai::create([
             "nama"=>"Muhammad Adwin, S.Mn.",
             "nip"=>"198008112005021004",
             "nip9"=>"340061823",
@@ -35,6 +56,8 @@ class PegawaiSeeder extends Seeder
             "atasan_langsung_id"=>"198008112005021004",
             "unit_kerja"=>"BPS Kabupaten Mempawah"
         ]);
+
+
         Pegawai::factory(20)->create();
     }
 }

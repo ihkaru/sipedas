@@ -15,15 +15,18 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // User::factory(10)->create();
+
+        $this->call([PengaturanSeeder::class]);
+        $this->call([MasterSlsSeeder::class]);
+        $this->call([KegiatanSeeder::class]);
         $this->call([
             RoleSeeder::class,
             ShieldSeeder::class,
             TestAccountSeeder::class
         ]);
-
-
         $this->call([PegawaiSeeder::class]);
-        $this->call([MasterSlsSeeder::class]);
+        $this->call([PlhSeeder::class]);
+
 
     }
 }

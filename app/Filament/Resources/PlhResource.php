@@ -27,10 +27,7 @@ class PlhResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('pegawai_peganti_id')
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\TextInput::make('pegawai_diganti_id')
+                Forms\Components\TextInput::make('pegawai_pengganti_id')
                     ->maxLength(255)
                     ->default(null),
                 Forms\Components\DateTimePicker::make('tgl_mulai'),
@@ -42,9 +39,7 @@ class PlhResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('pegawai_peganti_id')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('pegawai_diganti_id')
+                Tables\Columns\TextColumn::make('pegawai_pengganti_id')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tgl_mulai')
                     ->dateTime()

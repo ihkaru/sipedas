@@ -13,10 +13,8 @@ return new class extends Migration
     {
         Schema::create('plhs', function (Blueprint $table) {
             $table->id();
-            $table->string("pegawai_peganti_id")->nullable();
-            $table->foreign("pegawai_peganti_id")->references("nip")->on("pegawais");
-            $table->string("pegawai_diganti_id")->nullable();
-            $table->foreign("pegawai_diganti_id")->references("nip")->on("pegawais");
+            $table->string("pegawai_pengganti_id")->nullable();
+            $table->foreign("pegawai_pengganti_id")->references("nip")->on("pegawais");
             $table->timestamp("tgl_mulai")->nullable();
             $table->timestamp("tgl_selesai")->nullable();
             $table->timestamps();
