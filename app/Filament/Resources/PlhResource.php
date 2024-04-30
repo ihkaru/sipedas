@@ -47,18 +47,18 @@ class PlhResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tgl_mulai')
                     ->label("Tanggal Mulai")
-                    ->dateTime()
+                    ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('tgl_selesai')
-                    ->label("Tanggal Mulai")
-                    ->dateTime()
+                    ->label("Tanggal Selesai")
+                    ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                    ->date()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->date()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
