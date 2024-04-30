@@ -27,11 +27,14 @@ class PlhResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('pegawai_pengganti_id')
+                Forms\Components\TextInput::make('pegawai.nama')
+                    ->label("Pegawai Pengganti")
                     ->maxLength(255)
                     ->default(null),
-                Forms\Components\DateTimePicker::make('tgl_mulai'),
-                Forms\Components\DateTimePicker::make('tgl_selesai'),
+                Forms\Components\DateTimePicker::make('tgl_mulai')
+                    ->label("Tanggal Mulai"),
+                Forms\Components\DateTimePicker::make('tgl_selesai')
+                    ->label("Tanggal Selesai"),
             ]);
     }
 
@@ -39,12 +42,15 @@ class PlhResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('pegawai_pengganti_id')
+                Tables\Columns\TextColumn::make('pegawai.nama')
+                    ->label("Pegawai Pengganti")
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tgl_mulai')
+                    ->label("Tanggal Mulai")
                     ->dateTime()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('tgl_selesai')
+                    ->label("Tanggal Mulai")
                     ->dateTime()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
