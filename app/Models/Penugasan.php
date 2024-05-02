@@ -19,10 +19,16 @@ class Penugasan extends Model
     public function kecamatan(){
         return $this->hasOne(MasterSls::class,"kec_id");
     }
+    public function provinsi(){
+        return $this->hasOne(MasterSls::class,"prov_id");
+    }
     public function plh(){
         return $this->belongsTo(Pegawai::class,"plh_id","nip");
     }
     public function riwayatPengajuans(){
         return $this->hasMany(RiwayatPengajuan::class);
+    }
+    public function kegiatan(){
+        return $this->hasOne(Kegiatan::class,"id","kegiatan_id");
     }
 }
