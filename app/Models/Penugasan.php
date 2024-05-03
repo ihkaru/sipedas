@@ -94,4 +94,31 @@ class Penugasan extends Model
     public static function ajukanArr($data){
 
     }
+
+    public function terima(){
+        $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DITERIMA;
+        $this->riwayatPengajuan->tgl_diterima = now();
+        $this->riwayatPengajuan->save();
+    }
+    public function tolak(){
+        $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DITOLAK;
+        $this->riwayatPengajuan->tgl_ditolak = now();
+        $this->riwayatPengajuan->save();
+    }
+    public function batalkan(){
+        $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIBATALKAN;
+        // $this->riwayatPengajuan->tgl_dibatalkan = now();
+        $this->riwayatPengajuan->save();
+    }
+    public function buat(){
+        $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIBUAT;
+        $this->riwayatPengajuan->tgl_dibuat = now();
+        $this->riwayatPengajuan->save();
+    }
+    public function kumpulkan(){
+        $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKUMPULKAN;
+        $this->riwayatPengajuan->tgl_dikumpulkan = now();
+        $this->riwayatPengajuan->save();
+    }
+
 }

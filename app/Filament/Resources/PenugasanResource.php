@@ -11,6 +11,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Database\Eloquent\Builder as EloquentBuilder;
@@ -172,6 +173,31 @@ class PenugasanResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Action::make("terima")
+                    ->visible(function (Penugasan $record){
+                        return $record->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM;
+                        ;})
+                    ->label("Terima"),
+                Action::make("batalkan")
+                    ->label("Batalkan"),
+                Action::make("tolak")
+                    ->label("Tolak"),
+                Action::make("buat")
+                    ->visible(function (Penugasan $record){
+                        return $record->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DITERIMA;
+                    ;})
+                    ->label("Buat"),
+                Action::make("kumpulkan")
+                    ->visible(function (Penugasan $record){
+                        return $record->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIBUAT;
+                    ;})
+                    ->label("Kumpulkan"),
+                Action::make("Cairkan")
+                    ->visible(function (Penugasan $record){
+                        return $record->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKUMPULKAN;
+                    ;})
+                    ->label("Cairkan"),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
