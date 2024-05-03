@@ -27,6 +27,10 @@ class DatabaseSeeder extends Seeder
         $this->call([PegawaiSeeder::class]);
         $this->call([PlhSeeder::class]);
 
+        $this->call([
+            PenugasanSeeder::class
+        ]);
+
 
     }
 }

@@ -16,13 +16,14 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(Penugasan::class);
             $table->string("status");
-            $table->text("catatan_ditolak");
-            $table->text("catatan_butuh_perbaikan");
+            $table->text("catatan_ditolak")->nullable();
+            $table->text("catatan_butuh_perbaikan")->nullable();
             $table->timestamp("tgl_dikirim")->nullable();
             $table->timestamp("tgl_diterima")->nullable();
             $table->timestamp("tgl_dibuat")->nullable();
             $table->timestamp("tgl_dikumpulkan")->nullable();
             $table->timestamp("tgl_butuh_perbaikan")->nullable();
+            $table->timestamp("tgl_ditolak")->nullable();
             $table->timestamp("tgl_pencairan")->nullable();
             $table->timestamps();
         });

@@ -5,13 +5,18 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PenugasanResource\Pages;
 use App\Filament\Resources\PenugasanResource\RelationManagers;
 use App\Models\Penugasan;
+use App\Models\RiwayatPengajuan;
+use App\Supports\Constants;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class PenugasanResource extends Resource
 {
@@ -68,15 +73,7 @@ class PenugasanResource extends Resource
                     ->numeric(),
                 Forms\Components\TextInput::make('transportasi')
                     ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('status')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\DateTimePicker::make('tgl_surat_pengajuan'),
-                Forms\Components\DateTimePicker::make('tgl_surat_diterima'),
-                Forms\Components\DateTimePicker::make('tgl_surat_cetak'),
-                Forms\Components\DateTimePicker::make('tgl_surat_kembali'),
-                Forms\Components\DateTimePicker::make('tgl_pencairan'),
+                    ->maxLength(255)
             ]);
     }
 
@@ -84,59 +81,58 @@ class PenugasanResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nip')
+                Tables\Columns\TextColumn::make('pegawai.nama')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('kegiatan_id')
+                Tables\Columns\TextColumn::make('kegiatan.nama')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('jenis_perjadin')
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('tgl_mulai_tugas')
-                    ->dateTime()
+                    ->label("Tanggal Mulai Tugas")
+                    ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('tgl_akhir_tugas')
-                    ->dateTime()
+                    ->label("Tanggal Akhir Tugas")
+                    ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('tbh_hari_jalan_awal')
+                    ->label("Tambah Hari Perjalanan Awal")
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('tbh_hari_jalan_akhir')
+                    ->label("Tambah Hari Perjalanan Akhir")
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('prov_id')
+                Tables\Columns\TextColumn::make('provinsi.provinsi')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('kabkot_id')
+                Tables\Columns\TextColumn::make('kabkot.kabkot')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('kecamatan_id')
+                Tables\Columns\TextColumn::make('kecamatan.kecamatan')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('desa_kel_id')
+                Tables\Columns\TextColumn::make('desa.desa_kel')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('jenis_surat_tugas')
+                    ->label("Jenis Surat Tugas")
+                    ->state(function (Penugasan $record): string {
+                        return $record->jenis_surat;
+                    })
                     ->searchable(),
                 Tables\Columns\TextColumn::make('surat_tugas_id')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('pegawai_id')
+                Tables\Columns\TextColumn::make('plh.nama')
+                    ->label("Penyetuju")
                     ->numeric()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('riawayatPengajuan.status')
+                    ->state(function (Penugasan $record): string {
+                        return $record->riwayatPengajuan?->last_status ?? "";
+                    })
+                    ->label("Status"),
+                    // ->searchable(),
                 Tables\Columns\TextColumn::make('transportasi')
+                    ->state(function (Penugasan $record): string {
+                        return $record->jenis_transportasi;
+                    })
                     ->searchable(),
-                Tables\Columns\TextColumn::make('status')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('tgl_surat_pengajuan')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('tgl_surat_diterima')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('tgl_surat_cetak')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('tgl_surat_kembali')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('tgl_pencairan')
-                    ->dateTime()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -147,7 +143,30 @@ class PenugasanResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('pegawai')
+                    ->relationship('pegawai', 'nama')
+                    ->multiple()
+                    ->searchable()
+                    ->preload(),
+                DateRangeFilter::make("tgl_mulai_tugas")
+                    ->label("Tanggal Mulai Tugas"),
+                DateRangeFilter::make("tgl_akhir_tugas")
+                    ->label("Tanggal Akhir Tugas"),
+                SelectFilter::make('riwayatPengajuan')
+                    ->options(Constants::STATUS_PENGAJUAN_OPTIONS)
+                    ->searchable()
+                    ->multiple()
+                    ->query(function (Builder $query, array $data) {
+                        if (!empty($data['values']))
+                        {
+                            // if we have a value (the aircraft ID from our options() query), just query a nested
+                            // set of whereHas() clauses to reach our target, in this case two deep
+                            $query->whereHas(
+                                'riwayatPengajuan',
+                                fn (Builder $query) => $query->whereIn('status',$data['values'])
+                            );
+                        }
+                    })
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -170,7 +189,7 @@ class PenugasanResource extends Resource
     {
         return [
             'index' => Pages\ListPenugasans::route('/'),
-            'create' => Pages\CreatePenugasan::route('/create'),
+            // 'create' => Pages\CreatePenugasan::route('/create'),
             'edit' => Pages\EditPenugasan::route('/{record}/edit'),
         ];
     }

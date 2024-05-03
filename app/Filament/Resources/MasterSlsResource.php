@@ -72,6 +72,14 @@ class MasterSlsResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->label("ID Kecamatan")
                     ->searchable(),
+                Tables\Columns\TextColumn::make('kabkot_id')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label("ID Kabupaten/Kota")
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('prov_id')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label("ID Provinsi")
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('sls_id')
                     ->label("ID SLS")
                     ->searchable(),

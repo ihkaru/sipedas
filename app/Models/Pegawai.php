@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 
 class Pegawai extends Model
@@ -10,6 +11,13 @@ class Pegawai extends Model
     use HasFactory;
     protected $guarded=[];
     protected $primaryKey="nip";
+
+    protected function casts(): array
+    {
+        return [
+            'nip' => 'string',
+        ];
+    }
 
     public function user(){
         return $this->hasOne(User::class,"email","email");
