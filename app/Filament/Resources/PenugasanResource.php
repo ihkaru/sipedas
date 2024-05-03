@@ -45,9 +45,11 @@ class PenugasanResource extends Resource
                 Forms\Components\DateTimePicker::make('tgl_mulai_tugas'),
                 Forms\Components\DateTimePicker::make('tgl_akhir_tugas'),
                 Forms\Components\TextInput::make('tbh_hari_jalan_awal')
+                    ->default(0)
                     ->required()
                     ->numeric(),
                 Forms\Components\TextInput::make('tbh_hari_jalan_akhir')
+                    ->default(0)
                     ->required()
                     ->numeric(),
                 Forms\Components\TextInput::make('prov_id')
