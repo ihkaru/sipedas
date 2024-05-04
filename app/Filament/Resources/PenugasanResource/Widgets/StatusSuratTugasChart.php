@@ -66,6 +66,13 @@ class StatusSuratTugasChart extends ChartWidget
                     'color'=> '#36A2EB'
                 ]
             ],
+            'scales'=>[
+                'y'=> [
+                    'ticks'=>[
+                        'precision'=>0
+                    ]
+                ]
+            ]
         ];
     }
 }
