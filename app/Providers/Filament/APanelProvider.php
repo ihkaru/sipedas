@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Resources\PenugasanResource\Widgets\PenugasanTable;
+use App\Filament\Resources\PenugasanResource\Widgets\StatusSuratTugasChart;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -37,8 +39,10 @@ class APanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                StatusSuratTugasChart::class,
+                PenugasanTable::class,
+                // Widgets\AccountWidget::class,
+
             ])
             ->middleware([
                 EncryptCookies::class,

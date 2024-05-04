@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PenugasanResource\Pages;
 use App\Filament\Resources\PenugasanResource\RelationManagers;
+use App\Filament\Resources\PenugasanResource\Widgets\StatusSuratTugasChart;
 use App\Models\Kegiatan;
 use App\Models\MasterSls;
 use App\Models\Pegawai;
@@ -37,6 +38,12 @@ class PenugasanResource extends Resource
     protected static ?string $navigationIcon = 'fluentui-document-add-24-o';
     protected static ?string $navigationGroup = "Surat Tugas";
 
+    public static function getWidgets(): array
+    {
+        return [
+            StatusSuratTugasChart::class
+        ];
+    }
 
     public static function form(Form $form): Form
     {
