@@ -52,4 +52,8 @@ class RiwayatPengajuan extends Model
             ]);
         }
     }
+    public function updateStatus($status,$jenis_tgl_pengajuan,$tgl){
+        return self::where('id',$this->id)
+            ->update(["status"=>$status,$jenis_tgl_pengajuan=>$tgl]);
+    }
 }

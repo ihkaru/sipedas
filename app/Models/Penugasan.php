@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-
+use PHPUnit\TextUI\Configuration\Constant;
 
 class Penugasan extends Model
 {
@@ -91,34 +91,75 @@ class Penugasan extends Model
         return null;
 
     }
-    public static function ajukanArr($data){
 
+    public static function perluPerbaikan($data){
+        $res = 0;
+        $pengajuan = self::with("riwayatPengajuan")->find($data['id']);
+        if(!$pengajuan->canPerluPerbaikan()) return 0;
+        $res += $pengajuan->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_PERLU_REVISI,"tgl_arahan_revisi",now());
+        $res += $pengajuan->riwayatPengajuan->update(["catatan_butuh_perbaikan"=>$data["catatan_butuh_perbaikan"]]);
+        return $res!=0;
+    }
+    public static function ajukanRevisi($data){
+        $res = 0;
+        $pengajuan = self::with("riwayatPengajuan")->find($data['id']);
+        if(!$pengajuan->canAjukanRevisi()) return 0;
+        $res += $pengajuan->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DIKIRIM,"tgl_dikirim",now());
+        $res += $pengajuan->update($data);
+        return $res!=0;
     }
 
-    public function terima(){
-        $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DITERIMA;
-        $this->riwayatPengajuan->tgl_diterima = now();
-        $this->riwayatPengajuan->save();
+    public function canSetujui(){
+        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM;
+    }
+    public function canRevisi(){
+        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM;
+    }
+    public function canAjukanRevisi(){
+        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_PERLU_REVISI;
+    }
+    public function canTolak(){
+        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM;
+    }
+    public function canBatalkan(){
+        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM || $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_PERLU_REVISI;
+    }
+    public function canCetak(){
+        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DISETUJUI;
+    }
+    public function canKumpulkan(){
+        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DICETAK;
+    }
+    public function canCairkan(){
+        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKUMPULKAN;
+    }
+    public function canPerluPerbaikan(){
+        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM;
+    }
+
+    public function setujui(){
+        if(!$this->canSetujui()) return 0;
+        return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DISETUJUI,"tgl_diterima",now());
     }
     public function tolak(){
-        $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DITOLAK;
-        $this->riwayatPengajuan->tgl_ditolak = now();
-        $this->riwayatPengajuan->save();
+        if(!$this->canTolak()) return 0;
+        return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DITOLAK,"tgl_ditolak",now());
     }
     public function batalkan(){
-        $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIBATALKAN;
-        // $this->riwayatPengajuan->tgl_dibatalkan = now();
-        $this->riwayatPengajuan->save();
+        if(!$this->canBatalkan()) return 0;
+        return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DIBATALKAN,"tgl_dibatalkan",now());
     }
-    public function buat(){
-        $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIBUAT;
-        $this->riwayatPengajuan->tgl_dibuat = now();
-        $this->riwayatPengajuan->save();
+    public function cetak(){
+        if(!$this->canCetak()) return 0;
+        return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DICETAK,"tgl_dibuat",now());
     }
     public function kumpulkan(){
-        $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKUMPULKAN;
-        $this->riwayatPengajuan->tgl_dikumpulkan = now();
-        $this->riwayatPengajuan->save();
+        if(!$this->canKumpulkan()) return 0;
+        return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DIKUMPULKAN,"tgl_dikumpulkan",now());
+    }
+    public function cairkan(){
+        if(!$this->canCairkan()) return 0;
+        return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DICAIRKAN,"tgl_pencairan",now());
     }
 
 }

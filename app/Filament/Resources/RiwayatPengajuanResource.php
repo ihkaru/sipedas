@@ -63,6 +63,12 @@ class RiwayatPengajuanResource extends Resource
                 Tables\Columns\TextColumn::make('tgl_diterima')
                     ->dateTime()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('tgl_dibatalkan')
+                    ->dateTime()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('tgl_arahan_revisi')
+                    ->dateTime()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('tgl_dibuat')
                     ->dateTime()
                     ->sortable(),

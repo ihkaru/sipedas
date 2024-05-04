@@ -11,9 +11,11 @@ use App\Models\Penugasan;
 use App\Supports\Constants;
 use Filament\Actions;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 
@@ -24,10 +26,14 @@ class ListPenugasans extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            // Actions\CreateAction::make(),
             Action::make("tambah_pengajuan")
                     ->label("Pengajuan Surat Tugas")
                     ->icon("fluentui-document-add-20-o")
+                    ->mountUsing(function (Form $form){
+                        $form->fill([
+
+                        ]);
+                    })
                     ->form([
                         Select::make("jenis_surat_tugas")
                             ->options(
@@ -115,4 +121,6 @@ class ListPenugasans extends ListRecords
                     ,
                 ];
     }
+
+
 }

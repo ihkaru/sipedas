@@ -18,11 +18,12 @@ return new class extends Migration
             $table->string("status");
             $table->text("catatan_ditolak")->nullable();
             $table->text("catatan_butuh_perbaikan")->nullable();
+            $table->timestamp("tgl_dibatalkan")->nullable();
+            $table->timestamp("tgl_arahan_revisi")->nullable();
             $table->timestamp("tgl_dikirim")->nullable();
             $table->timestamp("tgl_diterima")->nullable();
             $table->timestamp("tgl_dibuat")->nullable();
             $table->timestamp("tgl_dikumpulkan")->nullable();
-            $table->timestamp("tgl_butuh_perbaikan")->nullable();
             $table->timestamp("tgl_ditolak")->nullable();
             $table->timestamp("tgl_pencairan")->nullable();
             $table->timestamps();
