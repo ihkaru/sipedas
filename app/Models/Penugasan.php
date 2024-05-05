@@ -77,7 +77,7 @@ class Penugasan extends Model
         $now = now()->toDateTimeString();
         $res = 0;
         $orderedUuid = (string) Str::orderedUuid();
-        $pegawaiPlh = Plh::getPlhAktif($penugasanDTO->tglMulaiTugas,true);
+        $pegawaiPlh = Plh::getApprover($penugasanDTO->nips,Carbon::parse($penugasanDTO->tglMulaiTugas)->toDateTimeString(),true);
         foreach($penugasanDTO->nips as $n){
             $pengajuan = self::create([
                 "nip"=>$n,

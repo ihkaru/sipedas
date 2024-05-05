@@ -31,7 +31,7 @@ class PegawaiSeeder extends Seeder
             "golongan"=>"-",
             "jabatan"=>"Kepala BPS Kabupaten Mempawah",
             "email"=>"munawir@bps.go.id",
-            "atasan_langsung_id"=>"197109071992111001",
+            "atasan_langsung_id"=>"196908031992111001",
             "unit_kerja"=>"BPS Kabupaten Mempawah"
         ]);
         Pegawai::create([
