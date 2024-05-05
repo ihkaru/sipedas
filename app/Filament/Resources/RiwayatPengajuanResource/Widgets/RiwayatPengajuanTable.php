@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Filament\Resources\PenugasanResource\Widgets;
+namespace App\Filament\Resources\RiwayatPengajuanResource\Widgets;
 
 use App\DTO\PenugasanCreation;
-use App\Filament\Resources\PenugasanResource;
 use App\Models\Kegiatan;
 use App\Models\MasterSls;
 use App\Models\Pegawai;
 use App\Models\Penugasan;
+use App\Models\RiwayatPengajuan;
 use App\Supports\Constants;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -19,12 +19,12 @@ use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
-use Illuminate\Database\Eloquent\Builder;
-class PenugasanTable extends BaseWidget
-{
-    protected static ?string $heading = 'Pengajuan Surat Tugas';
-    protected int | string | array $columnSpan = 'full';
+use Illuminate\Support\Carbon;
 
+class RiwayatPengajuanTable extends BaseWidget
+{
+    protected static ?string $heading = 'Riwayat Pengajuan Surat Tugas Anda';
+    protected int | string | array $columnSpan = 'full';
 
     protected function getTableHeaderActions(): array
     {
@@ -124,32 +124,35 @@ class PenugasanTable extends BaseWidget
                     ,
                 ];
     }
-    protected function getTableQuery(): Builder
-    {
-        return Penugasan::query()->orderBy('tgl_mulai_tugas','desc');
-    }
+
     public function table(Table $table): Table
     {
-        $table = PenugasanResource::table($table);
+        $query = RiwayatPengajuan::query()->with('penugasan')->whereHas("penugasan",function($query){
+            $query->whereHas('pegawai',function($query){$query->where('nip',"196908031992111001");
+            });
+        });
         return $table
-            // ->headerActions(
-            //     $this->getTableHeaderActions()
-            // )
+            ->headerActions(
+                $this->getTableHeaderActions()
+            )
             ->query(
-                $this->getTableQuery()->latest('created_at')
+                $query
             )
             ->columns([
-                TextColumn::make('pegawai.nama'),
-                TextColumn::make('kegiatan.nama')
-                    ->sortable(),
-                TextColumn::make('tgl_perjadin')
-                    ->label('Tanggal Perjadin'),
-                TextColumn::make('riwayatPengajuan.last_status')
+                TextColumn::make("penugasan.kegiatan.nama"),
+                TextColumn::make("tgl_perjadin")
+                    ->label('Tanggal Perjadin')
+                    ->state(function (RiwayatPengajuan $record){
+                        return $record->penugasan->tgl_perjadin;
+                    })
+                ,
+                TextColumn::make('last_status')
                     ->label("Status")
                     ->badge()
-            ])
-
-            ;
-
+                ,
+                TextColumn::make('last_status_timestamp')
+                    ->label('Tanggal Perubahan Status')
+                ,
+            ]);
     }
 }

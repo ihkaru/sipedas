@@ -3,7 +3,9 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Resources\PenugasanResource\Widgets\PenugasanTable;
+use App\Filament\Resources\PenugasanResource\Widgets\StatusSuratTugasAndaChart;
 use App\Filament\Resources\PenugasanResource\Widgets\StatusSuratTugasChart;
+use App\Filament\Resources\RiwayatPengajuanResource\Widgets\RiwayatPengajuanTable;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -40,6 +42,8 @@ class APanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 StatusSuratTugasChart::class,
+                StatusSuratTugasAndaChart::class,
+                RiwayatPengajuanTable::class,
                 PenugasanTable::class,
                 // Widgets\AccountWidget::class,
 

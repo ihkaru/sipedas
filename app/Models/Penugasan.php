@@ -35,6 +35,17 @@ class Penugasan extends Model
             get: fn (mixed $value, array $attributes) => Constants::JENIS_TRANSPORTASI_OPTIONS[$attributes["transportasi"]],
         );
     }
+    protected function tglPerjadin(): Attribute
+    {
+
+        return Attribute::make(
+            get: function (mixed $value, array $attributes){
+                if(Carbon::parse($attributes['tgl_mulai_tugas'])->toDateString() == Carbon::parse($attributes['tgl_akhir_tugas'])->toDateString())
+                        return Carbon::parse($attributes['tgl_akhir_tugas'])->toDateString();
+                        return Carbon::parse($attributes['tgl_mulai_tugas'])->toDateString()." - ".Carbon::parse($attributes['tgl_akhir_tugas'])->toDateString();
+            },
+        );
+    }
 
 
 

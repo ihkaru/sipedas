@@ -103,56 +103,68 @@ class PenugasanResource extends Resource
             })
             ->columns([
                 Tables\Columns\TextColumn::make('pegawai.nama')
+                    ->toggleable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('kegiatan.nama')
                     ->numeric()
+                    ->toggleable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('tgl_mulai_tugas')
-                    ->label("Tanggal Mulai Tugas")
-                    ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('tgl_akhir_tugas')
-                    ->label("Tanggal Akhir Tugas")
-                    ->date()
+                Tables\Columns\TextColumn::make('tgl_perjadin')
+                    ->badge()
+                    ->label("Tanggal Perjadin")
+                    ->toggleable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('tbh_hari_jalan_awal')
                     ->label("Tambah Hari Perjalanan Awal")
                     ->numeric()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
                 Tables\Columns\TextColumn::make('tbh_hari_jalan_akhir')
                     ->label("Tambah Hari Perjalanan Akhir")
                     ->numeric()
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
                 Tables\Columns\TextColumn::make('provinsi.provinsi')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('kabkot.kabkot')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('kecamatan.kecamatan')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('desa.desa_kel')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('jenis_surat_tugas')
                     ->label("Jenis Surat Tugas")
                     ->state(function (Penugasan $record): string {
                         return $record->jenis_surat;
                     })
+                    ->toggleable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('surat_tugas_id')
+                    ->label('Nomor Surat Tugas')
+                    ->toggleable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('plh.nama')
                     ->label("Penyetuju")
                     ->numeric()
+                    ->toggleable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('riawayatPengajuan.status')
+                    ->badge()
                     ->state(function (Penugasan $record): string {
                         return $record->riwayatPengajuan?->last_status ?? "";
                     })
+                    ->toggleable()
                     ->label("Status"),
                     // ->searchable(),
                 Tables\Columns\TextColumn::make('transportasi')
                     ->state(function (Penugasan $record): string {
                         return $record->jenis_transportasi;
                     })
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

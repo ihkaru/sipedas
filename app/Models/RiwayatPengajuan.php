@@ -14,7 +14,7 @@ class RiwayatPengajuan extends Model
     protected $guarded = [];
 
     public function penugasan(){
-        return $this->belongsTo(Penugasan::class,"id","penugasan_id");
+        return $this->belongsTo(Penugasan::class,"penugasan_id","id");
     }
 
     protected function lastStatus(): Attribute
@@ -23,23 +23,24 @@ class RiwayatPengajuan extends Model
             get: fn (mixed $value, array $attributes) => Constants::STATUS_PENGAJUAN_OPTIONS[$attributes["status"]],
         );
     }
-    protected function lastStatusTimestamp(): Attribute
-    {
-        return Attribute::make(
-            get: function (mixed $value, array $attributes) {
-                $dates = collect([
-                    ["date"=>$attributes["tgl_dikirim"]],
-                    ["date"=>$attributes["tgl_diterima"]],
-                    ["date"=>$attributes["tgl_dibuat"]],
-                    ["date"=>$attributes["tgl_dikumpulkan"]],
-                    ["date"=>$attributes["tgl_butuh_perbaikan"]],
-                    ["date"=>$attributes["tgl_ditolak"]],
-                    ["date"=>$attributes["tgl_pencairan"]],
-                ]);
-                return $dates->sortByDesc('date')->first()['date'];
-            },
-        );
-    }
+    // protected function lastStatusTimestamp(): Attribute
+    // {
+    //     return Attribute::make(
+    //         get: function (mixed $value, array $attributes) {
+    //             $dates = collect([
+    //                 ["date"=>$attributes["tgl_dikirim"]],
+    //                 ["date"=>$attributes["tgl_diterima"]],
+    //                 ["date"=>$attributes["tgl_dibuat"]],
+    //                 ["date"=>$attributes["tgl_dikumpulkan"]],
+    //                 ["date"=>$attributes["tgl_dibatalkan"]],
+    //                 ["date"=>$attributes["tgl_arahan_revisi"]],
+    //                 ["date"=>$attributes["tgl_ditolak"]],
+    //                 ["date"=>$attributes["tgl_pencairan"]],
+    //             ]);
+    //             return $dates->sortByDesc('date')->first()['date'];
+    //         },
+    //     );
+    // }
 
     public static function kirim(array $arrIdPengajuan){
         $now = now()->toDateTimeString();
@@ -49,11 +50,12 @@ class RiwayatPengajuan extends Model
             ],[
                 "status"=>Constants::STATUS_PENGAJUAN_DIKIRIM,
                 "tgl_dikirim"=>$now,
+                "last_status_timestamp"=>$now
             ]);
         }
     }
     public function updateStatus($status,$jenis_tgl_pengajuan,$tgl){
         return self::where('id',$this->id)
-            ->update(["status"=>$status,$jenis_tgl_pengajuan=>$tgl]);
+            ->update(["status"=>$status,$jenis_tgl_pengajuan=>$tgl,"last_status_timestamp"=>$tgl]);
     }
 }
