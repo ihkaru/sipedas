@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\KegiatanResource\Pages;
 use App\Filament\Resources\KegiatanResource\RelationManagers;
 use App\Models\Kegiatan;
+use App\Models\Pegawai;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -23,7 +24,9 @@ class KegiatanResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
     protected static ?string $navigationGroup = "Surat Tugas";
 
-
+    public static function canViewAny(): bool{
+        return auth()->user()->hasRole('kepala_kantor') || auth()->user()->hasRole('operator_umum') || auth()->user()->hasRole('pegawai');
+    }
     public static function form(Form $form): Form
     {
         return $form
@@ -31,18 +34,18 @@ class KegiatanResource extends Resource
                 Forms\Components\TextInput::make('nama')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('tgl_awal_perjadin')
+                Forms\Components\DatePicker::make('tgl_awal_perjadin')
                     ->label("Awal Kegiatan")
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('tgl_akhir_perjadin')
+                    ->required(),
+                Forms\Components\DatePicker::make('tgl_akhir_perjadin')
                     ->label("Akhir Kegiatan")
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('pj.nama')
+                    ->required(),
+                Forms\Components\Select::make('pj_kegiatan_id')
+                    ->options(function(){
+                        return Pegawai::get()->pluck('nama','nip');
+                    })
+                    ->searchable(['nama'])
                     ->label("PJ Kegiatan")
-                    ->maxLength(255)
-                    ->default(null),
             ]);
     }
 

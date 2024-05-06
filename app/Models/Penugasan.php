@@ -73,6 +73,9 @@ class Penugasan extends Model
     public function kegiatan(){
         return $this->belongsTo(Kegiatan::class,"kegiatan_id","id");
     }
+    public function satuSurat(){
+        return $this->hasMany(Penugasan::class,"surat_tugas_id","surat_tugas_id");
+    }
     public static function ajukan(PenugasanCreation $penugasanDTO){
         $now = now()->toDateTimeString();
         $res = 0;

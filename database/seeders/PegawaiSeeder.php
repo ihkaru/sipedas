@@ -67,8 +67,6 @@ class PegawaiSeeder extends Seeder
             "atasan_langsung_id"=>"196908031992111001",
             "unit_kerja"=>"BPS Kabupaten Mempawah"
         ]);
-
-
-        Pegawai::factory(20)->create();
+        $pegawais = Pegawai::factory(20)->create();
     }
 }

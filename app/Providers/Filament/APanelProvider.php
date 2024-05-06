@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Resources\PenugasanResource\Widgets\PenugasanDisetujuiTable;
 use App\Filament\Resources\PenugasanResource\Widgets\PenugasanTable;
 use App\Filament\Resources\PenugasanResource\Widgets\StatusSuratTugasAndaChart;
 use App\Filament\Resources\PenugasanResource\Widgets\StatusSuratTugasChart;
@@ -44,6 +45,7 @@ class APanelProvider extends PanelProvider
                 StatusSuratTugasChart::class,
                 StatusSuratTugasAndaChart::class,
                 RiwayatPengajuanTable::class,
+                PenugasanDisetujuiTable::class,
                 PenugasanTable::class,
                 // Widgets\AccountWidget::class,
 

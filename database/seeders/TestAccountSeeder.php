@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Pegawai;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -39,5 +40,15 @@ class TestAccountSeeder extends Seeder
             'email' => "munawir@bps.go.id",
             'password'=>Hash::make("munawir")
         ])->assignRole(["kepala_satker"]);
+
+        foreach(Pegawai::get() as $p){
+            User::updateOrCreate([
+                'email'=>$p->email,
+            ],[
+                'name'=>$p->nama,
+                'password'=>Hash::make(explode("@",$p->email)[0])
+            ])->assignRole(["pegawai"]);
+        }
+
     }
 }

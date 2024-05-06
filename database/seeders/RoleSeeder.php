@@ -21,5 +21,9 @@ class RoleSeeder extends Seeder
             "name"=>"operator_umum",
             "guard_name"=>"web"
         ]);
+        Role::create([
+            "name"=>"pegawai",
+            "guard_name"=>"web"
+        ]);
     }
 }

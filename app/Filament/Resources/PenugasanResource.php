@@ -38,6 +38,9 @@ class PenugasanResource extends Resource
     protected static ?string $navigationIcon = 'fluentui-document-add-24-o';
     protected static ?string $navigationGroup = "Surat Tugas";
 
+    public static function canViewAny(): bool{
+        return auth()->user()->hasRole('kepala_kantor') || auth()->user()->hasRole('operator_umum') || auth()->user()->hasRole('pegawai');
+    }
     public static function getWidgets(): array
     {
         return [

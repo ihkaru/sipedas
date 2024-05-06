@@ -19,12 +19,12 @@ class DatabaseSeeder extends Seeder
         $this->call([PengaturanSeeder::class]);
         $this->call([MasterSlsSeeder::class]);
         $this->call([KegiatanSeeder::class]);
+        $this->call([PegawaiSeeder::class]);
         $this->call([
             RoleSeeder::class,
             ShieldSeeder::class,
             TestAccountSeeder::class
         ]);
-        $this->call([PegawaiSeeder::class]);
         $this->call([PlhSeeder::class]);
 
         $this->call([
