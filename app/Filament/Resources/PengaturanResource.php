@@ -22,6 +22,9 @@ class PengaturanResource extends Resource
     protected static ?string $pluralModelLabel = "Pengaturan";
     protected static ?string $navigationIcon = 'fluentui-settings-48-o';
 
+    public static function canViewAny(): bool{
+        return auth()->user()->hasRole('operator_umum');
+    }
     public static function form(Form $form): Form
     {
         return $form

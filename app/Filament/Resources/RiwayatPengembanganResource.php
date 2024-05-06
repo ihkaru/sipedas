@@ -22,6 +22,9 @@ class RiwayatPengembanganResource extends Resource
     protected static ?string $pluralModelLabel = "Riwayat Pengembangan";
     protected static ?string $navigationIcon = 'fluentui-branch-request-20';
 
+    public static function canViewAny(): bool{
+        return auth()->user()->hasRole('super_admin');
+    }
     public static function form(Form $form): Form
     {
         return $form

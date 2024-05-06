@@ -123,8 +123,8 @@ class Penugasan extends Model
     public function canSetujui(){
         return
         $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM && (
-            $this->plh_id == auth()->user()->pegawai->nip ||
-            auth()->user()->hasRole("kepala_satker")
+            auth()->user()->hasRole("kepala_satker") ||
+            $this->plh_id == auth()->user()->pegawai?->nip
         )
 
         ;
@@ -138,7 +138,7 @@ class Penugasan extends Model
     public function canTolak(){
         return
         $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM && (
-            $this->plh_id == auth()->user()->pegawai->nip ||
+            $this->plh_id == auth()->user()->pegawai?->nip ||
             auth()->user()->hasRole("kepala_satker")
         )
         ;
@@ -147,7 +147,7 @@ class Penugasan extends Model
         return
         ($this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM ||
          $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_PERLU_REVISI) &&
-         auth()->user()->pegawai->nip == $this->nip
+         auth()->user()->pegawai?->nip == $this->nip
          ;
     }
     public function canCetak(){
@@ -179,7 +179,7 @@ class Penugasan extends Model
     public function canPerluPerbaikan(){
         return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM &&
         (
-            $this->plh_id == auth()->user()->pegawai->nip ||
+            $this->plh_id == auth()->user()->pegawai?->nip ||
             auth()->user()->hasRole("kepala_satker")
         );
     }

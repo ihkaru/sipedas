@@ -22,6 +22,9 @@ class MasterSlsResource extends Resource
     protected static ?string $pluralModelLabel = "Master SLS";
     protected static ?string $navigationIcon = 'heroicon-o-map';
 
+    public static function canViewAny(): bool{
+        return auth()->user()->hasRole('kepala_kantor') || auth()->user()->hasRole('operator_umum');
+    }
 
     public static function form(Form $form): Form
     {
