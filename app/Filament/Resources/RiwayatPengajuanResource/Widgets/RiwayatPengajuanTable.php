@@ -57,9 +57,9 @@ class RiwayatPengajuanTable extends BaseWidget
                             ->multiple(),
                         Select::make("kegiatan_id")
                             ->label("Kegiatan")
-                            ->relationship('kegiatan','id')
-                            ->searchDebounce(100)
-                            ->getOptionLabelFromRecordUsing(fn(Kegiatan $record)=>$record->nama)
+                            ->options(function(){
+                                return Kegiatan::pluck('nama','id')->toArray();
+                            })
                             ->required()
                             ->searchable(['nama']),
                         DatePicker::make('tgl_mulai_tugas')
@@ -81,29 +81,29 @@ class RiwayatPengajuanTable extends BaseWidget
                         Select::make("prov_id")
                             ->label("Provinsi")
                             ->required()
-                            ->relationship('provinsi','prov_id')
-                            ->searchDebounce(100)
-                            ->getOptionLabelFromRecordUsing(fn(MasterSls $record)=>$record->provinsi)
+                            ->options(function(){
+                                return MasterSls::pluck("provinsi","prov_id");
+                            })
                             ->searchable(['provinsi']),
                         Select::make("kabkot_id")
                             ->required()
                             ->label("Kabupaten/Kota")
-                            ->relationship('kabkot','kabkot_id')
-                            ->searchDebounce(100)
-                            ->getOptionLabelFromRecordUsing(fn(MasterSls $record)=>$record->kabkot)
+                            ->options(function(){
+                                return MasterSls::pluck("kabkot","kabkot_id");
+                            })
                             ->searchable(['kabkot']),
                         Select::make("kec_id")
                             ->required()
                             ->label("Kecamatan")
-                            ->relationship('kecamatan','kec_id')
-                            ->searchDebounce(100)
-                            ->getOptionLabelFromRecordUsing(fn(MasterSls $record)=>$record->kecamatan)
+                            ->options(function(){
+                                return MasterSls::pluck("kecamatan","kec_id");
+                            })
                             ->searchable(['kecamatan']),
                         Select::make("desa_kel_id")
                             ->label("Desa/Kelurahan")
-                            ->relationship('desa','desa_kel_id')
-                            ->searchDebounce(100)
-                            ->getOptionLabelFromRecordUsing(fn(MasterSls $record)=>$record->desa_kel)
+                            ->options(function(){
+                                return MasterSls::pluck("desa_kel","desa_kel_id");
+                            })
                             ->searchable(['desa_kel']),
                         Select::make("transportasi")
                             ->options(
@@ -142,6 +142,7 @@ class RiwayatPengajuanTable extends BaseWidget
                 TextColumn::make("penugasan.kegiatan.nama"),
                 TextColumn::make("tgl_perjadin")
                     ->label('Tanggal Perjadin')
+                    ->badge()
                     ->state(function (RiwayatPengajuan $record){
                         return $record->penugasan->tgl_perjadin;
                     })

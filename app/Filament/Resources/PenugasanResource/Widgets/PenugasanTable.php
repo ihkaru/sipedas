@@ -143,6 +143,7 @@ class PenugasanTable extends BaseWidget
                 TextColumn::make('kegiatan.nama')
                     ->sortable(),
                 TextColumn::make('tgl_perjadin')
+                    ->badge()
                     ->label('Tanggal Perjadin'),
                 TextColumn::make('riwayatPengajuan.last_status')
                     ->label("Status")

@@ -203,6 +203,100 @@ class PenugasanResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Action::make("lihat")
+                    ->modalHeading('Pengajuan Surat Tugas')
+                    ->disabledForm()
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel("Close")
+                    ->mountUsing(function (Form $form,Penugasan $record){
+                        $form->fill([
+                            ...$record->toArray(),
+                            ...[
+                                "id"=>$record->id,
+                                "catatan_butuh_perbaikan"=>$record->riwayatPengajuan->catatan_butuh_perbaikan
+                                ]
+                        ]);
+                    })
+                    ->form([
+                        Hidden::make("id"),
+                        Textarea::make("catatan_butuh_perbaikan")
+                            ->disabled()
+                            ->label("Yang Perlu Diperbaiki:"),
+                        Select::make("jenis_surat_tugas")
+                            ->options(
+                                Constants::JENIS_SURAT_TUGAS_OPTIONS
+                            )
+                            ->searchable()
+                            ->disabled()
+                            ,
+                        Select::make("nip")
+                            ->label("Pegawai")
+                            ->options(function(){
+                                return Pegawai::pluck('nama','nip')->toArray();
+                            })
+                            ->searchDebounce(100)
+                            ->searchable(['nama'])
+                            ->disabled(),
+                        Select::make("kegiatan_id")
+                            ->label("Kegiatan")
+                            ->relationship('kegiatan','id')
+                            ->searchDebounce(100)
+                            ->getOptionLabelFromRecordUsing(fn(Kegiatan $record)=>$record->nama)
+                            ->disabled()
+                            ->searchable(['nama']),
+                        DatePicker::make('tgl_mulai_tugas')
+                            ->disabled()
+                            ->label("Tanggal Mulai Penugasan"),
+                        DatePicker::make('tgl_akhir_tugas')
+                            ->disabled()
+                            ->label("Tanggal Selesai Penugasan"),
+                        TextInput::make("tbh_hari_jalan_awal")
+                            ->disabled()
+                            ->placeholder("Masukan tanggal")
+                            ->numeric()
+                            ->label("Tambah Hari Awal Perjalanan"),
+                        TextInput::make("tbh_hari_jalan_akhir")
+                            ->disabled()
+                            ->placeholder("Masukan tanggal")
+                            ->numeric()
+                            ->label("Tambah Hari Akhir Perjalanan"),
+                        Select::make("prov_id")
+                            ->label("Provinsi")
+                            ->disabled()
+                            ->relationship('provinsi','prov_id')
+                            ->searchDebounce(100)
+                            ->getOptionLabelFromRecordUsing(fn(MasterSls $record)=>$record->provinsi)
+                            ->searchable(['provinsi']),
+                        Select::make("kabkot_id")
+                            ->disabled()
+                            ->label("Kabupaten/Kota")
+                            ->relationship('kabkot','kabkot_id')
+                            ->searchDebounce(100)
+                            ->getOptionLabelFromRecordUsing(fn(MasterSls $record)=>$record->kabkot)
+                            ->searchable(['kabkot']),
+                        Select::make("kecamatan_id")
+                            ->disabled()
+                            ->label("Kecamatan")
+                            ->relationship('kecamatan','kec_id')
+                            ->searchDebounce(100)
+                            ->getOptionLabelFromRecordUsing(fn(MasterSls $record)=>$record->kecamatan)
+                            ->searchable(['kecamatan']),
+                        Select::make("desa_kel_id")
+                            ->label("Desa/Kelurahan")
+                            ->disabled()
+                            ->relationship('desa','desa_kel_id')
+                            ->searchDebounce(100)
+                            ->getOptionLabelFromRecordUsing(fn(MasterSls $record)=>$record->desa_kel)
+                            ->searchable(['desa_kel']),
+                        Select::make("transportasi")
+                            ->options(
+                                Constants::JENIS_TRANSPORTASI_OPTIONS
+                            )
+                            ->searchable()
+                            ->disabled()
+                            ,
+                    ])
+                ,
                 Action::make("setujui")
                     ->visible(function (Penugasan $record){
                         return $record->canSetujui();

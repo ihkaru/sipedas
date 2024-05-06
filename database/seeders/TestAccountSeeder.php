@@ -23,16 +23,21 @@ class TestAccountSeeder extends Seeder
             'name' => 'Ihza Fikri Zaki Karunia',
             'email' => 'ihzakarunia@bps.go.id',
             'password'=>Hash::make("fikrizaki2")
-        ])->assignRole(["super_admin","approver"]);
+        ])->assignRole(["super_admin"]);
         User::factory()->create([
             'name' => 'Muhammad Adwin, S.Mn.',
             'email' => 'muh.adwin@bps.go.id',
             'password'=>Hash::make("muh.adwin")
-        ])->assignRole(["super_admin","approver","operator_umum"]);
+        ])->assignRole(["operator_umum"]);
         User::factory()->create([
             'name' => 'Rifky Mullah Syadriawan, A.Md.Stat',
             'email' => 'mullahrifky@bps.go.id',
             'password'=>Hash::make("mullahrifky")
-        ])->assignRole(["super_admin","approver","operator_umum"]);
+        ])->assignRole(["operator_umum"]);
+        User::factory()->create([
+            'name' => "Munawir, SE.,MM",
+            'email' => "munawir@bps.go.id",
+            'password'=>Hash::make("munawir")
+        ])->assignRole(["kepala_satker"]);
     }
 }

@@ -16,7 +16,8 @@ class StatusSuratTugasAndaChart extends ChartWidget
     {
         $riwayatPengajuan = RiwayatPengajuan::whereHas('penugasan',function($query){
             $query->whereHas('pegawai',function($query){
-                $query->where('id',auth()->user()->pegawai?->id ?? "");
+                $query->where('nip',auth()->user()->pegawai?->nip ?? "");
+                // dd(auth()->user()->pegawai?->nip);
             });
         })
             ->selectRaw('status,count(status) as jumlah')->groupBy('status')->get();

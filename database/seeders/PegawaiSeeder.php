@@ -37,12 +37,12 @@ class PegawaiSeeder extends Seeder
         Pegawai::create([
             "nama"=>"Muhammad Adwin, S.Mn.",
             "nip"=>"198008112005021004",
-            "nip9"=>"340061823",
+            "nip9"=>"340017573 ",
             "pangkat"=>"-",
             "golongan"=>"-",
             "jabatan"=>"Kasubbag Umum",
             "email"=>"muh.adwin@bps.go.id",
-            "atasan_langsung_id"=>"198008112005021004",
+            "atasan_langsung_id"=>"196908031992111001",
             "unit_kerja"=>"BPS Kabupaten Mempawah"
         ]);
         Pegawai::create([
@@ -53,7 +53,18 @@ class PegawaiSeeder extends Seeder
             "golongan"=>"-",
             "jabatan"=>"-",
             "email"=>"mullahrifky@bps.go.id",
-            "atasan_langsung_id"=>"198008112005021004",
+            "atasan_langsung_id"=>"196908031992111001",
+            "unit_kerja"=>"BPS Kabupaten Mempawah"
+        ]);
+        Pegawai::create([
+            "nama"=>"Ihza Fikri Zaki Karunia, S.Tr.Stat.",
+            "nip"=>"199910282023021005",
+            "nip9"=>"340061823",
+            "pangkat"=>"III",
+            "golongan"=>"a",
+            "jabatan"=>"Pranata Komputer Ahli Pertama",
+            "email"=>"ihzakarunia@bps.go.id",
+            "atasan_langsung_id"=>"196908031992111001",
             "unit_kerja"=>"BPS Kabupaten Mempawah"
         ]);
 

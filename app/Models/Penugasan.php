@@ -121,7 +121,13 @@ class Penugasan extends Model
     }
 
     public function canSetujui(){
-        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM;
+        return
+        $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM && (
+            $this->plh_id == auth()->user()->pegawai->nip ||
+            auth()->user()->hasRole("kepala_satker")
+        )
+
+        ;
     }
     public function canRevisi(){
         return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM;
@@ -130,22 +136,52 @@ class Penugasan extends Model
         return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_PERLU_REVISI;
     }
     public function canTolak(){
-        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM;
+        return
+        $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM && (
+            $this->plh_id == auth()->user()->pegawai->nip ||
+            auth()->user()->hasRole("kepala_satker")
+        )
+        ;
     }
     public function canBatalkan(){
-        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM || $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_PERLU_REVISI;
+        return
+        ($this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM ||
+         $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_PERLU_REVISI) &&
+         auth()->user()->pegawai->nip == $this->nip
+         ;
     }
     public function canCetak(){
-        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DISETUJUI;
+        return
+        $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DISETUJUI &&
+        (
+            auth()->user()->pegawai->nip == $this->nip ||
+            auth()->user()->hasRole('operator_umum')
+        )
+
+        ;
     }
     public function canKumpulkan(){
-        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DICETAK;
+        return
+        $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DICETAK &&
+        (
+            auth()->user()->hasRole('operator_umum')
+        )
+        ;
     }
     public function canCairkan(){
-        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKUMPULKAN;
+        return
+        $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKUMPULKAN &&
+        (
+            auth()->user()->hasRole('operator_umum')
+        )
+        ;
     }
     public function canPerluPerbaikan(){
-        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM;
+        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM &&
+        (
+            $this->plh_id == auth()->user()->pegawai->nip ||
+            auth()->user()->hasRole("kepala_satker")
+        );
     }
 
     public function setujui(){

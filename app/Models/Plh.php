@@ -57,7 +57,10 @@ class Plh extends Model
     }
     public static function getAtasanTertinggi(array $nips){
         $atasanLangsung = Pegawai::select('atasan_langsung_id')->distinct()->whereIn('nip',$nips)->pluck('atasan_langsung_id');
+        $trying = 0;
         while ( $atasanLangsung->count() > 1) {
+            $trying +=1;
+            if($trying>10) dd($atasanLangsung);
             $atasanLangsung = Pegawai::select('atasan_langsung_id')->distinct()->whereIn('nip',$atasanLangsung)->pluck('atasan_langsung_id');
         }
         return Pegawai::find($atasanLangsung->first());
