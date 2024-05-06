@@ -128,7 +128,7 @@ class RiwayatPengajuanTable extends BaseWidget
     public function table(Table $table): Table
     {
         $query = RiwayatPengajuan::query()->with('penugasan')->whereHas("penugasan",function($query){
-            $query->whereHas('pegawai',function($query){$query->where('nip',"196908031992111001");
+            $query->whereHas('pegawai',function($query){$query->where('nip',auth()->user()->pegawai?->nip);
             });
         });
         return $table
