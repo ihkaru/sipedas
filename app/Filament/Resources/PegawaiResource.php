@@ -22,9 +22,6 @@ class PegawaiResource extends Resource
     protected static ?string $pluralModelLabel = "Pegawai";
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
-    public static function canViewAny(): bool{
-        return auth()->user()->hasRole('operator_umum');
-    }
 
     public static function form(Form $form): Form
     {

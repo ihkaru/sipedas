@@ -100,6 +100,12 @@ class PenugasanDisetujuiTable extends BaseWidget
                             ->searchable(['nip'])
                             ->multiple()
                             ->disabled(),
+                        Select::make("plh_id")
+                            ->label("Penyetuju")
+                            ->relationship('plh','nip')
+                            ->getOptionLabelFromRecordUsing(fn(Pegawai $record)=>$record->nama)
+                            ->searchable(['nip'])
+                            ->disabled(),
                         Select::make("kegiatan_id")
                             ->label("Kegiatan")
                             ->relationship('kegiatan','id')

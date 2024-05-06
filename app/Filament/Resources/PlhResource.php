@@ -4,14 +4,19 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PlhResource\Pages;
 use App\Filament\Resources\PlhResource\RelationManagers;
+use App\Models\Pegawai;
+use App\Models\Pengaturan;
 use App\Models\Plh;
 use Filament\Forms;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use PHPUnit\TextUI\Configuration\Constant;
 
 class PlhResource extends Resource
 {
@@ -30,13 +35,18 @@ class PlhResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('pegawai.nama')
+                Hidden::make('pegawai_digantikan_id')
+                    ->default(Pengaturan::key('ID_PLH_DEFAULT')->nilai),
+                Select::make('pegawai_pengganti_id')
+                    ->options(function(){
+                        return Pegawai::pluck('nama','nip');
+                    })
+                    ->searchable(['nama'])
                     ->label("Pegawai Pengganti")
-                    ->maxLength(255)
-                    ->default(null),
-                Forms\Components\DateTimePicker::make('tgl_mulai')
+                    ,
+                Forms\Components\DatePicker::make('tgl_mulai')
                     ->label("Tanggal Mulai"),
-                Forms\Components\DateTimePicker::make('tgl_selesai')
+                Forms\Components\DatePicker::make('tgl_selesai')
                     ->label("Tanggal Selesai"),
             ]);
     }
@@ -45,8 +55,11 @@ class PlhResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('pegawai.nama')
+                Tables\Columns\TextColumn::make('pegawaiPengganti.nama')
                     ->label("Pegawai Pengganti")
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('pegawaiDigantikan.nama')
+                    ->label("Kepala")
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tgl_mulai')
                     ->label("Tanggal Mulai")

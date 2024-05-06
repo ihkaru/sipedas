@@ -205,7 +205,10 @@ class PenugasanResource extends Resource
                     })
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(function(){
+                        return auth()->user()->hasRole('operator_umum');
+                    }),
                 Action::make("lihat")
                     ->modalHeading('Pengajuan Surat Tugas')
                     ->disabledForm()
