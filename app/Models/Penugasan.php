@@ -106,7 +106,7 @@ class Penugasan extends Model
 
     }
 
-    public static function perluPerbaikan($data,bool $checkRole = true){
+    public static function perluPerbaikan($data,bool $checkRole = false){
         $res = 0;
         $pengajuan = self::with("riwayatPengajuan")->find($data['id']);
         if(!$pengajuan->canPerluPerbaikan($checkRole)) return 0;
@@ -114,7 +114,14 @@ class Penugasan extends Model
         $res += $pengajuan->riwayatPengajuan->update(["catatan_butuh_perbaikan"=>$data["catatan_butuh_perbaikan"]]);
         return $res!=0;
     }
-
+    public static function ajukanRevisi($data){
+        $res = 0;
+        $pengajuan = self::with("riwayatPengajuan")->find($data['id']);
+        if(!$pengajuan->canAjukanRevisi()) return 0;
+        $res += $pengajuan->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DIKIRIM,"tgl_dikirim",now());
+        $res += $pengajuan->update($data);
+        return $res!=0;
+    }
 
     public function canSetujui(bool $checkRole = true){
         if($checkRole == false) return true;
@@ -130,7 +137,10 @@ class Penugasan extends Model
         if($checkRole == false) return true;
         return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM;
     }
-
+    public function canAjukanRevisi(bool $checkRole = true){
+        if($checkRole == false) return true;
+        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_PERLU_REVISI;
+    }
     public function canTolak(bool $checkRole = true){
         if($checkRole == false) return true;
         return
