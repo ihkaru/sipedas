@@ -27,6 +27,7 @@ class ListPenugasans extends ListRecords
     {
         return [
             Action::make("tambah_pengajuan")
+                    ->visible(false)
                     ->label("Pengajuan Surat Tugas")
                     ->icon("fluentui-document-add-20-o")
                     ->mountUsing(function (Form $form){

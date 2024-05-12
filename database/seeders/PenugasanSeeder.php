@@ -21,23 +21,10 @@ class PenugasanSeeder extends Seeder
     {
         $pegawais = Pegawai::limit(5)->get();
         $kegiatan = Kegiatan::first();
-        $nips = [];
-        foreach ($pegawais as $p) {
-            $nips[] = $p->nip;
-        }
-        $penugasanDTO = new PenugasanCreation();
-        $penugasanDTO->nips = $nips;
-        $penugasanDTO->kegiatanId = $kegiatan->id;
-        $penugasanDTO->tglMulaiTugas = "02-05-2024";
-        $penugasanDTO->tglAkhirTugas = "03-05-2024";
-        $penugasanDTO->tbhHariJalanAwal = 1;
-        $penugasanDTO->tbhHariJalanAkhir = 1;
-        $penugasanDTO->provId = "61";
-        $penugasanDTO->kabkotId = "6104";
-        $penugasanDTO->kecamatanId = "6104080";
-        $penugasanDTO->desaKelId = "6104080002";
-        $penugasanDTO->jenisSuratTugas = Constants::PERJALANAN_DINAS_BIASA;
-        $penugasanDTO->transportasi = Constants::TRANSPORTASI_KENDARAAN_UMUM;
-        Penugasan::ajukan($penugasanDTO);
+        Penugasan::factory(5)->dikirim()->create();
+        Penugasan::factory(6)->disetujui()->create();
+        Penugasan::factory(3)->dibatalkan()->create();
+        Penugasan::factory(3)->ditolak()->create();
+        Penugasan::factory(10)->dicairkan()->create();
     }
 }

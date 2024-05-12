@@ -106,24 +106,18 @@ class Penugasan extends Model
 
     }
 
-    public static function perluPerbaikan($data){
+    public static function perluPerbaikan($data,bool $checkRole = true){
         $res = 0;
         $pengajuan = self::with("riwayatPengajuan")->find($data['id']);
-        if(!$pengajuan->canPerluPerbaikan()) return 0;
+        if(!$pengajuan->canPerluPerbaikan($checkRole)) return 0;
         $res += $pengajuan->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_PERLU_REVISI,"tgl_arahan_revisi",now());
         $res += $pengajuan->riwayatPengajuan->update(["catatan_butuh_perbaikan"=>$data["catatan_butuh_perbaikan"]]);
         return $res!=0;
     }
-    public static function ajukanRevisi($data){
-        $res = 0;
-        $pengajuan = self::with("riwayatPengajuan")->find($data['id']);
-        if(!$pengajuan->canAjukanRevisi()) return 0;
-        $res += $pengajuan->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DIKIRIM,"tgl_dikirim",now());
-        $res += $pengajuan->update($data);
-        return $res!=0;
-    }
 
-    public function canSetujui(){
+
+    public function canSetujui(bool $checkRole = true){
+        if($checkRole == false) return true;
         return
         $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM && (
             auth()->user()->hasRole("kepala_satker") ||
@@ -132,13 +126,13 @@ class Penugasan extends Model
 
         ;
     }
-    public function canRevisi(){
+    public function canRevisi(bool $checkRole = true){
+        if($checkRole == false) return true;
         return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM;
     }
-    public function canAjukanRevisi(){
-        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_PERLU_REVISI;
-    }
-    public function canTolak(){
+
+    public function canTolak(bool $checkRole = true){
+        if($checkRole == false) return true;
         return
         $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM && (
             $this->plh_id == auth()->user()->pegawai?->nip ||
@@ -146,14 +140,16 @@ class Penugasan extends Model
         )
         ;
     }
-    public function canBatalkan(){
+    public function canBatalkan(bool $checkRole = true){
+        if($checkRole == false) return true;
         return
         ($this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM ||
          $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_PERLU_REVISI) &&
          auth()->user()->pegawai?->nip == $this->nip
          ;
     }
-    public function canCetak(){
+    public function canCetak(bool $checkRole = true){
+        if($checkRole == false) return true;
         return
         $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DISETUJUI &&
         (
@@ -163,7 +159,8 @@ class Penugasan extends Model
 
         ;
     }
-    public function canKumpulkan(){
+    public function canKumpulkan(bool $checkRole = true){
+        if($checkRole == false) return true;
         return
         $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DICETAK &&
         (
@@ -171,7 +168,8 @@ class Penugasan extends Model
         )
         ;
     }
-    public function canCairkan(){
+    public function canCairkan(bool $checkRole = true){
+        if($checkRole == false) return true;
         return
         $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKUMPULKAN &&
         (
@@ -179,7 +177,8 @@ class Penugasan extends Model
         )
         ;
     }
-    public function canPerluPerbaikan(){
+    public function canPerluPerbaikan(bool $checkRole = true){
+        if($checkRole == false) return true;
         return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM &&
         (
             $this->plh_id == auth()->user()->pegawai?->nip ||
@@ -187,29 +186,35 @@ class Penugasan extends Model
         );
     }
 
-    public function setujui(){
-        if(!$this->canSetujui()) return 0;
+    public function setujui(bool $checkRole = true){
+        if(!$this->canSetujui($checkRole)) return 0;
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DISETUJUI,"tgl_diterima",now());
     }
-    public function tolak(){
-        if(!$this->canTolak()) return 0;
+    public function tolak(bool $checkRole = true){
+        if(!$this->canTolak($checkRole)) return 0;
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DITOLAK,"tgl_ditolak",now());
     }
-    public function batalkan(){
-        if(!$this->canBatalkan()) return 0;
+    public function batalkan(bool $checkRole = true){
+        if(!$this->canBatalkan($checkRole)) return 0;
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DIBATALKAN,"tgl_dibatalkan",now());
     }
-    public function cetak(){
-        if(!$this->canCetak()) return 0;
+    public function cetak(bool $checkRole = true){
+        if(!$this->canCetak($checkRole)) return 0;
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DICETAK,"tgl_dibuat",now());
     }
-    public function kumpulkan(){
-        if(!$this->canKumpulkan()) return 0;
+    public function kumpulkan(bool $checkRole = true){
+        if(!$this->canKumpulkan($checkRole)) return 0;
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DIKUMPULKAN,"tgl_dikumpulkan",now());
     }
-    public function cairkan(){
-        if(!$this->canCairkan()) return 0;
+    public function cairkan(bool $checkRole = true){
+        if(!$this->canCairkan($checkRole)) return 0;
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DICAIRKAN,"tgl_pencairan",now());
+    }
+
+    public static function getSuratTugasId(): string {
+        // perlu implementasi nomor surat tugas
+        $id = Str::orderedUuid();
+        return $id;
     }
 
 }
