@@ -15,6 +15,8 @@ class MasterSlsSeeder extends Seeder
      */
     public function run(): void
     {
-        Excel::import(new MasterSlsImport,"./database/data/master_sls.csv",readerType: ExcelExcel::CSV);
+        if(env("MIGRATION_ENV","local")) $fileLocation = "./database/data/master_sls.csv";
+        // if(env("MIGRATION_ENV","production")) $fileLocation = "./../database/data/master_sls.csv";
+        Excel::import(new MasterSlsImport,$fileLocation,readerType: ExcelExcel::CSV);
     }
 }

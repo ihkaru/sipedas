@@ -15,6 +15,9 @@ class KegiatanSeeder extends Seeder
      */
     public function run(): void
     {
-        Excel::import(new KegiatanImport,"./database/data/kegiatan.csv",readerType: ExcelExcel::CSV);
+        $fileLocation = "";
+        if(env("MIGRATION_ENV","local")) $fileLocation = "./database/data/kegiatan.csv";
+        // if(env("MIGRATION_ENV","production")) $fileLocation = "./../database/data/kegiatan.csv";
+        Excel::import(new KegiatanImport,$fileLocation,readerType: ExcelExcel::CSV);
     }
 }
