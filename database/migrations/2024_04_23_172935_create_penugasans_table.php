@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string("nip");
             $table->string("kegiatan_id");
             $table->foreign("kegiatan_id")->references("id")->on("kegiatans");
+            $table->timestamp("tgl_pengajuan_tugas")->nullable();
             $table->timestamp("tgl_mulai_tugas")->nullable();
             $table->timestamp("tgl_akhir_tugas")->nullable();
             $table->unsignedSmallInteger("tbh_hari_jalan_awal");

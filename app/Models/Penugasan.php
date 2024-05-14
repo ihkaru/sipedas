@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\DTO\PenugasanCreation;
 use App\Supports\Constants;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -225,6 +226,44 @@ class Penugasan extends Model
         // perlu implementasi nomor surat tugas
         $id = Str::orderedUuid();
         return $id;
+    }
+    public static function getDisabledDates(array $nips): array{
+        $penugasans = Penugasan::whereIn("nip",$nips)
+                        ->whereHas('riwayatPengajuan',function (Builder $query){
+                            $query->whereIn('status',
+                            [
+                                Constants::STATUS_PENGAJUAN_DIKIRIM,
+                                Constants::STATUS_PENGAJUAN_DISETUJUI,
+                                Constants::STATUS_PENGAJUAN_DICETAK,
+                                Constants::STATUS_PENGAJUAN_DIKUMPULKAN,
+                                Constants::STATUS_PENGAJUAN_DICAIRKAN,
+                                Constants::STATUS_PENGAJUAN_PERLU_REVISI,
+                            ])
+                            ->whereDate('tgl_mulai_tugas',">=",now()->subMonth(2))
+                            ->whereDate('tgl_akhir_tugas',"<=",now()->addMonth(2))
+                            ;
+                        })->get();
+        $res = [];
+        foreach ($penugasans as $p) {
+            $res=array_merge($res,self::generateDateRange(Carbon::parse($p->tgl_mulai_tugas),Carbon::parse($p->tgl_akhir_tugas)));
+        }
+        return collect($res)->unique()->flatten()->toArray();
+    }
+    public static function generateDateRange(Carbon $start_date, Carbon $end_date)
+    {
+        $dates = [];
+
+        for($date = $start_date->copy(); $date->lte($end_date); $date->addDay()) {
+            $dates[] = $date->format('Y-m-d');
+        }
+
+        return $dates;
+    }
+    public static function getMinDate(string $date,array $nips){
+        $date = Carbon::parse($date);
+        // dd( collect(self::getDisabledDates($nips)));
+        $res = collect(self::getDisabledDates($nips))->filter(fn($v)=>Carbon::parse($v)>$date)->sort()->flatten()->toArray();
+        return $res ? $res[0] : null;
     }
 
 }

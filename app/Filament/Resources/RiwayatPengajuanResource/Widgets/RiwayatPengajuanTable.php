@@ -9,10 +9,13 @@ use App\Models\Pegawai;
 use App\Models\Penugasan;
 use App\Models\RiwayatPengajuan;
 use App\Supports\Constants;
+use App\Supports\TanggalMerah;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
@@ -46,7 +49,11 @@ class RiwayatPengajuanTable extends BaseWidget
                             ->required()
                             ,
                         Select::make("nips")
+                            ->afterStateUpdated(function (?array $state, ?array $old,Set $set) {
+                                $set('tgl_mulai_tugas',null);
+                            })
                             ->label("Pegawai")
+                            ->live()
                             ->options(function(){
                                 return Pegawai::pluck('nama','nip')->toArray();
                             })
@@ -63,17 +70,47 @@ class RiwayatPengajuanTable extends BaseWidget
                             ->required()
                             ->searchable(['nama']),
                         DatePicker::make('tgl_mulai_tugas')
+                            ->hidden(function(Get $get){
+                                return $get('nips')==null;
+                            })
+                            ->native(false)
+                            ->live()
+                            ->minDate(now()->subMonth(2))
+                            ->maxDate(function(Get $get){
+                                if($get('tgl_selesai_tugas')) return $get('tgl_selesai_tugas');
+                                return now()->addMonth(2);
+                            })
+                            ->disabledDates(function(Get $get){
+                                return array_merge(Penugasan::getDisabledDates($get("nips")),TanggalMerah::getLiburDates());
+                            })
                             ->required()
                             ->label("Tanggal Mulai Penugasan"),
                         DatePicker::make('tgl_selesai_tugas')
+                            ->hidden(function(Get $get){
+                                return $get('tgl_mulai_tugas')==null || $get('nips')==null;
+                            })
+                            ->native(false)
+                            ->live()
+                            ->minDate(function(Get $get){
+                                if($get('tgl_mulai_tugas')) return $get('tgl_mulai_tugas');
+                                return now()->subMonth(2);
+                            })
+                            ->maxDate(function(Get $get){
+                                return Penugasan::getMinDate($get("tgl_mulai_tugas"),$get("nips")) ?? now()->addMonth(2);
+                            })
+                            ->disabledDates(function(Get $get){
+                                return Penugasan::getDisabledDates($get("nips"));
+                            })
                             ->required()
                             ->label("Tanggal Selesai Penugasan"),
                         TextInput::make("tbh_awal_perjalan")
+                            ->default(0)
                             ->required()
                             ->placeholder("Masukan tanggal")
                             ->numeric()
                             ->label("Tambah Hari Awal Perjalanan"),
                         TextInput::make("tbh_akhir_perjalan")
+                            ->default(0)
                             ->required()
                             ->placeholder("Masukan tanggal")
                             ->numeric()
