@@ -73,7 +73,7 @@ class RiwayatPengajuanTable extends BaseWidget
                             ->hidden(function(Get $get){
                                 return $get('nips')==null;
                             })
-                            ->afterStateUpdated(function (?array $state, ?array $old,Set $set) {
+                            ->afterStateUpdated(function (?string $state, ?string $old,Set $set) {
                                 $set('tgl_selesai_tugas',null);
                             })
                             ->native(false)
