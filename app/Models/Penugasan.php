@@ -11,12 +11,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Collection;
 use PHPUnit\TextUI\Configuration\Constant;
 
 class Penugasan extends Model
 {
     use HasFactory;
     protected $guarded=[];
+    public static Collection $masterSls;
 
     protected function casts(): array
     {
@@ -56,6 +58,16 @@ class Penugasan extends Model
                 return ((int) Carbon::parse($attributes['tgl_mulai_tugas'])->diffInDays(Carbon::parse($attributes['tgl_akhir_tugas'])))+1;
             },
         );
+    }
+    protected function tujuanPenugasan(): Attribute
+    {
+        $masterSls = self::$masterSls ??= MasterSls::get();
+        return Attribute::make(get: function(mixed $value, array $attributes) use($masterSls){
+            if($attributes['level_tujuan_penugasan'] == Constants::LEVEL_PENUGASAN_KABUPATEN_KOTA) return ucwords(strtolower($masterSls->where('kabkot_id',$attributes['kabkot_id'])->first()->kabkot));
+            if($attributes['level_tujuan_penugasan'] == Constants::LEVEL_PENUGASAN_KECAMATAN) return ucwords(strtolower($masterSls->where('kec_id',$attributes['kecamatan_id'])->first()->kecamatan));
+            if($attributes['level_tujuan_penugasan'] == Constants::LEVEL_PENUGASAN_DESA_KELURAHAN) return ucwords(strtolower($masterSls->where('desa_kel_id',$attributes['desa_kel_id'])->first()->desa_kel));
+            return "";
+        });
     }
     protected function tglPerjadin(): Attribute
     {

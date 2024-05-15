@@ -55,8 +55,8 @@ class PenugasanDisetujuiTable extends BaseWidget
                 $this->getTableQuery()->latest('created_at')
             )
             ->columns([
-                TextColumn::make('surat_tugas_id')
-                    ->label("Nomor Surat Tugas"),
+                TextColumn::make('tujuan_penugasan')
+                    ->label("Lokasi Penugasan"),
                 TextColumn::make('kegiatan.nama')
                     ->sortable(),
                 TextColumn::make('tgl_perjadin')
