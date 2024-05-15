@@ -8,7 +8,9 @@ use App\Models\Kegiatan;
 use App\Models\MasterSls;
 use App\Models\Pegawai;
 use App\Models\Penugasan;
+use App\Models\RiwayatPengajuan;
 use App\Supports\Constants;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
@@ -23,6 +25,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Blade;
+
 class PenugasanDisetujuiTable extends BaseWidget
 {
     protected static ?string $heading = 'Surat Tugas Disetujui';
@@ -60,6 +64,13 @@ class PenugasanDisetujuiTable extends BaseWidget
                     ->label('Tanggal Perjadin'),
             ])
             ->actions([
+                Action::make('pdf')
+                    ->label('PDF')
+                    ->color('success')
+                    ->icon('fluentui-arrow-download-48')
+                    ->action(function (Penugasan $record) {
+                        return redirect()->to(route("cetak",['id'=>$record->id]));
+                    }),
                 Action::make("lihat")
                     ->modalHeading('Pengajuan Surat Tugas')
                     ->disabledForm()

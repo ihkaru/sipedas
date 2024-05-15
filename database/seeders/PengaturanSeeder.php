@@ -38,6 +38,7 @@ class PengaturanSeeder extends Seeder
             "key"=>"NAMA_PROVINSI",
             "deskripsi"=>"Nama Provinsi Satuan Kerja"
         ]);
+
         Pengaturan::create([
             "nilai"=>"KABUPATEN MEMPAWAH",
             "key"=>"NAMA_KAKO",
@@ -47,6 +48,11 @@ class PengaturanSeeder extends Seeder
             "nilai"=>"KAKO",
             "key"=>"LEVEL_SATUAN_KERJA",
             "deskripsi"=>"Level satuan kerja: PROVINSI, KAKO"
+        ]);
+        Pengaturan::create([
+            "nilai"=>"199306062016021001",
+            "key"=>"NIP_PPK_SATER",
+            "deskripsi"=>"NIP dari PPK Satker"
         ]);
     }
 }

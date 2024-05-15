@@ -48,6 +48,15 @@ class Penugasan extends Model
             get: fn (mixed $value, array $attributes) => Constants::JENIS_TRANSPORTASI_OPTIONS[$attributes["transportasi"]],
         );
     }
+    protected function lamaPerjadin(): Attribute
+    {
+
+        return Attribute::make(
+            get: function (mixed $value, array $attributes){
+                return ((int) Carbon::parse($attributes['tgl_mulai_tugas'])->diffInDays(Carbon::parse($attributes['tgl_akhir_tugas'])))+1;
+            },
+        );
+    }
     protected function tglPerjadin(): Attribute
     {
 
@@ -62,7 +71,7 @@ class Penugasan extends Model
 
 
     public function nomorSurat(){
-        return $this->belongsTo(NomorSurat::class,"nip","nip");
+        return $this->belongsTo(NomorSurat::class,"surat_tugas_id","id");
     }
 
     public function pegawai(){
@@ -96,7 +105,6 @@ class Penugasan extends Model
         $now = now()->toDateTimeString();
         $res = 0;
         $pegawaiPlh = Plh::getApprover($data["nips"],Carbon::parse($data["tgl_mulai_tugas"])->toDateTimeString(),true);
-        $nomorSurat = NomorSurat::generateNomorSuratTugas(Carbon::parse($data["tgl_pengajuan_tugas"]));
         foreach($data["nips"] as $n){
             $pengajuan = self::create([
                 "nip"=>$n,
@@ -112,7 +120,6 @@ class Penugasan extends Model
                 "kabkot_id"=>$data["kabkot_id"] ?? null,
                 "kecamatan_id"=>$data["kecamatan_id"] ?? null,
                 "desa_kel_id"=>$data["desa_kel_id"] ?? null,
-                "surat_tugas_id" => $nomorSurat->id,
                 "jenis_surat_tugas" => $data["jenis_surat_tugas"],
                 "plh_id"=>$pegawaiPlh->nip,
                 "transportasi"=>$data["transportasi"] ?? null,
@@ -219,14 +226,17 @@ class Penugasan extends Model
 
     public function setujui(bool $checkRole = true){
         if(!$this->canSetujui($checkRole)) return 0;
+        if(!$this->surat_tugas_id) $this->surat_tugas_id = NomorSurat::generateNomorSuratTugas(Carbon::parse($this->tgl_pengajuan_tugas))->id;
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DISETUJUI,"tgl_diterima",now());
     }
     public function tolak(bool $checkRole = true){
         if(!$this->canTolak($checkRole)) return 0;
+        $this->nomorSurat->delete();
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DITOLAK,"tgl_ditolak",now());
     }
     public function batalkan(bool $checkRole = true){
         if(!$this->canBatalkan($checkRole)) return 0;
+        $this->nomorSurat->delete();
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DIBATALKAN,"tgl_dibatalkan",now());
     }
     public function cetak(bool $checkRole = true){

@@ -59,6 +59,36 @@ class Constants {
         "JENIS_NOMOR_SURAT_TUGAS" => "Nomor Surat Tugas"
     ];
 
+    const PANGKAT_I = "I";
+    const PANGKAT_II = "II";
+    const PANGKAT_III = "II";
+    const PANGKAT_IV = "IV";
+    const PANGKAT_OPTIONS = [
+        'I'=>"Juru",
+        'II'=>"Pengatur",
+        'III'=>"Penata",
+        'IV'=>"Pembina",
+    ];
+
+    const GOLONGAN_A = "a";
+    const GOLONGAN_B = "b";
+    const GOLONGAN_C = "c";
+    const GOLONGAN_D = "d";
+    const GOLONGAN_E = "e";
+    const GOLONGAN_I_III_OPTIONS = [
+        'a' => 'Muda',
+        'b' => 'Muda Tk I',
+        'c' => '',
+        'd' => 'Tk I',
+    ];
+    const GOLONGAN_IV_OPTIONS = [
+        'a' => '',
+        'b' => 'Tk I',
+        'c' => 'Muda',
+        'd' => 'Madya',
+        'e' => 'Utama',
+    ];
+
     public static function getJenisTransportasiOptions(){
         return self::JENIS_TRANSPORTASI_OPTIONS;
     }
