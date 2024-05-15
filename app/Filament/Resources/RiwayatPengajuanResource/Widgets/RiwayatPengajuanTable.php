@@ -10,6 +10,7 @@ use App\Models\Penugasan;
 use App\Models\RiwayatPengajuan;
 use App\Supports\Constants;
 use App\Supports\TanggalMerah;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -35,11 +36,6 @@ class RiwayatPengajuanTable extends BaseWidget
             Action::make("tambah_pengajuan")
                     ->label("Pengajuan Surat Tugas")
                     ->icon("fluentui-document-add-20-o")
-                    ->mountUsing(function (Form $form){
-                        $form->fill([
-
-                        ]);
-                    })
                     ->form([
                         Select::make("jenis_surat_tugas")
                             ->options(
@@ -70,6 +66,13 @@ class RiwayatPengajuanTable extends BaseWidget
                             })
                             ->required()
                             ->searchable(['nama']),
+                        DatePicker::make("tgl_pengajuan_tugas")
+                            ->native(false)
+                            ->required()
+                            ->label("Tanggal Pengajuan")
+                            ->default(now())
+                            ->live()
+                            ,
                         Select::make("level_tujuan_penugasan")
                             ->label("Level Tujuan Penugasan")
                             ->options(Constants::LEVEL_PENUGASAN_OPTIONS)
@@ -94,7 +97,9 @@ class RiwayatPengajuanTable extends BaseWidget
                             })
                             ->native(false)
                             ->live()
-                            ->minDate(now()->subMonth(2))
+                            ->minDate(function(Get $get){
+                                return $get('tgl_pengajuan_tugas');
+                            })
                             ->maxDate(function(Get $get){
                                 if($get('tgl_akhir_tugas')) return $get('tgl_akhir_tugas');
                                 return now()->addMonth(2);
@@ -145,6 +150,7 @@ class RiwayatPengajuanTable extends BaseWidget
                             })
                             ->placeholder("Masukan jumlah hari")
                             ->numeric()
+                            ->default(0)
                             ->label("Tambah Hari Awal Perjalanan"),
                         TextInput::make("tbh_hari_jalan_akhir")
                             ->hidden(function(Get $get){
@@ -168,6 +174,7 @@ class RiwayatPengajuanTable extends BaseWidget
                                 ])->contains($get('level_tujuan_penugasan')));
                             })
                             ->placeholder("Masukan jumlah hari")
+                            ->default(0)
                             ->numeric()
                             ->label("Tambah Hari Akhir Perjalanan"),
                         Select::make("prov_id")

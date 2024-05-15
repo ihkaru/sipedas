@@ -41,14 +41,21 @@ class NomorSuratResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nomor')
+                Tables\Columns\TextColumn::make('nomor_surat_tugas')
+                    ->label("Nomor Surat Tugas")
                     ->searchable(),
                 Tables\Columns\TextColumn::make('jenis')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                Tables\Columns\TextColumn::make('tanggal_nomor')
+                    ->label("Tanggal Pengajuan")
+                    ->date()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label("Tanggal Dibuat")
+                    ->date()
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
