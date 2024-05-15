@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Kegiatan;
 use App\Models\MasterSls;
+use App\Models\NomorSurat;
 use App\Models\Pegawai;
 use App\Models\Penugasan;
 use App\Models\Plh;
@@ -33,20 +34,23 @@ class PenugasanFactory extends Factory
         $kecIds = static::$kecIds ??= MasterSls::pluck('kec_id')->unique()->flatten()->toArray();
         $desKelIds = static::$desKelIds ??= MasterSls::pluck('desa_kel_id')->unique()->flatten()->toArray();
         $date = now()->addDays(rand(-20,20));
-
+        $tanggalPengajuan = $date->addDays(rand(-14,0));
         $res = [
             "nip"=>$pegawaiIds[rand(0,count($pegawaiIds)-1)],
             "kegiatan_id"=>$kegiatanIds[rand(0,count($kegiatanIds)-1)],
             "tgl_mulai_tugas"=>$date,
+            "level_tujuan_penugasan"=>Constants::LEVEL_PENUGASAN_DESA_KELURAHAN,
+            "nama_tempat_tujuan"=>null,
             "tgl_akhir_tugas"=>$date->addDays(rand(0,3)),
+            'tgl_pengajuan_tugas'=>$tanggalPengajuan,
             "tbh_hari_jalan_awal"=>rand(0,1),
             "tbh_hari_jalan_akhir"=>rand(0,1),
             "prov_id"=>"61",
             "kabkot_id"=>"04",
             "desa_kel_id"=>$desKelIds[rand(0,count($desKelIds)-1)],
-            "jenis_surat_tugas"=>Constants::flatJenisSuratTugasOptions()[rand(0,count(Constants::flatJenisSuratTugasOptions())-1)],
-            "surat_tugas_id"=>Penugasan::getSuratTugasId(),
-            "transportasi"=>Constants::flatJenisTransportasiOptions()[rand(0,count(Constants::flatJenisTransportasiOptions())-1)],
+            "jenis_surat_tugas"=>Constants::flatJenisSuratTugasOptions()[rand(1,count(Constants::flatJenisSuratTugasOptions())-1)],
+            "surat_tugas_id"=>NomorSurat::generateNomorSuratTugas($tanggalPengajuan)->id,
+            "transportasi"=>Constants::flatJenisTransportasiOptions()[rand(1,count(Constants::flatJenisTransportasiOptions())-1)],
         ];
         $plh = static::$plh ??= Plh::getApprover([$res["nip"]],$date,returnPegawai:true)->nip;
         $res["plh_id"] = $plh;

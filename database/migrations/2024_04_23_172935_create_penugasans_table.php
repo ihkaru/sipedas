@@ -34,7 +34,8 @@ return new class extends Migration
             $table->string("desa_kel_id")->nullable();
             // $table->foreign("desa_kel_id")->references("desa_kel_id")->on("master_sls");
             $table->string("jenis_surat_tugas");
-            $table->string("surat_tugas_id");
+            $table->unsignedBigInteger("surat_tugas_id");
+            $table->foreign("surat_tugas_id")->references("id")->on("nomor_surats");
             $table->foreignIdFor(Pegawai::class,"plh_id");
             $table->string("transportasi")->nullable();
             $table->timestamps();

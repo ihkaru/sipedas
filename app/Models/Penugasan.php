@@ -61,6 +61,9 @@ class Penugasan extends Model
     }
 
 
+    public function nomorSurat(){
+        return $this->belongsTo(NomorSurat::class,"nip","nip");
+    }
 
     public function pegawai(){
         return $this->belongsTo(Pegawai::class,"nip","nip");
@@ -92,8 +95,8 @@ class Penugasan extends Model
     public static function ajukan(array $data){
         $now = now()->toDateTimeString();
         $res = 0;
-        $orderedUuid = (string) Str::orderedUuid();
         $pegawaiPlh = Plh::getApprover($data["nips"],Carbon::parse($data["tgl_mulai_tugas"])->toDateTimeString(),true);
+        $nomorSurat = NomorSurat::generateNomorSuratTugas(Carbon::parse($data["tgl_pengajuan_tugas"]));
         foreach($data["nips"] as $n){
             $pengajuan = self::create([
                 "nip"=>$n,
@@ -109,7 +112,7 @@ class Penugasan extends Model
                 "kabkot_id"=>$data["kabkot_id"] ?? null,
                 "kecamatan_id"=>$data["kecamatan_id"] ?? null,
                 "desa_kel_id"=>$data["desa_kel_id"] ?? null,
-                "surat_tugas_id" => self::getSuratTugasId(),
+                "surat_tugas_id" => $nomorSurat->id,
                 "jenis_surat_tugas" => $data["jenis_surat_tugas"],
                 "plh_id"=>$pegawaiPlh->nip,
                 "transportasi"=>$data["transportasi"] ?? null,

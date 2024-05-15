@@ -82,4 +82,6 @@ class NomorSuratResource extends Resource
             'edit' => Pages\EditNomorSurat::route('/{record}/edit'),
         ];
     }
+
+
 }

@@ -13,7 +13,9 @@ return new class extends Migration
     {
         Schema::create('nomor_surats', function (Blueprint $table) {
             $table->id();
-            $table->string("nomor");
+            $table->unsignedMediumInteger("nomor");
+            $table->unsignedMediumInteger("sub_nomor")->nullable();
+            $table->timestamp("tanggal_nomor");
             $table->string("jenis");
             $table->timestamps();
         });
