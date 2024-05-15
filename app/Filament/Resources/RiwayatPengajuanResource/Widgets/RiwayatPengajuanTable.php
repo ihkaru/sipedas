@@ -321,6 +321,15 @@ class RiwayatPengajuanTable extends BaseWidget
                 ,
                 TextColumn::make('last_status')
                     ->label("Status")
+                    ->color(function($state){
+                        if($state == 'Dikirim') return 'primary';
+                        if($state == 'Disetujui') return 'success';
+                        if($state == 'Dicetak') return 'success';
+                        if($state == 'Dicairkan') return 'success';
+                        if($state == 'Dibatalkan') return 'secondary';
+                        if($state == 'Ditolak') return 'danger';
+                        if($state == 'Perlu Revisi') return 'warning';
+                    })
                     ->badge()
                 ,
                 TextColumn::make('last_status_timestamp')

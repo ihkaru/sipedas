@@ -147,6 +147,16 @@ class PenugasanTable extends BaseWidget
                     ->label('Tanggal Perjadin'),
                 TextColumn::make('riwayatPengajuan.last_status')
                     ->label("Status")
+                    // ->color('danger')
+                    ->color(function($state){
+                        if($state == 'Dikirim') return 'primary';
+                        if($state == 'Disetujui') return 'success';
+                        if($state == 'Dicetak') return 'success';
+                        if($state == 'Dicairkan') return 'success';
+                        if($state == 'Dibatalkan') return 'secondary';
+                        if($state == 'Ditolak') return 'danger';
+                        if($state == 'Perlu Revisi') return 'warning';
+                    })
                     ->badge()
             ])
 
