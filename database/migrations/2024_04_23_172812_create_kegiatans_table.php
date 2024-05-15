@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('kegiatans', function (Blueprint $table) {
             $table->string("id")->primary();
             $table->string("nama");
+            $table->string("nomor_surat_referensi")->nullable();
             $table->timestamp("tgl_awal_perjadin")->nullable();
             $table->timestamp("tgl_akhir_perjadin")->nullable();
             $table->string("pj_kegiatan_id")->nullable();

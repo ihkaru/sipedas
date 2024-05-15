@@ -41,6 +41,24 @@ class Constants {
         "STATUS_PENGAJUAN_DICAIRKAN"=>"Dicairkan",
     ];
 
+    const LEVEL_PENUGASAN_TANPA_LOKASI = "LEVEL_PENUGASAN_TANPA_LOKASI";
+    const LEVEL_PENUGASAN_DESA_KELURAHAN = "LEVEL_PENUGASAN_DESA_KELURAHAN";
+    const LEVEL_PENUGASAN_KECAMATAN = "LEVEL_PENUGASAN_KECAMATAN";
+    const LEVEL_PENUGASAN_KABUPATEN_KOTA = "LEVEL_PENUGASAN_KABUPATEN_KOTA";
+    const LEVEL_PENUGASAN_NAMA_TEMPAT = "LEVEL_PENUGASAN_NAMA_TEMPAT";
+    const LEVEL_PENUGASAN_OPTIONS = [
+        "LEVEL_PENUGASAN_TANPA_LOKASI"=>"Tanpa Lokasi Tujuan",
+        "LEVEL_PENUGASAN_DESA_KELURAHAN"=>"Lokasi Tujuan Desa/Kelurahan",
+        "LEVEL_PENUGASAN_KECAMATAN"=>"Lokasi Tujuan Kecamatan",
+        "LEVEL_PENUGASAN_KABUPATEN_KOTA"=>"Lokasi Tujuan Kabupaten/Kota",
+        "LEVEL_PENUGASAN_NAMA_TEMPAT"=>"Lokasi Tujuan Nama Tempat"
+    ];
+
+    const JENIS_NOMOR_SURAT_TUGAS = "JENIS_NOMOR_SURAT_TUGAS";
+    const JENIS_NOMOR_SURAT_OPTIONS = [
+        "JENIS_NOMOR_SURAT_TUGAS" => "Nomor Surat Tugas"
+    ];
+
     public static function getJenisTransportasiOptions(){
         return self::JENIS_TRANSPORTASI_OPTIONS;
     }

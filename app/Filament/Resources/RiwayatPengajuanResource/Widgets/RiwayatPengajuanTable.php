@@ -45,6 +45,7 @@ class RiwayatPengajuanTable extends BaseWidget
                             ->options(
                                 Constants::JENIS_SURAT_TUGAS_OPTIONS
                             )
+                            ->live()
                             ->searchable()
                             ->required()
                             ,
@@ -69,18 +70,33 @@ class RiwayatPengajuanTable extends BaseWidget
                             })
                             ->required()
                             ->searchable(['nama']),
+                        Select::make("level_tujuan_penugasan")
+                            ->label("Level Tujuan Penugasan")
+                            ->options(Constants::LEVEL_PENUGASAN_OPTIONS)
+                            ->live()
+                            ->required()
+                        ,
+                        TextInput::make('nama_tempat_tujuan')
+                            ->label("Nama Lokasi Tujuan")
+                            ->hidden(function(Get $get){
+                                return $get('level_tujuan_penugasan') != Constants::LEVEL_PENUGASAN_NAMA_TEMPAT;
+                            })
+                            ->required(function(Get $get){
+                                return $get('level_tujuan_penugasan') == Constants::LEVEL_PENUGASAN_NAMA_TEMPAT;
+                            })
+                        ,
                         DatePicker::make('tgl_mulai_tugas')
                             ->hidden(function(Get $get){
                                 return $get('nips')==null;
                             })
                             ->afterStateUpdated(function (?string $state, ?string $old,Set $set) {
-                                $set('tgl_selesai_tugas',null);
+                                $set('tgl_akhir_tugas',null);
                             })
                             ->native(false)
                             ->live()
                             ->minDate(now()->subMonth(2))
                             ->maxDate(function(Get $get){
-                                if($get('tgl_selesai_tugas')) return $get('tgl_selesai_tugas');
+                                if($get('tgl_akhir_tugas')) return $get('tgl_akhir_tugas');
                                 return now()->addMonth(2);
                             })
                             ->disabledDates(function(Get $get){
@@ -88,7 +104,7 @@ class RiwayatPengajuanTable extends BaseWidget
                             })
                             ->required()
                             ->label("Tanggal Mulai Penugasan"),
-                        DatePicker::make('tgl_selesai_tugas')
+                        DatePicker::make('tgl_akhir_tugas')
                             ->hidden(function(Get $get){
                                 return $get('tgl_mulai_tugas')==null || $get('nips')==null;
                             })
@@ -106,55 +122,168 @@ class RiwayatPengajuanTable extends BaseWidget
                             })
                             ->required()
                             ->label("Tanggal Selesai Penugasan"),
-                        TextInput::make("tbh_awal_perjalan")
-                            ->default(0)
-                            ->required()
-                            ->placeholder("Masukan tanggal")
+                        TextInput::make("tbh_hari_jalan_awal")
+                            ->hidden(function(Get $get){
+                                return collect([
+                                    null,
+                                    Constants::NON_SPPD,
+                                ])->contains($get('jenis_surat_tugas'))
+                                || collect([
+                                    null,
+                                    Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
+                                ])->contains($get('level_tujuan_penugasan'));
+                            })
+                            ->required(function(Get $get){
+                                return !(collect([
+                                    null,
+                                    Constants::NON_SPPD,
+                                ])->contains($get('jenis_surat_tugas'))
+                                || collect([
+                                    null,
+                                    Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
+                                ])->contains($get('level_tujuan_penugasan')));
+                            })
+                            ->placeholder("Masukan jumlah hari")
                             ->numeric()
                             ->label("Tambah Hari Awal Perjalanan"),
-                        TextInput::make("tbh_akhir_perjalan")
-                            ->default(0)
-                            ->required()
-                            ->placeholder("Masukan tanggal")
+                        TextInput::make("tbh_hari_jalan_akhir")
+                            ->hidden(function(Get $get){
+                                return collect([
+                                    null,
+                                    Constants::NON_SPPD,
+                                ])->contains($get('jenis_surat_tugas'))
+                                || collect([
+                                    null,
+                                    Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
+                                ])->contains($get('level_tujuan_penugasan'));
+                            })
+                            ->required(function(Get $get){
+                                return !(collect([
+                                    null,
+                                    Constants::NON_SPPD,
+                                ])->contains($get('jenis_surat_tugas'))
+                                || collect([
+                                    null,
+                                    Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
+                                ])->contains($get('level_tujuan_penugasan')));
+                            })
+                            ->placeholder("Masukan jumlah hari")
                             ->numeric()
                             ->label("Tambah Hari Akhir Perjalanan"),
                         Select::make("prov_id")
-                            ->label("Provinsi")
-                            ->required()
+                            ->live()
+                            ->label("Provinsi Tujuan")
+                            ->hidden(function(Get $get){
+                                return collect([
+                                    null,
+                                    Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
+                                    Constants::LEVEL_PENUGASAN_NAMA_TEMPAT,
+                                ])->contains($get('level_tujuan_penugasan'));
+                            })
+                            ->required(function(Get $get){
+                                return !collect([
+                                    null,
+                                    Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
+                                    Constants::LEVEL_PENUGASAN_NAMA_TEMPAT,
+                                ])->contains($get('level_tujuan_penugasan'));
+                            })
                             ->options(function(){
                                 return MasterSls::pluck("provinsi","prov_id");
                             })
                             ->searchable(['provinsi']),
                         Select::make("kabkot_id")
-                            ->required()
-                            ->label("Kabupaten/Kota")
-                            ->options(function(){
-                                return MasterSls::pluck("kabkot","kabkot_id");
+                            ->live()
+                            ->required(function(Get $get){
+                                return !collect([
+                                    null,
+                                    Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
+                                    Constants::LEVEL_PENUGASAN_NAMA_TEMPAT,
+                                ])->contains($get('level_tujuan_penugasan'));
+                            })
+                            ->hidden(function(Get $get){
+                                return collect([
+                                    null,
+                                    Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
+                                    Constants::LEVEL_PENUGASAN_NAMA_TEMPAT,
+                                ])->contains($get('level_tujuan_penugasan'));
+                            })
+                            ->label("Kabupaten/Kota Tujuan")
+                            ->options(function(Get $get){
+                                return MasterSls::
+                                    where('prov_id',$get('prov_id'))
+                                    ->pluck("kabkot","kabkot_id");
                             })
                             ->searchable(['kabkot']),
                         Select::make("kec_id")
-                            ->required()
-                            ->label("Kecamatan")
-                            ->options(function(){
-                                return MasterSls::pluck("kecamatan","kec_id");
+                            ->live()
+                            ->required(function(Get $get){
+                                return !collect([
+                                    null,
+                                    Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
+                                    Constants::LEVEL_PENUGASAN_NAMA_TEMPAT,
+                                    Constants::LEVEL_PENUGASAN_KABUPATEN_KOTA,
+                                ])->contains($get('level_tujuan_penugasan'));
+                            })
+                            ->hidden(function(Get $get){
+                                return collect([
+                                    null,
+                                    Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
+                                    Constants::LEVEL_PENUGASAN_NAMA_TEMPAT,
+                                    Constants::LEVEL_PENUGASAN_KABUPATEN_KOTA,
+                                ])->contains($get('level_tujuan_penugasan'));
+                            })
+                            ->label("Kecamatan Tujuan")
+                            ->options(function(Get $get){
+                                return MasterSls::
+                                    where('kabkot_id',$get('kabkot_id'))
+                                    ->pluck("kecamatan","kec_id");
                             })
                             ->searchable(['kecamatan']),
                         Select::make("desa_kel_id")
-                            ->label("Desa/Kelurahan")
-                            ->options(function(){
-                                return MasterSls::pluck("desa_kel","desa_kel_id");
+                            ->label("Desa/Kelurahan Tujuan")
+                            ->required(function(Get $get){
+                                return collect([
+                                    Constants::LEVEL_PENUGASAN_DESA_KELURAHAN,
+                                ])->contains($get('level_tujuan_penugasan'));
+                            })
+                            ->hidden(function(Get $get){
+                                return !collect([
+                                    Constants::LEVEL_PENUGASAN_DESA_KELURAHAN,
+                                ])->contains($get('level_tujuan_penugasan'));
+                            })
+                            ->options(function(Get $get){
+                                return MasterSls::
+                                where('kec_id',$get('kec_id'))
+                                ->pluck("desa_kel","desa_kel_id");
                             })
                             ->searchable(['desa_kel']),
                         Select::make("transportasi")
+                            ->hidden(function(Get $get){
+                                return collect([
+                                    null,
+                                    Constants::NON_SPPD,
+                                ])->contains($get('jenis_surat_tugas'))
+                                || collect([
+                                    null,
+                                    Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
+                                ])->contains($get('level_tujuan_penugasan'));
+                            })
                             ->options(
                                 Constants::JENIS_TRANSPORTASI_OPTIONS
                             )
                             ->searchable()
-                            ->required()
+                            ->required(function(Get $get){
+                                return !(collect([
+                                    Constants::NON_SPPD,
+                                ])->contains($get('jenis_surat_tugas'))
+                                || collect([
+                                    Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
+                                ])->contains($get('level_tujuan_penugasan')));
+                            })
                             ,
                     ])
                     ->action(function (array $data):void {
-                        if(Penugasan::ajukan(PenugasanCreation::create($data))){
+                        if(Penugasan::ajukan($data)){
                             Notification::make()
                             ->title('Pengajuan berhasil dikirim')
                             ->success()

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\DTO\PenugasanCreation;
 use App\Supports\Constants;
+use App\Supports\TanggalMerah;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -22,6 +23,17 @@ class Penugasan extends Model
         return [
             'plh_id' => 'string',
         ];
+    }
+
+    protected function pemberiPerintah(): Attribute
+    {
+        return Attribute::make(
+            get: fn (mixed $value, array $attributes) => Plh::getApprover([$attributes['nip']],$attributes['tgl_pengajuan_tugas'],true),
+        );
+    }
+    protected function penandaTanganHariPertama(): Attribute
+    {
+        return $this->pemberiPerintah();
     }
 
     protected function jenisSurat(): Attribute
@@ -77,32 +89,35 @@ class Penugasan extends Model
     public function satuSurat(){
         return $this->hasMany(Penugasan::class,"surat_tugas_id","surat_tugas_id");
     }
-    public static function ajukan(PenugasanCreation $penugasanDTO){
+    public static function ajukan(array $data){
         $now = now()->toDateTimeString();
         $res = 0;
         $orderedUuid = (string) Str::orderedUuid();
-        $pegawaiPlh = Plh::getApprover($penugasanDTO->nips,Carbon::parse($penugasanDTO->tglMulaiTugas)->toDateTimeString(),true);
-        foreach($penugasanDTO->nips as $n){
+        $pegawaiPlh = Plh::getApprover($data["nips"],Carbon::parse($data["tgl_mulai_tugas"])->toDateTimeString(),true);
+        foreach($data["nips"] as $n){
             $pengajuan = self::create([
                 "nip"=>$n,
-                "kegiatan_id"=>$penugasanDTO->kegiatanId,
-                "tgl_mulai_tugas"=>Carbon::parse($penugasanDTO->tglMulaiTugas)->toDateTimeString(),
-                "tgl_akhir_tugas"=>Carbon::parse($penugasanDTO->tglAkhirTugas)->toDateTimeString(),
-                "tbh_hari_jalan_awal"=>$penugasanDTO->tbhHariJalanAwal,
-                "tbh_hari_jalan_akhir"=>$penugasanDTO->tbhHariJalanAkhir,
-                "prov_id"=>$penugasanDTO->provId,
-                "kabkot_id"=>$penugasanDTO->kabkotId,
-                "kecamatan_id"=>$penugasanDTO->kecamatanId,
-                "desa_kel_id"=>$penugasanDTO->desaKelId,
-                "surat_tugas_id" => $orderedUuid,
-                "jenis_surat_tugas" => $penugasanDTO->jenisSuratTugas,
+                "kegiatan_id"=>$data["kegiatan_id"],
+                "level_tujuan_penugasan"=>$data["level_tujuan_penugasan"],
+                "nama_tempat_tujuan"=>$data["nama_tempat_tujuan"] ?? null,
+                "tgl_mulai_tugas"=>Carbon::parse($data["tgl_mulai_tugas"])->toDateTimeString(),
+                "tgl_akhir_tugas"=>Carbon::parse($data["tgl_akhir_tugas"])->toDateTimeString(),
+                "tbh_hari_jalan_awal"=>$data["tbh_hari_jalan_awal"] ?? null,
+                "tbh_hari_jalan_akhir"=>$data["tbh_hari_jalan_akhir"] ?? null,
+                "tgl_pengajuan_tugas"=>$data["tgl_pengajuan_tugas"] ?? self::getNearestPemberiTugasDate(now() >= Carbon::parse($data["tgl_mulai_tugas"]) ?Carbon::parse($data["tgl_mulai_tugas"])->toDateString() : now() ,Carbon::parse($data["tgl_mulai_tugas"])->toDateString(),$data["nips"]),
+                "prov_id"=>$data["prov_id"] ?? null,
+                "kabkot_id"=>$data["kabkot_id"] ?? null,
+                "kecamatan_id"=>$data["kecamatan_id"] ?? null,
+                "desa_kel_id"=>$data["desa_kel_id"] ?? null,
+                "surat_tugas_id" => self::getSuratTugasId(),
+                "jenis_surat_tugas" => $data["jenis_surat_tugas"],
                 "plh_id"=>$pegawaiPlh->nip,
-                "transportasi"=>$penugasanDTO->transportasi,
+                "transportasi"=>$data["transportasi"] ?? null,
             ]);
             RiwayatPengajuan::kirim([$pengajuan->id]);
             if($pengajuan) $res+=1;
         }
-        if($res == count($penugasanDTO->nips)) return true;
+        if($res == count($data["nips"])) return true;
         return null;
 
     }
@@ -174,6 +189,7 @@ class Penugasan extends Model
         if($checkRole == false) return true;
         return
         $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DICETAK &&
+        $this->jenis_surat_tugas != Constants::NON_SPPD &&
         (
             auth()->user()->hasRole('operator_umum')
         )
@@ -183,6 +199,7 @@ class Penugasan extends Model
         if($checkRole == false) return true;
         return
         $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKUMPULKAN &&
+        $this->jenis_surat_tugas != Constants::NON_SPPD &&
         (
             auth()->user()->hasRole('operator_umum')
         )
@@ -264,6 +281,13 @@ class Penugasan extends Model
         // dd( collect(self::getDisabledDates($nips)));
         $res = collect(self::getDisabledDates($nips))->filter(fn($v)=>Carbon::parse($v)>$date)->sort()->flatten()->toArray();
         return $res ? $res[0] : null;
+    }
+
+    public static function getNearestPemberiTugasDate(string $tanggalPengajuan,string $tanggalMulaiTugas,array $nips){
+        $dateRange = self::generateDateRange(Carbon::parse($tanggalPengajuan),Carbon::parse($tanggalMulaiTugas));
+        $disabledDate = self::getDisabledDates($nips);
+        $tanggalMerah = TanggalMerah::getLiburDates();
+        return collect(array_diff($dateRange,$disabledDate,$tanggalMerah))->unique()->sort()->flatten()->toArray()[0] ?? $tanggalMulaiTugas;
     }
 
 }

@@ -31,7 +31,7 @@ class PenugasanCreation
         $penugasanDto->provId = $formData["prov_id"];
         $penugasanDto->kabkotId = $formData["kabkot_id"];
         $penugasanDto->kecamatanId = $formData["kec_id"];
-        $penugasanDto->desaKelId = $formData["desa_kel_id"];
+        $penugasanDto->desaKelId = $formData["desa_kel_id"] ?? null;
         $penugasanDto->transportasi = $formData["transportasi"];
         return $penugasanDto;
     }

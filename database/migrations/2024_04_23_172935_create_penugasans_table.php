@@ -21,9 +21,11 @@ return new class extends Migration
             $table->timestamp("tgl_pengajuan_tugas")->nullable();
             $table->timestamp("tgl_mulai_tugas")->nullable();
             $table->timestamp("tgl_akhir_tugas")->nullable();
-            $table->unsignedSmallInteger("tbh_hari_jalan_awal");
-            $table->unsignedSmallInteger("tbh_hari_jalan_akhir");
-            $table->string("prov_id");
+            $table->unsignedSmallInteger("tbh_hari_jalan_awal")->nullable();
+            $table->unsignedSmallInteger("tbh_hari_jalan_akhir")->nullable();
+            $table->string("level_tujuan_penugasan")->nullable();
+            $table->string("nama_tempat_tujuan")->nullable();
+            $table->string("prov_id")->nullable();
             // $table->foreign("prov_id")->references("prov_id")->on("master_sls");
             $table->string("kabkot_id")->nullable();
             // $table->foreign("kabkot_id")->references("kabkot_id")->on("master_sls");
@@ -34,7 +36,7 @@ return new class extends Migration
             $table->string("jenis_surat_tugas");
             $table->string("surat_tugas_id");
             $table->foreignIdFor(Pegawai::class,"plh_id");
-            $table->string("transportasi");
+            $table->string("transportasi")->nullable();
             $table->timestamps();
         });
     }
