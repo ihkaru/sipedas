@@ -231,12 +231,18 @@ class Penugasan extends Model
     }
     public function tolak(bool $checkRole = true){
         if(!$this->canTolak($checkRole)) return 0;
-        $this->nomorSurat->delete();
+        $nomorSurat = $this->nomorSurat;
+        $this->surat_tugas_id = null;
+        $this->save();
+        $nomorSurat->delete();
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DITOLAK,"tgl_ditolak",now());
     }
     public function batalkan(bool $checkRole = true){
         if(!$this->canBatalkan($checkRole)) return 0;
-        $this->nomorSurat->delete();
+        $nomorSurat = $this->nomorSurat;
+        $this->surat_tugas_id = null;
+        $this->save();
+        $nomorSurat->delete();
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DIBATALKAN,"tgl_dibatalkan",now());
     }
     public function cetak(bool $checkRole = true){
