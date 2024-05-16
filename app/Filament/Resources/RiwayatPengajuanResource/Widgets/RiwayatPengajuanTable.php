@@ -66,7 +66,7 @@ class RiwayatPengajuanTable extends BaseWidget
                             ->native(false)
                             ->required()
                             ->label("Tanggal Pengajuan")
-                            ->default(now())
+                            ->default(now()->startOfDay())
                             ->live()
                             ,
                         Select::make("level_tujuan_penugasan")

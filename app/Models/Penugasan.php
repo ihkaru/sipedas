@@ -81,9 +81,11 @@ class Penugasan extends Model
         );
     }
 
-
-    public function nomorSurat(){
+    public function suratTugas(){
         return $this->belongsTo(NomorSurat::class,"surat_tugas_id","id");
+    }
+    public function suratPerjadin(){
+        return $this->belongsTo(NomorSurat::class,"surat_perjadin_id","id");
     }
 
     public function pegawai(){
@@ -253,25 +255,45 @@ class Penugasan extends Model
         return $this->save();
 
     }
+    public function assignNomorSuratPerjadin(){
+        $p = Penugasan::where('grup_id',$this->grup_id)
+                        ->whereNotNull('surat_perjadin_id')
+                        ->first();
+        if($p){
+            $this->surat_perjadin_id = $p->surat_perjadin_id;
+            return $this->save();
+        }
+        $this->surat_perjadin_id = NomorSurat::generateNomorSuratPerjadin(Carbon::parse($this->tgl_pengajuan_tugas))->id;
+        return $this->save();
+
+    }
+
     public function setujui(bool $checkRole = true){
         if(!$this->canSetujui($checkRole)) return 0;
         if(!$this->surat_tugas_id) $this->assignNomorSuratTugas();
+        if($this->jenis_surat_tugas != Constants::NON_SPPD) $this->assignNomorSuratPerjadin();
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DISETUJUI,"tgl_diterima",now());
     }
     public function tolak(bool $checkRole = true){
         if(!$this->canTolak($checkRole)) return 0;
-        $nomorSurat = $this->nomorSurat;
+        $suratTugas = $this->suratTugas;
+        $suratPerjadin = $this->suratPerjadin;
         $this->surat_tugas_id = null;
+        $this->surat_perjadin_id = null;
         $this->save();
-        $nomorSurat->delete();
+        $suratTugas->delete();
+        $suratPerjadin->delete();
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DITOLAK,"tgl_ditolak",now());
     }
     public function batalkan(bool $checkRole = true){
         if(!$this->canBatalkan($checkRole)) return 0;
-        $nomorSurat = $this->nomorSurat;
+        $suratTugas = $this->suratTugas;
+        $suratPerjadin = $this->suratPerjadin;
         $this->surat_tugas_id = null;
+        $this->surat_perjadin_id = null;
         $this->save();
-        $nomorSurat->delete();
+        $suratTugas->delete();
+        $suratPerjadin->delete();
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DIBATALKAN,"tgl_dibatalkan",now());
     }
     public function cetak(bool $checkRole = true){

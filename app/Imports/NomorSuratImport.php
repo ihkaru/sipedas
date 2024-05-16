@@ -25,7 +25,7 @@ class NomorSuratImport implements ToModel,WithBatchInserts,WithChunkReading,With
             'sub_nomor'=>(int) trim($row[1]) == 0 ? null : (int) trim($row[1]),
             'tanggal_nomor'=>Carbon::parse(trim($row[2])),
             'tahun'=>trim($row[3]),
-            'jenis'=>Constants::JENIS_NOMOR_SURAT_TUGAS
+            'jenis'=>trim($row[4])
         ]);
     }
     public function chunkSize(): int
@@ -40,6 +40,6 @@ class NomorSuratImport implements ToModel,WithBatchInserts,WithChunkReading,With
         return 2;
     }
     public function uniqueBy(){
-        return ['nomor','sub_nomor','tahun'];
+        return ['nomor','sub_nomor','tahun','jenis'];
     }
 }

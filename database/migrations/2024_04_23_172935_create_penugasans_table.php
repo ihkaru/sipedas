@@ -36,7 +36,9 @@ return new class extends Migration
             $table->string("jenis_surat_tugas");
             $table->string('grup_id')->nullable();
             $table->unsignedBigInteger("surat_tugas_id")->nullable();
+            $table->unsignedBigInteger("surat_perjadin_id")->nullable();
             $table->foreign("surat_tugas_id")->references("id")->on("nomor_surats");
+            $table->foreign("surat_perjadin_id")->references("id")->on("nomor_surats");
             $table->foreignIdFor(Pegawai::class,"plh_id");
             $table->string("transportasi")->nullable();
             $table->timestamps();

@@ -284,7 +284,7 @@
       SURAT TUGAS
     </p>
     <p style="text-indent: 0pt; text-align: center">
-    Nomor: {{$penugasans->nomorSurat->nomor_surat_tugas}}
+    Nomor: {{$penugasans->suratTugas->nomor_surat_tugas}}
     </p>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <table
@@ -389,7 +389,8 @@
                 style="
                   padding-top: 7pt;
                   padding-left: 26pt;
-                  text-indent: -21pt;
+                  text-indent: -18pt;
+                  line-height: 12pt;
                   text-align: justify;
                 "
               >
@@ -402,14 +403,12 @@
                 style="
                   padding-top: 1pt;
                   padding-left: 26pt;
-                  padding-right: 2pt;
                   text-indent: -18pt;
-                  line-height: 113%;
+                  line-height: 12pt;
                   text-align: justify;
                 "
               >
-                Peraturan Pemerintah No.51 Tahun 1999 tentang Penyelenggaraan
-                Statistik;
+                Peraturan Pemerintah No.51 Tahun 1999 tentang Penyelenggaraan Statistik;
               </p>
             </li>
             <li data-list-text="3.">
@@ -417,9 +416,8 @@
                 class="s2"
                 style="
                   padding-left: 26pt;
-                  padding-right: 2pt;
                   text-indent: -18pt;
-                  line-height: 114%;
+                  line-height: 12pt;
                   text-align: justify;
                 "
               >
@@ -435,9 +433,8 @@
                 class="s2"
                 style="
                   padding-left: 26pt;
-                  padding-right: 2pt;
                   text-indent: -18pt;
-                  line-height: 115%;
+                  line-height: 12pt;
                   text-align: justify;
                 "
               >
@@ -790,7 +787,9 @@
     <p style="padding-left: 283pt; text-indent: 0pt; text-align: center">
       NIP. <span style="color: #1f1f1f">{{$penugasans->plh->nip}}</span>
     </p>
+    @if ($penugasans->jenis_surat_tugas != $cons::NON_SPPD)
     <div class="pagebreak"> </div>
+
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <div style="display: flex;">
         <div style="max-width: 300px; display: flex">
@@ -827,7 +826,7 @@
                 text-align: left;
               "
             >
-              Lembar ke :1 Kode Nomor : -
+              Lembar ke :1 <br/>Kode Nomor : -
             </p>
             <p
               style="
@@ -837,7 +836,7 @@
                 text-align: left;
               "
             >
-              Nomor : 163/SPD/05/2024
+              Nomor : {{$penugasans->suratPerjadin->nomor_surat_perjadin}}
             </p>
         </div>
     </div>
@@ -1002,7 +1001,6 @@
             style="
               padding-top: 1pt;
               padding-left: 7pt;
-              padding-right: 124pt;
               text-indent: 0pt;
               line-height: 115%;
               text-align: left;
@@ -2489,5 +2487,6 @@
         </td>
       </tr>
     </table>
+    @endif
   </body>
 </html>
