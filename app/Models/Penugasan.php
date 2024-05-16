@@ -113,10 +113,14 @@ class Penugasan extends Model
     public function satuSurat(){
         return $this->hasMany(Penugasan::class,"surat_tugas_id","surat_tugas_id");
     }
+    public function satuGrupPengajuan(){
+        return $this->hasMany(Penugasan::class,"grup_id","grup_id");
+    }
     public static function ajukan(array $data){
         $now = now()->toDateTimeString();
         $res = 0;
         $pegawaiPlh = Plh::getApprover($data["nips"],Carbon::parse($data["tgl_mulai_tugas"])->toDateTimeString(),true);
+        $grupId = self::getGrupId();
         foreach($data["nips"] as $n){
             $pengajuan = self::create([
                 "nip"=>$n,
@@ -132,6 +136,7 @@ class Penugasan extends Model
                 "kabkot_id"=>$data["kabkot_id"] ?? null,
                 "kecamatan_id"=>$data["kecamatan_id"] ?? null,
                 "desa_kel_id"=>$data["desa_kel_id"] ?? null,
+                "grup_id"=>$grupId,
                 "jenis_surat_tugas" => $data["jenis_surat_tugas"],
                 "plh_id"=>$pegawaiPlh->nip,
                 "transportasi"=>$data["transportasi"] ?? null,
@@ -236,9 +241,20 @@ class Penugasan extends Model
         );
     }
 
+    public function assignNomorSuratTugas(){
+        $p = Penugasan::where('grup_id',$this->grup_id)
+                        ->whereNotNull('surat_tugas_id')
+                        ->first();
+        if($p){
+            $this->surat_tugas_id = $p->surat_tugas_id;
+            return $this->save();
+        }
+        $this->surat_tugas_id = NomorSurat::generateNomorSuratTugas(Carbon::parse($this->tgl_pengajuan_tugas))->id;
+        ;
+    }
     public function setujui(bool $checkRole = true){
         if(!$this->canSetujui($checkRole)) return 0;
-        if(!$this->surat_tugas_id) $this->surat_tugas_id = NomorSurat::generateNomorSuratTugas(Carbon::parse($this->tgl_pengajuan_tugas))->id;
+        if(!$this->surat_tugas_id) $this->assignNomorSuratTugas();
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DISETUJUI,"tgl_diterima",now());
     }
     public function tolak(bool $checkRole = true){
@@ -270,8 +286,7 @@ class Penugasan extends Model
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DICAIRKAN,"tgl_pencairan",now());
     }
 
-    public static function getSuratTugasId(): string {
-        // perlu implementasi nomor surat tugas
+    public static function getGrupId(): string {
         $id = Str::orderedUuid();
         return $id;
     }

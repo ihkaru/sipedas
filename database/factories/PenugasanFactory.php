@@ -35,6 +35,7 @@ class PenugasanFactory extends Factory
         $desKelIds = static::$desKelIds ??= MasterSls::pluck('desa_kel_id')->unique()->flatten()->toArray();
         $date = now()->addDays(rand(-20,20));
         $tanggalPengajuan = $date->addDays(rand(-14,0));
+        $grupId = Penugasan::getGrupId();
         $res = [
             "nip"=>$pegawaiIds[rand(0,count($pegawaiIds)-1)],
             "kegiatan_id"=>$kegiatanIds[rand(0,count($kegiatanIds)-1)],
@@ -47,6 +48,7 @@ class PenugasanFactory extends Factory
             "tbh_hari_jalan_akhir"=>rand(0,1),
             "prov_id"=>"61",
             "kabkot_id"=>"6104",
+            "grup_id"=>$grupId,
             "desa_kel_id"=>$desKelIds[rand(0,count($desKelIds)-1)],
             "jenis_surat_tugas"=>Constants::flatJenisSuratTugasOptions()[rand(1,count(Constants::flatJenisSuratTugasOptions())-1)],
             "surat_tugas_id"=>NomorSurat::generateNomorSuratTugas($tanggalPengajuan)->id,

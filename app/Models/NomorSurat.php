@@ -19,7 +19,8 @@ class NomorSurat extends Model
 
     public static function generateNomorSuratTugas(Carbon $tanggal_pengajuan){
         $nomorSuratTerakhir = self::
-            orderBy("tanggal_nomor","desc")
+            whereRaw("YEAR(tgl_pengajuan_tugas)",$tanggal_pengajuan->year)
+            ->orderBy("tanggal_nomor","desc")
             ->orderBy('nomor','desc')
             ->first();
         if(!$nomorSuratTerakhir){
@@ -43,6 +44,7 @@ class NomorSurat extends Model
             if($tanggal_nomor_terakhir->startOfDay()>$tanggal_pengajuan->startOfDay()){
                 // dump($tanggal_nomor_terakhir,$tanggal_pengajuan);
                 $nomor_terakhir_sesuai_tanggal_pengajuan = self::whereDate("tanggal_nomor","<=",$tanggal_pengajuan->toDateString())
+                    ->whereRaw("YEAR(tgl_pengajuan_tugas)",$tanggal_pengajuan->year)
                     ->orderBy('tanggal_nomor','desc')
                     ->orderBy('nomor','asc')
                     ->orderBy('sub_nomor','desc')
@@ -57,6 +59,7 @@ class NomorSurat extends Model
                     // dump("lok5");
                     $nomor_terakhir_sesuai_tanggal_pengajuan = self::
                     where('nomor',$nomor_terakhir_sesuai_tanggal_pengajuan->nomor)
+                        ->whereRaw("YEAR(tgl_pengajuan_tugas)",$tanggal_pengajuan->year)
                         ->orderBy('nomor','desc')
                         ->orderBy('sub_nomor','desc')
                         ->first();
