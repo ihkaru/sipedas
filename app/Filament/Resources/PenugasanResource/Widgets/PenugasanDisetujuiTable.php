@@ -69,6 +69,7 @@ class PenugasanDisetujuiTable extends BaseWidget
                     ->color('success')
                     ->icon('fluentui-arrow-download-48')
                     ->action(function (Penugasan $record) {
+                        // dd($record);
                         return redirect()->to(route("cetak",['id'=>$record->id]));
                     }),
                 Action::make("lihat")

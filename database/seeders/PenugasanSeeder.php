@@ -19,12 +19,12 @@ class PenugasanSeeder extends Seeder
      */
     public function run(): void
     {
-        $pegawais = Pegawai::limit(5)->get();
-        $kegiatan = Kegiatan::first();
-        Penugasan::factory(5)->dikirim()->create();
-        Penugasan::factory(6)->disetujui()->create();
-        Penugasan::factory(3)->dibatalkan()->create();
-        Penugasan::factory(3)->ditolak()->create();
-        Penugasan::factory(10)->dicairkan()->create();
+        // $pegawais = Pegawai::limit(5)->get();
+        // $kegiatan = Kegiatan::first();
+        // Penugasan::factory(5)->dikirim()->create();
+        // Penugasan::factory(6)->disetujui()->create();
+        // Penugasan::factory(3)->dibatalkan()->create();
+        // Penugasan::factory(3)->ditolak()->create();
+        // Penugasan::factory(10)->dicairkan()->create();
     }
 }

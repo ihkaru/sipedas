@@ -250,7 +250,8 @@ class Penugasan extends Model
             return $this->save();
         }
         $this->surat_tugas_id = NomorSurat::generateNomorSuratTugas(Carbon::parse($this->tgl_pengajuan_tugas))->id;
-        ;
+        return $this->save();
+
     }
     public function setujui(bool $checkRole = true){
         if(!$this->canSetujui($checkRole)) return 0;

@@ -12,6 +12,7 @@ class PdfController extends Controller
     public function cetak($id){
         // if(auth()->user()) abort(403);
         $penugasans = Penugasan::with(['satuSurat','nomorSurat','kegiatan','pegawai','plh'])->find($id);
+        // dd($penugasans);
         $ppk = Pegawai::find(Pengaturan::key("NIP_PPK_SATER")->nilai);
         return view('surat_tugas.sendiri.pdf',['penugasans'=>$penugasans,"ppk"=>$ppk])->toHtml();
     }

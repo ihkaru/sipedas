@@ -19,7 +19,7 @@ class NomorSurat extends Model
 
     public static function generateNomorSuratTugas(Carbon $tanggal_pengajuan){
         $nomorSuratTerakhir = self::
-            whereRaw("YEAR(tgl_pengajuan_tugas)",$tanggal_pengajuan->year)
+            where("tahun",$tanggal_pengajuan->year)
             ->orderBy("tanggal_nomor","desc")
             ->orderBy('nomor','desc')
             ->first();
@@ -28,7 +28,8 @@ class NomorSurat extends Model
             $nomorSuratTerakhir = self::create([
                 "nomor"=>1,
                 "tanggal_nomor"=>$tanggal_pengajuan,
-                "jenis"=>Constants::JENIS_NOMOR_SURAT_TUGAS
+                "jenis"=>Constants::JENIS_NOMOR_SURAT_TUGAS,
+                "tahun"=>$tanggal_pengajuan->year
             ]);
             $nomorSuratBaru = $nomorSuratTerakhir;
         }else{
@@ -38,13 +39,14 @@ class NomorSurat extends Model
                 $nomorSuratBaru = self::create([
                     'nomor'=>$nomorSuratTerakhir->nomor + 1,
                     'tanggal_nomor'=>$tanggal_pengajuan,
-                    'jenis'=>Constants::JENIS_NOMOR_SURAT_TUGAS
+                    'jenis'=>Constants::JENIS_NOMOR_SURAT_TUGAS,
+                    "tahun"=>$tanggal_pengajuan->year
                 ]);
             }
             if($tanggal_nomor_terakhir->startOfDay()>$tanggal_pengajuan->startOfDay()){
                 // dump($tanggal_nomor_terakhir,$tanggal_pengajuan);
                 $nomor_terakhir_sesuai_tanggal_pengajuan = self::whereDate("tanggal_nomor","<=",$tanggal_pengajuan->toDateString())
-                    ->whereRaw("YEAR(tgl_pengajuan_tugas)",$tanggal_pengajuan->year)
+                    ->where("tahun",$tanggal_pengajuan->year)
                     ->orderBy('tanggal_nomor','desc')
                     ->orderBy('nomor','asc')
                     ->orderBy('sub_nomor','desc')
@@ -59,7 +61,7 @@ class NomorSurat extends Model
                     // dump("lok5");
                     $nomor_terakhir_sesuai_tanggal_pengajuan = self::
                     where('nomor',$nomor_terakhir_sesuai_tanggal_pengajuan->nomor)
-                        ->whereRaw("YEAR(tgl_pengajuan_tugas)",$tanggal_pengajuan->year)
+                        ->where("tahun",$tanggal_pengajuan->year)
                         ->orderBy('nomor','desc')
                         ->orderBy('sub_nomor','desc')
                         ->first();
@@ -71,6 +73,7 @@ class NomorSurat extends Model
                     'nomor'=>$nomor_terakhir_sesuai_tanggal_pengajuan->nomor,
                     'sub_nomor'=>$nomor_terakhir_sesuai_tanggal_pengajuan->sub_nomor ? $nomor_terakhir_sesuai_tanggal_pengajuan->sub_nomor + 1 : 1,
                     'tanggal_nomor'=>$tanggal_pengajuan,
+                    "tahun"=>$tanggal_pengajuan->year,
                     'jenis'=>Constants::JENIS_NOMOR_SURAT_TUGAS,
                 ]);
             }

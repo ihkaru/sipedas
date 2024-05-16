@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedMediumInteger("nomor");
             $table->unsignedMediumInteger("sub_nomor")->nullable();
             $table->timestamp("tanggal_nomor");
+            $table->unsignedMediumInteger("tahun");
             $table->string("jenis");
             $table->timestamps();
         });

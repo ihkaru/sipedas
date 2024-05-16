@@ -31,6 +31,11 @@ class KegiatanResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\TextInput::make('id')
+                    ->label('ID Kegiatan')
+                    ->unique()
+                    ->required()
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('nama')
                     ->required()
                     ->maxLength(255),

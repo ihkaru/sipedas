@@ -217,7 +217,7 @@ class RiwayatPengajuanTable extends BaseWidget
                                     ->pluck("kabkot","kabkot_id");
                             })
                             ->searchable(['kabkot']),
-                        Select::make("kec_id")
+                        Select::make("kecamatan_id")
                             ->live()
                             ->required(function(Get $get){
                                 return !collect([
