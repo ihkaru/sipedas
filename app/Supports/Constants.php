@@ -93,6 +93,8 @@ class Constants {
         'e' => 'Utama',
     ];
 
+    const COLUMN_ALOKASI_HONOR_IMPORT = ['id_sobat','id_kegiatan','nama_petugas','jabatan','nik','jenis_honor','id_honor','satuan_honor','honor_per_satuan_honor','target_per_satuan_honor','target_honor','honor_bersih','tanggal_akhir_kegiatan','tahun_akhir_kegiatan','bulan_akhir_kegiatan','id_batasan_honor','id_alokasi_waktu_honor','id_alokasi_waktu_batasan_honor','sudah_dibayarkan','sisa_hari_hingga_batas_pencairan','tanggal_pencairan',];
+
     public static function getJenisTransportasiOptions(){
         return self::JENIS_TRANSPORTASI_OPTIONS;
     }
