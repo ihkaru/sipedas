@@ -58,9 +58,13 @@ class Constants {
 
     const JENIS_NOMOR_SURAT_TUGAS = "JENIS_NOMOR_SURAT_TUGAS";
     const JENIS_NOMOR_SURAT_PERJALAN_DINAS = "JENIS_NOMOR_SURAT_PERJALAN_DINAS";
+    const JENIS_NOMOR_SURAT_PERJANJIAN_KERJA = "JENIS_NOMOR_SURAT_PERJANJIAN_KERJA";
     const JENIS_NOMOR_SURAT_OPTIONS = [
         "JENIS_NOMOR_SURAT_TUGAS" => "Nomor Surat Tugas",
         "JENIS_NOMOR_SURAT_TUGAS" => "Nomor Surat Perjalanan Dinas",
+    ];
+    const JENIS_NOMOR_SURAT_PERJANJIAN_KERJA_OPTIONS = [
+        "JENIS_NOMOR_SURAT_PERJANJIAN_KERJA"=>"Nomor Surat Perjanjian Kerja"
     ];
 
     const PANGKAT_I = "I";
@@ -93,8 +97,8 @@ class Constants {
         'e' => 'Utama',
     ];
 
-    const COLUMN_ALOKASI_HONOR_IMPORT = ['id_sobat','id_kegiatan','nama_petugas','jabatan','nik','jenis_honor','id_honor','satuan_honor','honor_per_satuan_honor','target_per_satuan_honor','target_honor','honor_bersih','tanggal_akhir_kegiatan','tahun_akhir_kegiatan','bulan_akhir_kegiatan','id_batasan_honor','id_alokasi_waktu_honor','id_alokasi_waktu_batasan_honor','sudah_dibayarkan','sisa_hari_hingga_batas_pencairan','tanggal_pencairan',];
-
+    const COLUMN_ALOKASI_HONOR_IMPORT = ['id_sobat','id_kegiatan','nama_petugas','jabatan','nik','jenis_honor','id_honor','satuan_honor','honor_per_satuan_honor','target_per_satuan_honor','target_honor','honor_bersih','tanggal_akhir_kegiatan','tahun_akhir_kegiatan','bulan_akhir_kegiatan','id_batasan_honor','id_alokasi_waktu_honor','id_alokasi_waktu_batasan_honor','sudah_dibayarkan','sisa_hari_hingga_batas_pencairan','tanggal_pencairan','nama_kegiatan','kecamatan_domisili','desa_domisili','tanggal_penanda_tanganan_spk_oleh_petugas','tanggal_mulai_perjanjian','tanggal_akhir_perjanjian','tanggal_terima_hasil_pekerjaan_paling_lambat','tambahan_waktu_tanggal_terima_hasil_pekerjaan_paling_lambat',];
+    const COLUMN_TIMESTAMP_ALOKASI_HONOR_IMPORT = ['tanggal_akhir_kegiatan','tanggal_penandan_tanganan_spk_oleh_petugas','tanggal_mulai_perjanjian','tanggal_akhir_perjanjian','tanggal_terima_hasil_paling_lambat','tambahan_waktu_tanggal_terima_hasil_pekerjaan_paling_lambat'];
     public static function getJenisTransportasiOptions(){
         return self::JENIS_TRANSPORTASI_OPTIONS;
     }

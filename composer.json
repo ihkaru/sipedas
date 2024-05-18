@@ -19,7 +19,8 @@
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.9",
         "maatwebsite/excel": "^3.1",
-        "malzariey/filament-daterangepicker-filter": "^2.6"
+        "malzariey/filament-daterangepicker-filter": "^2.6",
+        "riskihajar/terbilang": "^2.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

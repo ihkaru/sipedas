@@ -20,6 +20,7 @@ class NomorSuratImport implements ToModel,WithBatchInserts,WithChunkReading,With
     */
     public function model(array $row)
     {
+
         return new NomorSurat([
             'nomor'=>trim($row[0]),
             'sub_nomor'=>(int) trim($row[1]) == 0 ? null : (int) trim($row[1]),
