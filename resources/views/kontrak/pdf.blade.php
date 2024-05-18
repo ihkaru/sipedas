@@ -410,6 +410,7 @@
         {{$c::parse($alokasiHonorBulanMitra->first()->tanggal_akhir_perjanjian)->monthName}}
         {{$c::parse($alokasiHonorBulanMitra->first()->tanggal_akhir_perjanjian)->year}}.
         </p>
+        <br/>
         <h1 style="text-indent: 0pt; text-align: center">
         Pasal 4
         </h1>
@@ -836,7 +837,7 @@
         style="border-collapse: collapse; margin-left: 6.17pt"
         cellspacing="0"
         >
-        <tr style="height: 20pt">
+        <tr style="height: 20pt;">
             <td
             style="
                 border-top-style: solid;
@@ -851,7 +852,7 @@
             >
             <p
                 class="s5"
-                style="padding-left: 5pt; text-indent: 0pt;"
+                style="padding: 5pt; text-indent: 0pt;"
             >
                 No
             </p>
@@ -859,6 +860,7 @@
             <td
             style="
                 width: 114pt;
+                padding: 5pt;
                 border-top-style: solid;
                 border-top-width: 1pt;
                 border-left-style: solid;
@@ -879,6 +881,7 @@
             <td
             style="
                 width: 113pt;
+                padding: 5pt;
                 border-top-style: solid;
                 border-top-width: 1pt;
                 border-left-style: solid;
@@ -899,6 +902,7 @@
             <td
             style="
                 width: 113pt;
+                padding: 5pt;
                 border-top-style: solid;
                 border-top-width: 1pt;
                 border-left-style: solid;
@@ -961,7 +965,7 @@
                     border-right-width: 1pt;
                 "
                 >
-                <p style="padding: 10pt; text-align: center">{{$alokasiHonorBulanMitraKegiatan->first()->nama_kegiatan}}</p>
+                <p style="padding: 10pt; text-align: left">{{$alokasiHonorBulanMitraKegiatan->first()->nama_kegiatan}}</p>
                 </td>
                 <td
                 style="
@@ -998,38 +1002,6 @@
         </table>
         <div class="pagebreak"></div>
     @endforeach
-    <div>
-        @foreach ($idSobat as $s)
-                @php
-                    $alokasiHonorBulanMitra = $alokasiHonorBulan->where('id_sobat',$s);
-                    $idKegiatan = $alokasiHonorBulanMitra->pluck('id_kegiatan')->unique()->flatten();
-                @endphp
-            <p>
-                Nama: {{$alokasiHonorBulanMitra->first()->nama_petugas}} <br>
-                NIK: {{$alokasiHonorBulanMitra->first()->nik}} <br>
-                ID SOBAT: {{$alokasiHonorBulanMitra->first()->id_sobat}} <br>
-                Nomor Surat: {{$alokasiHonorBulanMitra->first()->suratPerjanjianKerja->nomor_surat_perjanjian_kerja}}
-                <br><br><br>
-
-                @foreach ($idKegiatan as $k)
-                    @php
-                        $alokasiHonorBulanMitraKegiatan = $alokasiHonorBulanMitra->where('id_kegiatan',$k);
-                    @endphp
-                    <p>
-                        Nama Kegiatan: {{$alokasiHonorBulanMitraKegiatan->first()->nama_kegiatan}} <br>
-                        Jabatan: {{$alokasiHonorBulanMitraKegiatan->first()->jabatan}} <br>
-                        Satuan Honor: {{$alokasiHonorBulanMitraKegiatan->first()->satuan_honor}} <br>
-                        Target per Satuan Honor: {{$alokasiHonorBulanMitraKegiatan->first()->target_per_satuan_honor}} <br>
-                        Honor per Satuan Honor: Rp.{{$number::format($alokasiHonorBulanMitraKegiatan->first()->honor_per_satuan_honor)}} <br>
-                        Target Honor: Rp.{{$number::format($alokasiHonorBulanMitraKegiatan->first()->target_honor)}} <br>
-                        <br>
-                        <br>
-                    </p>
-                @endforeach
-            </p>
-            <br><br><br><br>
-            <div class="pagebreak"> </div>
-        @endforeach
     </div>
   </body>
 </html>
