@@ -59,6 +59,15 @@ class Penugasan extends Model
             },
         );
     }
+    protected function jenisPerjadin(): Attribute
+    {
+        return Attribute::make(
+            get: function (mixed $value, array $attributes){
+                if(!$attributes['jenis_surat_tugas']) return null;
+                return Constants::JENIS_SURAT_TUGAS_OPTIONS[$attributes['jenis_surat_tugas']];
+            },
+        );
+    }
     protected function tujuanPenugasan(): Attribute
     {
         $masterSls = self::$masterSls ??= MasterSls::get();

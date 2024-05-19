@@ -17,7 +17,12 @@ class PdfController extends Controller
         $penugasans = Penugasan::with(['satuSurat','suratTugas','suratPerjadin','kegiatan','pegawai','plh'])->find($id);
         // dd($penugasans);
         $ppk = Pegawai::find(Pengaturan::key("NIP_PPK_SATER")->nilai);
-        return view('surat_tugas.sendiri.pdf',['penugasans'=>$penugasans,"ppk"=>$ppk])->toHtml();
+        return view('surat_tugas.sendiri.pdf',[
+            'penugasans'=>$penugasans,
+            "ppk"=>$ppk,
+            'namaSatker'=>Pengaturan::key('NAMA_KAKO')->nilai,
+            'namaSatkerTanpaLevelAdministrasi'=>Pengaturan::namaSatker(false),
+        ])->toHtml();
     }
     public function cetakKontrak(){
         $alokasiHonor = AlokasiHonor::with('suratPerjanjianKerja')->get();
@@ -32,7 +37,8 @@ class PdfController extends Controller
             'tahun'=>$tanggalPengajuan->year,
             'bulan'=>$tanggalPengajuan->month,
             'ppk'=>$ppk,
-            'c'
+
+
         ]);
     }
 

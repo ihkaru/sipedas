@@ -274,7 +274,7 @@
         text-align: center;
       "
     >
-      BADAN PUSAT STATISTIK KABUPATEN MEMPAWAH
+      BADAN PUSAT STATISTIK {{$namaSatker}}
     </h1>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <p
@@ -331,7 +331,7 @@
                   text-align: justify;
                 "
               >
-                bahwa sehubungan dengan {{$penugasans->kegiatan->nama}} BPS Kabupaten Mempawah tahun {{{$c::parse($penugasans->kegiatan->tgl_akhir_perjadin)->year}}}, maka dipandang perlu
+              &nbsp; bahwa sehubungan dengan {{$penugasans->kegiatan->nama}} BPS {{ucwords(strtolower($namaSatker))}} tahun {{{$c::parse($penugasans->kegiatan->tgl_akhir_perjadin)->year}}}, maka dipandang perlu
                 untuk melakukan kegiatan tersebut;
               </p>
             </li>
@@ -340,14 +340,13 @@
                 class="s2"
                 style="
                   padding-left: 28pt;
-                  padding-right: 2pt;
                   text-indent: -21pt;
                   line-height: 114%;
                   text-align: justify;
                 "
               >
-                bahwa untuk pelaksanaannya perlu dikeluarkan Surat Tugas Kepala
-                BPS Kabupaten Mempawah Provinsi Kalimantan Barat untuk Melakukan
+              &nbsp;bahwa untuk pelaksanaannya perlu dikeluarkan Surat Tugas Kepala
+                BPS {{ucwords(strtolower($namaSatker))}} Provinsi Kalimantan Barat untuk Melakukan
                 Kegiatan sebagaimana dimaksud pada poin a di atas.
               </p>
             </li>
@@ -394,7 +393,7 @@
                   text-align: justify;
                 "
               >
-                Undang-Undang No.16 Tahun 1997 tentang Statistik;
+              &ensp;Undang-Undang No.16 Tahun 1997 tentang Statistik;
               </p>
             </li>
             <li data-list-text="2.">
@@ -408,7 +407,7 @@
                   text-align: justify;
                 "
               >
-                Peraturan Pemerintah No.51 Tahun 1999 tentang Penyelenggaraan Statistik;
+                &ensp;Peraturan Pemerintah No.51 Tahun 1999 tentang Penyelenggaraan Statistik;
               </p>
             </li>
             <li data-list-text="3.">
@@ -452,7 +451,7 @@
                   text-align: justify;
                 "
               >
-                Peraturan Kepala Badan Pusat Statistik Nomor 8 Tahun 2020
+              &ensp;Peraturan Kepala Badan Pusat Statistik Nomor 8 Tahun 2020
               </p>
             </li>
           </ol>
@@ -692,7 +691,7 @@
               text-align: left;
             "
           >
-            {{$penugasans->pegawai->jabatan}} BPS Kabupaten Mempawah
+            {{$penugasans->pegawai->jabatan}} BPS {{ucwords(strtolower($namaSatker))}}
           </p>
         </td>
       </tr>
@@ -763,14 +762,14 @@
     </table>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <p style="padding-left: 283pt; text-indent: 0pt; text-align: center">
-      Mempawah, {{$c::parse($penugasans->tgl_pengajuan_tugas)->translatedFormat('d F Y')}}
+      {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}}, {{$c::parse($penugasans->tgl_pengajuan_tugas)->translatedFormat('d F Y')}}
     </p>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <p style="padding-left: 283pt; text-indent: 0pt; text-align: center">
         @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasans->plh->nip)
             An.
         @endif
-      Kepala Badan Pusat Statistik <br/> Kabupaten Mempawah
+      Kepala Badan Pusat Statistik <br/> {{ucwords(strtolower($namaSatker))}}
     </p>
     <p style="text-indent: 0pt; text-align: left"><br /><br /></p>
     <p
@@ -812,7 +811,7 @@
                 padding-left: 10px;
               "
             >
-              BADAN PUSAT STATISTIK KABUPATEN MEMPAWAH
+              BADAN PUSAT STATISTIK {{$namaSatker}}
             </div>
         </div>
         <div style="width: 200px;"></div>
@@ -1129,7 +1128,7 @@
               text-align: left;
             "
           >
-          {{$penugasans->pegawai->jabatan}} BPS Kabupaten Mempawah <br/>
+          {{$penugasans->pegawai->jabatan}} BPS {{ucwords(strtolower($namaSatker))}} <br/>
           C
           </p>
         </td>
@@ -1408,7 +1407,7 @@
               text-align: left;
             "
           >
-            Mempawah
+            {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}}
           </p>
           <p
             class="s2"
@@ -1880,7 +1879,7 @@
                   text-align: left;
                 "
               >
-                BPS Kabupaten Mempawah
+                BPS {{ucwords(strtolower($namaSatker))}}
               </p>
             </li>
             <li data-list-text="b.">
@@ -1978,7 +1977,7 @@
         text-align: left;
       "
     >
-      Dikeluarkan di : Mempawah <br /> Pada tanggal : {{$c::parse($penugasans->tgl_pengajuan_tugas)->translatedFormat('d F Y')}}
+      Dikeluarkan di : {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}} <br /> Pada tanggal : {{$c::parse($penugasans->tgl_pengajuan_tugas)->translatedFormat('d F Y')}}
 
     </p>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
@@ -2054,7 +2053,7 @@
               text-align: left;
             "
           >
-            Berangkat dari : Mempawah tempat kedudukan
+            Berangkat dari : {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}} tempat kedudukan
           </p>
           <p
             class="s2"
@@ -2109,7 +2108,7 @@
           @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasans->plh->nip)
           An.
           @endif
-          Kepala Badan Pusat Statistik <br/> Kabupaten Mempawah
+          Kepala Badan Pusat Statistik <br/> {{ucwords(strtolower($namaSatker))}}
           </p>
           <p style="text-indent: 0pt; text-align: left"><br /><br /></p>
           <p
@@ -2222,7 +2221,7 @@
               text-align: left;
             "
           >
-            Ke &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;: Mempawah <br/>
+            Ke &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;: {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}} <br/>
             Pada tanggal &emsp;:
             {{$c::parse($penugasans->tgl_akhir_tugas)->translatedFormat('d F Y')}}
           </p>
@@ -2321,7 +2320,7 @@
               text-align: left;
             "
           >
-            IV. Tiba di : Mempawah (tempat kedudukan)
+            IV. Tiba di : {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}} (tempat kedudukan)
           </p>
           <p
             class="s2"
@@ -2483,6 +2482,153 @@
             serta bendahara pengeluaran bertanggung jawab berdasarkan
             peraturan-peraturan keuangan Negara apabila Negara menderita rugi
             akibat kesalahan, kelalaian, dan kealpaannya.
+          </p>
+        </td>
+      </tr>
+    </table>
+    @endif
+    @if ($penugasans->transportasi != $cons::TRANSPORTASI_KENDARAAN_DINAS)
+        <div class="pagebreak"></div>
+        <h2
+        style="
+            padding-top: 3pt;
+            text-indent: 0pt;
+            text-align: center;
+            /* font-weight:bold; */
+        "
+        >
+        SURAT PERNYATAAN
+        </h2>
+    <h2
+      style="
+        padding-top: 9pt;
+        text-indent: 0pt;
+        text-align: center;
+      "
+    >
+      TIDAK MENGGUNAKAN KENDARAAN DINAS
+    </h2>
+    <p style="text-indent: 0pt; text-align: left"><br /></p>
+    <p style="padding-left: 6pt; text-indent: 0pt; text-align: justify">
+      Yang bertanda tangan di bawah ini:
+    </p>
+    <p style="text-indent: 0pt; text-align: left"><br /></p>
+    <p style="padding-left: 42pt; text-indent: 0pt; text-align: left">
+      Nama &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;: {{$penugasans->pegawai->nama}}
+    </p>
+    <p style="text-indent: 0pt; text-align: left"><br /></p>
+    <p style="padding-left: 42pt; text-indent: 0pt; text-align: left">
+      NIP &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&nbsp;&ensp;&ensp;&ensp;&nbsp;: {{$penugasans->pegawai->nip}}
+    </p>
+    <p style="text-indent: 0pt; text-align: left"><br /></p>
+    <p
+      style="
+        padding-left: 42pt;
+        text-indent: 0pt;
+        text-align: left;
+      "
+    >
+      Pangkat/Golongan &ensp;: {{$penugasans->pegawai->pangkat_golongan}}
+    </p>
+    <p style="text-indent: 0pt; text-align: left"><br /></p>
+    <p style="padding-left: 42pt; text-indent: 0pt; text-align: left">
+        Jabatan &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&nbsp;: {{$penugasans->pegawai->jabatan}}
+    </p>
+    <p style="text-indent: 0pt; text-align: left"><br /></p>
+    <p style="padding-left: 42pt; text-indent: 0pt; text-align: left">
+        Unit Kerja &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&nbsp;&ensp;&ensp;: {{$penugasans->pegawai->unit_kerja}}
+    </p>
+    <p style="text-indent: 0pt; text-align: left"><br /></p>
+    <p
+      style="
+        padding-left: 5pt;
+        text-indent: 0pt;
+        line-height: 150%;
+        text-align: justify;
+      "
+    >
+      Menerangkan bahwa dalam rangka melaksanakan {{strtolower($penugasans->jenis_perjadin)}}
+      untuk melaksanakan tugas kedinasan sesuai surat tugas, saya benar-benar
+      tidak menggunakan kendaraan dinas.
+    </p>
+    <p style="text-indent: 0pt; text-align: left"><br /></p>
+    <p
+      style="
+        padding-left: 5pt;
+        text-indent: 0pt;
+        line-height: 150%;
+        text-align: justify;
+      "
+    >
+      Demikian pernyataan ini kami buat dengan sebenar-benarnya untuk digunakan
+      sebagaimana mestinya.
+      <i
+        >Apabila terdapat kekeliruan dalam pertanggungjawaban SPD dan
+        mengakibatkan kerugian negara, saya bersedia dituntut sesuai peraturan
+        yang berlaku dan mengembalikan biaya transport lokal yang sudah
+        terlanjur saua terima ke kas negara.</i
+      >
+    </p>
+    <p style="text-indent: 0pt; text-align: left"><br /></p>
+    <table
+      style="border-collapse: collapse; margin-left: 262.94pt"
+      cellspacing="0"
+    >
+      <tr style="height: 13pt">
+        <td style="width: 143pt">
+          <p
+            style="
+            padding-left: 10pt;
+            padding-right: 10pt;
+            text-indent: 2pt;
+            line-height: 13pt;
+            text-align: center;
+            "
+          >
+          {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}}, {{$c::parse($penugasans->tgl_pengajuan_tugas)->translatedFormat('d F Y')}}
+
+          </p>
+        </td>
+      </tr>
+      <tr style="height: 59pt">
+        <td style="width: 143pt">
+          <p
+            style="
+            padding-left: 10pt;
+            padding-right: 10pt;
+            text-indent: 2pt;
+            line-height: 13pt;
+            text-align: center;
+            "
+          >
+            Pelaksana {{$penugasans->jenis_perjadin}}
+          </p>
+        </td>
+      </tr>
+      <tr style="height: 57pt">
+        <td style="width: 300pt">
+          <p style="text-indent: 0pt; text-align: left"><br /></p>
+          <p
+            style="
+              padding-left: 10pt;
+              padding-right: 10pt;
+              text-indent: 2pt;
+              line-height: 13pt;
+              text-align: center;
+            "
+          >
+            {{$penugasans->pegawai->nama}} <br/>
+          </p>
+          <p
+            style="
+              padding-left: 10pt;
+              padding-right: 10pt;
+              text-indent: 2pt;
+              line-height: 13pt;
+              text-align: center;
+            "
+          >
+            NIP. {{$penugasans->pegawai->nip}}
           </p>
         </td>
       </tr>
