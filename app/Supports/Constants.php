@@ -59,12 +59,14 @@ class Constants {
     const JENIS_NOMOR_SURAT_TUGAS = "JENIS_NOMOR_SURAT_TUGAS";
     const JENIS_NOMOR_SURAT_PERJALAN_DINAS = "JENIS_NOMOR_SURAT_PERJALAN_DINAS";
     const JENIS_NOMOR_SURAT_PERJANJIAN_KERJA = "JENIS_NOMOR_SURAT_PERJANJIAN_KERJA";
+    const JENIS_NOMOR_SURAT_BAST = "JENIS_NOMOR_SURAT_BAST";
     const JENIS_NOMOR_SURAT_OPTIONS = [
         "JENIS_NOMOR_SURAT_TUGAS" => "Nomor Surat Tugas",
-        "JENIS_NOMOR_SURAT_TUGAS" => "Nomor Surat Perjalanan Dinas",
+        "JENIS_NOMOR_SURAT_PERJALAN_DINAS" => "Nomor Surat Perjalanan Dinas",
     ];
     const JENIS_NOMOR_SURAT_PERJANJIAN_KERJA_OPTIONS = [
-        "JENIS_NOMOR_SURAT_PERJANJIAN_KERJA"=>"Nomor Surat Perjanjian Kerja"
+        "JENIS_NOMOR_SURAT_PERJANJIAN_KERJA"=>"Nomor Surat Perjanjian Kerja",
+        "JENIS_NOMOR_SURAT_BAST"=>"Nomor Surat BAST",
     ];
 
     const PANGKAT_I = "I";

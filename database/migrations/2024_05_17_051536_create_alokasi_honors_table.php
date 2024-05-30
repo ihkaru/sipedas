@@ -26,6 +26,8 @@ return new class extends Migration
             }
             $table->unsignedBigInteger("surat_perjanjian_kerja_id");
             $table->foreign("surat_perjanjian_kerja_id")->references("id")->on("nomor_surats");
+            $table->unsignedBigInteger("surat_bast_id");
+            $table->foreign("surat_bast_id")->references("id")->on("nomor_surats");
             $table->timestamps();
         });
     }

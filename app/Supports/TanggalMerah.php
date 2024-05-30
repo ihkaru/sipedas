@@ -11,8 +11,11 @@ class TanggalMerah extends ATanggalMerah{
         self::$t ??= new ATanggalMerah();
         $res = collect(self::$t->getData())->keys()->flatten()->toArray();
         unset($res[count($res)-1]);
-        self::$tanggalMerahDates = collect(array_merge($res,self::getDatesByDayName(now(),now()->addYear(1),Carbon::SATURDAY),self::getDatesByDayName(now(),now()->addYear(1),Carbon::SUNDAY)))
-            ->unique()->flatten()->toArray();
+        $sabtu = self::getDatesByDayName(now()->startOfYear(),now()->addYear(1),Carbon::SATURDAY);
+        $ahad = self::getDatesByDayName(now()->startOfYear(),now()->addYear(1),Carbon::SUNDAY);
+        self::$tanggalMerahDates = collect(array_merge($res,$sabtu,$ahad))
+            ->sort()->unique()->flatten()->toArray();
+        // if(!collect(self::$tanggalMerahDates)->flatten()->contains("2024-04-21")) dd($sabtu,$ahad);
         return self::$tanggalMerahDates;
     }
 
@@ -25,4 +28,20 @@ class TanggalMerah extends ATanggalMerah{
         }
         return $res;
     }
+
+    public static function getNextWorkDay(Carbon $date,int $step = 1){
+        $tanggalMerahDates = collect(self::getLiburDates())->flatten();
+        $tes = 0;
+        while($tanggalMerahDates->contains($date->toDateString())){
+            $tes+=1;
+            if($tes>10) dd("While inaf");
+            $date = $date->addDay($step);
+        }
+        return $date;
+    }
+    public static function isLibur(Carbon $date){
+        $tanggalMerahDates = collect(self::getLiburDates())->flatten();
+        return $tanggalMerahDates->contains($date->toDateString());
+    }
+
 }

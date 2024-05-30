@@ -13,3 +13,4 @@ Route::get('/', function () {
 });
 Route::get('/cetak/penugasan/{id}', [PdfController::class,'cetakPenugasan'])->name("cetak.penugasan");
 Route::get('/cetak/kontrak', [PdfController::class,'cetakKontrak'])->name("cetak.kontrak");
+Route::get('/cetak/bast', [PdfController::class,'cetakBast'])->name("cetak.bast");

@@ -279,10 +279,33 @@
     </style>
   </head>
   <body>
+    @php
+        $page = 0;
+    @endphp
     @foreach ($idSobat as $s)
         @php
+            $page += 1;
             $alokasiHonorBulanMitra = $alokasiHonorBulan->where('id_sobat',$s);
-            $idKegiatan = $alokasiHonorBulanMitra->pluck('id_kegiatan')->unique()->flatten();
+            $idHonor = $alokasiHonorBulanMitra->pluck('id_honor')->unique()->flatten();
+            $jabatan = $alokasiHonorBulanMitra->pluck('jabatan')->unique();
+            $jabatanSurat = "";
+            $istilahJabatan = [
+                    "PML"=>"petugas pemeriksa lapangan",
+                    "PPL"=>"petugas pendataan lapangan",
+                    "PETUGAS ENTRI"=>"petugas pengolahan"
+            ];
+            $istilahKodeJabatan = [
+                "PML"=>"PML",
+                "PPL"=>"PPL",
+                "PETUGAS ENTRI"=>"PETUGAS PENGOLAHAN",
+            ];
+            if(count($jabatan) == 1){
+                $jabatan = $jabatan->first();
+                if($jabatan == "PETUGAS ENTRI") $jabatanSurat = "petugas pengolahan";
+                else $jabatanSurat = $istilahJabatan[$jabatan];
+            }elseif(count($jabatan)>1){
+                $jabatanSurat = "petugas lapangan";
+            }
         @endphp
         <h1
         style="
@@ -302,7 +325,7 @@
             text-align: center;
         "
         >
-        PETUGAS PENDATAAN LAPANGAN PADA BADAN PUSAT STATISTIK KABUPATEN MEMPAWAH
+        {{strtoupper($jabatanSurat)}} PADA BADAN PUSAT STATISTIK<br>KABUPATEN MEMPAWAH
         </h1>
         <h1 style="padding-left: 20pt; text-indent: 0pt; text-align: center">
         NOMOR: {{$alokasiHonorBulanMitra->first()->suratPerjanjianKerja->nomor_surat_perjanjian_kerja}}
@@ -347,7 +370,7 @@
                 &nbsp; {{$alokasiHonorBulanMitra->first()->nama_petugas}} :
                 </div>
                 <div style="text-align: justify">
-                    Petugas Pendataan Lapangan,
+                    {{ucwords($jabatanSurat)}},
                     berkedudukan di Kecamatan
                     {{ucwords(strtolower($alokasiHonorBulanMitra->first()->kecamatan_domisili))}},
                     Desa/Kelurahan {{ucwords(strtolower($alokasiHonorBulanMitra->first()->desa_domisili))}},
@@ -368,7 +391,7 @@
         >
         bahwa <b>PIHAK PERTAMA </b>dan <b>PIHAK KEDUA </b>yang secara bersama-sama
         disebut <b>PARA PIHAK</b>, sepakat untuk mengikatkan diri dalam Perjanjian
-        Kerja Petugas Pendataan Lapangan untuk kegiatan yang tercantum pada
+        Kerja {{ucwords($jabatanSurat)}} untuk kegiatan yang tercantum pada
         lampiran dokumen perjanjian kerja ini Tahun {{$c::parse($alokasiHonorBulanMitra->first()->tanggal_akhir_perjanjian)->year}} pada Badan Pusat
         Statistik Kabupaten Mempawah yang selanjutnya disebut Perjanjian, dengan
         ketentuan-ketentuan sebagai berikut:
@@ -382,7 +405,7 @@
         KEDUA <span class="p">dan </span>PIHAK KEDUA
         <span class="p">menerima pekerjaan dari </span>PIHAK PERTAMA
         <span class="p"
-            >sebagai Petugas Pendataan Lapangan pada Badan Pusat Statistik Kabupaten
+            >sebagai {{ucwords($jabatanSurat)}} pada Badan Pusat Statistik Kabupaten
             Mempawah, dengan lingkup pekerjaan yang ditetapkan oleh </span
         >PIHAK PERTAMA<span class="p">.</span>
         </h1>
@@ -821,6 +844,7 @@
         </tr>
         </table>
         <div class="pagebreak"></div>
+
         <p
         class="s4"
         style="
@@ -830,8 +854,12 @@
             text-align: left;
         "
         >
-        Lampiran
+        Lampiran 1. SPK Nomor {{$alokasiHonorBulanMitra->first()->suratPerjanjianKerja->nomor_surat_perjanjian_kerja}}
         </p>
+        <br><br>
+        <h1 style="text-indent: 0pt; text-align: center">
+            Daftar Kegiatan
+        </h1>
         <p style="text-indent: 0pt; text-align: left"><br /></p>
         <table
         style="border-collapse: collapse; margin-left: 6.17pt"
@@ -852,7 +880,7 @@
             >
             <p
                 class="s5"
-                style="padding: 5pt; text-indent: 0pt;"
+                style="padding: 5pt; text-indent: 0pt; text-align:center"
             >
                 No
             </p>
@@ -873,9 +901,72 @@
             >
             <p
                 class="s5"
-                style="padding-left: 5pt; text-indent: 0pt; text-align: left"
+                style="padding-left: 5pt; text-indent: 0pt; text-align: center"
             >
                 Nama Kegiatan
+            </p>
+            </td>
+            <td
+            style="
+                width: 114pt;
+                padding: 5pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s5"
+                style="padding-left: 5pt; text-indent: 0pt; text-align: center"
+            >
+                Jabatan
+            </p>
+            </td>
+            <td
+            style="
+                width: 113pt;
+                padding: 5pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s5"
+                style="padding-left: 5pt; text-indent: 0pt; text-align: center"
+            >
+                Jenis Honor
+            </p>
+            </td>
+            <td
+            style="
+                width: 113pt;
+                padding: 5pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s5"
+                style="padding-left: 5pt; text-indent: 0pt; text-align: center"
+            >
+                Beban Kerja
             </p>
             </td>
             <td
@@ -896,7 +987,7 @@
                 class="s5"
                 style="padding-left: 5pt; text-indent: 0pt; text-align: left"
             >
-                Beban Kerja
+                Honor per Satuan
             </p>
             </td>
             <td
@@ -921,9 +1012,13 @@
             </p>
             </td>
         </tr>
-        @foreach ($idKegiatan as $k)
+        @php
+            $totalHonor = 0;
+        @endphp
+        @foreach ($idHonor as $k)
             @php
-                $alokasiHonorBulanMitraKegiatan = $alokasiHonorBulanMitra->where('id_kegiatan',$k);
+                $alokasiHonorBulanMitraKegiatan = $alokasiHonorBulanMitra->where('id_honor',$k);
+                $totalHonor += $alokasiHonorBulanMitraKegiatan->first()->target_honor;
             @endphp
             {{-- <p>
                 Nama Kegiatan:  <br>
@@ -969,6 +1064,36 @@
                 </td>
                 <td
                 style="
+                    width: 100pt;
+                    border-top-style: solid;
+                    border-top-width: 1pt;
+                    border-left-style: solid;
+                    border-left-width: 1pt;
+                    border-bottom-style: solid;
+                    border-bottom-width: 1pt;
+                    border-right-style: solid;
+                    border-right-width: 1pt;
+                "
+                >
+                <p style="padding: 10pt; text-align: center">{{ucwords($istilahJabatan[$alokasiHonorBulanMitraKegiatan->first()->jabatan])}}</p>
+                </td>
+                <td
+                style="
+                    width: 100pt;
+                    border-top-style: solid;
+                    border-top-width: 1pt;
+                    border-left-style: solid;
+                    border-left-width: 1pt;
+                    border-bottom-style: solid;
+                    border-bottom-width: 1pt;
+                    border-right-style: solid;
+                    border-right-width: 1pt;
+                "
+                >
+                <p style="padding: 10pt; text-align: center">{{ucwords(strtolower($alokasiHonorBulanMitraKegiatan->first()->jenis_honor))}}</p>
+                </td>
+                <td
+                style="
                     padding: 10pt;
                     border-top-style: solid;
                     border-top-width: 1pt;
@@ -995,10 +1120,80 @@
                     border-right-width: 1pt;
                 "
                 >
+                <p style="text-indent: 0pt; text-align: center">Rp.{{$number::format($alokasiHonorBulanMitraKegiatan->first()->honor_per_satuan_honor)}}</p>
+                </td>
+                <td
+                style="
+                    padding: 10pt;
+                    border-top-style: solid;
+                    border-top-width: 1pt;
+                    border-left-style: solid;
+                    border-left-width: 1pt;
+                    border-bottom-style: solid;
+                    border-bottom-width: 1pt;
+                    border-right-style: solid;
+                    border-right-width: 1pt;
+                "
+                >
                 <p style="text-indent: 0pt; text-align: left">Rp.{{$number::format($alokasiHonorBulanMitraKegiatan->first()->target_honor)}}</p>
                 </td>
             </tr>
         @endforeach
+            <tr style="height: 20pt">
+                <td
+                colspan="6"
+                style="
+                    padding: 10pt;
+                    width: 10px;
+                    border-top-style: solid;
+                    border-top-width: 1pt;
+                    border-left-style: solid;
+                    border-left-width: 1pt;
+                    border-bottom-style: solid;
+                    border-bottom-width: 1pt;
+                    border-right-style: solid;
+                    border-right-width: 1pt;
+                "
+                >
+                <p style="text-indent: 0pt; text-align: center">Total</p>
+                </td>
+                <td
+                colspan="1"
+                style="
+                    padding: 10pt;
+                    width: 10px;
+                    border-top-style: solid;
+                    border-top-width: 1pt;
+                    border-left-style: solid;
+                    border-left-width: 1pt;
+                    border-bottom-style: solid;
+                    border-bottom-width: 1pt;
+                    border-right-style: solid;
+                    border-right-width: 1pt;
+                "
+                >
+                <p style="text-indent: 0pt; text-align: left">Rp.{{$number::format($totalHonor)}}</p>
+                </td>
+            </tr>
+            <tr style="height: 20pt">
+                <td
+                colspan="7"
+                style="
+                    padding: 10pt;
+                    width: 10px;
+                    border-top-style: solid;
+                    border-top-width: 1pt;
+                    border-left-style: solid;
+                    border-left-width: 1pt;
+                    border-bottom-style: solid;
+                    border-bottom-width: 1pt;
+                    border-right-style: solid;
+                    border-right-width: 1pt;
+                "
+                >
+                <p style="text-indent: 0pt; text-align: center">Terbilang: {{$bil::make($totalHonor)}} rupiah</p>
+                </td>
+            </tr>
         </table>
         <div class="pagebreak"></div>
     @endforeach

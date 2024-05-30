@@ -25,7 +25,7 @@ class PdfController extends Controller
         ])->toHtml();
     }
     public function cetakKontrak(){
-        $alokasiHonor = AlokasiHonor::with('suratPerjanjianKerja')->get();
+        $alokasiHonor = AlokasiHonor::with('suratPerjanjianKerja')->whereHas('suratPerjanjianKerja',function($q){return $q->where('jenis',Constants::JENIS_NOMOR_SURAT_PERJANJIAN_KERJA);})->orderBy('tanggal_akhir_kegiatan')->get();
         // dd($alokasiHonor->first());
         $tahun = request('tahun') ?? now()->year;
         $bulan = request('bulan') ?? now()->month;
@@ -39,6 +39,21 @@ class PdfController extends Controller
             'ppk'=>$ppk,
 
 
+        ]);
+    }
+    public function cetakBast(){
+        $alokasiHonor = AlokasiHonor::with('suratBast')->whereHas('suratBast',function($q){return $q->where('jenis',Constants::JENIS_NOMOR_SURAT_BAST);})->orderBy('tanggal_akhir_kegiatan')->get();
+        // dd($alokasiHonor->first());
+        $tahun = request('tahun') ?? now()->year;
+        $bulan = request('bulan') ?? now()->month;
+        $bulan = str_pad($bulan,2,"0",STR_PAD_LEFT);
+        $tanggalPengajuan = Carbon::parse("$tahun-$bulan-01");
+        $ppk = Pegawai::find(Pengaturan::key("NIP_PPK_SATER")->nilai);
+        return view('bast.pdf',[
+            'alokasiHonor'=>$alokasiHonor,
+            'tahun'=>$tanggalPengajuan->year,
+            'bulan'=>$tanggalPengajuan->month,
+            'ppk'=>$ppk,
         ]);
     }
 
