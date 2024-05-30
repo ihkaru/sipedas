@@ -69,7 +69,7 @@ class PenugasanDisetujuiTable extends BaseWidget
                     ->color('success')
                     ->icon('fluentui-arrow-download-48')
                     ->action(function (Penugasan $record) {
-                        // dd($record);
+                        if($record->suratTugasBersamaDisetujui()->count()>1) return redirect()->to(route("cetak.penugasan-bersama",['id'=>$record->id]));
                         return redirect()->to(route("cetak.penugasan",['id'=>$record->id]));
                     }),
                 Action::make("lihat")

@@ -139,6 +139,12 @@ class Penugasan extends Model
             ;
         })->get();
     }
+    public function isSuratTugasBersama(){
+        $query = self::query();
+        $surat_tugas_id = $this->surat_tugas_id;
+        if(!$surat_tugas_id) return collect([]);
+        return $query->where("surat_tugas_id",$surat_tugas_id)->count()>1;
+    }
     public function satuGrupPengajuan(){
         return $this->hasMany(Penugasan::class,"grup_id","grup_id");
     }
