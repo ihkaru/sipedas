@@ -24,6 +24,19 @@ class PdfController extends Controller
             'namaSatkerTanpaLevelAdministrasi'=>Pengaturan::namaSatker(false),
         ])->toHtml();
     }
+    public function cetakPenugasanBersama($id){
+        // if(auth()->user()) abort(403);
+        $penugasan = Penugasan::find($id);
+        $penugasans = $penugasan->suratTugasBersamaDisetujui(['satuSurat','suratTugas','suratPerjadin','kegiatan','pegawai','plh']);
+        // dd($penugasans);
+        $ppk = Pegawai::find(Pengaturan::key("NIP_PPK_SATER")->nilai);
+        return view('surat_tugas.bersama.pdf',[
+            'penugasans'=>$penugasans,
+            "ppk"=>$ppk,
+            'namaSatker'=>Pengaturan::key('NAMA_KAKO')->nilai,
+            'namaSatkerTanpaLevelAdministrasi'=>Pengaturan::namaSatker(false),
+        ])->toHtml();
+    }
     public function cetakKontrak(){
         $alokasiHonor = AlokasiHonor::with('suratPerjanjianKerja')->whereHas('suratPerjanjianKerja',function($q){return $q->where('jenis',Constants::JENIS_NOMOR_SURAT_PERJANJIAN_KERJA);})->orderBy('tanggal_akhir_kegiatan')->get();
         // dd($alokasiHonor->first());

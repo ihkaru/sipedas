@@ -1,3 +1,9 @@
+@php
+    $c = Illuminate\Support\Carbon::class;
+    $cons = App\Supports\Constants::class;
+    $peng = App\Models\Pengaturan::class;
+@endphp
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="id" lang="id">
   <head>
@@ -7,7 +13,22 @@
     <style type="text/css">
         @media print {
             .pagebreak { page-break-before: always; } /* page-break-after works, as well */
+            body {
+                background: none;
+                -ms-zoom: 1.665;
+            }
+            div.portrait, div.landscape {
+                margin: 0;
+                padding: 0;
+                border: none;
+                background: none;
+            }
+            div.landscape {
+                transform: rotate(270deg) translate(-250mm, 0);
+                transform-origin: 0 0;
+            }
         }
+
       * {
         margin: 0;
         padding: 0;
@@ -268,7 +289,7 @@
         text-align: center;
       "
     >
-      BADAN PUSAT STATISTIK KABUPATEN MEMPAWAH
+      BADAN PUSAT STATISTIK {{$namaSatker}}
     </h1>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <p
@@ -278,7 +299,7 @@
       SURAT TUGAS
     </p>
     <p style="text-indent: 0pt; text-align: center">
-      Nomor: B-464/61041/KP.650/05/2024
+    Nomor: {{$penugasans->first()->suratTugas->nomor_surat_tugas}}
     </p>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <table
@@ -325,8 +346,7 @@
                   text-align: justify;
                 "
               >
-                bahwa sehubungan dengan Kegiatan Survei Perilaku Anti Korupsi
-                (SPAK) BPS Kabupaten Mempawah tahun 2024, maka dipandang perlu
+              &nbsp; bahwa sehubungan dengan {{$penugasans->first()->kegiatan->nama}} BPS {{ucwords(strtolower($namaSatker))}} tahun {{{$c::parse($penugasans->first()->kegiatan->tgl_akhir_perjadin)->year}}}, maka dipandang perlu
                 untuk melakukan kegiatan tersebut;
               </p>
             </li>
@@ -335,14 +355,13 @@
                 class="s2"
                 style="
                   padding-left: 28pt;
-                  padding-right: 2pt;
                   text-indent: -21pt;
                   line-height: 114%;
                   text-align: justify;
                 "
               >
-                bahwa untuk pelaksanaannya perlu dikeluarkan Surat Tugas Kepala
-                BPS Kabupaten Mempawah Provinsi Kalimantan Barat untuk Melakukan
+              &nbsp;bahwa untuk pelaksanaannya perlu dikeluarkan Surat Tugas Kepala
+                BPS {{ucwords(strtolower($namaSatker))}} Provinsi Kalimantan Barat untuk Melakukan
                 Kegiatan sebagaimana dimaksud pada poin a di atas.
               </p>
             </li>
@@ -384,11 +403,12 @@
                 style="
                   padding-top: 7pt;
                   padding-left: 26pt;
-                  text-indent: -21pt;
+                  text-indent: -18pt;
+                  line-height: 12pt;
                   text-align: justify;
                 "
               >
-                Undang-Undang No.16 Tahun 1997 tentang Statistik;
+              &ensp;Undang-Undang No.16 Tahun 1997 tentang Statistik;
               </p>
             </li>
             <li data-list-text="2.">
@@ -397,14 +417,12 @@
                 style="
                   padding-top: 1pt;
                   padding-left: 26pt;
-                  padding-right: 2pt;
                   text-indent: -18pt;
-                  line-height: 113%;
+                  line-height: 12pt;
                   text-align: justify;
                 "
               >
-                Peraturan Pemerintah No.51 Tahun 1999 tentang Penyelenggaraan
-                Statistik;
+                &ensp;Peraturan Pemerintah No.51 Tahun 1999 tentang Penyelenggaraan Statistik;
               </p>
             </li>
             <li data-list-text="3.">
@@ -412,9 +430,8 @@
                 class="s2"
                 style="
                   padding-left: 26pt;
-                  padding-right: 2pt;
                   text-indent: -18pt;
-                  line-height: 114%;
+                  line-height: 12pt;
                   text-align: justify;
                 "
               >
@@ -430,9 +447,8 @@
                 class="s2"
                 style="
                   padding-left: 26pt;
-                  padding-right: 2pt;
                   text-indent: -18pt;
-                  line-height: 115%;
+                  line-height: 12pt;
                   text-align: justify;
                 "
               >
@@ -450,7 +466,7 @@
                   text-align: justify;
                 "
               >
-                Peraturan Kepala Badan Pusat Statistik Nomor 8 Tahun 2020
+              &ensp;Peraturan Kepala Badan Pusat Statistik Nomor 8 Tahun 2020
               </p>
             </li>
           </ol>
@@ -474,7 +490,7 @@
     <h2
       style="
         padding-top: 9pt;
-        padding-left: 65pt;
+        padding-left: 0;
         text-indent: 0pt;
         text-align: center;
       "
@@ -549,7 +565,7 @@
               text-align: left;
             "
           >
-            Safira Nurrosyid, S.Tr.Stat.
+            <i>Daftar Nama Terlampir</i>
           </p>
         </td>
       </tr>
@@ -596,7 +612,7 @@
               text-align: left;
             "
           >
-            199606062019122001
+          <i>Terlampir</i>
           </p>
         </td>
       </tr>
@@ -643,7 +659,7 @@
               text-align: left;
             "
           >
-            Penata Muda Tk I (III/b)
+            <i>Terlampir</i>
           </p>
         </td>
       </tr>
@@ -658,7 +674,6 @@
           <p
             class="s2"
             style="
-              padding-top: 5pt;
               padding-left: 17pt;
               text-indent: 0pt;
               text-align: left;
@@ -671,7 +686,6 @@
           <p
             class="s2"
             style="
-              padding-top: 5pt;
               padding-right: 5pt;
               text-indent: 0pt;
               text-align: right;
@@ -690,7 +704,7 @@
               text-align: left;
             "
           >
-            Statistisi Ahli Pertama BPS Kabupaten Mempawah
+            <i>Terlampir</i>
           </p>
         </td>
       </tr>
@@ -732,19 +746,43 @@
               text-align: left;
             "
           >
-            Melakukan Pengawasan Survei Perilaku Anti Korupsi (SPAK) Tahun 2024
-            di Kecamatan Mempawah Timur pada tanggal 14 Mei 2024
+            Melaksanakan {{$penugasans->first()->kegiatan->nama}} Tahun {{$c::parse($penugasans->first()->kegiatan->tgl_akhir_perjadin)->year}}
+            @if ($penugasans->first()->jenis_surat_tugas != $cons::NON_SPPD)
+            di
+                @if ($penugasans->first()->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KABUPATEN_KOTA)
+                    Kabupaten {{ucwords(strtolower($penugasans->first()->kabkot->kabkot))}}
+                @endif
+                @if ($penugasans->first()->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KECAMATAN)
+                    Kecamatan {{ucwords(strtolower($penugasans->first()->kecamatan->kecamatan))}},
+                    Kabupaten {{ucwords(strtolower($penugasans->first()->kabkot->kabkot))}}
+                @endif
+                @if ($penugasans->first()->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_DESA_KELURAHAN)
+                    Desa/Kelurahan {{ucwords(strtolower($penugasans->first()->desa->desa_kel))}},
+                    Kecamatan {{ucwords(strtolower($penugasans->first()->kecamatan->kecamatan))}},
+                    {{ucwords(strtolower($penugasans->first()->kabkot->kabkot))}}
+                @endif
+                pada tanggal
+                @if ($penugasans->first()->tgl_mulai_tugas == $penugasans->first()->tgl_mulai_tugas)
+                    {{$c::parse($penugasans->first()->tgl_mulai_tugas)->translatedFormat('d F Y')}}
+                @else
+                    {{$c::parse($penugasans->first()->tgl_mulai_tugas)->translatedFormat('d F Y')." s.d. ".$c::parse($penugasans->first()->tgl_akhir_tugas)->translatedFormat('d M Y')}}
+                @endif
+
+            @endif
           </p>
         </td>
       </tr>
     </table>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <p style="padding-left: 283pt; text-indent: 0pt; text-align: center">
-      Mempawah, 13 Mei 2024
+      {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}}, {{$c::parse($penugasans->first()->tgl_pengajuan_tugas)->translatedFormat('d F Y')}}
     </p>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <p style="padding-left: 283pt; text-indent: 0pt; text-align: center">
-      Kepala Badan Pusat Statistik <br/> Kabupaten Mempawah
+        @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasans->first()->plh->nip)
+            An.
+        @endif
+      Kepala Badan Pusat Statistik <br/> {{ucwords(strtolower($namaSatker))}}
     </p>
     <p style="text-indent: 0pt; text-align: left"><br /><br /></p>
     <p
@@ -756,1636 +794,2184 @@
         text-align: center;
       "
     >
-      Munawir, SE.,MM.
+      {{$penugasans->first()->plh->nama}}
     </p>
     <p style="padding-left: 283pt; text-indent: 0pt; text-align: center">
-      NIP. <span style="color: #1f1f1f">196908031992111001</span>
+      NIP. <span style="color: #1f1f1f">{{$penugasans->first()->plh->nip}}</span>
     </p>
-    <div class="pagebreak"> </div>
-    <p style="text-indent: 0pt; text-align: left"><br /></p>
-    <div style="display: flex;">
-        <div style="max-width: 300px; display: flex">
-            <div>
-                <span><img
-                    width="94"
-                    height="71"
-                    alt="D:\Logo\BPS-small.png"
-                    title="D:\Logo\BPS-small.png"
-                    src="{{asset('SPPD_files/Image_002.png')}}"
-                /></span>
-            </div>
-            <div
-              class="s4"
-              style="
-                text-indent: 0pt;
-                line-height: 107%;
-                text-align: left;
-                align-self: center;
-                padding-left: 10px;
-              "
-            >
-              BADAN PUSAT STATISTIK KABUPATEN MEMPAWAH
-            </div>
-        </div>
-        <div style="width: 200px;"></div>
-        <div style="text-align: right;">
-            <p
-              style="
-                padding-top: 9pt;
-                padding-left: 9pt;
-                text-indent: 0pt;
-                line-height: 115%;
-                text-align: left;
-              "
-            >
-              Lembar ke :1 Kode Nomor : -
-            </p>
-            <p
-              style="
-                padding-left: 9pt;
-                text-indent: 0pt;
-                line-height: 12pt;
-                text-align: left;
-              "
-            >
-              Nomor : 163/SPD/05/2024
-            </p>
-        </div>
-    </div>
-    <p style="text-indent: 0pt; text-align: left"><br /></p>
-    <p style="text-indent: 0pt; text-align: left"><br /></p>
-    <h2 style="padding-left: 64pt; text-indent: 0pt; text-align: center">
-      SURAT PERJALANAN DINAS (SPD)
-    </h2>
-    <p style="text-indent: 0pt; text-align: left"><br /></p>
-    <table
-      style="border-collapse: collapse; margin-left: 5.64998pt"
-      cellspacing="0"
-    >
-      <tr style="height: 29pt">
-        <td
-          style="
-            width: 26pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 7pt;
-              padding-right: 7pt;
-              text-indent: 0pt;
-              text-align: right;
-            "
-          >
-            1.
-          </p>
-        </td>
-        <td
-          style="
-            width: 216pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-          colspan="2"
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 7pt;
-              padding-left: 7pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            Pejabat Pembuat Komitmen
-          </p>
-        </td>
-        <td
-          style="
-            width: 283pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-          colspan="2"
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 7pt;
-              padding-left: 7pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            Arief Yuandi, SST
-          </p>
-        </td>
-      </tr>
-      <tr style="height: 36pt">
-        <td
-          style="
-            width: 26pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 1pt;
-              padding-right: 7pt;
-              text-indent: 0pt;
-              text-align: right;
-            "
-          >
-            2.
-          </p>
-        </td>
-        <td
-          style="
-            width: 216pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-          colspan="2"
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 1pt;
-              padding-left: 7pt;
-              text-indent: 0pt;
-              line-height: 115%;
-              text-align: left;
-            "
-          >
-            Nama / NIP pegawai yang melaksanakan perjalanan dinas
-          </p>
-        </td>
-        <td
-          style="
-            width: 283pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-          colspan="2"
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 1pt;
-              padding-left: 7pt;
-              padding-right: 124pt;
-              text-indent: 0pt;
-              line-height: 115%;
-              text-align: left;
-            "
-          >
-            Safira Nurrosyid, S.Tr.Stat. NIP. 199606062019122001
-          </p>
-        </td>
-      </tr>
-      <tr style="height: 48pt">
-        <td
-          style="
-            width: 26pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 1pt;
-              padding-right: 7pt;
-              text-indent: 0pt;
-              text-align: right;
-            "
-          >
-            3.
-          </p>
-        </td>
-        <td
-          style="
-            width: 216pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-          colspan="2"
-        >
-          <ol id="l3">
-            <li data-list-text="a.">
-              <p
-                class="s2"
-                style="
-                  padding-top: 1pt;
-                  padding-left: 19pt;
-                  text-indent: -12pt;
-                  text-align: left;
-                "
-              >
-                Golongan/Pangkat
-              </p>
-            </li>
-            <li data-list-text="b.">
-              <p
-                class="s2"
-                style="
-                  padding-top: 1pt;
-                  padding-left: 19pt;
-                  text-indent: -12pt;
-                  text-align: left;
-                "
-              >
-                Jabatan/Instansi
-              </p>
-            </li>
-            <li data-list-text="c.">
-              <p
-                class="s2"
-                style="
-                  padding-top: 1pt;
-                  padding-left: 19pt;
-                  text-indent: -12pt;
-                  text-align: left;
-                "
-              >
-                Tingkat Biaya Perjalanan Dinas
-              </p>
-            </li>
-          </ol>
-        </td>
-        <td
-          style="
-            width: 283pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-          colspan="2"
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 1pt;
-              padding-left: 7pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            Penata Muda Tk I (III/b)
-          </p>
-          <p
-            class="s2"
-            style="
-              padding-top: 1pt;
-              padding-left: 7pt;
-              padding-right: 22pt;
-              text-indent: 0pt;
-              line-height: 113%;
-              text-align: left;
-            "
-          >
-            Statistisi Ahli Pertama BPS Kabupaten Mempawah C
-          </p>
-        </td>
-      </tr>
-      <tr style="height: 56pt">
-        <td
-          style="
-            width: 26pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 7pt;
-              padding-right: 7pt;
-              text-indent: 0pt;
-              text-align: right;
-            "
-          >
-            4.
-          </p>
-        </td>
-        <td
-          style="
-            width: 216pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-          colspan="2"
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 7pt;
-              padding-left: 7pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            Maksud perjalanan dinas
-          </p>
-        </td>
-        <td
-          style="
-            width: 283pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-          colspan="2"
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 7pt;
-              padding-left: 7pt;
-              padding-right: 6pt;
-              text-indent: 0pt;
-              line-height: 114%;
-              text-align: justify;
-            "
-          >
-            Melakukan Pengawasan Survei Perilaku Anti Korupsi (SPAK) Tahun 2024
-            di Kecamatan Mempawah Timur pada tanggal 14 Mei 2024
-          </p>
-        </td>
-      </tr>
-      <tr style="height: 29pt">
-        <td
-          style="
-            width: 26pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 7pt;
-              padding-right: 7pt;
-              text-indent: 0pt;
-              text-align: right;
-            "
-          >
-            5.
-          </p>
-        </td>
-        <td
-          style="
-            width: 216pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-          colspan="2"
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 7pt;
-              padding-left: 7pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            Alat angkutan yang dipergunakan
-          </p>
-        </td>
-        <td
-          style="
-            width: 283pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-          colspan="2"
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 7pt;
-              padding-left: 7pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            Kendaraan Pribadi
-          </p>
-        </td>
-      </tr>
-      <tr style="height: 30pt">
-        <td
-          style="
-            width: 26pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 1pt;
-              padding-right: 7pt;
-              text-indent: 0pt;
-              text-align: right;
-            "
-          >
-            6.
-          </p>
-        </td>
-        <td
-          style="
-            width: 216pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-          colspan="2"
-        >
-          <ol id="l4">
-            <li data-list-text="a.">
-              <p
-                class="s2"
-                style="
-                  padding-top: 1pt;
-                  padding-left: 19pt;
-                  text-indent: -12pt;
-                  text-align: left;
-                "
-              >
-                Tempat berangkat
-              </p>
-            </li>
-            <li data-list-text="b.">
-              <p
-                class="s2"
-                style="
-                  padding-top: 1pt;
-                  padding-left: 19pt;
-                  text-indent: -12pt;
-                  text-align: left;
-                "
-              >
-                Tempat tujuan
-              </p>
-            </li>
-          </ol>
-        </td>
-        <td
-          style="
-            width: 283pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-          colspan="2"
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 1pt;
-              padding-left: 7pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            Mempawah
-          </p>
-          <p
-            class="s2"
-            style="
-              padding-top: 1pt;
-              padding-left: 7pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            Kecamatan Mempawah Timur
-          </p>
-        </td>
-      </tr>
-      <tr style="height: 56pt">
-        <td
-          style="
-            width: 26pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 7pt;
-              padding-right: 7pt;
-              text-indent: 0pt;
-              text-align: right;
-            "
-          >
-            7.
-          </p>
-        </td>
-        <td
-          style="
-            width: 216pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-          colspan="2"
-        >
-          <ol id="l5">
-            <li data-list-text="a.">
-              <p
-                class="s2"
-                style="
-                  padding-top: 7pt;
-                  padding-left: 19pt;
-                  text-indent: -12pt;
-                  text-align: left;
-                "
-              >
-                Lamanya perjalanan dinas
-              </p>
-            </li>
-            <li data-list-text="b.">
-              <p
-                class="s2"
-                style="
-                  padding-top: 1pt;
-                  padding-left: 19pt;
-                  text-indent: -12pt;
-                  text-align: left;
-                "
-              >
-                Tanggal berangkat
-              </p>
-            </li>
-            <li data-list-text="c.">
-              <p
-                class="s2"
-                style="
-                  padding-top: 1pt;
-                  padding-left: 19pt;
-                  text-indent: -12pt;
-                  text-align: left;
-                "
-              >
-                Tanggal Kembali
-              </p>
-            </li>
-          </ol>
-        </td>
-        <td
-          style="
-            width: 283pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-          colspan="2"
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 7pt;
-              padding-left: 7pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            01 hari
-          </p>
-          <p
-            class="s2"
-            style="
-              padding-top: 1pt;
-              padding-left: 7pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            14 Mei 2024
-          </p>
-          <p
-            class="s2"
-            style="
-              padding-top: 1pt;
-              padding-left: 7pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            14 Mei 2024
-          </p>
-        </td>
-      </tr>
-      <tr style="height: 17pt">
-        <td
-          style="
-            width: 26pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-          rowspan="2"
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 7pt;
-              padding-left: 8pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            8.
-          </p>
-        </td>
-        <td
-          style="
-            width: 65pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 1pt;
-              padding-left: 7pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            Pengikut:
-          </p>
-        </td>
-        <td
-          style="
-            width: 151pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 1pt;
-              padding-left: 7pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            Nama
-          </p>
-        </td>
-        <td
-          style="
-            width: 144pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 1pt;
-              padding-left: 7pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            Tanggal Lahir
-          </p>
-        </td>
-        <td
-          style="
-            width: 139pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 1pt;
-              padding-left: 7pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            Keterangan
-          </p>
-        </td>
-      </tr>
-      <tr style="height: 30pt">
-        <td
-          style="
-            width: 65pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 1pt;
-              padding-left: 7pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            1.
-          </p>
-          <p
-            class="s2"
-            style="
-              padding-top: 1pt;
-              padding-left: 7pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            2.
-          </p>
-        </td>
-        <td
-          style="
-            width: 151pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p style="text-indent: 0pt; text-align: left"><br /></p>
-        </td>
-        <td
-          style="
-            width: 144pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p style="text-indent: 0pt; text-align: left"><br /></p>
-        </td>
-        <td
-          style="
-            width: 139pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p style="text-indent: 0pt; text-align: left"><br /></p>
-        </td>
-      </tr>
-      <tr style="height: 56pt">
-        <td
-          style="
-            width: 26pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 7pt;
-              padding-right: 7pt;
-              text-indent: 0pt;
-              text-align: right;
-            "
-          >
-            9.
-          </p>
-        </td>
-        <td
-          style="
-            width: 216pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-          colspan="2"
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 7pt;
-              padding-left: 7pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            Pembeban anggaran
-          </p>
-          <ol id="l6">
-            <li data-list-text="a.">
-              <p
-                class="s2"
-                style="
-                  padding-top: 1pt;
-                  padding-left: 19pt;
-                  text-indent: -12pt;
-                  text-align: left;
-                "
-              >
-                Instansi
-              </p>
-            </li>
-            <li data-list-text="b.">
-              <p
-                class="s2"
-                style="
-                  padding-top: 1pt;
-                  padding-left: 19pt;
-                  text-indent: -12pt;
-                  text-align: left;
-                "
-              >
-                Mata anggaran
-              </p>
-            </li>
-          </ol>
-        </td>
-        <td
-          style="
-            width: 283pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-          colspan="2"
-        >
-          <p style="text-indent: 0pt; text-align: left"><br /></p>
-          <ol id="l7">
-            <li data-list-text="a.">
-              <p
-                class="s2"
-                style="
-                  padding-top: 8pt;
-                  padding-left: 19pt;
-                  text-indent: -12pt;
-                  text-align: left;
-                "
-              >
-                BPS Kabupaten Mempawah
-              </p>
-            </li>
-            <li data-list-text="b.">
-              <p
-                class="s2"
-                style="
-                  padding-top: 1pt;
-                  padding-left: 19pt;
-                  text-indent: -12pt;
-                  text-align: left;
-                "
-              >
-                ...
-              </p>
-            </li>
-          </ol>
-        </td>
-      </tr>
-      <tr style="height: 29pt">
-        <td
-          style="
-            width: 26pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 7pt;
-              padding-right: 4pt;
-              text-indent: 0pt;
-              text-align: right;
-            "
-          >
-            10.
-          </p>
-        </td>
-        <td
-          style="
-            width: 216pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-          colspan="2"
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 7pt;
-              padding-left: 7pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            Keterangan lain-lain
-          </p>
-        </td>
-        <td
-          style="
-            width: 283pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-          colspan="2"
-        >
-          <p style="text-indent: 0pt; text-align: left"><br /></p>
-        </td>
-      </tr>
-    </table>
-    <p style="text-indent: 0pt; text-align: left"><br /></p>
-    <p
-      style="
-        padding-left: 350pt;
-        text-indent: 0pt;
-        line-height: 108%;
-        text-align: left;
-      "
-    >
-      Dikeluarkan di : Mempawah <br /> Pada tanggal : 13 Mei 2024
-    </p>
-    <p style="text-indent: 0pt; text-align: left"><br /></p>
-    <p style="padding-left: 306pt; text-indent: 0pt; text-align: center">
-      Pejabat Pembuat Komitmen
-    </p>
-    <p style="text-indent: 0pt; text-align: left"><br /><br /></p>
-    <p
-      class="s5"
-      style="
-        padding-top: 8pt;
-        padding-left: 306pt;
-        text-indent: 0pt;
-        text-align: center;
-      "
-    >
-      Arief Yuandi, SST
-    </p>
-    <p style="padding-left: 306pt; text-indent: 0pt; text-align: center">
-      NIP. 199306062016021001
-    </p>
-    <div class="pagebreak"> </div>
-    <table
-      style="border-collapse: collapse; margin-left: 10.09pt"
-      cellspacing="0"
-    >
-      <tr style="height: 205pt">
-        <td
-          style="
-            width: 262pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 8pt;
-              padding-left: 9pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            I<span class="s6">.</span>
-          </p>
-        </td>
-        <td
-          style="
-            width: 255pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 8pt;
-              padding-left: 9pt;
-              padding-right: 70pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            Berangkat dari : Mempawah tempat kedudukan
-          </p>
-          <p
-            class="s2"
-            style="
-              padding-left: 103pt;
-              padding-right: 38pt;
-              text-indent: -93pt;
-              text-align: left;
-            "
-          >
-            Ke : Kecamatan Mempawah Timur
-          </p>
-          <p style="text-indent: 0pt; text-align: left"><br /></p>
-          <p
-            class="s2"
-            style="padding-left: 9pt; text-indent: 0pt; text-align: left"
-          >
-            Pada tanggal : 14 Mei 2024
-          </p>
-          <p style="text-indent: 0pt; text-align: left"><br /></p>
-          <p
-            class="s2"
-            style="
-              padding-left: 55pt;
-              padding-right: 55pt;
-              text-indent: 0pt;
-              text-align: center;
-            "
-          >
-            Mengetahui,
-          </p>
-          <p style="text-indent: 0pt; text-align: left"><br /></p>
-          <p
-            class="s2"
-            style="
-              padding-left: 55pt;
-              padding-right: 55pt;
-              text-indent: 0pt;
-              text-align: center;
-            "
-          >
-            Kepala Badan Pusat Statistik Kabupaten Mempawah
-          </p>
-          <p style="text-indent: 0pt; text-align: left"><br /></p>
-          <p
-            class="s7"
-            style="
-              padding-top: 9pt;
-              padding-left: 55pt;
-              padding-right: 55pt;
-              text-indent: 0pt;
-              text-align: center;
-            "
-          >
-            Munawir, SE.,MM.
-          </p>
-          <p
-            class="s2"
-            style="
-              padding-left: 55pt;
-              padding-right: 55pt;
-              text-indent: 0pt;
-              text-align: center;
-            "
-          >
-            NIP. <span style="color: #1f1f1f">196908031992111001</span>
-          </p>
-        </td>
-      </tr>
-      <tr style="height: 147pt">
-        <td
-          style="
-            width: 262pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 8pt;
-              padding-left: 20pt;
-              padding-right: 9pt;
-              text-indent: -12pt;
-              line-height: 199%;
-              text-align: left;
-            "
-          >
-            II. Tiba di &emsp;&emsp;&emsp;: Kecamatan Mempawah Timur <br/>Pada Tanggal : 14 Mei 2024
-          </p>
-        </td>
-        <td
-          style="
-            width: 255pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p
-            class="s2"
-            style="
-            padding-top: 8pt;
-            padding-left: 20pt;
-            padding-right: 9pt;
-            text-indent: -12pt;
-            line-height: 199%;
+    @if ($penugasans->first()->jenis_surat_tugas != $cons::NON_SPPD)
+    <div class="pagebreak"></div>
+    <div class="landscape">
+        <p style="text-indent: 0pt; text-align: left"><br /></p>
+        <p
+        style="
+            padding-top: 5pt;
+            padding-left: 450pt;
+            width: 500px;
+            text-indent: 0pt;
             text-align: left;
-            "
-          >
-            Berangkat dari : Kecamatan Mempawah Timur
-          </p>
-          <p
-            class="s2"
-            style="
-              padding-left: 9pt;
-              padding-right: 90pt;
-              text-indent: 0pt;
-              text-align: left;
-            "
-          >
-            Ke &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;: Mempawah <br/>
-            Pada tanggal &emsp;: 14 Mei 2024
-          </p>
-        </td>
-      </tr>
-      <tr style="height: 135pt">
-        <td
-          style="
-            width: 262pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
+        "
         >
-          <p
-            class="s2"
-            style="
-              padding-top: 8pt;
-              padding-left: 27pt;
-              padding-right: 127pt;
-              text-indent: -18pt;
-              text-align: left;
-            "
-          >
-            III. Tiba di &emsp;&emsp;&emsp;&emsp;:
-            <br/>
-            Pada Tanggal&emsp;:
-          </p>
-        </td>
-        <td
-          style="
-            width: 255pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
+        Lampiran
+        </p>
+        <p
+        style="
+            width: 500px;
+            padding-left: 450pt;
+            text-indent: 0pt;
+            line-height: 12pt;
+            text-align: left;
+        "
         >
-          <p
-            class="s2"
+        Nomor : {{$penugasans->first()->suratTugas->nomor_surat_tugas}}
+        </p>
+        <p
+        style="
+            padding-left: 450pt;
+            width: 500px;
+            text-indent: 0pt;
+            line-height: 12pt;
+            text-align: left;
+        "
+        >
+        Tanggal : {{$c::parse($penugasans->first()->tgl_pengajuan_tugas)->translatedFormat('d F Y')}}
+        </p>
+        <p style="text-indent: 0pt; text-align: left"><br /></p>
+        <table
+        style="border-collapse: collapse; margin-left: 25pt"
+        cellspacing="0"
+        >
+        <tr style="height: 35pt">
+            <td
             style="
-              padding-top: 8pt;
-              padding-left: 9pt;
-              text-indent: 0pt;
-              text-align: left;
+                width: 26pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
             "
-          >
-            Berangkat dari :
+            >
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <p
+                class="s1"
+                style="
+                padding-left: 5pt;
+                padding-right: 4pt;
+                text-indent: 0pt;
+                text-align: center;
+                "
+            >
+                No
+            </p>
+            </td>
+            <td
+            style="
+                width: 199pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <p
+                class="s1"
+                style="
+                padding-left: 7pt;
+                padding-right: 7pt;
+                text-indent: 0pt;
+                text-align: center;
+                width: 200px;
+                "
+            >
+                Nama
+            </p>
+            </td>
+            <td
+            style="
+                width: 135pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <p
+                class="s1"
+                style="
+                padding-left: 11pt;
+                padding-right: 11pt;
+                text-indent: 0pt;
+                text-align: center;
+                "
+            >
+                NIP
+            </p>
+            </td>
+            <td
+            style="
+                width: 116pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <p
+                class="s1"
+                style="
+                padding-left: 8pt;
+                padding-right: 8pt;
+                text-indent: 0pt;
+                text-align: center;
+                "
+            >
+                Pangkat/Gol
+            </p>
+            </td>
+            <td
+            style="
+                width: 209pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <p
+                class="s1"
+                style="
+                padding-left: 17pt;
+                padding-right: 17pt;
+                text-indent: 0pt;
+                text-align: center;
+                width: 250px;
+                "
+            >
+                Jabatan
+            </p>
+            </td>
+        </tr>
+        @foreach ($penugasans as $penugasan)
+            <tr style="height: 27pt">
+                <td
+                style="
+                    width: 26pt;
+                    border-top-style: solid;
+                    border-top-width: 1pt;
+                    border-left-style: solid;
+                    border-left-width: 1pt;
+                    border-bottom-style: solid;
+                    border-bottom-width: 1pt;
+                    border-right-style: solid;
+                    border-right-width: 1pt;
+                "
+                >
+                <p
+                    class="s2"
+                    style="
+                    padding-top: 7pt;
+                    padding-left: 5pt;
+                    padding-right: 4pt;
+                    text-indent: 0pt;
+                    text-align: center;
+                    "
+                >
+                    {{$loop->index + 1}}.
+                </p>
+                </td>
+                <td
+                style="
+                    width: 199pt;
+                    border-top-style: solid;
+                    border-top-width: 1pt;
+                    border-left-style: solid;
+                    border-left-width: 1pt;
+                    border-bottom-style: solid;
+                    border-bottom-width: 1pt;
+                    border-right-style: solid;
+                    border-right-width: 1pt;
+                "
+                >
+                <p
+                    class="s2"
+                    style="
+                    padding-top: 7pt;
+                    padding-left: 7pt;
+                    padding-right: 7pt;
+                    text-indent: 0pt;
+                    text-align: center;
+                    "
+                >
+                    {{$penugasan->pegawai->nama}}
+                </p>
+                </td>
+                <td
+                style="
+                    width: 135pt;
+                    border-top-style: solid;
+                    border-top-width: 1pt;
+                    border-left-style: solid;
+                    border-left-width: 1pt;
+                    border-bottom-style: solid;
+                    border-bottom-width: 1pt;
+                    border-right-style: solid;
+                    border-right-width: 1pt;
+                "
+                >
+                <p
+                    class="s2"
+                    style="
+                    padding-top: 7pt;
+                    padding-left: 11pt;
+                    padding-right: 11pt;
+                    text-indent: 0pt;
+                    text-align: center;
+                    "
+                >
+                    {{$penugasan->nip}}
+                </p>
+                </td>
+                <td
+                style="
+                    width: 116pt;
+                    border-top-style: solid;
+                    border-top-width: 1pt;
+                    border-left-style: solid;
+                    border-left-width: 1pt;
+                    border-bottom-style: solid;
+                    border-bottom-width: 1pt;
+                    border-right-style: solid;
+                    border-right-width: 1pt;
+                "
+                >
+                <p
+                    class="s2"
+                    style="
+                    padding-top: 7pt;
+                    padding-left: 8pt;
+                    padding-right: 8pt;
+                    text-indent: 0pt;
+                    text-align: center;
+                    "
+                >
+                    {{$penugasan->pegawai->pangkat_golongan}}
+                </p>
+                </td>
+                <td
+                style="
+                    width: 209pt;
+                    border-top-style: solid;
+                    border-top-width: 1pt;
+                    border-left-style: solid;
+                    border-left-width: 1pt;
+                    border-bottom-style: solid;
+                    border-bottom-width: 1pt;
+                    border-right-style: solid;
+                    border-right-width: 1pt;
+                "
+                >
+                <p
+                    class="s2"
+                    style="
+                    padding-top: 7pt;
+                    padding-left: 17pt;
+                    padding-right: 17pt;
+                    text-indent: 0pt;
+                    text-align: center;
+                    "
+                >
+                   {{$penugasan->pegawai->jabatan}}
+                </p>
+                </td>
+            </tr>
+        @endforeach
+        </table>
+        <p style="text-indent: 0pt; text-align: left"><br /></p>
+        <p style="padding-left: 500px;width: 500px; text-indent: 0pt; text-align: center">
+            {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}}, {{$c::parse($penugasans->first()->tgl_pengajuan_tugas)->translatedFormat('d F Y')}}
           </p>
           <p style="text-indent: 0pt; text-align: left"><br /></p>
-          <p
-            class="s2"
-            style="padding-left: 9pt; text-indent: 0pt; text-align: left"
-          >
-            Ke :
-          </p>
-          <p
-            class="s2"
-            style="padding-left: 9pt; text-indent: 0pt; text-align: left"
-          >
-            Pada tanggal :
-          </p>
-        </td>
-      </tr>
-      <tr style="height: 182pt">
-        <td
-          style="
-            width: 262pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 8pt;
-              padding-left: 27pt;
-              padding-right: 127pt;
-              text-indent: -18pt;
-              text-align: left;
-            "
-          >
-            IV. Tiba di : Mempawah (tempat kedudukan)
-          </p>
-          <p
-            class="s2"
-            style="
-              padding-left: 26pt;
-              text-indent: 0pt;
-              line-height: 12pt;
-              text-align: left;
-            "
-          >
-            Pada Tanggal : 14 Mei 2024
-          </p>
-          <p style="text-indent: 0pt; text-align: left"><br /></p>
-          <p
-            class="s2"
-            style="
-              padding-top: 9pt;
-              padding-left: 60pt;
-              padding-right: 62pt;
-              text-indent: 40pt;
-              text-align: left;
-            "
-          >
-            Mengetahui, <br /> Pejabat Pembuat Komitmen
-          </p>
-          <p style="text-indent: 0pt; text-align: left"><br /><br /><br /><br /></p>
-          <p
-            class="s8"
-            style="
-              padding-top: 8pt;
-              padding-left: 62pt;
-              padding-right: 62pt;
-              text-indent: 0pt;
-              text-align: center;
-            "
-          >
-            Arief Yuandi, SST
-          </p>
-          <p
-            class="s2"
-            style="
-              padding-left: 62pt;
-              padding-right: 62pt;
-              text-indent: 0pt;
-              text-align: center;
-            "
-          >
-            NIP. 199306062016021001
-          </p>
-        </td>
-        <td
-          style="
-            width: 255pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-        >
-          <p
-            class="s2"
-            style="
-              padding-top: 8pt;
-              padding-left: 10pt;
-              padding-right: 9pt;
-              text-indent: 0pt;
-              text-align: center;
-            "
-          >
-            Telah diperiksa dengan keterangan bahwa penjelasan tersebut atas
-            perintahnya dan semata-mata untuk kepentingan jabatan dalam waktu
-            singkat,
-          </p>
-          <p style="text-indent: 0pt; text-align: left"><br /></p>
-          <p
-            class="s2"
-            style="
-              padding-left: 14pt;
-              padding-right: 13pt;
-              text-indent: 0pt;
-              text-align: center;
-            "
-          >
-            Pejabat yang berwenang/pejabat lainnya yang ditunjuk
-          </p>
-          <p style="text-indent: 0pt; text-align: left"><br /></p>
-          <p
-            class="s2"
-            style="
-              padding-left: 55pt;
-              padding-right: 55pt;
-              text-indent: 0pt;
-              text-align: center;
-            "
-          >
-            Pejabat Pembuat Komitmen
+          <p style="padding-left: 500px; width: 500px;text-indent: 0pt; text-align: center">
+              @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasans->first()->plh->nip)
+                  An.
+              @endif
+            Kepala Badan Pusat Statistik <br/> {{ucwords(strtolower($namaSatker))}}
           </p>
           <p style="text-indent: 0pt; text-align: left"><br /><br /></p>
           <p
-            class="s8"
+            class="s3"
             style="
               padding-top: 9pt;
-              padding-left: 55pt;
-              padding-right: 55pt;
+              padding-left: 500px;
+              width: 500px;
               text-indent: 0pt;
               text-align: center;
             "
           >
-            Arief Yuandi, SST
+            {{$penugasans->first()->plh->nama}}
           </p>
-          <p
-            class="s2"
-            style="
-              padding-left: 55pt;
-              padding-right: 55pt;
-              text-indent: 0pt;
-              text-align: center;
-            "
-          >
-            NIP. 199306062016021001
+          <p style="padding-left: 500px; width: 500px; text-indent: 0pt; text-align: center">
+            NIP. <span style="color: #1f1f1f">{{$penugasans->first()->plh->nip}}</span>
           </p>
-        </td>
-      </tr>
-      <tr style="height: 76pt">
-        <td
-          style="
-            width: 517pt;
-            border-top-style: solid;
-            border-top-width: 1pt;
-            border-left-style: solid;
-            border-left-width: 1pt;
-            border-bottom-style: solid;
-            border-bottom-width: 1pt;
-            border-right-style: solid;
-            border-right-width: 1pt;
-          "
-          colspan="2"
+    </div>
+    @foreach ($penugasans as $penugasan)
+        <div class="pagebreak"></div>
+        <p style="text-indent: 0pt; text-align: left"><br /></p>
+        <div style="display: flex;">
+            <div style="max-width: 300px; display: flex">
+                <div>
+                    <span><img
+                        width="94"
+                        height="71"
+                        alt="D:\Logo\BPS-small.png"
+                        title="D:\Logo\BPS-small.png"
+                        src="{{asset('SPPD_files/Image_002.png')}}"
+                    /></span>
+                </div>
+                <div
+                class="s4"
+                style="
+                    text-indent: 0pt;
+                    line-height: 107%;
+                    text-align: left;
+                    align-self: center;
+                    padding-left: 10px;
+                "
+                >
+                BADAN PUSAT STATISTIK {{$namaSatker}}
+                </div>
+            </div>
+            <div style="width: 200px;"></div>
+            <div style="text-align: right;">
+                <p
+                style="
+                    padding-top: 9pt;
+                    padding-left: 9pt;
+                    text-indent: 0pt;
+                    line-height: 115%;
+                    text-align: left;
+                "
+                >
+                Lembar ke :1 <br/>Kode Nomor : -
+                </p>
+                <p
+                style="
+                    padding-left: 9pt;
+                    text-indent: 0pt;
+                    line-height: 12pt;
+                    text-align: left;
+                "
+                >
+                Nomor : {{$penugasans->first()->suratPerjadin->nomor_surat_perjadin}}
+                </p>
+            </div>
+        </div>
+        <p style="text-indent: 0pt; text-align: left"><br /></p>
+        <p style="text-indent: 0pt; text-align: left"><br /></p>
+        <h2 style="padding-left: 0; text-indent: 0pt; text-align: center">
+        SURAT PERJALANAN DINAS (SPD)
+        </h2>
+        <p style="text-indent: 0pt; text-align: left"><br /></p>
+        <table
+        style="border-collapse: collapse; margin-left: 5.64998pt"
+        cellspacing="0"
         >
-          <p style="text-indent: 0pt; text-align: left"><br /></p>
-          <p
-            class="s2"
+        <tr style="height: 29pt">
+            <td
             style="
-              padding-top: 7pt;
-              padding-left: 105pt;
-              padding-right: 9pt;
-              text-indent: -96pt;
-              text-align: justify;
+                width: 26pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
             "
-          >
-            V. Catatan Lain: PPK yang menertibkan SPD, pegawai yang melakukan
-            perjalanan dinas, pejabat yang mengesahkan tanggal berangkat/tiba,
-            serta bendahara pengeluaran bertanggung jawab berdasarkan
-            peraturan-peraturan keuangan Negara apabila Negara menderita rugi
-            akibat kesalahan, kelalaian, dan kealpaannya.
-          </p>
-        </td>
-      </tr>
-    </table>
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 7pt;
+                padding-right: 7pt;
+                text-indent: 0pt;
+                text-align: right;
+                "
+            >
+                1.
+            </p>
+            </td>
+            <td
+            style="
+                width: 216pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            colspan="2"
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 7pt;
+                padding-left: 7pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                Pejabat Pembuat Komitmen
+            </p>
+            </td>
+            <td
+            style="
+                width: 283pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            colspan="2"
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 7pt;
+                padding-left: 7pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                {{$ppk->nama}}
+            </p>
+            </td>
+        </tr>
+        <tr style="height: 36pt">
+            <td
+            style="
+                width: 26pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 1pt;
+                padding-right: 7pt;
+                text-indent: 0pt;
+                text-align: right;
+                "
+            >
+                2.
+            </p>
+            </td>
+            <td
+            style="
+                width: 216pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            colspan="2"
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 1pt;
+                padding-left: 7pt;
+                text-indent: 0pt;
+                line-height: 115%;
+                text-align: left;
+                "
+            >
+                Nama / NIP pegawai yang melaksanakan perjalanan dinas
+            </p>
+            </td>
+            <td
+            style="
+                width: 283pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            colspan="2"
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 1pt;
+                padding-left: 7pt;
+                text-indent: 0pt;
+                line-height: 115%;
+                text-align: left;
+                "
+            >
+                {{$penugasan->pegawai->nama}} <br />
+                NIP. {{$penugasan->pegawai->nip}}
+            </p>
+            </td>
+        </tr>
+        <tr style="height: 48pt">
+            <td
+            style="
+                width: 26pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 1pt;
+                padding-right: 7pt;
+                text-indent: 0pt;
+                text-align: right;
+                "
+            >
+                3.
+            </p>
+            </td>
+            <td
+            style="
+                width: 216pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            colspan="2"
+            >
+            <ol id="l3">
+                <li data-list-text="a.">
+                <p
+                    class="s2"
+                    style="
+                    padding-top: 1pt;
+                    padding-left: 19pt;
+                    text-indent: -12pt;
+                    text-align: left;
+                    "
+                >
+                    Golongan/Pangkat
+                </p>
+                </li>
+                <li data-list-text="b.">
+                <p
+                    class="s2"
+                    style="
+                    padding-top: 1pt;
+                    padding-left: 19pt;
+                    text-indent: -12pt;
+                    text-align: left;
+                    "
+                >
+                    Jabatan/Instansi
+                </p>
+                </li>
+                <li data-list-text="c.">
+                <p
+                    class="s2"
+                    style="
+                    padding-top: 1pt;
+                    padding-left: 19pt;
+                    text-indent: -12pt;
+                    text-align: left;
+                    "
+                >
+                    Tingkat Biaya Perjalanan Dinas
+                </p>
+                </li>
+            </ol>
+            </td>
+            <td
+            style="
+                width: 283pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            colspan="2"
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 1pt;
+                padding-left: 7pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                {{$penugasan->pegawai->pangkat_golongan}}
+            </p>
+            <p
+                class="s2"
+                style="
+                padding-top: 1pt;
+                padding-left: 7pt;
+                padding-right: 22pt;
+                text-indent: 0pt;
+                line-height: 113%;
+                text-align: left;
+                "
+            >
+            {{$penugasan->pegawai->jabatan}} BPS {{ucwords(strtolower($namaSatker))}} <br/>
+            C
+            </p>
+            </td>
+        </tr>
+        <tr style="height: 56pt">
+            <td
+            style="
+                width: 26pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 7pt;
+                padding-right: 7pt;
+                text-indent: 0pt;
+                text-align: right;
+                "
+            >
+                4.
+            </p>
+            </td>
+            <td
+            style="
+                width: 216pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            colspan="2"
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 7pt;
+                padding-left: 7pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                Maksud perjalanan dinas
+            </p>
+            </td>
+            <td
+            style="
+                width: 283pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            colspan="2"
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 7pt;
+                padding-left: 7pt;
+                padding-right: 6pt;
+                text-indent: 0pt;
+                line-height: 114%;
+                text-align: justify;
+                "
+            >
+            Melaksanakan {{$penugasan->kegiatan->nama}} Tahun {{$c::parse($penugasan->kegiatan->tgl_akhir_perjadin)->year}}
+            @if ($penugasan->jenis_surat_tugas != $cons::NON_SPPD)
+            di
+                @if ($penugasan->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KABUPATEN_KOTA)
+                    Kabupaten {{ucwords(strtolower($penugasan->kabkot->kabkot))}}
+                @endif
+                @if ($penugasan->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KECAMATAN)
+                    Kecamatan {{ucwords(strtolower($penugasan->kecamatan->kecamatan))}},
+                    Kabupaten {{ucwords(strtolower($penugasan->kabkot->kabkot))}}
+                @endif
+                @if ($penugasan->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_DESA_KELURAHAN)
+                    Desa/Kelurahan {{ucwords(strtolower($penugasan->desa->desa_kel))}},
+                    Kecamatan {{ucwords(strtolower($penugasan->kecamatan->kecamatan))}},
+                    {{ucwords(strtolower($penugasan->kabkot->kabkot))}}
+                @endif
+                pada tanggal
+                @if ($penugasan->tgl_mulai_tugas == $penugasan->tgl_mulai_tugas)
+                    {{$c::parse($penugasan->tgl_mulai_tugas)->translatedFormat('d F Y')}}
+                @else
+                    {{$c::parse($penugasan->tgl_mulai_tugas)->translatedFormat('d F Y')." s.d. ".$c::parse($penugasan->tgl_akhir_tugas)->translatedFormat('d M Y')}}
+                @endif
+
+            @endif
+            </p>
+            </td>
+        </tr>
+        <tr style="height: 29pt">
+            <td
+            style="
+                width: 26pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 7pt;
+                padding-right: 7pt;
+                text-indent: 0pt;
+                text-align: right;
+                "
+            >
+                5.
+            </p>
+            </td>
+            <td
+            style="
+                width: 216pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            colspan="2"
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 7pt;
+                padding-left: 7pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                Alat angkutan yang dipergunakan
+            </p>
+            </td>
+            <td
+            style="
+                width: 283pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            colspan="2"
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 7pt;
+                padding-left: 7pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+            {{$cons::JENIS_TRANSPORTASI_OPTIONS[($penugasan->transportasi)]}}
+            </p>
+            </td>
+        </tr>
+        <tr style="height: 30pt">
+            <td
+            style="
+                width: 26pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 1pt;
+                padding-right: 7pt;
+                text-indent: 0pt;
+                text-align: right;
+                "
+            >
+                6.
+            </p>
+            </td>
+            <td
+            style="
+                width: 216pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            colspan="2"
+            >
+            <ol id="l4">
+                <li data-list-text="a.">
+                <p
+                    class="s2"
+                    style="
+                    padding-top: 1pt;
+                    padding-left: 19pt;
+                    text-indent: -12pt;
+                    text-align: left;
+                    "
+                >
+                    Tempat berangkat
+                </p>
+                </li>
+                <li data-list-text="b.">
+                <p
+                    class="s2"
+                    style="
+                    padding-top: 1pt;
+                    padding-left: 19pt;
+                    text-indent: -12pt;
+                    text-align: left;
+                    "
+                >
+                    Tempat tujuan
+                </p>
+                </li>
+            </ol>
+            </td>
+            <td
+            style="
+                width: 283pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            colspan="2"
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 1pt;
+                padding-left: 7pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}}
+            </p>
+            <p
+                class="s2"
+                style="
+                padding-top: 1pt;
+                padding-left: 7pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                @if ($penugasan->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KABUPATEN_KOTA)
+                    Kabupaten {{ucwords(strtolower($penugasan->kabkot->kabkot))}}
+                @endif
+                @if ($penugasan->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KECAMATAN)
+                    Kecamatan {{ucwords(strtolower($penugasan->kecamatan->kecamatan))}}
+                @endif
+                @if ($penugasan->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_DESA_KELURAHAN)
+                    Desa/Kelurahan {{ucwords(strtolower($penugasan->desa->desa_kel))}},
+                    Kecamatan {{ucwords(strtolower($penugasan->kecamatan->kecamatan))}}
+                @endif
+            </p>
+            </td>
+        </tr>
+        <tr style="height: 56pt">
+            <td
+            style="
+                width: 26pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 7pt;
+                padding-right: 7pt;
+                text-indent: 0pt;
+                text-align: right;
+                "
+            >
+                7.
+            </p>
+            </td>
+            <td
+            style="
+                width: 216pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            colspan="2"
+            >
+            <ol id="l5">
+                <li data-list-text="a.">
+                <p
+                    class="s2"
+                    style="
+                    padding-top: 7pt;
+                    padding-left: 19pt;
+                    text-indent: -12pt;
+                    text-align: left;
+                    "
+                >
+                    Lamanya perjalanan dinas
+                </p>
+                </li>
+                <li data-list-text="b.">
+                <p
+                    class="s2"
+                    style="
+                    padding-top: 1pt;
+                    padding-left: 19pt;
+                    text-indent: -12pt;
+                    text-align: left;
+                    "
+                >
+                    Tanggal berangkat
+                </p>
+                </li>
+                <li data-list-text="c.">
+                <p
+                    class="s2"
+                    style="
+                    padding-top: 1pt;
+                    padding-left: 19pt;
+                    text-indent: -12pt;
+                    text-align: left;
+                    "
+                >
+                    Tanggal Kembali
+                </p>
+                </li>
+            </ol>
+            </td>
+            <td
+            style="
+                width: 283pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            colspan="2"
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 7pt;
+                padding-left: 7pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                {{$penugasan->lama_perjadin}} hari
+            </p>
+            <p
+                class="s2"
+                style="
+                padding-top: 1pt;
+                padding-left: 7pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                {{$c::parse($penugasan->tgl_mulai_tugas)->translatedFormat('d F Y')}}
+            </p>
+            <p
+                class="s2"
+                style="
+                padding-top: 1pt;
+                padding-left: 7pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+            {{$c::parse($penugasan->tgl_akhir_tugas)->translatedFormat('d F Y')}}
+            </p>
+            </td>
+        </tr>
+        <tr style="height: 17pt">
+            <td
+            style="
+                width: 26pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            rowspan="2"
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 7pt;
+                padding-left: 8pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                8.
+            </p>
+            </td>
+            <td
+            style="
+                width: 65pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 1pt;
+                padding-left: 7pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                Pengikut:
+            </p>
+            </td>
+            <td
+            style="
+                width: 151pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 1pt;
+                padding-left: 7pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                Nama
+            </p>
+            </td>
+            <td
+            style="
+                width: 144pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 1pt;
+                padding-left: 7pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                Tanggal Lahir
+            </p>
+            </td>
+            <td
+            style="
+                width: 139pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 1pt;
+                padding-left: 7pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                Keterangan
+            </p>
+            </td>
+        </tr>
+        <tr style="height: 30pt">
+            <td
+            style="
+                width: 65pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 1pt;
+                padding-left: 7pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                1.
+            </p>
+            <p
+                class="s2"
+                style="
+                padding-top: 1pt;
+                padding-left: 7pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                2.
+            </p>
+            </td>
+            <td
+            style="
+                width: 151pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            </td>
+            <td
+            style="
+                width: 144pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            </td>
+            <td
+            style="
+                width: 139pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            </td>
+        </tr>
+        <tr style="height: 56pt">
+            <td
+            style="
+                width: 26pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 7pt;
+                padding-right: 7pt;
+                text-indent: 0pt;
+                text-align: right;
+                "
+            >
+                9.
+            </p>
+            </td>
+            <td
+            style="
+                width: 216pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            colspan="2"
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 7pt;
+                padding-left: 7pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                Pembeban anggaran
+            </p>
+            <ol id="l6">
+                <li data-list-text="a.">
+                <p
+                    class="s2"
+                    style="
+                    padding-top: 1pt;
+                    padding-left: 19pt;
+                    text-indent: -12pt;
+                    text-align: left;
+                    "
+                >
+                    Instansi
+                </p>
+                </li>
+                <li data-list-text="b.">
+                <p
+                    class="s2"
+                    style="
+                    padding-top: 1pt;
+                    padding-left: 19pt;
+                    text-indent: -12pt;
+                    text-align: left;
+                    "
+                >
+                    Mata anggaran
+                </p>
+                </li>
+            </ol>
+            </td>
+            <td
+            style="
+                width: 283pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            colspan="2"
+            >
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <ol id="l7">
+                <li data-list-text="a.">
+                <p
+                    class="s2"
+                    style="
+                    padding-top: 8pt;
+                    padding-left: 19pt;
+                    text-indent: -12pt;
+                    text-align: left;
+                    "
+                >
+                    BPS {{ucwords(strtolower($namaSatker))}}
+                </p>
+                </li>
+                <li data-list-text="b.">
+                <p
+                    class="s2"
+                    style="
+                    padding-top: 1pt;
+                    padding-left: 19pt;
+                    text-indent: -12pt;
+                    text-align: left;
+                    "
+                >
+                    ...
+                </p>
+                </li>
+            </ol>
+            </td>
+        </tr>
+        <tr style="height: 29pt">
+            <td
+            style="
+                width: 26pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 7pt;
+                padding-right: 4pt;
+                text-indent: 0pt;
+                text-align: right;
+                "
+            >
+                10.
+            </p>
+            </td>
+            <td
+            style="
+                width: 216pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            colspan="2"
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 7pt;
+                padding-left: 7pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                Keterangan lain-lain
+            </p>
+            </td>
+            <td
+            style="
+                width: 283pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            colspan="2"
+            >
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            </td>
+        </tr>
+        </table>
+        <p style="text-indent: 0pt; text-align: left"><br /></p>
+        <p
+        style="
+            padding-left: 350pt;
+            text-indent: 0pt;
+            line-height: 108%;
+            text-align: left;
+        "
+        >
+        Dikeluarkan di : {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}} <br /> Pada tanggal : {{$c::parse($penugasan->tgl_pengajuan_tugas)->translatedFormat('d F Y')}}
+
+        </p>
+        <p style="text-indent: 0pt; text-align: left"><br /></p>
+        <p style="padding-left: 306pt; text-indent: 0pt; text-align: center">
+        Pejabat Pembuat Komitmen
+        </p>
+        <p style="text-indent: 0pt; text-align: left"><br /><br /></p>
+        <p
+        class="s5"
+        style="
+            padding-top: 8pt;
+            padding-left: 306pt;
+            text-indent: 0pt;
+            text-align: center;
+        "
+        >
+        {{$ppk->nama}}
+        </p>
+        <p style="padding-left: 306pt; text-indent: 0pt; text-align: center">
+        NIP. {{$ppk->nip}}
+        </p>
+        <div class="pagebreak"> </div>
+        <table
+        style="border-collapse: collapse; margin-left: 10.09pt"
+        cellspacing="0"
+        >
+        <tr style="height: 205pt">
+            <td
+            style="
+                width: 262pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 8pt;
+                padding-left: 9pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                I<span class="s6">.</span>
+            </p>
+            </td>
+            <td
+            style="
+                width: 255pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 8pt;
+                padding-left: 9pt;
+                padding-right: 70pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                Berangkat dari : {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}} tempat kedudukan
+            </p>
+            <p
+                class="s2"
+                style="
+                padding-left: 103pt;
+                padding-right: 38pt;
+                text-indent: -93pt;
+                text-align: left;
+                "
+            >
+                Ke :
+                @if ($penugasan->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KABUPATEN_KOTA)
+                    Kabupaten {{ucwords(strtolower($penugasan->kabkot->kabkot))}}
+                @endif
+                @if ($penugasan->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KECAMATAN)
+                    Kecamatan {{ucwords(strtolower($penugasan->kecamatan->kecamatan))}}
+                @endif
+                @if ($penugasan->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_DESA_KELURAHAN)
+                    Desa/Kelurahan {{ucwords(strtolower($penugasan->desa->desa_kel))}},
+                    Kecamatan {{ucwords(strtolower($penugasan->kecamatan->kecamatan))}}
+                @endif
+            </p>
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <p
+                class="s2"
+                style="padding-left: 9pt; text-indent: 0pt; text-align: left"
+            >
+                Pada tanggal : {{$c::parse($penugasan->tgl_mulai_tugas)->translatedFormat('d F Y')}}
+            </p>
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <p
+                class="s2"
+                style="
+                padding-left: 55pt;
+                padding-right: 55pt;
+                text-indent: 0pt;
+                text-align: center;
+                "
+            >
+                Mengetahui,
+            </p>
+            <p
+                class="s2"
+                style="
+                width:100%
+                text-indent: 0pt;
+                text-align: center;
+                "
+            >
+            @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasan->plh->nip)
+            An.
+            @endif
+            Kepala Badan Pusat Statistik <br/> {{ucwords(strtolower($namaSatker))}}
+            </p>
+            <p style="text-indent: 0pt; text-align: left"><br /><br /></p>
+            <p
+                class="s7"
+                style="
+                padding-top: 9pt;
+                width:100%
+                text-indent: 0pt;
+                text-align: center;
+                "
+            >
+                {{$penugasan->plh->nama}}
+            </p>
+            <p
+                class="s2"
+                style="
+                width:100%
+                text-indent: 0pt;
+                text-align: center;
+                "
+            >
+                NIP. <span style="color: #1f1f1f">{{$penugasan->plh->nip}}</span>
+            </p>
+            </td>
+        </tr>
+        <tr style="height: 147pt">
+            <td
+            style="
+                width: 262pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 8pt;
+                padding-left: 20pt;
+                padding-right: 9pt;
+                text-indent: -12pt;
+                line-height: 199%;
+                text-align: left;
+                "
+            >
+                II. Tiba di &emsp;&emsp;&emsp;:
+                @if ($penugasan->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KABUPATEN_KOTA)
+                    Kabupaten {{ucwords(strtolower($penugasan->kabkot->kabkot))}}
+                @endif
+                @if ($penugasan->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KECAMATAN)
+                    Kecamatan {{ucwords(strtolower($penugasan->kecamatan->kecamatan))}}
+                @endif
+                @if ($penugasan->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_DESA_KELURAHAN)
+                    Desa/Kelurahan {{ucwords(strtolower($penugasan->desa->desa_kel))}},
+                    Kecamatan {{ucwords(strtolower($penugasan->kecamatan->kecamatan))}}
+                @endif
+                <br/>Pada Tanggal :
+                {{$c::parse($penugasan->tgl_mulai_tugas)->translatedFormat('d F Y')}}
+            </p>
+            </td>
+            <td
+            style="
+                width: 255pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 8pt;
+                padding-left: 20pt;
+                padding-right: 9pt;
+                text-indent: -12pt;
+                line-height: 199%;
+                text-align: left;
+                "
+            >
+                Berangkat dari :
+                @if ($penugasan->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KABUPATEN_KOTA)
+                    Kabupaten {{ucwords(strtolower($penugasan->kabkot->kabkot))}}
+                @endif
+                @if ($penugasan->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KECAMATAN)
+                    Kecamatan {{ucwords(strtolower($penugasan->kecamatan->kecamatan))}}
+                @endif
+                @if ($penugasan->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_DESA_KELURAHAN)
+                    Desa/Kelurahan {{ucwords(strtolower($penugasan->desa->desa_kel))}},
+                    Kecamatan {{ucwords(strtolower($penugasan->kecamatan->kecamatan))}}
+                @endif
+            </p>
+            <p
+                class="s2"
+                style="
+                padding-left: 9pt;
+                padding-right: 90pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                Ke &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;: {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}} <br/>
+                Pada tanggal &emsp;:
+                {{$c::parse($penugasan->tgl_akhir_tugas)->translatedFormat('d F Y')}}
+            </p>
+            </td>
+        </tr>
+        <tr style="height: 135pt">
+            <td
+            style="
+                width: 262pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 8pt;
+                padding-left: 27pt;
+                padding-right: 127pt;
+                text-indent: -18pt;
+                text-align: left;
+                "
+            >
+                III. Tiba di &emsp;&emsp;&emsp;&emsp;:
+                <br/>
+                Pada Tanggal&emsp;:
+
+            </p>
+            </td>
+            <td
+            style="
+                width: 255pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 8pt;
+                padding-left: 9pt;
+                text-indent: 0pt;
+                text-align: left;
+                "
+            >
+                Berangkat dari :
+            </p>
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <p
+                class="s2"
+                style="padding-left: 9pt; text-indent: 0pt; text-align: left"
+            >
+                Ke :
+            </p>
+            <p
+                class="s2"
+                style="padding-left: 9pt; text-indent: 0pt; text-align: left"
+            >
+                Pada tanggal :
+            </p>
+            </td>
+        </tr>
+        <tr style="height: 182pt">
+            <td
+            style="
+                width: 262pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 8pt;
+                padding-left: 27pt;
+                padding-right: 127pt;
+                text-indent: -18pt;
+                text-align: left;
+                "
+            >
+                IV. Tiba di : {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}} (tempat kedudukan)
+            </p>
+            <p
+                class="s2"
+                style="
+                padding-left: 26pt;
+                text-indent: 0pt;
+                line-height: 12pt;
+                text-align: left;
+                "
+            >
+                Pada Tanggal :
+                {{$c::parse($penugasan->tgl_akhir_tugas)->translatedFormat('d F Y')}}
+            </p>
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <p
+                class="s2"
+                style="
+                padding-top: 9pt;
+                width: 100%;
+                text-align: center;
+                "
+            >
+                Mengetahui, <br /> Pejabat Pembuat Komitmen
+            </p>
+            <p style="text-indent: 0pt; text-align: left"><br /><br /><br /></p>
+            <p
+                class="s8"
+                style="
+                padding-top: 8pt;
+                width: 100%;
+                text-indent: 0pt;
+                text-align: center;
+                "
+            >
+                {{$ppk->nama}}
+            </p>
+            <p
+                class="s2"
+                style="
+                width: 100%;
+                text-indent: 0pt;
+                text-align: center;
+                "
+            >
+                NIP. {{$ppk->nip}}
+
+            </p>
+            </td>
+            <td
+            style="
+                width: 255pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            >
+            <p
+                class="s2"
+                style="
+                padding-top: 8pt;
+                width: 100%;
+                text-indent: 0pt;
+                text-align: center;
+                "
+            >
+                Telah diperiksa dengan keterangan bahwa penjelasan tersebut atas
+                perintahnya dan semata-mata untuk kepentingan jabatan dalam waktu
+                singkat,
+            </p>
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <p
+                class="s2"
+                style="
+                width: 100%;
+                text-indent: 0pt;
+                text-align: center;
+                "
+            >
+                Pejabat yang berwenang/pejabat lainnya yang ditunjuk
+            </p>
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <p
+                class="s2"
+                style="
+                width: 100%;
+                text-indent: 0pt;
+                text-align: center;
+                "
+            >
+                Pejabat Pembuat Komitmen
+            </p>
+            <p style="text-indent: 0pt; text-align: left"><br /><br /></p>
+            <p
+                class="s8"
+                style="
+                padding-top: 9pt;
+                width: 100%;
+                text-indent: 0pt;
+                text-align: center;
+                "
+            >
+                {{$ppk->nama}}
+            </p>
+            <p
+                class="s2"
+                style="
+                text-indent: 0pt;
+                text-align: center;
+                width: 100%;
+                "
+            >
+                NIP. {{$ppk->nip}}
+
+            </p>
+            </td>
+        </tr>
+        <tr style="height: 76pt">
+            <td
+            style="
+                width: 517pt;
+                border-top-style: solid;
+                border-top-width: 1pt;
+                border-left-style: solid;
+                border-left-width: 1pt;
+                border-bottom-style: solid;
+                border-bottom-width: 1pt;
+                border-right-style: solid;
+                border-right-width: 1pt;
+            "
+            colspan="2"
+            >
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <p
+                class="s2"
+                style="
+                padding-top: 7pt;
+                padding-left: 105pt;
+                padding-right: 9pt;
+                text-indent: -96pt;
+                text-align: justify;
+                "
+            >
+                V. Catatan Lain: PPK yang menertibkan SPD, pegawai yang melakukan
+                perjalanan dinas, pejabat yang mengesahkan tanggal berangkat/tiba,
+                serta bendahara pengeluaran bertanggung jawab berdasarkan
+                peraturan-peraturan keuangan Negara apabila Negara menderita rugi
+                akibat kesalahan, kelalaian, dan kealpaannya.
+            </p>
+            </td>
+        </tr>
+        </table>
+            @if ($penugasan->transportasi != $cons::TRANSPORTASI_KENDARAAN_DINAS)
+                <div class="pagebreak"></div>
+                <h2
+                style="
+                    padding-top: 3pt;
+                    text-indent: 0pt;
+                    text-align: center;
+                    /* font-weight:bold; */
+                "
+                >
+                SURAT PERNYATAAN
+                </h2>
+            <h2
+            style="
+                padding-top: 9pt;
+                text-indent: 0pt;
+                text-align: center;
+            "
+            >
+            TIDAK MENGGUNAKAN KENDARAAN DINAS
+            </h2>
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <p style="padding-left: 6pt; text-indent: 0pt; text-align: justify">
+            Yang bertanda tangan di bawah ini:
+            </p>
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <p style="padding-left: 42pt; text-indent: 0pt; text-align: left">
+            Nama &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;: {{$penugasan->pegawai->nama}}
+            </p>
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <p style="padding-left: 42pt; text-indent: 0pt; text-align: left">
+            NIP &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&nbsp;&ensp;&ensp;&ensp;&nbsp;: {{$penugasan->pegawai->nip}}
+            </p>
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <p
+            style="
+                padding-left: 42pt;
+                text-indent: 0pt;
+                text-align: left;
+            "
+            >
+            Pangkat/Golongan &ensp;: {{$penugasan->pegawai->pangkat_golongan}}
+            </p>
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <p style="padding-left: 42pt; text-indent: 0pt; text-align: left">
+                Jabatan &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&nbsp;: {{$penugasan->pegawai->jabatan}}
+            </p>
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <p style="padding-left: 42pt; text-indent: 0pt; text-align: left">
+                Unit Kerja &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&nbsp;&ensp;&ensp;: {{$penugasan->pegawai->unit_kerja}}
+            </p>
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <p
+            style="
+                padding-left: 5pt;
+                text-indent: 0pt;
+                line-height: 150%;
+                text-align: justify;
+            "
+            >
+            Menerangkan bahwa dalam rangka melaksanakan {{strtolower($penugasan->jenis_perjadin)}}
+            untuk melaksanakan tugas kedinasan sesuai surat tugas, saya benar-benar
+            tidak menggunakan kendaraan dinas.
+            </p>
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <p
+            style="
+                padding-left: 5pt;
+                text-indent: 0pt;
+                line-height: 150%;
+                text-align: justify;
+            "
+            >
+            Demikian pernyataan ini kami buat dengan sebenar-benarnya untuk digunakan
+            sebagaimana mestinya.
+            <i
+                >Apabila terdapat kekeliruan dalam pertanggungjawaban SPD dan
+                mengakibatkan kerugian negara, saya bersedia dituntut sesuai peraturan
+                yang berlaku dan mengembalikan biaya transport lokal yang sudah
+                terlanjur saua terima ke kas negara.</i
+            >
+            </p>
+            <p style="text-indent: 0pt; text-align: left"><br /></p>
+            <table
+            style="border-collapse: collapse; margin-left: 262.94pt"
+            cellspacing="0"
+            >
+            <tr style="height: 13pt">
+                <td style="width: 143pt">
+                <p
+                    style="
+                    padding-left: 10pt;
+                    padding-right: 10pt;
+                    text-indent: 2pt;
+                    line-height: 13pt;
+                    text-align: center;
+                    "
+                >
+                {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}}, {{$c::parse($penugasan->tgl_pengajuan_tugas)->translatedFormat('d F Y')}}
+
+                </p>
+                </td>
+            </tr>
+            <tr style="height: 59pt">
+                <td style="width: 143pt">
+                <p
+                    style="
+                    padding-left: 10pt;
+                    padding-right: 10pt;
+                    text-indent: 2pt;
+                    line-height: 13pt;
+                    text-align: center;
+                    "
+                >
+                    Pelaksana {{$penugasan->jenis_perjadin}}
+                </p>
+                </td>
+            </tr>
+            <tr style="height: 57pt">
+                <td style="width: 300pt">
+                <p style="text-indent: 0pt; text-align: left"><br /></p>
+                <p
+                    style="
+                    padding-left: 10pt;
+                    padding-right: 10pt;
+                    text-indent: 2pt;
+                    line-height: 13pt;
+                    text-align: center;
+                    "
+                >
+                    {{$penugasan->pegawai->nama}} <br/>
+                </p>
+                <p
+                    style="
+                    padding-left: 10pt;
+                    padding-right: 10pt;
+                    text-indent: 2pt;
+                    line-height: 13pt;
+                    text-align: center;
+                    "
+                >
+                    NIP. {{$penugasan->pegawai->nip}}
+                </p>
+                </td>
+            </tr>
+            </table>
+            @endif
+        @endforeach
+    @endif
   </body>
 </html>

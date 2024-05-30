@@ -124,6 +124,21 @@ class Penugasan extends Model
     public function satuSurat(){
         return $this->hasMany(Penugasan::class,"surat_tugas_id","surat_tugas_id");
     }
+    public function suratTugasBersamaDisetujui(array $with = null){
+        $query = self::query();
+        $surat_tugas_id = $this->surat_tugas_id;
+        if(!$surat_tugas_id) return collect([]);
+        if($with) $query = $query->with($with);
+        return $query->where("surat_tugas_id",$surat_tugas_id)->whereHas('riwayatPengajuan',function($q){
+            return $q->where(function($q){
+                $q->where('status',Constants::STATUS_PENGAJUAN_DISETUJUI)
+                ->orWhere('status',Constants::STATUS_PENGAJUAN_DICETAK)
+                ->orWhere('status',Constants::STATUS_PENGAJUAN_DIKUMPULKAN)
+                ->orWhere('status',Constants::STATUS_PENGAJUAN_DICAIRKAN);
+            })
+            ;
+        })->get();
+    }
     public function satuGrupPengajuan(){
         return $this->hasMany(Penugasan::class,"grup_id","grup_id");
     }
