@@ -114,7 +114,7 @@ class PenugasanTable extends BaseWidget
                             ,
                     ])
                     ->action(function (array $data):void {
-                        if(Penugasan::ajukan(PenugasanCreation::create($data))){
+                        if(Penugasan::ajukan($data)){
                             Notification::make()
                             ->title('Pengajuan berhasil dikirim')
                             ->success()

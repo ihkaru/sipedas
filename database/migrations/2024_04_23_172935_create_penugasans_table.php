@@ -33,6 +33,14 @@ return new class extends Migration
             // $table->foreign("kecamatan_id")->references("kecamatan_id")->on("master_sls");
             $table->string("desa_kel_id")->nullable();
             // $table->foreign("desa_kel_id")->references("desa_kel_id")->on("master_sls");
+            $table->boolean("is_multiple_prov")->default(false);
+            $table->boolean("is_multiple_kabkot")->default(false);
+            $table->boolean("is_multiple_kecamatan")->default(false);
+            $table->boolean("is_multiple_desa_kel")->default(false);
+            $table->string('prov_ids')->nullable();
+            $table->string('kabkot_ids')->nullable();
+            $table->string('kecamatan_ids')->nullable();
+            $table->string('desa_kel_ids')->nullable();
             $table->string("jenis_surat_tugas");
             $table->string('grup_id')->nullable();
             $table->unsignedBigInteger("surat_tugas_id")->nullable();
