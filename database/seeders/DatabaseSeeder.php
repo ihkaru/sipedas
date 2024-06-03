@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([PengaturanSeeder::class]);
         $this->call([AlokasiHonorSeeder::class]);
+        $this->call([MitraSeeder::class]);
         $this->call([MasterSlsSeeder::class]);
         $this->call([NomorSuratSeeder::class]);
         $this->call([KegiatanSeeder::class]);

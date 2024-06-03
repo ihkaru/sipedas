@@ -20,6 +20,7 @@
         "laravel/tinker": "^2.9",
         "maatwebsite/excel": "^3.1",
         "malzariey/filament-daterangepicker-filter": "^2.6",
+        "revolution/laravel-google-sheets": "^7.0",
         "riskihajar/terbilang": "^2.0"
     },
     "require-dev": {

@@ -101,6 +101,8 @@ class Constants {
 
     const COLUMN_ALOKASI_HONOR_IMPORT = ['id_sobat','id_kegiatan','nama_petugas','jabatan','nik','jenis_honor','id_honor','satuan_honor','honor_per_satuan_honor','target_per_satuan_honor','target_honor','honor_bersih','tanggal_akhir_kegiatan','tahun_akhir_kegiatan','bulan_akhir_kegiatan','id_batasan_honor','id_alokasi_waktu_honor','id_alokasi_waktu_batasan_honor','sudah_dibayarkan','sisa_hari_hingga_batas_pencairan','tanggal_pencairan','nama_kegiatan','kecamatan_domisili','desa_domisili','tanggal_penanda_tanganan_spk_oleh_petugas','tanggal_mulai_perjanjian','tanggal_akhir_perjanjian','tanggal_terima_hasil_pekerjaan_paling_lambat','tambahan_waktu_tanggal_terima_hasil_pekerjaan_paling_lambat',];
     const COLUMN_TIMESTAMP_ALOKASI_HONOR_IMPORT = ['tanggal_akhir_kegiatan','tanggal_penandan_tanganan_spk_oleh_petugas','tanggal_mulai_perjanjian','tanggal_akhir_perjanjian','tanggal_terima_hasil_paling_lambat','tambahan_waktu_tanggal_terima_hasil_pekerjaan_paling_lambat'];
+
+    const COLUMN_MITRA_IMPORT = ['id_sobat','nama_1','kabupaten_domisili','kecamatan_domisili','desa_domisili','nik','nama_2','posisi','status_seleksi_1_terpilih_2_tidak_terpilih','email','alamat_prov','alamat_kab','alamat_kec','alamat_desa','alamat_detail','domisili_sama','tanggal_lahir_dd_mm_yyyy','npwp','jenis_kelamin','agama','status_perkawinan','pendidikan','pekerjaan','deskripsi_pekerjaan_lain','no_telp','mengikuti_pendataan_bps','sp','st','se','susenas','sakernas','sbh','catatan','posisi_daftar','username','sobat_id','id_desa',];
     public static function getJenisTransportasiOptions(){
         return self::JENIS_TRANSPORTASI_OPTIONS;
     }
