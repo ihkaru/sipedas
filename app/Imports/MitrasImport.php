@@ -19,6 +19,10 @@ class MitrasImport implements ToModel,WithHeadingRow
         $columns = Constants::COLUMN_MITRA_IMPORT;
         $res = [];
         foreach ($columns as $c) {
+            if($c=="nama_1"){
+                $res[$c]=ucwords(strtolower(trim($row[$c])));
+                continue;
+            }
             $res[$c]=trim($row[$c]);
         }
         return new Mitra($res);

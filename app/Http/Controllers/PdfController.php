@@ -42,6 +42,7 @@ class PdfController extends Controller
         // dd($alokasiHonor->first());
         $tahun = request('tahun') ?? now()->year;
         $bulan = request('bulan') ?? now()->month;
+        $id_honor = request('id_honor') ?? null;
         $bulan = str_pad($bulan,2,"0",STR_PAD_LEFT);
         $tanggalPengajuan = Carbon::parse("$tahun-$bulan-01");
         $ppk = Pegawai::find(Pengaturan::key("NIP_PPK_SATER")->nilai);
@@ -50,8 +51,7 @@ class PdfController extends Controller
             'tahun'=>$tanggalPengajuan->year,
             'bulan'=>$tanggalPengajuan->month,
             'ppk'=>$ppk,
-
-
+            'id_honor'=>$id_honor,
         ]);
     }
     public function cetakBast(){
@@ -61,11 +61,13 @@ class PdfController extends Controller
         $bulan = request('bulan') ?? now()->month;
         $bulan = str_pad($bulan,2,"0",STR_PAD_LEFT);
         $tanggalPengajuan = Carbon::parse("$tahun-$bulan-01");
+        $id_honor = request('id_honor') ?? null;
         $ppk = Pegawai::find(Pengaturan::key("NIP_PPK_SATER")->nilai);
         return view('bast.pdf',[
             'alokasiHonor'=>$alokasiHonor,
             'tahun'=>$tanggalPengajuan->year,
             'bulan'=>$tanggalPengajuan->month,
+            'id_honor'=>$id_honor,
             'ppk'=>$ppk,
         ]);
     }

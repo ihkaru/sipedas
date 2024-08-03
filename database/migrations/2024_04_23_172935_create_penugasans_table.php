@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Kegiatan;
 use App\Models\Pegawai;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -15,7 +14,8 @@ return new class extends Migration
     {
         Schema::create('penugasans', function (Blueprint $table) {
             $table->id();
-            $table->string("nip");
+            $table->string("nip")->nullable();
+            $table->string("id_sobat")->nullable();
             $table->string("kegiatan_id");
             $table->foreign("kegiatan_id")->references("id")->on("kegiatans");
             $table->timestamp("tgl_pengajuan_tugas")->nullable();

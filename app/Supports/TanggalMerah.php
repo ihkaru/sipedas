@@ -31,11 +31,12 @@ class TanggalMerah extends ATanggalMerah{
 
     public static function getNextWorkDay(Carbon $date,int $step = 1){
         $tanggalMerahDates = collect(self::getLiburDates())->flatten();
+        $originalDate = Carbon::parse($date);
         $tes = 0;
         while($tanggalMerahDates->contains($date->toDateString())){
             $tes+=1;
             if($tes>10) dd("While inaf");
-            $date = $date->addDay($step);
+            $date->addDay($step);
         }
         return $date;
     }

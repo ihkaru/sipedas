@@ -7,7 +7,11 @@
             $cons = App\Supports\Constants::class;
             $number = \Illuminate\Support\Number::class;
             $bil = \Terbilang::class;
-            $alokasiHonorBulan = $alokasiHonor->where('tahun_akhir_kegiatan',$tahun)->where('bulan_akhir_kegiatan',$bulan);
+            if($id_honor){
+                $alokasiHonorBulan = $alokasiHonor->where('tahun_akhir_kegiatan',$tahun)->where('bulan_akhir_kegiatan',$bulan)->where('id_honor',$id_honor);
+            }else{
+                $alokasiHonorBulan = $alokasiHonor->where('tahun_akhir_kegiatan',$tahun)->where('bulan_akhir_kegiatan',$bulan);
+            }
             $idSobat = $alokasiHonorBulan->pluck('id_sobat')->unique()->flatten();
     @endphp
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />

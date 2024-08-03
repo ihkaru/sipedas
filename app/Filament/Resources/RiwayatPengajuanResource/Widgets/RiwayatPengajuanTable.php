@@ -4,6 +4,7 @@ namespace App\Filament\Resources\RiwayatPengajuanResource\Widgets;
 
 use App\Models\Kegiatan;
 use App\Models\MasterSls;
+use App\Models\Mitra;
 use App\Models\Pegawai;
 use App\Models\Penugasan;
 use App\Models\RiwayatPengajuan;
@@ -41,10 +42,42 @@ class RiwayatPengajuanTable extends BaseWidget
                                 Constants::JENIS_SURAT_TUGAS_OPTIONS
                             )
                             ->live()
-                            ->searchable()
                             ->required()
                             ,
+                        Select::make("jenis_peserta")
+                            ->hidden(function(Get $get){
+                                return $get('jenis_surat_tugas') == null;
+                            })
+                            ->options(
+                                Constants::JENIS_PESERTA_SURAT_TUGAS
+                            )
+                            ->live()
+                            ->required()
+                            ,
+                        Select::make("mitras")
+                            ->hidden(function(Get $get){
+                                return !($get('jenis_peserta') != Constants::JENIS_PESERTA_SURAT_TUGAS_PEGAWAI);
+                            })
+                            ->afterStateUpdated(function (?array $state, ?array $old,Set $set) {
+                                $set('tgl_mulai_tugas',null);
+                            })
+                            ->label("Mitra")
+                            ->live()
+                            ->options(function(){
+                                return Mitra::pluck('nama_1','id_sobat')->toArray();
+                            })
+                            ->searchDebounce(100)
+                            // ->getOptionLabelFromRecordUsing(fn(Pegawai $record)=>$record->nama)
+                            ->searchable(['nama_1'])
+                            ->required(function(Get $get){
+                                return $get("jenis_peserta") == Constants::JENIS_PESERTA_SURAT_TUGAS_MITRA
+                                    || $get("jenis_peserta") == Constants::JENIS_PESERTA_SURAT_TUGAS_PEGAWAI_MITRA;
+                            })
+                            ->multiple(),
                         Select::make("nips")
+                            ->hidden(function(Get $get){
+                                return $get('jenis_peserta') == Constants::JENIS_PESERTA_SURAT_TUGAS_MITRA;
+                            })
                             ->afterStateUpdated(function (?array $state, ?array $old,Set $set) {
                                 $set('tgl_mulai_tugas',null);
                             })
@@ -113,6 +146,7 @@ class RiwayatPengajuanTable extends BaseWidget
                             ->label("Tanggal Selesai Penugasan"),
                         TextInput::make("tbh_hari_jalan_awal")
                             ->hidden(function(Get $get){
+                                if($get("jenis_surat_tugas") != Constants::PERJALANAN_DINAS_LUAR_KOTA) return true;
                                 return collect([
                                     null,
                                     Constants::NON_SPPD,
@@ -139,6 +173,7 @@ class RiwayatPengajuanTable extends BaseWidget
 
                         TextInput::make("tbh_hari_jalan_akhir")
                             ->hidden(function(Get $get){
+                                if($get("jenis_surat_tugas") != Constants::PERJALANAN_DINAS_LUAR_KOTA) return true;
                                 return collect([
                                     null,
                                     Constants::NON_SPPD,
@@ -163,19 +198,19 @@ class RiwayatPengajuanTable extends BaseWidget
                             ->numeric()
                             ->label("Tambah Hari Akhir Perjalanan"),
                         Select::make("level_tujuan_penugasan")
+                            ->afterStateUpdated(function (Set $set) {
+                                $set("nama_tempat_tujuan",null);
+                                $set("prov_ids",null);
+                                $set("kabkot_ids",null);
+                                $set("kecamatan_ids",null);
+                                $set("desa_kel_ids",null);
+                            })
                             ->label("Level Tujuan Penugasan")
                             ->options(Constants::LEVEL_PENUGASAN_OPTIONS)
                             ->live()
                             ->required(),
-                        Toggle::make('is_multiple_tujuan')
-                            ->hidden(function (Get $get){
-                                return !($get('level_tujuan_penugasan') && $get('jenis_surat_tugas') == Constants::NON_SPPD && $get('level_tujuan_penugasan') != Constants::LEVEL_PENUGASAN_TANPA_LOKASI && $get('level_tujuan_penugasan') != Constants::LEVEL_PENUGASAN_NAMA_TEMPAT);
-                            })
-                            ->label('Lokasi tujuan lebih dari satu')
-                            ->live()
-                        ,
                         TextInput::make('nama_tempat_tujuan')
-                            ->helperText("Contoh: Pusat Pendidikan dan Pelatihan; Hotel Wisata Nusantara")
+                            ->helperText("Contoh: Kantor BPS Kabupaten Kubu Raya; Kantor BPS Provinsi Kalimantan Barat; Pusat Pendidikan dan Pelatihan")
                             ->label("Nama Lokasi Tujuan")
                             ->hidden(function(Get $get){
                                 return $get('level_tujuan_penugasan') != Constants::LEVEL_PENUGASAN_NAMA_TEMPAT;
@@ -186,8 +221,13 @@ class RiwayatPengajuanTable extends BaseWidget
                         ,
 
 
-                        Select::make("prov_id")
+                        Select::make("prov_ids")
                             ->live()
+                            ->afterStateUpdated(function (Set $set) {
+                                $set("kabkot_ids",null);
+                                $set("kecamatan_ids",null);
+                                $set("desa_kel_ids",null);
+                            })
                             ->label("Provinsi Tujuan")
                             ->hidden(function(Get $get){
                                 return collect([
@@ -205,7 +245,14 @@ class RiwayatPengajuanTable extends BaseWidget
                                 return MasterSls::pluck("provinsi","prov_id");
                             })
                             ->searchable(['provinsi']),
-                        Select::make("kabkot_id")
+                        Select::make("kabkot_ids")
+                            ->afterStateUpdated(function (Set $set) {
+                                $set("kecamatan_ids",null);
+                                $set("desa_kel_ids",null);
+                            })
+                            ->multiple(function(Get $get){
+                                return $get('level_tujuan_penugasan') == Constants::LEVEL_PENUGASAN_KABUPATEN_KOTA;
+                            })
                             ->live()
                             ->required(function(Get $get){
                                 return !collect([
@@ -214,7 +261,7 @@ class RiwayatPengajuanTable extends BaseWidget
                                 ])->contains($get('level_tujuan_penugasan'));
                             })
                             ->hidden(function(Get $get){
-                                return !is_null($get('is_multiple_tujuan')) && collect([
+                                return collect([
                                     null,
                                     Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
                                 ])->contains($get('level_tujuan_penugasan'));
@@ -222,11 +269,17 @@ class RiwayatPengajuanTable extends BaseWidget
                             ->label("Kabupaten/Kota Tujuan")
                             ->options(function(Get $get){
                                 return MasterSls::
-                                    where('prov_id',$get('prov_id'))
+                                    where('prov_id',$get('prov_ids'))
                                     ->pluck("kabkot","kabkot_id");
                             })
                             ->searchable(['kabkot']),
-                        Select::make("kecamatan_id")
+                        Select::make("kecamatan_ids")
+                            ->afterStateUpdated(function (Set $set) {
+                                $set("desa_kel_ids",null);
+                            })
+                            ->multiple(function(Get $get){
+                                return $get('level_tujuan_penugasan') == Constants::LEVEL_PENUGASAN_KECAMATAN;
+                            })
                             ->live()
                             ->required(function(Get $get){
                                 return !collect([
@@ -236,7 +289,7 @@ class RiwayatPengajuanTable extends BaseWidget
                                 ])->contains($get('level_tujuan_penugasan'));
                             })
                             ->hidden(function(Get $get){
-                                return !is_null($get('is_multiple_tujuan')) &&  collect([
+                                return collect([
                                     null,
                                     Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
                                     Constants::LEVEL_PENUGASAN_KABUPATEN_KOTA,
@@ -245,11 +298,14 @@ class RiwayatPengajuanTable extends BaseWidget
                             ->label("Kecamatan Tujuan")
                             ->options(function(Get $get){
                                 return MasterSls::
-                                    where('kabkot_id',$get('kabkot_id'))
+                                    where('kabkot_id',$get('kabkot_ids'))
                                     ->pluck("kecamatan","kec_id");
                             })
                             ->searchable(['kecamatan']),
-                        Select::make("desa_kel_id")
+                        Select::make("desa_kel_ids")
+                            ->multiple(function(Get $get){
+                                return $get('level_tujuan_penugasan') == Constants::LEVEL_PENUGASAN_DESA_KELURAHAN;
+                            })
                             ->label("Desa/Kelurahan Tujuan")
                             ->required(function(Get $get){
                                 return collect([
@@ -257,82 +313,14 @@ class RiwayatPengajuanTable extends BaseWidget
                                 ])->contains($get('level_tujuan_penugasan'));
                             })
                             ->hidden(function(Get $get){
-                                return !is_null($get('is_multiple_tujuan')) &&  !collect([
-                                    Constants::LEVEL_PENUGASAN_DESA_KELURAHAN,
-                                ])->contains($get('level_tujuan_penugasan'));
-                            })
-                            ->options(function(Get $get){
-                                // if(!is_null($get('kecamatan_id'))) dump($get('kecamatan_id'));
-                                return MasterSls::
-                                where('kec_id',$get('kecamatan_id'))
-                                ->pluck("desa_kel","desa_kel_id");
-                            })
-                            ->searchable(['desa_kel']),
-                        Select::make("kabkot_ids")
-                            ->live()
-                            ->multiple()
-                            ->required(function(Get $get){
                                 return !collect([
-                                    null,
-                                    Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
-                                ])->contains($get('level_tujuan_penugasan'));
-                            })
-                            ->hidden(function(Get $get){
-                                // dump((is_null($get('is_multiple_tujuan')) && is_null($get('level_tujuan_penugasan'))));
-                                $res = !(is_null($get('is_multiple_tujuan')) && is_null($get('level_tujuan_penugasan'))) || $get('level_tujuan_penugasan') == Constants::LEVEL_PENUGASAN_KABUPATEN_KOTA && collect([
-                                    null,
-                                    Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
-                                ])->contains($get('level_tujuan_penugasan'));
-                                return $res;
-                            })
-                            ->label("Kabupaten/Kota Tujuans")
-                            ->options(function(Get $get){
-                                return MasterSls::
-                                    where('prov_id',$get('prov_id'))
-                                    ->pluck("kabkot","kabkot_id");
-                            })
-                            ->searchable(['kabkot']),
-                        Select::make("kecamatan_ids")
-                            ->live()
-                            ->multiple()
-                            ->required(function(Get $get){
-                                return !collect([
-                                    null,
-                                    Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
-                                    Constants::LEVEL_PENUGASAN_KABUPATEN_KOTA,
-                                ])->contains($get('level_tujuan_penugasan'));
-                            })
-                            ->hidden(function(Get $get){
-                                return !(is_null($get('is_multiple_tujuan')) && is_null($get('level_tujuan_penugasan'))) || $get('level_tujuan_penugasan') == Constants::LEVEL_PENUGASAN_KECAMATAN &&  $get('is_multiple_tujuan') &&  collect([
-                                    null,
-                                    Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
-                                    Constants::LEVEL_PENUGASAN_KABUPATEN_KOTA,
-                                ])->contains($get('level_tujuan_penugasan'));
-                            })
-                            ->label("Kecamatan Tujuans")
-                            ->options(function(Get $get){
-                                return MasterSls::
-                                    where('kabkot_id',$get('kabkot_id'))
-                                    ->pluck("kecamatan","kec_id");
-                            })
-                            ->searchable(['kecamatan']),
-                        Select::make("desa_kel_ids")
-                            ->label("Desa/Kelurahan Tujuans")
-                            ->multiple()
-                            ->required(function(Get $get){
-                                return collect([
-                                    Constants::LEVEL_PENUGASAN_DESA_KELURAHAN,
-                                ])->contains($get('level_tujuan_penugasan'));
-                            })
-                            ->hidden(function(Get $get){
-                                return !(is_null($get('is_multiple_tujuan')) && is_null($get('level_tujuan_penugasan'))) || $get('level_tujuan_penugasan') == Constants::LEVEL_PENUGASAN_DESA_KELURAHAN &&  !$get('is_multiple_tujuan') &&  !collect([
                                     Constants::LEVEL_PENUGASAN_DESA_KELURAHAN,
                                 ])->contains($get('level_tujuan_penugasan'));
                             })
                             ->options(function(Get $get){
                                 return MasterSls::
-                                where('kec_id',$get('kec_id'))
-                                ->pluck("desa_kel","desa_kel_id");
+                                    where('kec_id',$get('kecamatan_ids'))
+                                    ->pluck("desa_kel","desa_kel_id");
                             })
                             ->searchable(['desa_kel']),
                         Select::make("transportasi")

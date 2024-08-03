@@ -38,6 +38,13 @@ class Penugasan extends Model
         return $this->pemberiPerintah();
     }
 
+    protected function isMitra(): Attribute
+    {
+        return Attribute::make(
+            get: fn (mixed $value, array $attributes) => (bool) $attributes['id_sobat'],
+        );
+    }
+
     protected function jenisSurat(): Attribute
     {
         return Attribute::make(
@@ -96,9 +103,11 @@ class Penugasan extends Model
     public function suratPerjadin(){
         return $this->belongsTo(NomorSurat::class,"surat_perjadin_id","id");
     }
-
     public function pegawai(){
         return $this->belongsTo(Pegawai::class,"nip","nip");
+    }
+    public function mitra(){
+        return $this->belongsTo(Mitra::class,"id_sobat","id_sobat");
     }
     public function desa(){
         return $this->belongsTo(MasterSls::class,"desa_kel_id","desa_kel_id");
@@ -123,6 +132,9 @@ class Penugasan extends Model
     }
     public function satuSurat(){
         return $this->hasMany(Penugasan::class,"surat_tugas_id","surat_tugas_id");
+    }
+    public function tujuanSuratTugas(){
+        return $this->hasMany(TujuanSuratTugas::class);
     }
     public function suratTugasBersamaDisetujui(array $with = null){
         $query = self::query();
@@ -176,7 +188,30 @@ class Penugasan extends Model
             RiwayatPengajuan::kirim([$pengajuan->id]);
             if($pengajuan) $res+=1;
         }
-        if($res == count($data["nips"])) return true;
+        foreach($data["mitras"] as $n){
+            $pengajuan = self::create([
+                "id_sobat"=>$n,
+                "kegiatan_id"=>$data["kegiatan_id"],
+                "level_tujuan_penugasan"=>$data["level_tujuan_penugasan"],
+                "nama_tempat_tujuan"=>$data["nama_tempat_tujuan"] ?? null,
+                "tgl_mulai_tugas"=>Carbon::parse($data["tgl_mulai_tugas"])->toDateTimeString(),
+                "tgl_akhir_tugas"=>Carbon::parse($data["tgl_akhir_tugas"])->toDateTimeString(),
+                "tbh_hari_jalan_awal"=>$data["tbh_hari_jalan_awal"] ?? null,
+                "tbh_hari_jalan_akhir"=>$data["tbh_hari_jalan_akhir"] ?? null,
+                "tgl_pengajuan_tugas"=>$data["tgl_pengajuan_tugas"] ?? self::getNearestPemberiTugasDate(now() >= Carbon::parse($data["tgl_mulai_tugas"]) ?Carbon::parse($data["tgl_mulai_tugas"])->toDateString() : now() ,Carbon::parse($data["tgl_mulai_tugas"])->toDateString(),$data["nips"]),
+                "prov_id"=>$data["prov_id"] ?? null,
+                "kabkot_id"=>$data["kabkot_id"] ?? null,
+                "kecamatan_id"=>$data["kecamatan_id"] ?? null,
+                "desa_kel_id"=>$data["desa_kel_id"] ?? null,
+                "grup_id"=>$grupId,
+                "jenis_surat_tugas" => $data["jenis_surat_tugas"],
+                "plh_id"=>$pegawaiPlh->nip,
+                "transportasi"=>$data["transportasi"] ?? null,
+            ]);
+            RiwayatPengajuan::kirim([$pengajuan->id]);
+            if($pengajuan) $res+=1;
+        }
+        if($res == count($data["nips"])+count($data["mitras"])) return true;
         return null;
 
     }
