@@ -40,12 +40,12 @@ class KegiatanResource extends Resource
                 TextInput::make('id')
                 ->disabled()
                 ->dehydrated(true)
+                ->live()
                 ->unique(ignoreRecord: true),
                 TextInput::make('nama')
                     ->lazy()
                     ->required()
                     ->maxLength(255)
-                    ->live()
                     ->afterStateUpdated(function (Get $get, Set $set) {
                         $set('id', Str::slug($get("nama")));
                     }),
