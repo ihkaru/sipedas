@@ -23,6 +23,10 @@ class RiwayatPengajuanResource extends Resource
     protected static ?string $navigationIcon = 'fluentui-document-bullet-list-clock-20-o';
     protected static ?string $navigationGroup = "Surat Tugas";
 
+    public static function canViewAny(): bool{
+        return auth()->user()->hasRole('operator_umum');
+    }
+
     public static function form(Form $form): Form
     {
         return $form
