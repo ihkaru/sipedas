@@ -50,6 +50,40 @@ class PenugasanResource extends Resource
             StatusSuratTugasChart::class
         ];
     }
+    public static function formFilterPengajuan(){
+        return [
+            SelectFilter::make('pegawai')
+                ->relationship('pegawai', 'nama')
+                ->multiple()
+                ->searchable()
+                ->preload(),
+            DateRangeFilter::make("tgl_mulai_tugas")
+                ->label("Tanggal Mulai Tugas"),
+            DateRangeFilter::make("tgl_akhir_tugas")
+                ->label("Tanggal Akhir Tugas"),
+            SelectFilter::make("kegiatan")
+                ->label("Kegiatan")
+                ->relationship('kegiatan', 'nama')
+                ->preload()
+                ->multiple()
+            ,
+            SelectFilter::make('riwayatPengajuan')
+                ->options(Constants::STATUS_PENGAJUAN_OPTIONS)
+                ->searchable()
+                ->multiple()
+                ->query(function (Builder $query, array $data) {
+                    if (!empty($data['values']))
+                    {
+                        // if we have a value (the aircraft ID from our options() query), just query a nested
+                        // set of whereHas() clauses to reach our target, in this case two deep
+                        $query->whereHas(
+                            'riwayatPengajuan',
+                            fn (Builder $query) => $query->whereIn('status',$data['values'])
+                        );
+                    }
+                })
+            ];
+    }
     public static function formLihatPengajuan(){
         return [
             Hidden::make("id"),
@@ -665,38 +699,7 @@ class PenugasanResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-                SelectFilter::make('pegawai')
-                    ->relationship('pegawai', 'nama')
-                    ->multiple()
-                    ->searchable()
-                    ->preload(),
-                DateRangeFilter::make("tgl_mulai_tugas")
-                    ->label("Tanggal Mulai Tugas"),
-                DateRangeFilter::make("tgl_akhir_tugas")
-                    ->label("Tanggal Akhir Tugas"),
-                SelectFilter::make("kegiatan")
-                    ->label("Kegiatan")
-                    ->relationship('kegiatan', 'nama')
-                    ->preload()
-                    ->multiple()
-                ,
-                SelectFilter::make('riwayatPengajuan')
-                    ->options(Constants::STATUS_PENGAJUAN_OPTIONS)
-                    ->searchable()
-                    ->multiple()
-                    ->query(function (Builder $query, array $data) {
-                        if (!empty($data['values']))
-                        {
-                            // if we have a value (the aircraft ID from our options() query), just query a nested
-                            // set of whereHas() clauses to reach our target, in this case two deep
-                            $query->whereHas(
-                                'riwayatPengajuan',
-                                fn (Builder $query) => $query->whereIn('status',$data['values'])
-                            );
-                        }
-                    })
-            ])
+            ->filters(self::formFilterPengajuan())
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->visible(function(){

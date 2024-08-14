@@ -59,6 +59,7 @@ class KegiatanResource extends Resource
                         return Pegawai::get()->pluck('nama','nip');
                     })
                     ->required()
+                    ->preload()
                     ->searchable(['nama'])
                     ->label("PJ Kegiatan")
             ]);
@@ -71,6 +72,10 @@ class KegiatanResource extends Resource
                 Tables\Columns\TextColumn::make('nama')
                     ->sortable()
                     ->searchable(),
+                Tables\Columns\TextColumn::make('pj.nama')
+                    ->sortable()
+                    ->label("PJ Kegiatan")
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('tgl_awal_perjadin')
                     ->sortable()
                     ->label("Awal Kegiatan")
@@ -80,10 +85,6 @@ class KegiatanResource extends Resource
                     ->sortable()
                     ->label("Akhir Kegiatan")
                     ->date()
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('pj_kegiatan_id')
-                    ->sortable()
-                    ->label("PJ Kegiatan")
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->sortable()

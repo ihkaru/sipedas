@@ -17,7 +17,7 @@ use Filament\Widgets\TableWidget as BaseWidget;
 
 class RiwayatPengajuanTable extends BaseWidget
 {
-    protected static ?string $heading = 'Riwayat Pengajuan Surat Tugas Anda';
+    protected static ?string $heading = 'Riwayat Surat Tugas Anda';
     protected int | string | array $columnSpan = 'full';
     protected static $resource = PenugasanResource::class;
 
