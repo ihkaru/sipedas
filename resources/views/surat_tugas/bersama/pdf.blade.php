@@ -783,7 +783,7 @@
     </p>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <p style="padding-left: 283pt; text-indent: 0pt; text-align: center">
-        @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasans->first()->plh->nip)
+        @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasans->first()->plhSesuai()->nip)
             An.
         @endif
       Kepala Badan Pusat Statistik <br/> {{ucwords(strtolower($namaSatker))}}
@@ -798,10 +798,10 @@
         text-align: center;
       "
     >
-      {{$penugasans->first()->plh->nama}}
+      {{$penugasans->first()->plhSesuai()->nama}}
     </p>
     <p style="padding-left: 283pt; text-indent: 0pt; text-align: center">
-      NIP. <span style="color: #1f1f1f">{{$penugasans->first()->plh->nip}}</span>
+      NIP. <span style="color: #1f1f1f">{{$penugasans->first()->plhSesuai()->nip}}</span>
     </p>
     @if (count($penugasans)>1)
     <div class="pagebreak"></div>
@@ -1126,7 +1126,7 @@
           </p>
           <p style="text-indent: 0pt; text-align: left"><br /></p>
           <p style="padding-left: 500px; width: 500px;text-indent: 0pt; text-align: center">
-              @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasans->first()->plh->nip)
+              @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasans->first()->plhSesuai()->nip)
                   An.
               @endif
             Kepala Badan Pusat Statistik <br/> {{ucwords(strtolower($namaSatker))}}
@@ -1142,10 +1142,10 @@
               text-align: center;
             "
           >
-            {{$penugasans->first()->plh->nama}}
+            {{$penugasans->first()->plhSesuai()->nama}}
           </p>
           <p style="padding-left: 500px; width: 500px; text-indent: 0pt; text-align: center">
-            NIP. <span style="color: #1f1f1f">{{$penugasans->first()->plh->nip}}</span>
+            NIP. <span style="color: #1f1f1f">{{$penugasans->first()->plhSesuai()->nip}}</span>
           </p>
     </div>
 
@@ -2468,7 +2468,7 @@
                 text-align: center;
                 "
             >
-            @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasan->plh->nip)
+            @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasan->plhSesuai()->nip)
             An.
             @endif
             Kepala Badan Pusat Statistik <br/> {{ucwords(strtolower($namaSatker))}}
@@ -2483,7 +2483,7 @@
                 text-align: center;
                 "
             >
-                {{$penugasan->plh->nama}}
+                {{$penugasan->plhSesuai()->nama}}
             </p>
             <p
                 class="s2"
@@ -2493,7 +2493,7 @@
                 text-align: center;
                 "
             >
-                NIP. <span style="color: #1f1f1f">{{$penugasan->plh->nip}}</span>
+                NIP. <span style="color: #1f1f1f">{{$penugasan->plhSesuai()->nip}}</span>
             </p>
             </td>
         </tr>

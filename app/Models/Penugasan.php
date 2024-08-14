@@ -19,6 +19,7 @@ class Penugasan extends Model
     use HasFactory;
     protected $guarded=[];
     public static Collection $masterSls;
+    protected ?Pegawai $pegawaiPlh = null;
 
     protected function casts(): array
     {
@@ -124,6 +125,11 @@ class Penugasan extends Model
     }
     public function mitra(){
         return $this->belongsTo(Mitra::class,"id_sobat","id_sobat");
+    }
+    public function plhSesuai(){
+        if($this->pegawaiPlh) return $this->pegawaiPlh;
+        $this->pegawaiPlh = Plh::getPlhAktif(Carbon::parse($this->tgl_pengajuan_tugas),returnPegawai:true);
+        return $this->pegawaiPlh;
     }
     public function plh(){
         return $this->belongsTo(Pegawai::class,"plh_id","nip");

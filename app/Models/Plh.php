@@ -20,6 +20,7 @@ class Plh extends Model
         return $this->belongsTo(Pegawai::class,"pegawai_digantikan_id","nip");
     }
 
+
     public static function jadikanPlh(Pegawai $pegawaiPeganti, Pegawai $pegawaiDigantikan, string $tgl_mulai, string $tgl_akhir){
         $ctgl_mulai = Carbon::parse($tgl_mulai);
         $ctgl_akhir = Carbon::parse($tgl_akhir);
@@ -38,7 +39,7 @@ class Plh extends Model
             ->first();
         // dump(1);
         // dump($plh,$plh->pegawai);
-        if($plh && $returnPegawai) return $plh->pegawai;
+        if($plh && $returnPegawai) return $plh->pegawaiPengganti;
         // dump(2);
         if($plh) return $plh;
         // dump(3);
