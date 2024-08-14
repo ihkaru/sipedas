@@ -675,6 +675,12 @@ class PenugasanResource extends Resource
                     ->label("Tanggal Mulai Tugas"),
                 DateRangeFilter::make("tgl_akhir_tugas")
                     ->label("Tanggal Akhir Tugas"),
+                SelectFilter::make("kegiatan")
+                    ->label("Kegiatan")
+                    ->relationship('kegiatan', 'nama')
+                    ->preload()
+                    ->multiple()
+                ,
                 SelectFilter::make('riwayatPengajuan')
                     ->options(Constants::STATUS_PENGAJUAN_OPTIONS)
                     ->searchable()
