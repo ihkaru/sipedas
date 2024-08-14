@@ -1,0 +1,293 @@
+Tanggal Mulai Pelaksanaan,Tanggal Akhir Pelaksanaan,Tanggal Mulai Penawaran,Tanggal Akhir Penawaran,ID Kegiatan,ID TAHUN,ID SPEC,Kategori Periode,ID Kegiatan Manmit,Nama Kegiatan Manmit,level_2,Periode
+2024-07-01,2024-09-30,2024-07-17,2024-09-30,BCS,24,,,BCS24,Business Characteristics Survey 2024,Lapangan,NON-PERIODIK
+2024-07-17,2024-09-30,2024-07-17,2024-09-30,EWS,24,,,EWS24,Economy Wide Survey Tahun 2024,Lapangan,NON-PERIODIK
+2024-07-17,2024-08-30,2024-08-01,2024-08-30,EWS,24,TW,,EWS24-TW,Economy Wide Survey Triwulanan,Lapangan,Triwulan II
+2024-08-12,2024-09-07,2024-08-26,2024-09-07,EWS,24,TW,,EWS24-TW,Economy Wide Survey Triwulanan,Pengolahan,Triwulan II
+2024-04-01,2024-06-28,2024-07-01,2024-09-30,SEEA,24,,,SEEA24,In-depth Study System of Environmental Economic Accounting (SEEA) 2024,Lapangan,NON-PERIODIK
+2024-05-01,2024-07-31,2024-08-01,2024-08-31,INDEPTH-NTA,24,,,INDEPTH-NTA24,Indepth Studi National Transfer Account 2024,Lapangan,NON-PERIODIK
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,KSA,24,,,KSA24,Kerangka Sampel Area (KSA) 2024,Lapangan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,KSA,24,,,KSA24,Kerangka Sampel Area (KSA) 2024,Lapangan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,KSA,24,,,KSA24,Kerangka Sampel Area (KSA) 2024,Lapangan,Bulan VIII
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,KOMPILASITRANS,24,,,KOMPILASITRANS24,Kompilasi Data Statistik Transportasi 2024,Lapangan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,KOMPILASITRANS,24,,,KOMPILASITRANS24,Kompilasi Data Statistik Transportasi 2024,Lapangan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,KOMPILASITRANS,24,,,KOMPILASITRANS24,Kompilasi Data Statistik Transportasi 2024,Lapangan,Bulan VIII
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,LPTB,24,,,LPTB24,Laporan Pemotongan Ternak Bulanan 2024,Lapangan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,LPTB,24,,,LPTB24,Laporan Pemotongan Ternak Bulanan 2024,Lapangan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,LPTB,24,,,LPTB24,Laporan Pemotongan Ternak Bulanan 2024,Lapangan,Bulan VIII
+2024-06-01,2024-06-30,2024-07-01,2024-07-31,VIMK,24,L,,VIMK24-L,Listing Survei Industri Mikro dan Kecil Tahunan 2024,Lapangan,NON-PERIODIK
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,PES,24,,,PES24,Passenger Exit Survey (PES) 2024,Lapangan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,PES,24,,,PES24,Passenger Exit Survey (PES) 2024,Lapangan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,PES,24,,,PES24,Passenger Exit Survey (PES) 2024,Lapangan,Bulan VIII
+2024-04-01,2024-04-30,2024-06-01,2024-08-31,DPP-DUTL,24,,,DPP-DUTL24,Pendataan Direktori Perusahaan Pertanian dan Usaha Pertanian Lainnya Tahun 2024,Lapangan,NON-PERIODIK
+2024-05-08,2024-05-15,2024-05-08,2024-08-16,VHPBS-KT,24,,,VHPBS-KT24,Pendataan Lapangan Tambahan Paket Komoditas SPDT IHPB 2023,Lapangan,NON-PERIODIK
+2024-05-08,2024-05-15,2024-05-08,2024-08-16,VHPBS-KT,24,,,VHPBS-KT24,Pendataan Lapangan Tambahan Paket Komoditas SPDT IHPB 2023,Pengolahan,NON-PERIODIK
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,PPILB,24,,,PPILB24,Pendataan Perdagangan Internasional Lintas Batas Laut 2024,Lapangan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,PPILB,24,,,PPILB24,Pendataan Perdagangan Internasional Lintas Batas Laut 2024,Lapangan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,PPILB,24,,,PPILB24,Pendataan Perdagangan Internasional Lintas Batas Laut 2024,Lapangan,Bulan VIII
+2024-06-01,2024-08-31,2024-07-15,2024-08-31,SAKERNAS,24,,,SAKERNAS24,Survei Angkatan Kerja Nasional (SAKERNAS) Tahun 2024,Lapangan,Semester II
+2024-06-01,2024-08-31,2024-07-29,2024-09-27,SAKERNAS,24,,,SAKERNAS24,Survei Angkatan Kerja Nasional (SAKERNAS) Tahun 2024,Pengolahan,Semester II
+2024-03-01,2024-03-31,2024-04-01,2024-08-31,CAPTIVE-POWER,24,,,CAPTIVE-POWER24,Survei Captive Power 2024,Lapangan,NON-PERIODIK
+2024-03-01,2024-03-31,2024-04-01,2024-08-31,CAPTIVE-POWER,24,,,CAPTIVE-POWER24,Survei Captive Power 2024,Pengolahan,NON-PERIODIK
+2024-05-01,2024-06-30,2024-05-01,2024-06-30,SEP,24,UPB-UTL,,SEP24-UPB-UTL,Survei Ekonomi Pertanian (UPB/UTL) 2024,Lapangan,NON-PERIODIK
+2024-04-05,2024-07-31,2024-07-01,2024-08-31,SEP,24,,,SEP24,Survei Ekonomi Pertanian 2024,Pengolahan,NON-PERIODIK
+2024-08-01,2024-09-30,2024-08-01,2024-09-30,SERUTI,24,,,SERUTI24,Survei Ekonomi Rumah Tangga Triwulanan,Lapangan,Triwulan III
+2024-08-01,2024-09-30,2024-08-01,2024-09-30,SERUTI,24,,,SERUTI24,Survei Ekonomi Rumah Tangga Triwulanan,Pengolahan,Triwulan III
+2024-07-01,2024-07-31,2024-08-01,2024-08-31,SHBJ,24,,,SHBJ24,Survei Harga Barang dan Jasa,Lapangan,NON-PERIODIK
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,SHK,24,,,SHK24,Survei Harga Konsumen 2024,Lapangan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,SHK,24,,,SHK24,Survei Harga Konsumen 2024,Lapangan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,SHK,24,,,SHK24,Survei Harga Konsumen 2024,Lapangan,Bulan VIII
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,SHK,24,,,SHK24,Survei Harga Konsumen 2024,Pengolahan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,SHK,24,,,SHK24,Survei Harga Konsumen 2024,Pengolahan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,SHK,24,,,SHK24,Survei Harga Konsumen 2024,Pengolahan,Bulan VIII
+2024-01-01,2024-12-20,2024-01-01,2024-12-31,SHMP,24,,,SHMP24,Survei Harga Mesin dan Perlengkapan 2024,Lapangan,NON-PERIODIK
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,SHPB,24,,,SHPB24,Survei Harga Perdagangan Besar 2024,Lapangan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,SHPB,24,,,SHPB24,Survei Harga Perdagangan Besar 2024,Lapangan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,SHPB,24,,,SHPB24,Survei Harga Perdagangan Besar 2024,Lapangan,Bulan VIII
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,SHPB,24,,,SHPB24,Survei Harga Perdagangan Besar 2024,Pengolahan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,SHPB,24,,,SHPB24,Survei Harga Perdagangan Besar 2024,Pengolahan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,SHPB,24,,,SHPB24,Survei Harga Perdagangan Besar 2024,Pengolahan,Bulan VIII
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,SHPED,24,,,SHPED24,Survei Harga Perdesaan 2024,Lapangan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,SHPED,24,,,SHPED24,Survei Harga Perdesaan 2024,Lapangan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,SHPED,24,,,SHPED24,Survei Harga Perdesaan 2024,Lapangan,Bulan VIII
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,SHPED,24,,,SHPED24,Survei Harga Perdesaan 2024,Pengolahan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,SHPED,24,,,SHPED24,Survei Harga Perdesaan 2024,Pengolahan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,SHPED,24,,,SHPED24,Survei Harga Perdesaan 2024,Pengolahan,Bulan VIII
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,SHP,24,,,SHP24,Survei Harga Produsen 2024,Lapangan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,SHP,24,,,SHP24,Survei Harga Produsen 2024,Lapangan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,SHP,24,,,SHP24,Survei Harga Produsen 2024,Lapangan,Bulan VIII
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,SHP,24,,,SHP24,Survei Harga Produsen 2024,Pengolahan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,SHP,24,,,SHP24,Survei Harga Produsen 2024,Pengolahan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,SHP,24,,,SHP24,Survei Harga Produsen 2024,Pengolahan,Bulan VIII
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,HPBG,24,,,HPBG24,Survei Harga Produsen Beras di Penggilingan 2024,Lapangan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,HPBG,24,,,HPBG24,Survei Harga Produsen Beras di Penggilingan 2024,Lapangan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,HPBG,24,,,HPBG24,Survei Harga Produsen Beras di Penggilingan 2024,Lapangan,Bulan VIII
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,HPBG,24,,,HPBG24,Survei Harga Produsen Beras di Penggilingan 2024,Pengolahan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,HPBG,24,,,HPBG24,Survei Harga Produsen Beras di Penggilingan 2024,Pengolahan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,HPBG,24,,,HPBG24,Survei Harga Produsen Beras di Penggilingan 2024,Pengolahan,Bulan VIII
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,HPG,24,,,HPG24,Survei Harga Produsen Gabah 2024,Lapangan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,HPG,24,,,HPG24,Survei Harga Produsen Gabah 2024,Lapangan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,HPG,24,,,HPG24,Survei Harga Produsen Gabah 2024,Lapangan,Bulan VIII
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,HPG,24,,,HPG24,Survei Harga Produsen Gabah 2024,Pengolahan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,HPG,24,,,HPG24,Survei Harga Produsen Gabah 2024,Pengolahan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,HPG,24,,,HPG24,Survei Harga Produsen Gabah 2024,Pengolahan,Bulan VIII
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,HPJ,24,,,HPJ24,Survei Harga Produsen Jasa 2024,Lapangan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,HPJ,24,,,HPJ24,Survei Harga Produsen Jasa 2024,Lapangan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,HPJ,24,,,HPJ24,Survei Harga Produsen Jasa 2024,Lapangan,Bulan VIII
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,HPJ,24,,,HPJ24,Survei Harga Produsen Jasa 2024,Pengolahan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,HPJ,24,,,HPJ24,Survei Harga Produsen Jasa 2024,Pengolahan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,HPJ,24,,,HPJ24,Survei Harga Produsen Jasa 2024,Pengolahan,Bulan VIII
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,HPT,24,,,HPT24,Survei Harga Produsen Pertanian 2024,Lapangan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,HPT,24,,,HPT24,Survei Harga Produsen Pertanian 2024,Lapangan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,HPT,24,,,HPT24,Survei Harga Produsen Pertanian 2024,Lapangan,Bulan VIII
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,HPT,24,,,HPT24,Survei Harga Produsen Pertanian 2024,Pengolahan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,HPT,24,,,HPT24,Survei Harga Produsen Pertanian 2024,Pengolahan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,HPT,24,,,HPT24,Survei Harga Produsen Pertanian 2024,Pengolahan,Bulan VIII
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,VHTS,24,,,VHTS24,Survei Hotel dan Jasa Akomodasi Bulanan (VHTS) 2024,Lapangan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,VHTS,24,,,VHTS24,Survei Hotel dan Jasa Akomodasi Bulanan (VHTS) 2024,Lapangan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,VHTS,24,,,VHTS24,Survei Hotel dan Jasa Akomodasi Bulanan (VHTS) 2024,Lapangan,Bulan VIII
+2024-04-01,2024-08-31,2024-05-01,2024-08-31,VHTL,24,,,VHTL24,Survei Hotel dan Jasa Akomodasi Tahunan 2024,Lapangan,NON-PERIODIK
+2024-05-01,2024-07-31,2024-06-01,2024-08-31,STPIMK,24,,,STPIMK24,Survei IBS Tahunan (Komoditas) 2024,Pengolahan,NON-PERIODIK
+2024-04-15,2024-05-31,2024-05-01,2024-05-31,STPIM,24,,,STPIM24,Survei IBS Tahunan (STPIM) 2024,Lapangan,NON-PERIODIK
+2024-05-13,2024-07-31,2024-06-01,2024-07-31,STPIM,24,,,STPIM24,Survei IBS Tahunan (STPIM) 2024,Pengolahan,NON-PERIODIK
+2024-07-01,2024-07-31,2024-07-01,2024-07-31,VICP-HHC,24,,,VICP-HHC24,Survei ICP HHC 2024,Lapangan,NON-PERIODIK
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,VICP-HHC,24,BULANAN,,VICP-HHC24-BULANAN,Survei ICP HHC 2024 Bulanan,Lapangan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,VICP-HHC,24,BULANAN,,VICP-HHC24-BULANAN,Survei ICP HHC 2024 Bulanan,Lapangan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-09-01,VICP-HHC,24,BULANAN,,VICP-HHC24-BULANAN,Survei ICP HHC 2024 Bulanan,Lapangan,Bulan VIII
+2024-06-15,2024-07-31,2024-08-01,2024-08-31,VIMK,24,,,VIMK24,Survei Industri Mikro dan Kecil (IMK) 2024 Tahunan,Lapangan,NON-PERIODIK
+2024-08-09,2024-08-30,2024-08-09,2024-08-30,VIMK,24,,,VIMK24,Survei Industri Mikro dan Kecil (IMK) 2024 Tahunan,Pengolahan,NON-PERIODIK
+2024-02-01,2024-06-30,2024-07-01,2024-08-31,SKU,24,,,SKU24,Survei Karakteristik Usaha 2024,Lapangan,NON-PERIODIK
+2024-07-01,2024-08-25,2024-08-01,2024-08-31,SKPT,24,,,SKPT24,Survei Kesejahteraan Petani 2024,Lapangan,NON-PERIODIK
+2024-03-01,2024-07-31,2024-06-01,2024-09-01,SKLNP,24,,,SKLNP24,Survei Khusus Lembaga Nonprofit yang Melayani Rumah Tangga Tahunan 2024,Lapangan,NON-PERIODIK
+2024-08-01,2024-09-15,2024-10-01,2024-10-15,SKLNPT,24,TW,,SKLNPT24-TW,Survei Khusus Lembaga Nonprofit yang Melayani Rumah Tangga Triwulanan 2024,Lapangan,Triwulan III
+2024-03-01,2024-07-31,2024-06-01,2024-08-31,SKPS,24,,,SKPS24,Survei Khusus Perusahaan Swasta Nonfinansial 2024,Lapangan,NON-PERIODIK
+2024-04-01,2024-07-31,2024-07-01,2024-09-30,SKSIP,24,,,SKSIP24,Survei Khusus Struktur Input Pemerintah 2024,Lapangan,NON-PERIODIK
+2024-04-16,2024-07-31,2024-07-01,2024-09-30,SKSPPI,24,,,SKSPPI24,Survei Khusus Studi Penyusunan Perubahan Inventori 2024,Lapangan,NON-PERIODIK
+2023-12-19,2023-12-27,2024-01-15,2024-12-31,SKTNP,24,TW,,SKTNP24-TW,Survei Khusus Triwulanan Neraca Produksi Barang Jasa (SKTNP) 2024,Lapangan,Triwulan IV
+2024-02-01,2024-02-29,2024-03-01,2024-07-31,VSLK,24,KSP,,VSLK24-KSP,Survei Lembaga Keuangan Koperasi Simpan Pinjam 2024,Lapangan,NON-PERIODIK
+2024-03-01,2024-03-31,2024-04-01,2024-08-31,VSLK,24,KSP,,VSLK24-KSP,Survei Lembaga Keuangan Koperasi Simpan Pinjam 2024,Pengolahan,NON-PERIODIK
+2024-02-01,2024-02-29,2024-03-01,2024-07-31,VSLK,24,VALAS,,VSLK24-VALAS,Survei Lembaga Keuangan Pedagang Valuta Asing 2024,Lapangan,NON-PERIODIK
+2024-03-01,2024-03-31,2024-04-01,2024-08-31,VSLK,24,VALAS,,VSLK24-VALAS,Survei Lembaga Keuangan Pedagang Valuta Asing 2024,Pengolahan,NON-PERIODIK
+2024-02-01,2024-03-15,2024-05-01,2024-10-31,SINASI,24,,,SINASI24,Survei Neraca Terintegrasi (SINASI) 2024,Lapangan,NON-PERIODIK
+2024-04-01,2024-04-21,2024-04-01,2024-08-31,VDTW,24,,,VDTW24,Survei Objek Daya Tarik Wisata 2024,Lapangan,NON-PERIODIK
+2024-04-01,2024-04-21,2024-05-01,2024-08-31,VREST-UMB,24,,,VREST-UMB24,Survei Penyedia Makan Minum UMB 2024,Lapangan,NON-PERIODIK
+2024-04-01,2024-08-31,2024-04-01,2024-08-31,VREST-UMK,24,,,VREST-UMK24,Survei Penyedia Makan Minum UMK 2024,Lapangan,NON-PERIODIK
+2024-05-02,2024-05-31,2024-07-01,2024-09-07,SPD-PMTB,24,,,SPD-PMTB24,Survei Penyusunan Disagregasi Pembentukan Modal Tetap Bruto 2024,Lapangan,NON-PERIODIK
+2024-06-03,2024-06-28,2024-07-01,2024-08-31,SPAW,24,,,SPAW24,Survei Perdagangan Antar Wilayah 2024,Lapangan,NON-PERIODIK
+2024-06-10,2024-06-28,2024-07-01,2024-08-31,VPEK,24,,,VPEK24,"Survei Pergudangan, Ekspedisi, dan Kurir 2024",Lapangan,NON-PERIODIK
+2024-04-01,2024-08-31,2024-04-01,2024-08-31,GAS,24,,,GAS24,Survei Perusahaan Gas Tahun 2024,Lapangan,NON-PERIODIK
+2024-04-01,2024-05-31,2024-04-01,2024-07-31,VPVN,24,,,VPVN24,Survei Perusahaan Hortikultura dan Kegiatan Hortikultura Lainnya 2024,Lapangan,NON-PERIODIK
+2024-01-22,2024-03-31,2024-02-18,2024-12-31,SKTH,24,,,SKTH24,Survei Perusahaan Konstruksi Tahunan (SKTH) 2024,Lapangan,NON-PERIODIK
+2024-01-22,2024-03-31,2024-01-18,2024-12-31,SKTH,24,,,SKTH24,Survei Perusahaan Konstruksi Tahunan (SKTH) 2024,Pengolahan,NON-PERIODIK
+2024-06-01,2024-07-31,2024-07-01,2024-09-30,SKTR,24,TW,,SKTR24-TW,Survei Perusahaan Konstruksi Triwulan (SKTR) 2024,Lapangan,Triwulan II
+2024-06-01,2024-07-31,2024-07-01,2024-09-30,SKTR,24,TW,,SKTR24-TW,Survei Perusahaan Konstruksi Triwulan (SKTR) 2024,Pengolahan,Triwulan II
+2024-03-01,2024-03-31,2024-04-01,2024-09-07,GEOTHERMAL,24,,,GEOTHERMAL24,Survei Perusahaan Panas Bumi 2024,Lapangan,NON-PERIODIK
+2024-08-01,2024-10-15,2024-09-01,2024-09-30,SEDAPP,24,,,SEDAPP24,Survei Perusahaan Perkebunan Bulanan 2024,Lapangan,Bulan IX
+2024-06-01,2024-08-15,2024-07-01,2024-07-31,SEDAPP,24,,,SEDAPP24,Survei Perusahaan Perkebunan Bulanan 2024,Lapangan,Bulan VII
+2024-07-01,2024-09-15,2024-08-01,2024-08-31,SEDAPP,24,,,SEDAPP24,Survei Perusahaan Perkebunan Bulanan 2024,Lapangan,Bulan VIII
+2024-05-15,2024-07-05,2024-07-01,2024-08-31,VPDP,24,,,VPDP24,Survei Pola Distribusi Perdagangan 2024,Lapangan,NON-PERIODIK
+2024-08-01,2024-09-30,2024-08-01,2024-09-30,SUSENAS,24,,,SUSENAS24,Survei Sosial Ekonomi Nasional (SUSENAS) Tahun 2024,Lapangan,Semester II
+2024-08-01,2024-09-30,2024-08-01,2024-09-30,SUSENAS,24,,,SUSENAS24,Survei Sosial Ekonomi Nasional (SUSENAS) Tahun 2024,Pengolahan,Semester II
+2024-02-01,2024-02-29,2024-03-01,2024-07-31,VBUMD,24,,,VBUMD24,Survei Statistik Keuangan Badan Usaha Milik Daerah 2022-2023,Lapangan,NON-PERIODIK
+2024-03-01,2024-03-31,2024-04-01,2024-08-31,VBUMD,24,,,VBUMD24,Survei Statistik Keuangan Badan Usaha Milik Daerah 2022-2023,Pengolahan,NON-PERIODIK
+2024-07-01,2024-09-30,2024-07-01,2024-09-30,SKPD,24,,,SKPD24,Survei Statistik Keuangan Pemerintah Desa 2024,Pengolahan,NON-PERIODIK
+2024-03-01,2024-03-31,2024-04-01,2024-08-31,AIR-BERSIH,24,,,AIR-BERSIH24,Survei Tahunan Perusahaan Air Bersih 2024,Lapangan,NON-PERIODIK
+2024-03-01,2024-03-31,2024-04-01,2024-08-31,LISTRIK,24,,,LISTRIK24,Survei Tahunan Perusahaan Listrik 2024,Lapangan,NON-PERIODIK
+2024-03-01,2024-03-31,2024-04-01,2024-08-31,GALIAN-BH,24,,,GALIAN-BH24,Survei Tahunan Perusahaan Penggalian Berbadan Hukum 2024,Lapangan,NON-PERIODIK
+2024-04-01,2024-08-31,2024-04-01,2024-08-31,MIGAS,24,,,MIGAS24,Survei Tahunan Perusahaan Pertambangan Migas 2024,Lapangan,NON-PERIODIK
+2024-03-01,2024-03-31,2024-04-01,2024-08-31,NON-MIGAS,24,,,NON-MIGAS24,Survei Tahunan Perusahaan Pertambangan Non Migas 2024,Lapangan,NON-PERIODIK
+2024-04-01,2024-04-30,2024-05-01,2024-08-31,UBINAN,24,,,UBINAN24,Survei Ubinan 2024,Lapangan,Subround II
+2024-04-01,2024-04-30,2024-05-01,2024-08-31,UBINAN,24,,,UBINAN24,Survei Ubinan 2024,Pengolahan,Subround II
+2024-03-01,2024-03-31,2024-04-01,2024-08-31,GALIAN-URT,24,,,GALIAN-URT24,Survei Usaha Galian Rumah Tangga 2024,Lapangan,NON-PERIODIK
+2024-03-01,2024-03-31,2024-04-01,2024-08-31,GALIAN-URT,24,,,GALIAN-URT24,Survei Usaha Galian Rumah Tangga 2024,Pengolahan,NON-PERIODIK
+2024-02-01,2024-11-01,2024-03-01,2024-11-30,SVPEB,24,,,SVPEB24,Survei Volume Penjualan Eceran Beras 2024,Lapangan,NON-PERIODIK
+2024-08-01,2024-11-30,2024-09-01,2024-11-30,SVK,24,,,SVK24,Survei Volume Penjualan Komoditas Spesifik 2024,Lapangan,NON-PERIODIK
+2024-08-05,2024-09-03,2024-08-05,2024-09-03,UC-SAKERNAS,25,,,UC-SAKERNAS25,Uji Coba Sakernas Februari 2025,Lapangan,NON-PERIODIK
+2024-06-28,2024-06-30,2024-07-01,2024-07-14,UC-SSGI,24,,,UC-SSGI24,Uji Coba Survei Status Gizi Indonesia 2024,Lapangan,NON-PERIODIK
+2024-03-01,2024-07-31,2024-06-01,2024-10-01,UD-LNPRT,24,,,UD-LNPRT24,Updating Direktori Lembaga Nonprofit yang Melayani Rumah Tangga,Lapangan,NON-PERIODIK
+2024-10-01,2024-10-31,2024-07-01,2024-10-31,UDPE,24,,,UDPE24,Updating Direktori Perusahaan Pertambangan dan Energi 2024,Lapangan,Bulan III
+2024-04-01,2024-06-30,2024-06-01,2024-08-31,UPDATING-EA-SLS,24,,,UPDATING-EA-SLS24,Updating Enumeration Area (EA) Satuan Lingkungan Setempat (SLS) Tahun 2024,Lapangan,NON-PERIODIK
+2024-04-01,2024-07-31,2024-07-01,2024-10-31,UPDATING-EA-SLS,24,,,UPDATING-EA-SLS24,Updating Enumeration Area (EA) Satuan Lingkungan Setempat (SLS) Tahun 2024,Pengolahan,NON-PERIODIK
+,,,,,,,,AIR-BERSIH23,Survei Tahunan Perusahaan Air Bersih 2023,,
+,,,,,,,,AIR-BERSIH23-TW,Survei Triwulanan Perusahaan Air Bersih 2023,,
+,,,,,,,,CAPTIVE-POWER23,Survei Captive Power 2023,,
+,,,,,,,,DPA23,Pemutakhiran Direktori Perusahaan Awal (DPA) 2023,,
+,,,,,,,,DPA24,Survei Ibs Tahunan (DPA) 2024,,
+,,,,,,,,EA-SUSENAS23,Studi Enumeration Area Susenas 2023,,
+,,,,,,,,ECOM2022,Survei E-Commerce 2022,,
+,,,,,,,,ECOM2023,Survei E-Commerce 2023,,
+,,,,,,,,FKP-REGSOSEK23,Forum Konsultasi Publik (FKP) Regsosek 2023,,
+,,,,,,,,GALIAN-BHN23,Survei Tahunan Perusahaan Penggalian Bahan Industri Dan Konstruksi 2023,,
+,,,,,,,,GALIAN-BHN23-TW,Survei Triwulanan Perusahaan Penggalian Bahan Industri Dan Konstruksi 2023,,
+,,,,,,,,GALIAN-URT23,Survei Tahunan Usaha Penggalian Bahan Industri Dan Konstruksi 2023,,
+,,,,,,,,GC-SBR23,Ground Check Statistical Business Register (SBR) 2023,,
+,,,,,,,,HPBG23,Survei Harga Produsen Beras Di Penggilingan (HPBG) 2023,,
+,,,,,,,,HPT23,Survei Harga Produsen Pertanian 2023,,
+,,,,,,,,IDENTIFIKASI-SLS24,Identifikasi Sls 2024,,
+,,,,,,,,KDT23,Kompilasi Data Transportasi 2023,,
+,,,,,,,,KOMSTRAT23,Survei Komoditas Strategis Perkebunan 2023,,
+,,,,,,,,KOMUTER23,Survei Komuter 2023,,
+,,,,,,,,KSA23,(KSA) Pendataan Statistik Pertanian Tanaman Pangan Terintegrasi Dengan Metode Kerangka Sampel Area 2,,
+,,,,,,,,LF.SP2020,Long Form Sp2020,,
+,,,,,,,,LF.SP2020-PP,Pra Pemutakhiran Long Form Sp2020,,
+,,,,,,,,LISTRIK23,Survei Tahunan Perusahaan Listrik 2023,,
+,,,,,,,,LPTB2023-CAPI,Laporan Pemotongan Ternak Bulanan (CAPI) Tahun 2023,,
+,,,,,,,,LTB23,Pendataan Laporan Tahunan Perusahaan Budidaya Ikan 2023,,
+,,,,,,,,LTB24,Laporan Tahunan Perusahaan Budidaya Ikan Tahun 2024,,
+,,,,,,,,LTP23,Pendataan Laporan Tahunan Perusahaan Penangkapan Ikan 2023,,
+,,,,,,,,LTP24,Laporan Tahunan Perusahaan Penangkapan Ikan Tahun 2024,,
+,,,,,,,,LTS24,Laporan Tahunan Perusahaan Peternakan Sapi Perah Tahun 2024,,
+,,,,,,,,LTS-LTT-LTU-23,Survei Perusahaan Peternakan 2022,,
+,,,,,,,,LTT24,Laporan Tahunan Perusahaan Peternakan Ternak Besar Dan Ternak Kecil Tahun 2024,,
+,,,,,,,,LTU24,Laporan Tahunan Perusahaan Peternakan Unggas Tahun 2024,,
+,,,,,,,,MIGAS23,Survei Tahunan Perusahaan Pertambangan Migas 2023,,
+,,,,,,,,NON-MIGAS23,Survei Tahunan Perusahaan Pertambangan Non Migas 2023,,
+,,,,,,,,NTA23,Indepth Study Nasional Transfer Account (NTA) 2023,,
+,,,,,,,,PASAR23,Survei Profil Pasar 2023,,
+,,,,,,,,PES-ST2023,Post Enumeration Survey - Sensus Pertanian 2023,,
+,,,,,,,,PETA-ST2023,Pengolahan Peta Dan Titik Bangunan Hasil St2023,,
+,,,,,,,,PL-KUMKM23,"Pendataan Lengkap Koperasi, Usaha Mikro, Kecil Dan Menengah (KUMKM) 2023",,
+,,,,,,,,PODES24-DESA,Potensi Desa 2024 Wilayah Desa/Kelurahan,,
+,,,,,,,,PODES24-KAB,Potensi Desa 2024 Wilayah Kabupaten/Kota,,
+,,,,,,,,PODES24-KEC,Potensi Desa 2024 Wilayah Kecamatan,,
+,,,,,,,,POLDIS23,Survei Pola Distribusi Perdagangan 2023,,
+,,,,,,,,PP-TPI-2023,Pendataan Laporan Triwulanan Pelabuhan Perikanan Dan Tempat Pelelangan Ikan 2023,,
+,,,,,,,,REGSOSEK22,Pendataan Awal Registrasi Sosial Ekonomi 2022,,
+,,,,,,,,REKRUTMEN24,Rekrutmen Mitra Statistik Bps 2024,,
+,,,,,,,,REKRUTMEN24-PROV,Rekrutmen Mitra Statistik Bps Provinsi 2024,,
+,,,,,,,,SAKERNAS23-AGS,Survei Angkatan Kerja Nasional (SAKERNAS) 2023 Agustus,,
+,,,,,,,,SAKERNAS23-FEB,Survei Angkatan Kerja Nasional (SAKERNAS) 2023 Februari,,
+,,,,,,,,SBH22,Survei Biaya Hidup (SBH) 2022,,
+,,,,,,,,SDT23,Survei Dwelling Time 2023,,
+,,,,,,,,SEEA23,In-Depth Study System Of Environmental Economic Accounting 2023,,
+,,,,,,,,SERUTI23-MAR,Survei Ekonomi Rumah Tangga Triwulanan 2023 Maret,,
+,,,,,,,,SERUTI23-TW2,Survei Ekonomi Rumah Tangga Triwulanan (SERUTI) 2023 - Triwulan Ii,,
+,,,,,,,,SERUTI23-TW3,Survei Ekonomi Rumah Tangga Triwulanan (SERUTI) 2023 - Triwulan Iii,,
+,,,,,,,,SERUTI23-TW4,Survei Ekonomi Rumah Tangga Triwulanan (SERUTI) 2023 - Triwulan Iv,,
+,,,,,,,,SHBJ-SSB23,Survei Satuan Harga Barang Dan Jasa - Satuan Standar Biaya (SHBJ-SSB) 2023,,
+,,,,,,,,SHK23,Survei Harga Konsumen (SHK) 2023,,
+,,,,,,,,SHKK23,Survei Harga Kemahalan Konstruksi (SHKK) 2023,,
+,,,,,,,,SHMP23,Survei Harga Mesin Dan Perlengkapan (SHMP) 2023,,
+,,,,,,,,SHP23,Survei Harga Produsen (SHP) 2023,,
+,,,,,,,,SHPB23,Survei Harga Perdagangan Besar (SHPB) 2023,,
+,,,,,,,,SHPED23,Survei Harga Perdesaan (SHPED) 2023,,
+,,,,,,,,SHPI23,Survei Harga Perdagangan Internasional (SHPI) 2023,,
+,,,,,,,,SHPP23,Survei Harga Properti Perumahan (SHPP) 2023,,
+,,,,,,,,SHPP24,Survei Harga Properti Perumahan Tahun 2024,,
+,,,,,,,,SIBS23,Survei Industri Besar Sedang (2023) Bulanan 2023,,
+,,,,,,,,SINASI23,Survei Neraca Terintegrasi (SINASI) 2023,,
+,,,,,,,,SIUTAN24,Survei Perusahaan Kehutanan 2024,,
+,,,,,,,,SKB23,Survei Perusahaan Perkebunan 2023,,
+,,,,,,,,SKB24,Survei Perusahaan Perkebunan Tahunan 2024,,
+,,,,,,,,SKLNP23,Survei Khusus Lembaga Non Profit Yang Melayani Rumah Tangga Tahunan 2023,,
+,,,,,,,,SKLNPT23,Survei Khusus Lembaga Non Profit Yang Melayani Rumah Tangga Triwulanan 2023,,
+,,,,,,,,SKP23,Survei Usaha Konstruksi Perorangan (SKP) 2023,,
+,,,,,,,,SKPD23,Survei Keuangan Pemerintah Desa Tahun 2023,,
+,,,,,,,,SKPS23,Survei Khusus Perusahaan Swasta (SKPS) 2023,,
+,,,,,,,,SKPT23,Survei Kesejahteraan Petani (SKP) 2023,,
+,,,,,,,,SKSIP23,Survei Khusus Struktur Input Pemerintah 2023,,
+,,,,,,,,SKSPPI23,Survei Khusus Studi Penyusunan Perubahan Inventori (SKSPPI) 2023,,
+,,,,,,,,SKTH23,Survei Perusahaan Konstruksi Tahunan 2023,,
+,,,,,,,,SKTNP-BJ23-TW1,Survei Khusus Triwulanan Neraca Produksi Barang Jasa (SKTNP-BJ) Tahap 1 2023,,
+,,,,,,,,SKTNP-BJ23-TW2,Survei Khusus Triwulanan Neraca Produksi Barang Jasa (SKTNP-BJ) Tahap 2 2023,,
+,,,,,,,,SKTNP-BJ23-TW3,Survei Khusus Triwulanan Neraca Produksi Barang Jasa (SKTNP-BJ) Tahap 3 2023,,
+,,,,,,,,SKTNP-BJ23-TW4,Survei Khusus Triwulanan Neraca Produksi Barang Jasa (SKTNP-BJ) Tahap 4 2023,,
+,,,,,,,,SKTR23,Survei Perusahaan Konstruksi Triwulanan 2023,,
+,,,,,,,,SKTR23-TW4,Survei Perusahaan Konstruksi Triwulanan 2023 - Triwulan Iv,,
+,,,,,,,,SKU23,Survei Karakteristik Usaha (SKU) 2023,,
+,,,,,,,,SLK23,Survei Lembaga Keuangan 2023,,
+,,,,,,,,SNLIK24,Survei Nasional Literasi Dan Inklusi Keuangan 2024,,
+,,,,,,,,SPAK23,Survei Perilaku Anti Korupsi 2023,,
+,,,,,,,,SPAK24,Survei Perilaku Anti Korupsi 2024,,
+,,,,,,,,SPAW23,Survei Perdagangan Antar Wilayah 2023,,
+,,,,,,,,SPD-PMTB23,Survei Penyusunan Disagregasi Pmtb 2023,,
+,,,,,,,,SPDT-IHPB23,Survei Penyempurnaan Diagram Timbang Ihpb (SPDT IHPB) 2023,,
+,,,,,,,,SPKEHUTANAN22,Survei Perusahaan Kehutanan 2022,,
+,,,,,,,,SSHI23-UC1,Uji Coba Sistem Statistik Hayati Indonesia (SSHI) 2023 Tahap I,,
+,,,,,,,,SSHI23-UC2,Uji Coba Sistem Statistik Hayati Indonesia (SSHI) 2023 Tahap Ii,,
+,,,,,,,,ST2023-DPPDUTL,Updating Dpp Dan Dutl,,
+,,,,,,,,ST2023-GB1,Gladi Bersih 1 Sensus Pertanian 2023,,
+,,,,,,,,ST2023-GB2,Gladi Bersih 2 Sensus Pertanian 2023,,
+,,,,,,,,ST2023-GB2-UPB,Gladi Bersih Ii Sensus Pertanian 2023 - Upb,,
+,,,,,,,,ST2023-GB2-UTL,Gladi Bersih Ii Sensus Pertanian 2023 - Utl,,
+,,,,,,,,ST2023-PW,Pemutakhiran Kerangka Geospasial Dan Muatan Wilkerstat St2023,,
+,,,,,,,,ST2023-UPB,Sensus Pertanian 2023 - Upb,,
+,,,,,,,,ST2023-UTL,Sensus Pertanian 2023 - Utl,,
+,,,,,,,,ST2023-UTP,Sensus Pertanian 2023 - Utp,,
+,,,,,,,,STKU23,Survei Triwulanan Kegiatan Usaha (STKU) 2023,,
+,,,,,,,,STPIM23,Survei Tahunan Perusahaan Industri Manufaktur 2023,,
+,,,,,,,,STRABS23,"Survei Tarif Sewa Atau Kontrak Rumah, Asisten Ruta, Babysitter, Dan Biaya Sekolah (STRABS) 2023",,
+,,,,,,,,STUDI-EA23,Studi Enumeration Area Sls 2023,,
+,,,,,,,,SUSENAS23-MAR,Survei Sosial Ekonomi Nasional 2023 Maret,,
+,,,,,,,,SVPEB23,Survei Volume Penjualan Eceran Beras (SVPEB) 2023,,
+,,,,,,,,UBINAN23-SUB1,Survei Ubinan 2023 Subround I,,
+,,,,,,,,UBINAN23-SUB2,Survei Ubinan 2023 Subround Ii,,
+,,,,,,,,UBINAN23-SUB3,Survei Ubinan 2023 Subround Iii,,
+,,,,,,,,UCPL-UMKM23,"Uji Coba Pendataan Lengkap Koperasi, Usaha Mikro, Kecil Dan Menengah (KUMKM) 2023",,
+,,,,,,,,UC-PODES24,Uji Coba Podes 2024 - Desa,,
+,,,,,,,,UC-PODES24-KAB,Uji Coba Podes 2024 - Kabupaten,,
+,,,,,,,,UC-PODES24-KEC,Uji Coba Podes 2024 - Kecamatan,,
+,,,,,,,,UC-SE2026,Uji Coba Sensus Ekonomi Tahun 2026,,
+,,,,,,,,UC-SPDN23,Uji Coba Integrasi Survei Perdagangan 2023,,
+,,,,,,,,UC-SUPAS25,Uji Coba Survei Penduduk Antar Sensus 2025,,
+,,,,,,,,UC-VPEK23,"Uji Coba Survei Pergudangan, Ekspedisi, Dan Kurir (UC-VPEK) 2023",,
+,,,,,,,,UDJP23,Updating Direktori Jasa Pariwisata 2023,,
+,,,,,,,,UDJP24,Updating Direktori Jasa Pariwisata 2024,,
+,,,,,,,,UD-LNPRT23,Updating Direktori Lnprt (LEMBAGA NON-PROFIT RUMAH TANGGA) 2023,,
+,,,,,,,,UDP23,Updating Direktori Perusahaan Konstruksi 2023,,
+,,,,,,,,UDP24,Updating Direktori Perusahaan Konstruksi 2024,,
+,,,,,,,,UDPE23,Updating Direktori Perusahaan Pertambangan Dan Energi 2023,,
+,,,,,,,,UDPE-SBR24,Updating Direktori Usaha/Perusahaan Ekonomi 2024,,
+,,,,,,,,UDPP24,Updating Profil Pasar 2024,,
+,,,,,,,,V-BUMD23,Survei Statistik Keuangan Bumd 2021-2022,,
+,,,,,,,,VDTW23,Survei Daya Tarik Wisata (VDTW) 2023,,
+,,,,,,,,VHTL23,Survei Hotel Dan Jasa Akomodasi Tahunan (VHTL) 2023,,
+,,,,,,,,VHTS23,Survei Hotel Dan Jasa Akomodasi Bulanan (VHTS) 2023,,
+,,,,,,,,VICP-CNS24,Survei International Comparison Program Komoditas Konstruksi 2024,,
+,,,,,,,,VIMK22-TW4,Survei Industri Mikro Dan Kecil (IMK) 2022 Triwulan Iv,,
+,,,,,,,,VIMK23,Survei Industri Mikro Dan Kecil (IMK) 2023 Tahunan,,
+,,,,,,,,VIMK23-PROV,Survei Industri Mikro Dan Kecil (IMK) 2023 Tahunan - Provinsi,,
+,,,,,,,,VIMK23-TW1,Survei Industri Mikro Dan Kecil (IMK) 2023 Triwulan I,,
+,,,,,,,,VIMK23-TW2,Survei Industri Mikro Dan Kecil (IMK) 2023 Triwulan Ii,,
+,,,,,,,,VIMK23-TW3,Survei Industri Mikro Dan Kecil (IMK) 2023 Triwulan Iii,,
+,,,,,,,,VIMK24-TW-L,Listing Survei Mikro Dan Kecil Triwulanan 2024,,
+,,,,,,,,VREST-UMB23,Survei Penyedia Makan Dan Minum Umb (VREST-UMB) 2023,,

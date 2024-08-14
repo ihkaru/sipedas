@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-
+use App\Supports\Constants;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -11,6 +11,7 @@ class Plh extends Model
 {
     use HasFactory;
     protected $guarded=[];
+    protected static $plhDefault;
 
     public function pegawaiPengganti(){
         return $this->belongsTo(Pegawai::class,"pegawai_pengganti_id","nip");
@@ -45,8 +46,9 @@ class Plh extends Model
         // dump(4);
         return null;
     }
-    public static function getApprover(array $nipPegawais,string $tgl_mulai_tugas, bool $returnPegawai = false){
-        $atasanLangsung = self::getAtasanTertinggi($nipPegawais);
+    public static function getApprover(array|null $nipPegawais,string $tgl_mulai_tugas, bool $returnPegawai = false){
+        self::$plhDefault = self::$plhDefault ?? Pegawai::where("nip",Pengaturan::key("ID_PLH_DEFAULT")->nilai)->first();
+        $atasanLangsung = ($nipPegawais == null) ? self::$plhDefault : self::getAtasanTertinggi($nipPegawais);
         $plh = self::where("pegawai_digantikan_id",$atasanLangsung->nip)
             ->where("tgl_mulai","<=",$tgl_mulai_tugas)
             ->where("tgl_selesai",">=",$tgl_mulai_tugas)

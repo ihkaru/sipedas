@@ -2,6 +2,7 @@
     $c = Illuminate\Support\Carbon::class;
     $cons = App\Supports\Constants::class;
     $peng = App\Models\Pengaturan::class;
+    $penugasan = $penugasans;
 @endphp
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -284,7 +285,7 @@
       SURAT TUGAS
     </p>
     <p style="text-indent: 0pt; text-align: center">
-    Nomor: {{$penugasans->suratTugas->nomor_surat_tugas}}
+    Nomor: {{$penugasan->suratTugas->nomor_surat_tugas}}
     </p>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <table
@@ -331,7 +332,7 @@
                   text-align: justify;
                 "
               >
-              &nbsp; bahwa sehubungan dengan {{$penugasans->kegiatan->nama}} BPS {{ucwords(strtolower($namaSatker))}} tahun {{{$c::parse($penugasans->kegiatan->tgl_akhir_perjadin)->year}}}, maka dipandang perlu
+              &nbsp; bahwa sehubungan dengan {{$penugasan->kegiatan->nama}} BPS {{ucwords(strtolower($namaSatker))}} tahun {{{$c::parse($penugasan->kegiatan->tgl_akhir_perjadin)->year}}}, maka dipandang perlu
                 untuk melakukan kegiatan tersebut;
               </p>
             </li>
@@ -550,11 +551,11 @@
               text-align: left;
             "
           >
-            {{$penugasans->pegawai->nama}}
+            {{$penugasan->tertugas}}
           </p>
         </td>
       </tr>
-      <tr style="height: 14pt">
+      <tr style="height: 13pt">
         <td style="width: 59pt">
           <p style="text-indent: 0pt; text-align: left"><br /></p>
         </td>
@@ -597,7 +598,7 @@
               text-align: left;
             "
           >
-          {{$penugasans->pegawai->nip}}
+          {{$penugasan->pegawai?->nip ?? "-"}}
           </p>
         </td>
       </tr>
@@ -644,11 +645,11 @@
               text-align: left;
             "
           >
-            {{$penugasans->pegawai->pangkat_golongan}}
+            {{$penugasan->pegawai?->pangkat_golongan ?? "-"}}
           </p>
         </td>
       </tr>
-      <tr style="height: 31pt">
+      <tr style="height: 13pt">
         <td style="width: 59pt">
           <p style="text-indent: 0pt; text-align: left"><br /></p>
         </td>
@@ -659,7 +660,6 @@
           <p
             class="s2"
             style="
-              padding-top: 5pt;
               padding-left: 17pt;
               text-indent: 0pt;
               text-align: left;
@@ -672,7 +672,6 @@
           <p
             class="s2"
             style="
-              padding-top: 5pt;
               padding-right: 5pt;
               text-indent: 0pt;
               text-align: right;
@@ -691,11 +690,12 @@
               text-align: left;
             "
           >
-            {{$penugasans->pegawai->jabatan}} BPS {{ucwords(strtolower($namaSatker))}}
+            {{$penugasan->jenisPetugas}} BPS {{ucwords(strtolower($namaSatker))}}
           </p>
+          <br>
         </td>
       </tr>
-      <tr style="height: 33pt">
+      <tr style="height: 33pt;">
         <td style="width: 59pt">
           <p
             class="s2"
@@ -733,28 +733,38 @@
               text-align: left;
             "
           >
-            Melaksanakan {{$penugasans->kegiatan->nama}} Tahun {{$c::parse($penugasans->kegiatan->tgl_akhir_perjadin)->year}}
-            @if ($penugasans->jenis_surat_tugas != $cons::NON_SPPD)
+            Melaksanakan {{$penugasan->kegiatan->nama}}
+            @if ($penugasan->tujuanSuratTugas?->first()?->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_NAMA_TEMPAT)
             di
-                @if ($penugasans->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KABUPATEN_KOTA)
-                    Kabupaten {{ucwords(strtolower($penugasans->kabkot->kabkot))}}
+                    {{$penugasan->tujuanSuratTugas->first()->nama_tempat_tujuan}}
+            @elseif (true)
+            di
+                @if ($penugasan->tujuanSuratTugas?->first()?->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KABUPATEN_KOTA)
+                    @foreach ($penugasan->tujuanSuratTugas as $tujuan)
+                        {{ucwords(strtolower($tujuan->kabkot->kabkot))}}
+                    @endforeach
                 @endif
-                @if ($penugasans->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KECAMATAN)
-                    Kecamatan {{ucwords(strtolower($penugasans->kecamatan->kecamatan))}},
-                    Kabupaten {{ucwords(strtolower($penugasans->kabkot->kabkot))}}
+                @if ($penugasan->tujuanSuratTugas?->first()?->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KECAMATAN)
+                    Kecamatan
+                    @foreach ($penugasan->tujuanSuratTugas as $tujuan)
+                         {{ucwords(strtolower($tujuan->kecamatan->kecamatan))}},
+                    @endforeach
+                    {{-- {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->kabkot->kabkot))}} --}}
                 @endif
-                @if ($penugasans->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_DESA_KELURAHAN)
-                    Desa/Kelurahan {{ucwords(strtolower($penugasans->desa->desa_kel))}},
-                    Kecamatan {{ucwords(strtolower($penugasans->kecamatan->kecamatan))}},
-                    {{ucwords(strtolower($penugasans->kabkot->kabkot))}}
+                @if ($penugasan->tujuanSuratTugas?->first()?->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_DESA_KELURAHAN)
+                    Desa/Kelurahan
+                    @foreach ($penugasan->tujuanSuratTugas as $tujuan)
+                        {{ucwords(strtolower($tujuan->desa->desa_kel))}},
+                    @endforeach
+                    Kecamatan {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->kecamatan->kecamatan))}},
+                    {{-- {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->kabkot->kabkot))}} --}}
                 @endif
-                pada tanggal
-                @if ($penugasans->tgl_mulai_tugas == $penugasans->tgl_mulai_tugas)
-                    {{$c::parse($penugasans->tgl_mulai_tugas)->translatedFormat('d F Y')}}
-                @else
-                    {{$c::parse($penugasans->tgl_mulai_tugas)->translatedFormat('d F Y')." s.d. ".$c::parse($penugasans->tgl_akhir_tugas)->translatedFormat('d M Y')}}
-                @endif
-
+            @endif
+            pada tanggal
+            @if ($penugasan->tgl_mulai_tugas == $penugasan->tgl_akhir_tugas)
+                {{$c::parse($penugasan->tgl_mulai_tugas)->translatedFormat('d F Y')}}
+            @else
+                {{$c::parse($penugasan->tgl_mulai_tugas)->translatedFormat('d F Y')." s.d. ".$c::parse($penugasan->tgl_akhir_tugas)->translatedFormat('d F Y')}}
             @endif
           </p>
         </td>
@@ -762,11 +772,11 @@
     </table>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <p style="padding-left: 283pt; text-indent: 0pt; text-align: center">
-      {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}}, {{$c::parse($penugasans->tgl_pengajuan_tugas)->translatedFormat('d F Y')}}
+      {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}}, {{$c::parse($penugasan->tgl_pengajuan_tugas)->translatedFormat('d F Y')}}
     </p>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <p style="padding-left: 283pt; text-indent: 0pt; text-align: center">
-        @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasans->plh->nip)
+        @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasan->plh->nip)
             An.
         @endif
       Kepala Badan Pusat Statistik <br/> {{ucwords(strtolower($namaSatker))}}
@@ -779,14 +789,15 @@
         padding-left: 283pt;
         text-indent: 0pt;
         text-align: center;
+        text-decoration: underline;
       "
     >
-      {{$penugasans->plh->nama}}
+      {{$penugasan->plh->nama}}
     </p>
     <p style="padding-left: 283pt; text-indent: 0pt; text-align: center">
-      NIP. <span style="color: #1f1f1f">{{$penugasans->plh->nip}}</span>
+      NIP. <span style="color: #1f1f1f">{{$penugasan->plh->nip}}</span>
     </p>
-    @if ($penugasans->jenis_surat_tugas != $cons::NON_SPPD)
+    @if ($penugasan->jenis_surat_tugas != $cons::NON_SPPD)
     <div class="pagebreak"> </div>
 
     <p style="text-indent: 0pt; text-align: left"><br /></p>
@@ -835,7 +846,7 @@
                 text-align: left;
               "
             >
-              Nomor : {{$penugasans->suratPerjadin->nomor_surat_perjadin}}
+              Nomor : {{$penugasan->suratPerjadin->nomor_surat_perjadin}}
             </p>
         </div>
     </div>
@@ -1005,8 +1016,8 @@
               text-align: left;
             "
           >
-            {{$penugasans->pegawai->nama}} <br />
-            NIP. {{$penugasans->pegawai->nip}}
+            {{$penugasan->pegawai?->nama}} <br />
+            NIP. {{$penugasan->pegawai?->nip}}
           </p>
         </td>
       </tr>
@@ -1115,7 +1126,7 @@
               text-align: left;
             "
           >
-            {{$penugasans->pegawai->pangkat_golongan}}
+            {{$penugasan->pegawai?->pangkat_golongan}}
           </p>
           <p
             class="s2"
@@ -1128,7 +1139,7 @@
               text-align: left;
             "
           >
-          {{$penugasans->pegawai->jabatan}} BPS {{ucwords(strtolower($namaSatker))}} <br/>
+          {{$penugasan->pegawai?->jabatan}} BPS {{ucwords(strtolower($namaSatker))}} <br/>
           C
           </p>
         </td>
@@ -1210,26 +1221,27 @@
               text-align: justify;
             "
           >
-          Melaksanakan {{$penugasans->kegiatan->nama}} Tahun {{$c::parse($penugasans->kegiatan->tgl_akhir_perjadin)->year}}
-          @if ($penugasans->jenis_surat_tugas != $cons::NON_SPPD)
+          Melaksanakan {{$penugasan->kegiatan->nama}} Tahun {{$c::parse($penugasan->kegiatan->tgl_akhir_perjadin)->year}}
+          @if ($penugasan->jenis_surat_tugas != $cons::NON_SPPD)
           di
-              @if ($penugasans->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KABUPATEN_KOTA)
-                  Kabupaten {{ucwords(strtolower($penugasans->kabkot->kabkot))}}
+              @if ($penugasan->tujuanSuratTugas?->first()?->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KABUPATEN_KOTA)
+                {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->kabkot->kabkot))}}
               @endif
-              @if ($penugasans->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KECAMATAN)
-                  Kecamatan {{ucwords(strtolower($penugasans->kecamatan->kecamatan))}},
-                  Kabupaten {{ucwords(strtolower($penugasans->kabkot->kabkot))}}
+              @if ($penugasan->tujuanSuratTugas?->first()?->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KECAMATAN)
+                Kecamatan {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->kecamatan->kecamatan))}},
+                {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->kabkot->kabkot))}}
+
               @endif
-              @if ($penugasans->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_DESA_KELURAHAN)
-                  Desa/Kelurahan {{ucwords(strtolower($penugasans->desa->desa_kel))}},
-                  Kecamatan {{ucwords(strtolower($penugasans->kecamatan->kecamatan))}},
-                  {{ucwords(strtolower($penugasans->kabkot->kabkot))}}
+              @if ($penugasan->tujuanSuratTugas?->first()?->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_DESA_KELURAHAN)
+                  Desa/Kelurahan {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->desa->desa_kel))}},
+                  Kecamatan {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->kecamatan->kecamatan))}},
+                  {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->kabkot->kabkot))}}
               @endif
               pada tanggal
-              @if ($penugasans->tgl_mulai_tugas == $penugasans->tgl_mulai_tugas)
-                  {{$c::parse($penugasans->tgl_mulai_tugas)->translatedFormat('d F Y')}}
+              @if ($penugasan->tgl_mulai_tugas == $penugasan->tgl_akhir_tugas)
+                  {{$c::parse($penugasan->tgl_mulai_tugas)->translatedFormat('d F Y')}}
               @else
-                  {{$c::parse($penugasans->tgl_mulai_tugas)->translatedFormat('d F Y')." s.d. ".$c::parse($penugasans->tgl_akhir_tugas)->translatedFormat('d M Y')}}
+                  {{$c::parse($penugasan->tgl_mulai_tugas)->translatedFormat('d F Y')." s.d. ".$c::parse($penugasan->tgl_akhir_tugas)->translatedFormat('d F Y')}}
               @endif
 
           @endif
@@ -1311,7 +1323,7 @@
               text-align: left;
             "
           >
-          {{$cons::JENIS_TRANSPORTASI_OPTIONS[($penugasans->transportasi)]}}
+          {{$cons::JENIS_TRANSPORTASI_OPTIONS[($penugasan->transportasi)]}}
           </p>
         </td>
       </tr>
@@ -1418,15 +1430,15 @@
               text-align: left;
             "
           >
-            @if ($penugasans->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KABUPATEN_KOTA)
-                Kabupaten {{ucwords(strtolower($penugasans->kabkot->kabkot))}}
+            @if ($penugasan->tujuanSuratTugas?->first()?->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KABUPATEN_KOTA)
+                Kabupaten {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->kabkot->kabkot))}}
             @endif
-            @if ($penugasans->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KECAMATAN)
-                Kecamatan {{ucwords(strtolower($penugasans->kecamatan->kecamatan))}}
+            @if ($penugasan->tujuanSuratTugas?->first()?->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KECAMATAN)
+                Kecamatan {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->kecamatan->kecamatan))}}
             @endif
-            @if ($penugasans->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_DESA_KELURAHAN)
-                Desa/Kelurahan {{ucwords(strtolower($penugasans->desa->desa_kel))}},
-                Kecamatan {{ucwords(strtolower($penugasans->kecamatan->kecamatan))}}
+            @if ($penugasan->tujuanSuratTugas?->first()?->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_DESA_KELURAHAN)
+                Desa/Kelurahan {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->desa->desa_kel))}},
+                Kecamatan {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->kecamatan->kecamatan))}}
             @endif
           </p>
         </td>
@@ -1536,7 +1548,7 @@
               text-align: left;
             "
           >
-            {{$penugasans->lama_perjadin}} hari
+            {{$penugasan->lama_perjadin}} hari
           </p>
           <p
             class="s2"
@@ -1547,7 +1559,7 @@
               text-align: left;
             "
           >
-            {{$c::parse($penugasans->tgl_mulai_tugas)->translatedFormat('d F Y')}}
+            {{$c::parse($penugasan->tgl_mulai_tugas)->translatedFormat('d F Y')}}
           </p>
           <p
             class="s2"
@@ -1558,7 +1570,7 @@
               text-align: left;
             "
           >
-          {{$c::parse($penugasans->tgl_akhir_tugas)->translatedFormat('d F Y')}}
+          {{$c::parse($penugasan->tgl_akhir_tugas)->translatedFormat('d F Y')}}
           </p>
         </td>
       </tr>
@@ -1977,14 +1989,14 @@
         text-align: left;
       "
     >
-      Dikeluarkan di : {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}} <br /> Pada tanggal : {{$c::parse($penugasans->tgl_pengajuan_tugas)->translatedFormat('d F Y')}}
+      Dikeluarkan di : {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}} <br /> Pada tanggal : {{$c::parse($penugasan->tgl_pengajuan_tugas)->translatedFormat('d F Y')}}
 
     </p>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <p style="padding-left: 306pt; text-indent: 0pt; text-align: center">
       Pejabat Pembuat Komitmen
     </p>
-    <p style="text-indent: 0pt; text-align: left"><br /><br /></p>
+    <p style="text-indent: 0pt; text-align: left"><br /><br /><br /></p>
     <p
       class="s5"
       style="
@@ -2065,15 +2077,15 @@
             "
           >
             Ke :
-            @if ($penugasans->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KABUPATEN_KOTA)
-                Kabupaten {{ucwords(strtolower($penugasans->kabkot->kabkot))}}
+            @if ($penugasan->tujuanSuratTugas?->first()?->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KABUPATEN_KOTA)
+                Kabupaten {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->kabkot->kabkot))}}
             @endif
-            @if ($penugasans->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KECAMATAN)
-                Kecamatan {{ucwords(strtolower($penugasans->kecamatan->kecamatan))}}
+            @if ($penugasan->tujuanSuratTugas?->first()?->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KECAMATAN)
+                Kecamatan {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->kecamatan->kecamatan))}}
             @endif
-            @if ($penugasans->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_DESA_KELURAHAN)
-                Desa/Kelurahan {{ucwords(strtolower($penugasans->desa->desa_kel))}},
-                Kecamatan {{ucwords(strtolower($penugasans->kecamatan->kecamatan))}}
+            @if ($penugasan->tujuanSuratTugas?->first()?->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_DESA_KELURAHAN)
+                Desa/Kelurahan {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->desa->desa_kel))}},
+                Kecamatan {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->kecamatan->kecamatan))}}
             @endif
           </p>
           <p style="text-indent: 0pt; text-align: left"><br /></p>
@@ -2081,7 +2093,7 @@
             class="s2"
             style="padding-left: 9pt; text-indent: 0pt; text-align: left"
           >
-            Pada tanggal : {{$c::parse($penugasans->tgl_mulai_tugas)->translatedFormat('d F Y')}}
+            Pada tanggal : {{$c::parse($penugasan->tgl_mulai_tugas)->translatedFormat('d F Y')}}
           </p>
           <p style="text-indent: 0pt; text-align: left"><br /></p>
           <p
@@ -2095,17 +2107,14 @@
           >
             Mengetahui,
           </p>
-          <p style="text-indent: 0pt; text-align: left"><br /></p>
           <p
             class="s2"
             style="
-              padding-left: 55pt;
-              padding-right: 55pt;
               text-indent: 0pt;
               text-align: center;
             "
           >
-          @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasans->plh->nip)
+          @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasan->plh->nip)
           An.
           @endif
           Kepala Badan Pusat Statistik <br/> {{ucwords(strtolower($namaSatker))}}
@@ -2121,7 +2130,7 @@
               text-align: center;
             "
           >
-            {{$penugasans->plh->nama}}
+            {{$penugasan->plh->nama}}
           </p>
           <p
             class="s2"
@@ -2132,7 +2141,7 @@
               text-align: center;
             "
           >
-            NIP. <span style="color: #1f1f1f">{{$penugasans->plh->nip}}</span>
+            NIP. <span style="color: #1f1f1f">{{$penugasan->plh->nip}}</span>
           </p>
         </td>
       </tr>
@@ -2162,18 +2171,18 @@
             "
           >
             II. Tiba di &emsp;&emsp;&emsp;:
-            @if ($penugasans->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KABUPATEN_KOTA)
-                Kabupaten {{ucwords(strtolower($penugasans->kabkot->kabkot))}}
+            @if ($penugasan->tujuanSuratTugas?->first()?->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KABUPATEN_KOTA)
+                Kabupaten {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->kabkot->kabkot))}}
             @endif
-            @if ($penugasans->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KECAMATAN)
-                Kecamatan {{ucwords(strtolower($penugasans->kecamatan->kecamatan))}}
+            @if ($penugasan->tujuanSuratTugas?->first()?->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KECAMATAN)
+                Kecamatan {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->kecamatan->kecamatan))}}
             @endif
-            @if ($penugasans->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_DESA_KELURAHAN)
-                Desa/Kelurahan {{ucwords(strtolower($penugasans->desa->desa_kel))}},
-                Kecamatan {{ucwords(strtolower($penugasans->kecamatan->kecamatan))}}
+            @if ($penugasan->tujuanSuratTugas?->first()?->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_DESA_KELURAHAN)
+                Desa/Kelurahan {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->desa->desa_kel))}},
+                Kecamatan {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->kecamatan->kecamatan))}}
             @endif
             <br/>Pada Tanggal :
-            {{$c::parse($penugasans->tgl_mulai_tugas)->translatedFormat('d F Y')}}
+            {{$c::parse($penugasan->tgl_mulai_tugas)->translatedFormat('d F Y')}}
           </p>
         </td>
         <td
@@ -2201,29 +2210,29 @@
             "
           >
             Berangkat dari :
-            @if ($penugasans->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KABUPATEN_KOTA)
-                Kabupaten {{ucwords(strtolower($penugasans->kabkot->kabkot))}}
+            @if ($penugasan->tujuanSuratTugas?->first()?->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KABUPATEN_KOTA)
+                Kabupaten {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->kabkot->kabkot))}}
             @endif
-            @if ($penugasans->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KECAMATAN)
-                Kecamatan {{ucwords(strtolower($penugasans->kecamatan->kecamatan))}}
+            @if ($penugasan->tujuanSuratTugas?->first()?->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_KECAMATAN)
+                Kecamatan {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->kecamatan->kecamatan))}}
             @endif
-            @if ($penugasans->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_DESA_KELURAHAN)
-                Desa/Kelurahan {{ucwords(strtolower($penugasans->desa->desa_kel))}},
-                Kecamatan {{ucwords(strtolower($penugasans->kecamatan->kecamatan))}}
+            @if ($penugasan->tujuanSuratTugas?->first()?->level_tujuan_penugasan == $cons::LEVEL_PENUGASAN_DESA_KELURAHAN)
+                Desa/Kelurahan {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->desa->desa_kel))}},
+                Kecamatan {{ucwords(strtolower($penugasan->tujuanSuratTugas?->first()?->kecamatan->kecamatan))}}
             @endif
           </p>
           <p
             class="s2"
             style="
               padding-left: 9pt;
-              padding-right: 90pt;
+              padding-right: 20pt;
               text-indent: 0pt;
               text-align: left;
             "
           >
             Ke &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;: {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}} <br/>
             Pada tanggal &emsp;:
-            {{$c::parse($penugasans->tgl_akhir_tugas)->translatedFormat('d F Y')}}
+            {{$c::parse($penugasan->tgl_akhir_tugas)->translatedFormat('d F Y')}}
           </p>
         </td>
       </tr>
@@ -2332,7 +2341,7 @@
             "
           >
             Pada Tanggal :
-            {{$c::parse($penugasans->tgl_akhir_tugas)->translatedFormat('d F Y')}}
+            {{$c::parse($penugasan->tgl_akhir_tugas)->translatedFormat('d F Y')}}
           </p>
           <p style="text-indent: 0pt; text-align: left"><br /></p>
           <p
@@ -2487,7 +2496,7 @@
       </tr>
     </table>
     @endif
-    @if ($penugasans->transportasi != $cons::TRANSPORTASI_KENDARAAN_DINAS)
+    @if ($penugasan->jenis_surat_tugas != $cons::NON_SPPD && $penugasan->transportasi != $cons::TRANSPORTASI_KENDARAAN_DINAS)
         <div class="pagebreak"></div>
         <h2
         style="
@@ -2508,36 +2517,41 @@
     >
       TIDAK MENGGUNAKAN KENDARAAN DINAS
     </h2>
+    <h2 style="
+            padding-top: 9pt;
+            text-indent: 0pt;
+            text-align: center;
+            ">
+                No. SPD: {{$penugasan->suratPerjadin->nomor_surat_perjadin}}
+    </h2>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <p style="padding-left: 6pt; text-indent: 0pt; text-align: justify">
       Yang bertanda tangan di bawah ini:
     </p>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
-    <p style="padding-left: 42pt; text-indent: 0pt; text-align: left">
-      Nama &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;: {{$penugasans->pegawai->nama}}
-    </p>
-    <p style="text-indent: 0pt; text-align: left"><br /></p>
-    <p style="padding-left: 42pt; text-indent: 0pt; text-align: left">
-      NIP &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&nbsp;&ensp;&ensp;&ensp;&nbsp;: {{$penugasans->pegawai->nip}}
-    </p>
-    <p style="text-indent: 0pt; text-align: left"><br /></p>
-    <p
-      style="
-        padding-left: 42pt;
-        text-indent: 0pt;
-        text-align: left;
-      "
-    >
-      Pangkat/Golongan &ensp;: {{$penugasans->pegawai->pangkat_golongan}}
-    </p>
-    <p style="text-indent: 0pt; text-align: left"><br /></p>
-    <p style="padding-left: 42pt; text-indent: 0pt; text-align: left">
-        Jabatan &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&nbsp;: {{$penugasans->pegawai->jabatan}}
-    </p>
-    <p style="text-indent: 0pt; text-align: left"><br /></p>
-    <p style="padding-left: 42pt; text-indent: 0pt; text-align: left">
-        Unit Kerja &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&nbsp;&ensp;&ensp;: {{$penugasans->pegawai->unit_kerja}}
-    </p>
+    <table style="padding-left: 50pt">
+        <tr>
+            <td>Nama</td><td>:</td><td>{{$penugasan->pegawai?->nama}}</td>
+        </tr>
+        <tr>
+            <td>
+                @if ($penugasan->id_sobat != null)
+                    ID SOBAT
+                @else
+                    NIP
+                @endif
+            </td><td>:</td><td>{{$penugasan->pegawai?->nip}}</td>
+        </tr>
+        <tr>
+            <td>Pangkat/Golongan</td><td>:</td><td>{{$penugasan->pegawai?->pangkat_golongan}}</td>
+        </tr>
+        <tr>
+            <td>Jabatan</td><td>:</td><td>{{$penugasan->pegawai?->jabatan}}</td>
+        </tr>
+        <tr>
+            <td>Unit Kerja</td><td>:</td><td>{{$penugasan->pegawai?->unit_kerja}}</td>
+        </tr>
+    </table>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <p
       style="
@@ -2547,7 +2561,7 @@
         text-align: justify;
       "
     >
-      Menerangkan bahwa dalam rangka melaksanakan {{strtolower($penugasans->jenis_perjadin)}}
+      Menerangkan bahwa dalam rangka melaksanakan perjalanan dinas
       untuk melaksanakan tugas kedinasan sesuai surat tugas, saya benar-benar
       tidak menggunakan kendaraan dinas.
     </p>
@@ -2585,7 +2599,7 @@
             text-align: center;
             "
           >
-          {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}}, {{$c::parse($penugasans->tgl_pengajuan_tugas)->translatedFormat('d F Y')}}
+          {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}}, {{$c::parse($penugasan->tgl_pengajuan_tugas)->translatedFormat('d F Y')}}
 
           </p>
         </td>
@@ -2601,7 +2615,7 @@
             text-align: center;
             "
           >
-            Pelaksana {{$penugasans->jenis_perjadin}}
+            Pelaksana Perjalanan Dinas
           </p>
         </td>
       </tr>
@@ -2615,9 +2629,10 @@
               text-indent: 2pt;
               line-height: 13pt;
               text-align: center;
+              text-decoration: underline;
             "
           >
-            {{$penugasans->pegawai->nama}} <br/>
+            {{$penugasan->pegawai?->nama}} <br/>
           </p>
           <p
             style="
@@ -2628,7 +2643,7 @@
               text-align: center;
             "
           >
-            NIP. {{$penugasans->pegawai->nip}}
+            NIP. {{$penugasan->pegawai?->nip}}
           </p>
         </td>
       </tr>

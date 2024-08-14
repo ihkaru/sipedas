@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\Kegiatan;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
@@ -20,10 +21,10 @@ class KegiatanImport implements ToModel,WithBatchInserts,WithChunkReading,WithSt
     public function model(array $row)
     {
         return new Kegiatan([
-            "id"=>$row[0],
-            "nama"=>"Supervisi ".$row[1],
-            "tgl_awal_perjadin"=>Carbon::parse($row[3]),
-            "tgl_akhir_perjadin"=>Carbon::parse($row[4]),
+            "id"=>Str::slug(trim($row[1])),
+            "nama"=>trim($row[1]),
+            "tgl_awal_perjadin"=>null,
+            "tgl_akhir_perjadin"=>null,
             "pj_kegiatan_id"=>["198008112005021004","200110202023021003"][rand(0,1)],
         ]);
     }

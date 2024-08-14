@@ -62,7 +62,7 @@ class Constants {
     const JENIS_NOMOR_SURAT_BAST = "JENIS_NOMOR_SURAT_BAST";
     const JENIS_NOMOR_SURAT_OPTIONS = [
         "JENIS_NOMOR_SURAT_TUGAS" => "Nomor Surat Tugas",
-        "JENIS_NOMOR_SURAT_PERJALAN_DINAS" => "Nomor Surat Perjalanan Dinas",
+    "JENIS_NOMOR_SURAT_PERJALAN_DINAS" => "Nomor Surat Perjalanan Dinas",
     ];
     const JENIS_NOMOR_SURAT_PERJANJIAN_KERJA_OPTIONS = [
         "JENIS_NOMOR_SURAT_PERJANJIAN_KERJA"=>"Nomor Surat Perjanjian Kerja",
@@ -111,10 +111,30 @@ class Constants {
         'e' => 'Utama',
     ];
 
-    const COLUMN_ALOKASI_HONOR_IMPORT = ['id_sobat','id_kegiatan','nama_petugas','jabatan','nik','jenis_honor','id_honor','satuan_honor','honor_per_satuan_honor','target_per_satuan_honor','target_honor','honor_bersih','tanggal_akhir_kegiatan','tahun_akhir_kegiatan','bulan_akhir_kegiatan','id_batasan_honor','id_alokasi_waktu_honor','id_alokasi_waktu_batasan_honor','sudah_dibayarkan','sisa_hari_hingga_batas_pencairan','tanggal_pencairan','nama_kegiatan','kecamatan_domisili','desa_domisili','tanggal_penanda_tanganan_spk_oleh_petugas','tanggal_mulai_perjanjian','tanggal_akhir_perjanjian','tanggal_terima_hasil_pekerjaan_paling_lambat','tambahan_waktu_tanggal_terima_hasil_pekerjaan_paling_lambat',];
-    const COLUMN_TIMESTAMP_ALOKASI_HONOR_IMPORT = ['tanggal_akhir_kegiatan','tanggal_penandan_tanganan_spk_oleh_petugas','tanggal_mulai_perjanjian','tanggal_akhir_perjanjian','tanggal_terima_hasil_paling_lambat','tambahan_waktu_tanggal_terima_hasil_pekerjaan_paling_lambat'];
+    const COLUMN_ALOKASI_HONOR_IMPORT = ['id_sobat','id_kegiatan','belum_ada','bisa_ikut','nama_petugas','jabatan','nik','jenis_honor','id_honor','satuan_honor','honor_per_satuan_honor','target_per_satuan_honor','target_honor','honor_bersih','tanggal_akhir_kegiatan','tahun_akhir_kegiatan','bulan_akhir_kegiatan','id_batasan_honor','id_alokasi_waktu_honor','id_alokasi_waktu_batasan_honor','sudah_dibayarkan','sisa_hari_hingga_batas_pencairan','tanggal_pencairan','nama_kegiatan','kecamatan_domisili','desa_domisili','tanggal_penanda_tanganan_spk_oleh_petugas','tanggal_mulai_perjanjian','tanggal_akhir_perjanjian','tanggal_terima_hasil_pekerjaan_paling_lambat'];
+    const COLUMN_TIMESTAMP_ALOKASI_HONOR_IMPORT = ['tanggal_akhir_kegiatan','tanggal_penandan_tanganan_spk_oleh_petugas','tanggal_mulai_perjanjian','tanggal_akhir_perjanjian','tanggal_terima_hasil_paling_lambat'];
 
     const COLUMN_MITRA_IMPORT = ['id_sobat','nama_1','kabupaten_domisili','kecamatan_domisili','desa_domisili','nik','nama_2','posisi','status_seleksi_1_terpilih_2_tidak_terpilih','email','alamat_prov','alamat_kab','alamat_kec','alamat_desa','alamat_detail','domisili_sama','tanggal_lahir_dd_mm_yyyy','npwp','jenis_kelamin','agama','status_perkawinan','pendidikan','pekerjaan','deskripsi_pekerjaan_lain','no_telp','mengikuti_pendataan_bps','sp','st','se','susenas','sakernas','sbh','catatan','posisi_daftar','username','sobat_id','id_desa',];
+    const COLUMN_SURAT_TUGAS_IMPORT = ['no_st','nip','apakah_sppd','nama_kegiatan','level_tujuan','kabupaten','kecamatan','desa','lokasi','tanggal_mulai','tanggal_selesai','jenis_petugas','unique','grup_id','nomor','subnomor','tanggal_nomor'];
+    const COLUMN_TIMESTAMP_SURAT_TUGAS_IMPORT = ['tanggal_mulai','tanggal_selesai','tanggal_nomor'];
+
+    const JABATAN_MITRA = "Mitra Statistik";
+    const JABATAN_PEGAWAI = "Pegawai";
+    const JENIS_PERIODE_TRIWULAN = "TW";
+    const JENIS_PERIODE_SUBROUND = "SR";
+    const JENIS_PERIODE_SEMESTER = "SM";
+    const JENIS_PERIODE_BULAN = "BULAN";
+    const JENIS_PERIODE = [
+        "TW"=>"Triwulan",
+        "SR"=>"Subround",
+        "SM"=>"Semester",
+        "BULAN"=>"Bulan",
+    ];
+
+    const COLUMN_KEGIATAN_MANMIT_IMPORT = ['tanggal_mulai_pelaksanaan','tanggal_akhir_pelaksanaan','tanggal_mulai_penawaran','tanggal_akhir_penawaran','id_kegiatan','id_tahun','id_spec','kategori_periode','id_kegiatan_manmit','nama_kegiatan_manmit','level_2','periode'];
+    const COLUMN_TIMESTAMP_KEGIATAN_MANMIT_IMPORT = ['tanggal_mulai_pelaksanaan','tanggal_akhir_pelaksanaan','tanggal_mulai_penawaran','tanggal_akhir_penawaran'];
+
+
     public static function getJenisTransportasiOptions(){
         return self::JENIS_TRANSPORTASI_OPTIONS;
     }

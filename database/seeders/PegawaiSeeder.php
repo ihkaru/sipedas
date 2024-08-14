@@ -27,9 +27,9 @@ class PegawaiSeeder extends Seeder
         Pegawai::create([
             "nama"=>"Muhammad Adwin, S.Mn.",
             "nip"=>"198008112005021004",
-            "nip9"=>"340017573 ",
-            "pangkat"=>"-",
-            "golongan"=>"-",
+            "nip9"=>"340017573",
+            "pangkat"=>"III",
+            "golongan"=>"b",
             "jabatan"=>"Kasubbag Umum",
             "email"=>"muh.adwin@bps.go.id",
             "atasan_langsung_id"=>"196908031992111001",

@@ -139,7 +139,11 @@ class PenugasanTable extends BaseWidget
                 $this->getTableQuery()->latest('created_at')
             )
             ->columns([
-                TextColumn::make('pegawai.nama'),
+                TextColumn::make('tertugas'),
+                TextColumn::make('jenisPetugas')
+                    ->label("Pegawai/Mitra"),
+                TextColumn::make('pengaju.nama')
+                    ->sortable(),
                 TextColumn::make('kegiatan.nama')
                     ->sortable(),
                 TextColumn::make('tgl_perjadin')
@@ -153,7 +157,7 @@ class PenugasanTable extends BaseWidget
                         if($state == 'Disetujui') return 'success';
                         if($state == 'Dicetak') return 'success';
                         if($state == 'Dicairkan') return 'success';
-                        if($state == 'Dibatalkan') return 'secondary';
+                        if($state == 'Dibatalkan') return 'danger';
                         if($state == 'Ditolak') return 'danger';
                         if($state == 'Perlu Revisi') return 'warning';
                     })

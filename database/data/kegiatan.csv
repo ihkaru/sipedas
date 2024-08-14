@@ -1,108 +1,134 @@
 ﻿ID Kegiatan,Nama Kegiatan,Jenis Kegiatan,Tanggal Mulai,Tanggal Selesai
-SAKERNAS24-LAPANGAN-SEMESTER1,Sakernas Februari 2024,SURVEI,12-02-2024,16-03-2024
-SUSENAS24-LAPANGAN-SEMESTER1,Susenas Maret 2024,SURVEI,01-02-2024,29-02-2024
-KSA24-LAPANGAN-FEBRUARI,Kerangka Sampel Area (KSA) 2024 Februari,SURVEI,01-01-2024,31-01-2024
-KSA24-LAPANGAN-JANUARI,Kerangka Sampel Area (KSA) 2024 Januari,SURVEI,01-03-2024,31-03-2024
-KSA24-LAPANGAN-MARET,Kerangka Sampel Area (KSA) 2024 Maret,SURVEI,01-04-2024,30-04-2024
-KSA24-LAPANGAN-APRIL,Kerangka Sampel Area (KSA) 2024 April,SURVEI,01-05-2024,31-05-2024
-KSA24-LAPANGAN-MEI,Kerangka Sampel Area (KSA) 2024 Mei,SURVEI,01-06-2024,30-06-2024
-KSA24-LAPANGAN-JUNI,Kerangka Sampel Area (KSA) 2024 Juni,SURVEI,01-07-2024,31-07-2024
-KSA24-LAPANGAN-JULI,Kerangka Sampel Area (KSA) 2024 Juli,SURVEI,01-08-2024,31-08-2024
-KSA24-LAPANGAN-AGUSTUS,Kerangka Sampel Area (KSA) 2024 Agustus,SURVEI,01-09-2024,30-09-2024
-KSA24-LAPANGAN-SEPTEMBER,Kerangka Sampel Area (KSA) 2024 September,SURVEI,01-10-2024,31-10-2024
-KSA24-LAPANGAN-OKTOBER,Kerangka Sampel Area (KSA) 2024 Oktober,SURVEI,01-11-2024,30-11-2024
-KSA24-LAPANGAN-NOVEMBER,Kerangka Sampel Area (KSA) 2024 November,SURVEI,01-12-2024,31-12-2024
-KSA24-LAPANGAN-DESEMBER,Kerangka Sampel Area (KSA) 2024 Desember,SURVEI,01-01-2024,31-01-2024
-HPG24-LAPANGAN-,Survei Harga Produsen Gabah (HPG24) Januari,SURVEI,01-02-2024,29-02-2024
-HPG24-LAPANGAN-,Survei Harga Produsen Gabah (HPG24) Februari,SURVEI,01-03-2024,31-03-2024
-HPG24-LAPANGAN-,Survei Harga Produsen Gabah (HPG24) Maret,SURVEI,01-04-2024,30-04-2024
-HPG24-LAPANGAN-,Survei Harga Produsen Gabah (HPG24) April,SURVEI,01-05-2024,31-05-2024
-HPG24-LAPANGAN-,Survei Harga Produsen Gabah (HPG24) Mei,SURVEI,01-06-2024,30-06-2024
-HPG24-LAPANGAN-,Survei Harga Produsen Gabah (HPG24) Juni,SURVEI,01-07-2024,31-07-2024
-HPG24-LAPANGAN-,Survei Harga Produsen Gabah (HPG24) Juli,SURVEI,01-08-2024,31-08-2024
-HPG24-LAPANGAN-,Survei Harga Produsen Gabah (HPG24) Agustus,SURVEI,01-09-2024,30-09-2024
-HPG24-LAPANGAN-,Survei Harga Produsen Gabah (HPG24) September,SURVEI,01-10-2024,31-10-2024
-HPG24-LAPANGAN-,Survei Harga Produsen Gabah (HPG24) Oktober,SURVEI,01-11-2024,30-11-2024
-HPG24-LAPANGAN-,Survei Harga Produsen Gabah (HPG24) November,SURVEI,01-12-2024,31-12-2024
-HPG24-LAPANGAN-,Survei Harga Produsen Gabah (HPG24) Desember,SURVEI,01-01-2024,31-01-2024
-SHPB24-LAPANGAN-,Survei Harga Perdagangan Besar (SHPB24) Januari,SURVEI,01-02-2024,29-02-2024
-SHPB24-LAPANGAN-,Survei Harga Perdagangan Besar (SHPB24) Februari,SURVEI,01-03-2024,31-03-2024
-SHPB24-LAPANGAN-,Survei Harga Perdagangan Besar (SHPB24) Maret,SURVEI,01-04-2024,30-04-2024
-SHPB24-LAPANGAN-,Survei Harga Perdagangan Besar (SHPB24) April,SURVEI,01-05-2024,31-05-2024
-SHPB24-LAPANGAN-,Survei Harga Perdagangan Besar (SHPB24) Mei,SURVEI,01-06-2024,30-06-2024
-SHPB24-LAPANGAN-,Survei Harga Perdagangan Besar (SHPB24) Juni,SURVEI,01-07-2024,31-07-2024
-SHPB24-LAPANGAN-,Survei Harga Perdagangan Besar (SHPB24) Juli,SURVEI,01-08-2024,31-08-2024
-SHPB24-LAPANGAN-,Survei Harga Perdagangan Besar (SHPB24) Agustus,SURVEI,01-09-2024,30-09-2024
-SHPB24-LAPANGAN-,Survei Harga Perdagangan Besar (SHPB24) September,SURVEI,01-10-2024,31-10-2024
-SHPB24-LAPANGAN-,Survei Harga Perdagangan Besar (SHPB24) Oktober,SURVEI,01-11-2024,30-11-2024
-SHPB24-LAPANGAN-,Survei Harga Perdagangan Besar (SHPB24) November,SURVEI,01-12-2024,31-12-2024
-SHPB24-LAPANGAN-,Survei Harga Perdagangan Besar (SHPB24) Desember,SURVEI,01-01-2025,31-01-2025
-SHKK24-LAPANGAN-JANUARI,Survei Harga Kemahalan Konstruksi (SHKK24) Januari,SURVEI,01-04-2024,30-04-2024
-SHKK24-LAPANGAN-APRIL,Survei Harga Kemahalan Konstruksi (SHKK24) April,SURVEI,01-07-2024,31-07-2024
-SHKK24-LAPANGAN-JULI,Survei Harga Kemahalan Konstruksi (SHKK24) Juli,SURVEI,01-10-2024,31-10-2024
-SHKK24-LAPANGAN-OKTOBER,Survei Harga Kemahalan Konstruksi (SHKK24) Oktober,SURVEI,01-01-2024,31-01-2024
-SHPED24-LAPANGAN-JANUARI,Survei Harga Perdesaan (SHPED24) Januari,SURVEI,01-02-2024,29-02-2024
-SHPED24-LAPANGAN-FEBRUARI,Survei Harga Perdesaan (SHPED24) Februari,SURVEI,01-03-2024,31-03-2024
-SHPED24-LAPANGAN-MARET,Survei Harga Perdesaan (SHPED24) Maret,SURVEI,01-04-2024,30-04-2024
-SHPED24-LAPANGAN-APRIL,Survei Harga Perdesaan (SHPED24) April,SURVEI,01-05-2024,31-05-2024
-SHPED24-LAPANGAN-MEI,Survei Harga Perdesaan (SHPED24) Mei,SURVEI,01-06-2024,30-06-2024
-SHPED24-LAPANGAN-JUNI,Survei Harga Perdesaan (SHPED24) Juni,SURVEI,01-07-2024,31-07-2024
-SHPED24-LAPANGAN-JULI,Survei Harga Perdesaan (SHPED24) Juli,SURVEI,01-08-2024,31-08-2024
-SHPED24-LAPANGAN-AGUSTUS,Survei Harga Perdesaan (SHPED24) Agustus,SURVEI,01-09-2024,30-09-2024
-SHPED24-LAPANGAN-SEPTEMBER,Survei Harga Perdesaan (SHPED24) September,SURVEI,01-10-2024,31-10-2024
-SHPED24-LAPANGAN-OKTOBER,Survei Harga Perdesaan (SHPED24) Oktober,SURVEI,01-11-2024,30-11-2024
-SHPED24-LAPANGAN-NOVEMBER,Survei Harga Perdesaan (SHPED24) November,SURVEI,01-12-2024,31-12-2024
-SHPED24-LAPANGAN-DESEMBER,Survei Harga Perdesaan (SHPED24) Desember,SURVEI,01-01-2024,31-01-2024
-HPBG24-LAPANGAN-JANUARI,Survei Harga Produsen Gabah (HPBG24) Januari,SURVEI,01-02-2024,29-02-2024
-HPBG24-LAPANGAN-FEBRUARI,Survei Harga Produsen Gabah (HPBG24) Februari,SURVEI,01-03-2024,31-03-2024
-HPBG24-LAPANGAN-MARET,Survei Harga Produsen Gabah (HPBG24) Maret,SURVEI,01-04-2024,30-04-2024
-HPBG24-LAPANGAN-APRIL,Survei Harga Produsen Gabah (HPBG24) April,SURVEI,01-05-2024,31-05-2024
-HPBG24-LAPANGAN-MEI,Survei Harga Produsen Gabah (HPBG24) Mei,SURVEI,01-06-2024,30-06-2024
-HPBG24-LAPANGAN-JUNI,Survei Harga Produsen Gabah (HPBG24) Juni,SURVEI,01-07-2024,31-07-2024
-HPBG24-LAPANGAN-JULI,Survei Harga Produsen Gabah (HPBG24) Juli,SURVEI,01-08-2024,31-08-2024
-HPBG24-LAPANGAN-AGUSTUS,Survei Harga Produsen Gabah (HPBG24) Agustus,SURVEI,01-09-2024,30-09-2024
-HPBG24-LAPANGAN-SEPTEMBER,Survei Harga Produsen Gabah (HPBG24) September,SURVEI,01-10-2024,31-10-2024
-HPBG24-LAPANGAN-OKTOBER,Survei Harga Produsen Gabah (HPBG24) Oktober,SURVEI,01-11-2024,30-11-2024
-HPBG24-LAPANGAN-NOVEMBER,Survei Harga Produsen Gabah (HPBG24) November,SURVEI,01-12-2024,31-12-2024
-HPBG24-LAPANGAN-DESEMBER,Survei Harga Produsen Gabah (HPBG24) Desember,SURVEI,01-01-2024,31-01-2024
-HPJ24-LAPANGAN-JANUARI,Survei Harga Produsen Jasa (HPBG24) Januari,SURVEI,01-02-2024,29-02-2024
-HPJ24-LAPANGAN-FEBRUARI,Survei Harga Produsen Jasa (HPBG24) Februari,SURVEI,01-03-2024,31-03-2024
-HPJ24-LAPANGAN-MARET,Survei Harga Produsen Jasa (HPBG24) Maret,SURVEI,01-04-2024,30-04-2024
-HPJ24-LAPANGAN-APRIL,Survei Harga Produsen Jasa (HPBG24) April,SURVEI,01-05-2024,31-05-2024
-HPJ24-LAPANGAN-MEI,Survei Harga Produsen Jasa (HPBG24) Mei,SURVEI,01-06-2024,30-06-2024
-HPJ24-LAPANGAN-JUNI,Survei Harga Produsen Jasa (HPBG24) Juni,SURVEI,01-07-2024,31-07-2024
-HPJ24-LAPANGAN-JULI,Survei Harga Produsen Jasa (HPBG24) Juli,SURVEI,01-08-2024,31-08-2024
-HPJ24-LAPANGAN-AGUSTUS,Survei Harga Produsen Jasa (HPBG24) Agustus,SURVEI,01-09-2024,30-09-2024
-HPJ24-LAPANGAN-SEPTEMBER,Survei Harga Produsen Jasa (HPBG24) September,SURVEI,01-10-2024,31-10-2024
-HPJ24-LAPANGAN-OKTOBER,Survei Harga Produsen Jasa (HPBG24) Oktober,SURVEI,01-11-2024,30-11-2024
-HPJ24-LAPANGAN-NOVEMBER,Survei Harga Produsen Jasa (HPBG24) November,SURVEI,01-12-2024,31-12-2024
-HPJ24-LAPANGAN-DESEMBER,Survei Harga Produsen Jasa (HPBG24) Desember,SURVEI,01-01-2024,31-01-2024
-HPSJT-UPDATING,"Updating Paket HPS, HPJ, dan HPT Kabupaten",SURVEI,01-02-2024,28-02-2024
-SERUTI24-LAPANGAN-TRI1,Survei Ekonomi Rumah Tangga Triwulanan (SERUTI24) Triwulan I Kegiatan Lapangan,SURVEI,11-06-2024,30-06-2024
-SERUTI24-LAPANGAN-TRI2,Survei Ekonomi Rumah Tangga Triwulanan (SERUTI24) Triwulan II Kegiatan Lapangan,SURVEI,01-09-2024,30-09-2024
-SERUTI24-LAPANGAN-TRI3,Survei Ekonomi Rumah Tangga Triwulanan (SERUTI24) Triwulan III Kegiatan Lapangan,SURVEI,11-11-2024,30-11-2024
-SERUTI24-LAPANGAN-TRI4,Survei Ekonomi Rumah Tangga Triwulanan (SERUTI24) Triwulan IV Kegiatan Lapangan,SURVEI,26-02-2024,15-03-2024
-SERUTI24-PENGOLAHAN-TRI1,Survei Ekonomi Rumah Tangga Triwulanan (SERUTI24) Triwulan I Kegiatan Pengolahan,SURVEI,16-06-2024,09-07-2024
-SERUTI24-PENGOLAHAN-TRI2,Survei Ekonomi Rumah Tangga Triwulanan (SERUTI24) Triwulan II Kegiatan Pengolahan,SURVEI,16-09-2024,09-10-2024
-SERUTI24-PENGOLAHAN-TRI3,Survei Ekonomi Rumah Tangga Triwulanan (SERUTI24) Triwulan III Kegiatan Pengolahan,SURVEI,16-11-2024,23-12-2024
-SERUTI24-PENGOLAHAN-TRI4,Survei Ekonomi Rumah Tangga Triwulanan (SERUTI24) Triwulan IV Kegiatan Pengolahan,SURVEI,01-01-2024,31-01-2024
-VHTS24-LAPANGAN-JANUARI,Survei Hotel dan Jasa Akomodasi Bulanan (VHTS) 2024 Januari,SURVEI,01-02-2024,29-02-2024
-VHTS24-LAPANGAN-FEBRUARI,Survei Hotel dan Jasa Akomodasi Bulanan (VHTS) 2024 Februari,SURVEI,01-03-2024,31-03-2024
-VHTS24-LAPANGAN-MARET,Survei Hotel dan Jasa Akomodasi Bulanan (VHTS) 2024 Maret,SURVEI,01-04-2024,30-04-2024
-VHTS24-LAPANGAN-APRIL,Survei Hotel dan Jasa Akomodasi Bulanan (VHTS) 2024 April,SURVEI,01-05-2024,31-05-2024
-VHTS24-LAPANGAN-MEI,Survei Hotel dan Jasa Akomodasi Bulanan (VHTS) 2024 Mei,SURVEI,01-06-2024,30-06-2024
-VHTS24-LAPANGAN-JUNI,Survei Hotel dan Jasa Akomodasi Bulanan (VHTS) 2024 Juni,SURVEI,01-07-2024,31-07-2024
-VHTS24-LAPANGAN-JULI,Survei Hotel dan Jasa Akomodasi Bulanan (VHTS) 2024 Juli,SURVEI,01-08-2024,31-08-2024
-VHTS24-LAPANGAN-AGUSTUS,Survei Hotel dan Jasa Akomodasi Bulanan (VHTS) 2024 Agustus,SURVEI,01-09-2024,30-09-2024
-VHTS24-LAPANGAN-SEPTEMBER,Survei Hotel dan Jasa Akomodasi Bulanan (VHTS) 2024 September,SURVEI,01-10-2024,31-10-2024
-VHTS24-LAPANGAN-OKTOBER,Survei Hotel dan Jasa Akomodasi Bulanan (VHTS) 2024 Oktober,SURVEI,01-11-2024,30-11-2024
-VHTS24-LAPANGAN-NOVEMBER,Survei Hotel dan Jasa Akomodasi Bulanan (VHTS) 2024 November,SURVEI,01-12-2024,31-12-2024
-VHTS24-LAPANGAN-DESEMBER,Survei Hotel dan Jasa Akomodasi Bulanan (VHTS) 2024 Desember,SURVEI,01-04-2024,30-04-2024
-SKLNPT24-LAPANGAN-TRI1,Survei Khusus Lembaga Nonprofit yang Melayani Rumah Tangga 2024 (SKLNPT24) Triwulan I,SURVEI,01-07-2024,31-07-2024
-SKLNPT24-LAPANGAN-TRI2,Survei Khusus Lembaga Nonprofit yang Melayani Rumah Tangga 2024 (SKLNPT24) Triwulan II,SURVEI,01-10-2024,31-10-2024
-SKLNPT24-LAPANGAN-TRI3,Survei Khusus Lembaga Nonprofit yang Melayani Rumah Tangga 2024 (SKLNPT24) Triwulan III,SURVEI,01-12-2024,31-12-2024
-SKLNPT24-LAPANGAN-TRI4,Survei Khusus Lembaga Nonprofit yang Melayani Rumah Tangga 2024 (SKLNPT24) Triwulan IV,SURVEI,01-04-2024,30-04-2024
-SKTNP24-LAPANGAN-TRI1,Survei Khusus Triwulan Neraca Produksi Barang Jasa (SKTNP) 2024 Triwulan I,SURVEI,01-07-2024,31-07-2024
-SKTNP24-LAPANGAN-TRI2,Survei Khusus Triwulan Neraca Produksi Barang Jasa (SKTNP) 2024 Triwulan II,SURVEI,01-10-2024,31-10-2024
-SKTNP24-LAPANGAN-TRI3,Survei Khusus Triwulan Neraca Produksi Barang Jasa (SKTNP) 2024 Triwulan III,SURVEI,01-01-2025,31-01-2025
-SKTNP24-LAPANGAN-TRI4,Survei Khusus Triwulan Neraca Produksi Barang Jasa (SKTNP) 2024 Triwulan IV,SURVEI,01-01-2025,31-01-2025
+,Pelatihan Instruktur Nasional (Innas) Updating Direktori Pasar 2024 (UDP-24) Melalui Platform LMS E-Warkop tahun 2024,,,
+,Supervisi Survei Perilaku Anti Korupsi (SPAK) Tahun 2024,,,
+,Supervisi Pendataan Potensi Desa Tahun 2024,,,
+,Pendataan Potensi Desa Kecamatan Tahun 2024,,,
+,Pendataan Potensi Desa Tahun 2024,,,
+,Pengawasan Pendataan Potensi Desa Tahun 2024,,,
+,Pencacahan Pendataan Potensi Desa Kecamatan,,,
+,Pendataan Potensi Desa tingkat Kabupaten Tahun 2024,,,
+,Pendataan Potensi Desa (Podes) 2024,,,
+,Pengawasan Survei Perilaku Anti Korupsi (SPAK) Tahun 2024,,,
+,Pengawasan Pendataan Potensi Desa Kecamatan Tahun 2024,,,
+,Pelatihan Instruktur Daerah (Inda) Survei Ekonomi Pertanian Tahun 2024 Melalui Platform LMS E-Warkop tahun 2024,,,
+,Kelas Literasi Data Sistem Informasi Keluarga (SIGA) Tahun 2024,,,
+,Pencacahan Updating Direktori Pasar (UDP) 2024,,,
+,Survei Koperasi Simpan Pinjam (KSP) Tahun 2024,,,
+,Pelatihan Instruktur Daerah (Inda) SKT DNPeng Tahun 2024 Melalui Platform LMS E-Warkop,,,
+,Pengawasan Pendataan Survei Ekonomi Pertanian (SEP 2024),,,
+,Pelatihan Survei Ekonomi Pertanian (SEP) tahun 2024,,,
+,Rapat Koordinasi Penguatan Progran Bapak/Bunda Asuh Anak Stunting (BAAS) serta Diseminasi Program Percepatan Penurunan Stunting di Kabupaten Mempawah Tahun 2024,,,
+,Pelatihan Petugas UPB dan UTL Survei Ekonomi Pertanian (SEP) Tahun 2024,,,
+,Pendataan Survei Ekonomi Pertanian (SEP 2024),,,
+,Pencacahan Survei Perusahaan/Usaha Jasa Penyedia Akomodasi (VHTL) Tahun 2024,,,
+,Pengawasan dan Pemeriksaan Lapangan Survei Usaha Hortikultura Lainnya (NRT),,,
+,Verifikasi Lapangan Data Hasil Pendataan Potensi Desa (Podes) Tahun 2024,,,
+,Pencacahan Survei Penyediaan Makanan Minuman (VREST-UMK) Tahun 2024,,,
+,Pendataan Survei Ekonomi Pertanian (SEP 2024) Unit Usaha Pertanian (Kelompok Tani) dan Perusahaan Pertanian Berbadan Hukum,,,
+,Pengawasan Survei Ekonomi Pertanian (SEP 2024) Unit Usaha Pertanian (Kelompok Tani) dan Perusahaan Pertanian Berbadan Hukum,,,
+,Pengawasan dan Pemeriksaan Lapangan Survei Usaha Hortikultura Lainnya (NRT),,,
+,Pengawasan dan Pemeriksaan Lapangan Updating Profil Pasar 2024,,,
+,Pendataan Lapangan Khusus Neraca Produksi (SKNP) 2024,,,
+,Pendataan Lapangan Survei Khusus Sektor Jasa (SKSJ) 2024,,,
+,Pengawasan Pendataan Lapangan Khusus Neraca Produksi (SKNP) 2024,,,
+,Pengawasan Pendataan Lapangan Survei Khusus Sektor Jasa (SKSJ) 2024,,,
+,Pengawasan Lapangan Survei Perusahaan Non Migas,,,
+,Pengawasan Lapangan Survei Tahunan Perusahaan Industri Manufaktur (STPIM),,,
+,Pencacahan Survei Obyek Daya Tarik Wisata (VDTW) 2024,,,
+,Supervisi Survei Ekonomi Pertanaian (SEP 2024),,,
+,Pengawasan Lapangan Updating Direktori Perusahaan Awal (DPA) 2024,,,
+,"Sosialisasi Proses Monitoring Kualitas Data Laporan Keuangan, Rekonsiliasi, Laporan Keuangan",,,
+,Pengawasan Lapangan Survei Perusahaan Perkebunan Tahunan,,,
+,Pengawasan dan Pemeriksaan Lapangan VHTS,,,
+,Pencacahan UPB/UTL Survei Ekonomi Pertanian (SEP),,,
+,Pengawasan Lapangan Survei Ekonomi Pertanian UPB/UTL,,,
+,Pengawasan dan Pemeriksaan Lapangan HD,,,
+,Pengawasan Updating Direktori LNPRT 2024,,,
+,Pendataan Updating Direktori LNPRT 2024,,,
+,Pendataan Survei Khusus Struktur Input Pemerintah (SKSIP),,,
+,Pendataan Survei Khusus Lembaga Non Profit (SKLNP,,,
+,Pengawasan Survei Khusus Lembaga Non Profit (SKLNP,,,
+,Pengawasan Survei Khusus Studi Penyusunan Perubahan Inventori (SKSPPI),,,
+,Pendataan Survei Khusus Studi Penyusunan Perubahan Inventori (SKSPPI),,,
+,Pengawasan Survei Khusus Perusahaan Nonfinansial (SKPS),,,
+,Pendataan Survei Khusus Perusahaan Nonfinansial (SKPS,,,
+,Pendataan BUMD dan Pengawasan VHTL 2024,,,
+,Pengawasan BUMD dan VHTL 2024,,,
+,Pengawasan SHPED HD Juni 2024,,,
+,Pengawasan Lapangan KSA Padi,,,
+,Pengawasan Lapangan KSA Jagung,,,
+,Pencacahan STKU Terintegrasi Triwulan II Tahun 2024,,,
+,Pencacahan Survei Karakteristik Usaha (SKU) 2024,,,
+,Pencacahan Survei Ekonomi Rumah Tangga (Seruti) Triwulan 2 Tahun 2024,,,
+,Pengawasan Pencacahan Survei Ekonomi Rumah Tangga (Seruti) Triwulan 2 Tahun 2024,,,
+,Pelatihan In-depth Study SEEA Tahun 2024 dan Survei Penyusunan Disagregasi PMTB Tahun 2024,,,
+,Pengawasan dan Pemeriksaan Data Keuangan Desa (K-3),,,
+,Konsultasi BPS Kabupaten Ke BPS Provinsi,,,
+,Supervisi KSA Padi,,,
+,Supervisi Survei Perusahaan Non Migas,,,
+,Pendataan Lapangan Updating Direktori Perusahaan Ekonomi 2024 (UDPE 2024),,,
+,Pendataan Lapangan Updating Enumeration Area 2024 (UDPE 2024),,,
+,Briefing Petugas Updating Enumeration Area,,,
+,Pendataan Lapangan SKLNP Triwulan 2,,,
+,"Pengumpulan Data Survei Pergudangan, Ekspedisi dan Kurir (VPEK) Tahun 2024",,,
+,"Pengawasan Kegiatan Survei Pergudangan, Ekspedisi dan Kurir (VPEK)",,,
+,Listing Survei Industri Mikro dan Kecil Tahunan Tahun 2024,,,
+,Pendataan Survei Industri Mikro Kecil dan Menengah (IMK) Triwulan 2,,,
+,Pengawasan Lapangan Ubinan Palawija,,,
+,Pengawasan Lapangan Survei Pendaratan Ikan Tradisional (PIT) Triwulan 2 Tahun 2024,,,
+,Pengawasan Lapangan Survei Hortikultura Bulanan dan Triwulanan,,,
+,Pengawasan Lapangan SKLNP Tahunan 2024,,,
+,Pengawasan Lapangan Survei Ekonomi Rumah Tangga (Seruti) Triwulan 2 Tahun 2024,,,
+,Pengawasan Kabupaten ke Kecamatan Kegiatan VDTW dan SKU Tahun 2024,,,
+,Pengawasan dan Pemeriksaan Lapangan SKLNP Triwulan 2,,,
+,Supervisi Pendataan Lapangan SKLNP Triwulan 2,,,
+,Pengawasan Lapangan Listing Survei IMK Tahunan Tahun 2024,,,
+,Supervisi Pendataan Lapangan SERUTI Triwulan 2,,,
+,Pemutakhiran batas wilayah RT / Satuan Lingkungan Setempat (SLS),,,
+,Pengawasan Lapangan Updating Direktori Perusahaan Pertanian dan Usaha Pertanian Lainnya,,,
+,Pengawasan Lapangan Pendaratan Ikan Tradisional (PIT),,,
+,Pelatihan Instruktur Daerah Survei Angkatan Kerja Nasional (Sakernas) Agustus 2024 Melalui LMS E-Warkop,,,
+,Pengawasan Lapangan Pendataan Survei Harga Produsen Gabah (SHPG),,,
+,Supervisi Pendataan Lapangan Survei Harga Produsen Gabah (SHPG),,,
+,Pemeriksaan dan Pengawasan VHTS 2024,,,
+,Pemeriksaan dan Pengawasan Survei SLK-KSP (Koperasi Simpan Pinjam) 2024,,,
+,Pemeriksaan dan Pengawasan Survei VREST UMK 2024,,,
+,Pengawasan Pendataan Lapangan Survei Khusus Studi Penyusunan Perubahan Inventori (SKSPPI),,,
+,Pertemuan Pembinaan Penyusunan Laporan Keuangan,,,
+,Konsultasi Kegiatan Administrasi Keuangan ke KPPN Pontianak,,,
+,Pengawasan Kabupaten ke Kecamatan Kegiatan VHTS Tahun 2024,,,
+,Pengawasan dan Pemeriksaan Kegiatan Updating Direktori Usaha Perusahaan Ekonomi (UDPE) Tahun 2024,,,
+,Pelatihan Updating Enumeration Area SLS 2024 di Kantor Bps Kabupaten Mempawah,,,
+,Pelatihan Updating Direktori Perusahaan Ekonomi 2024 (UDPE24),,,
+,Pelatihan Petugas Pengolahan Survei Ekonomi Pertanian 2024 (SEP24),,,
+,Bimbingan Teknis SIMAN V2,,,
+,Pengawasan Lapangan Listing IMK Tahunan Tahun 2024,,,
+,Konsultasi Provinsi,,,
+,Pelatihan SEP Anorganik,,,
+,Pelatihan SEP Organik,,,
+,Pengawasan Kegiatan Survei Usaha Jasa Penyedia Akomodasi (VHTL),,,
+,Supervisi Lapangan Kegiatan Updating Direktori Usaha Perusahaan Ekonomi (UDPE),,,
+,Pengawasan Lapangan Listing Survei IMK Tahunan Tahun 2024,,,
+,Pengawasan Lapangan Pendataan Survei Harga Perdesaan (SHPED),,,
+,Supervisi Kegiatan Updating Direktori Usaha Perusahaan Ekonomi (UDPE) Tahun 2024,,,
+,Pengawasan Lapangan Pemutakhiran Rumah Tangga dan Pendataan Sakernas Agustus 2024,,,
+,Pemutakhiran Rumah Tangga dan Pendataan Sakernas Agustus 2024,,,
+,Supervisi Lapangan Kegiatan Survei Usaha Jasa Penyedia Akomodasi (VHTL) Tahun 2024,,,
+,Pemeriksaan dan Pengawasan Kegiatan Survei Karakteristik Usaha (SKU) Tahun 2024,,,
+,Konsultasi perihal BMN,,,
+,Pelatihan Calon Pembina Desa Cantik 2024,,,
+,Pengawasan lapangan KSA Padi,,,
+,Pengawasan Lapangan Pemutakhiran Rumah Tangga Sakernas Agustus 2024,,,
+,Pemeriksaan dan Pengawasan Kegiatan Survei Objek Daya Tarik Wisata (VDTW) Tahun 2024,,,
+,Pengawasan Pendataan Survei Khusus Triwulanan Neraca Produksi (SKTNP) Triwulan 2 Tahun 2024,,,
+,Pendataan Lapangan Survei Khusus Studi Penyusunan Perubahan Inventori (SKSPPI) 2024,,,
+,Pemeriksaan dan Pengawasan Lapangan Survei Pergudangan (VPEK) Tahun 2024,,,
+,Pengecekan Lapangan Lanjutan Hasil Pengolahan dan Pengecekan Anomali UPB/UTL,,,
+,Supervisi Kegiatan Pemutakhiran Rumah Tangga Sakernas Agustus 2024,,,
+,Pelatihan Instruktur Nasional Survei Sosial Ekonomi Nasional Modul Sosial Budaya Pendidikan 2024,,,
+,Pembinaan Kasubbag BPS Se-Kalbar,,,
+,Rapat Evaluasi Kegiatan Pencacahan Survei Perusahaan/Usaha Jasa Penyedia Akomodasi (VHTL) Tahun 2024,,,
+,Pemeriksaan/ Pengawasan Lapangan Survei Perusahaan Industri Manufaktur (STPIM),,,
+,Pemeriksaan/ Pengawasan Lapangan Survei Penggalian Usaha Rumah Tangga,,,
+,Pemeriksaan/ Pengawasan Lapangan Survei Hortikultura Bulanan,,,
+,Pendataan Lapangan Survei Industri Mikro dan Kecil (IMK) Tahunan Tahun 2024,,,

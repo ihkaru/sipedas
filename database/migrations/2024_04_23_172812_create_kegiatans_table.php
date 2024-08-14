@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\KegiatanManmit;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -18,6 +19,7 @@ return new class extends Migration
             $table->timestamp("tgl_awal_perjadin")->nullable();
             $table->timestamp("tgl_akhir_perjadin")->nullable();
             $table->string("pj_kegiatan_id")->nullable();
+            $table->foreignIdFor(KegiatanManmit::class)->nullable();
             $table->timestamps();
         });
     }

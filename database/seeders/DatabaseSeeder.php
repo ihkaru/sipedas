@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
         $this->call([MitraSeeder::class]);
         $this->call([MasterSlsSeeder::class]);
         $this->call([NomorSuratSeeder::class]);
+        $this->call([KegiatanManmitSeeder::class]);
         $this->call([KegiatanSeeder::class]);
         $this->call([PegawaiSeeder::class]);
         $this->call([
@@ -31,7 +32,7 @@ class DatabaseSeeder extends Seeder
         $this->call([PlhSeeder::class]);
 
         $this->call([
-            PenugasanSeeder::class
+            SuratTugasSeeder::class
         ]);
 
 

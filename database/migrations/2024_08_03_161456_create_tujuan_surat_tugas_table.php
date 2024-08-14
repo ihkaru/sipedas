@@ -16,11 +16,11 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(Penugasan::class);
             $table->string("level_tujuan_penugasan");
-            $table->string('prov_id')->nullable();
-            $table->string('kabkot_id')->nullable();
-            $table->string('kecamatan_id')->nullable();
-            $table->string('desa_kel_id')->nullable();
-            $table->string("nama_tempat_tujuan")->nullable();
+            $table->string('prov_id')->nullable()->default(null);
+            $table->string('kabkot_id')->nullable()->default(null);
+            $table->string('kecamatan_id')->nullable()->default(null);
+            $table->string('desa_kel_id')->nullable()->default(null);
+            $table->string("nama_tempat_tujuan")->nullable()->default(null);
             $table->timestamps();
         });
     }
