@@ -42,6 +42,7 @@ class KegiatanResource extends Resource
                 ->dehydrated(true)
                 ->unique(ignoreRecord: true),
                 TextInput::make('nama')
+                    ->lazy()
                     ->required()
                     ->maxLength(255)
                     ->reactive()
