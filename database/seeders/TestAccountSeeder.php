@@ -38,7 +38,7 @@ class TestAccountSeeder extends Seeder
         User::factory()->create([
             'name' => "Munawir, SE.,MM",
             'email' => "munawir@bps.go.id",
-            'password'=>Hash::make("munawir")
+            'password'=>Hash::make("munawir123")
         ])->assignRole(["kepala_satker"]);
 
         foreach(Pegawai::get() as $p){

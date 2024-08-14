@@ -346,7 +346,7 @@
                   text-align: justify;
                 "
               >
-              &nbsp; bahwa sehubungan dengan {{$penugasans->first()->kegiatan->nama}} BPS {{ucwords(strtolower($namaSatker))}} tahun {{{$c::parse($penugasans->first()->kegiatan->tgl_akhir_perjadin)->year}}}, maka dipandang perlu
+              &nbsp; bahwa sehubungan dengan {{$penugasan->first()->kegiatan->kegiatanManmit?->nama ?? $penugasans->first()->kegiatan->nama}} BPS {{ucwords(strtolower($namaSatker))}} tahun {{{$c::parse($penugasans->first()->kegiatan->tgl_akhir_perjadin)->year}}}, maka dipandang perlu
                 untuk melakukan kegiatan tersebut;
               </p>
             </li>

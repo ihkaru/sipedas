@@ -19,7 +19,8 @@ return new class extends Migration
             $table->timestamp("tgl_awal_perjadin")->nullable();
             $table->timestamp("tgl_akhir_perjadin")->nullable();
             $table->string("pj_kegiatan_id")->nullable();
-            $table->foreignIdFor(KegiatanManmit::class)->nullable();
+            $table->string("kegiatan_manmit_id")->nullable();
+            $table->foreign("kegiatan_manmit_id")->references("id")->on('kegiatan_manmits');
             $table->timestamps();
         });
     }

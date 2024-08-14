@@ -410,6 +410,7 @@ class Penugasan extends Model
     }
     public static function getDisabledDates(array $nips): array{
         $penugasans = Penugasan::whereIn("nip",$nips)
+                        ->whereNotNull("surat_perjadin_id")
                         ->whereHas('riwayatPengajuan',function (Builder $query){
                             $query->whereIn('status',
                             [
@@ -555,6 +556,17 @@ class Penugasan extends Model
         }
         if($pengajuan == null) dump($data);
         if($pengajuan?->jenis_surat_tugas == Constants::NON_SPPD || Carbon::parse($pengajuan->tgl_akhir_tugas)->lessThan(now())) $pengajuan?->setujui(checkRole: false,mode_langsung: true,data: $data);
+        if(
+            $pengajuan?->jenis_surat_tugas != Constants::NON_SPPD &&
+            Carbon::parse($pengajuan->tgl_akhir_tugas)->lessThan(now()->addMonths(-1))
+        ) {
+            dump("start");
+            $pengajuan?->kumpulkan(checkRole: false);
+            $pengajuan?->cairkan(checkRole: false);
+            dump("end");
+
+        }
+
         return null;
     }
 

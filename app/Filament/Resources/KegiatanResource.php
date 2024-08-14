@@ -5,14 +5,20 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\KegiatanResource\Pages;
 use App\Filament\Resources\KegiatanResource\RelationManagers;
 use App\Models\Kegiatan;
+use App\Models\KegiatanManmit;
 use App\Models\Pegawai;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Str;
 
 class KegiatanResource extends Resource
 {
@@ -31,24 +37,28 @@ class KegiatanResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('id')
-                    ->label('ID Kegiatan')
-                    ->unique()
+                TextInput::make('id')
+                ->disabled()
+                ->dehydrated(true)
+                ->unique(ignoreRecord: true),
+                TextInput::make('nama')
                     ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('nama')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\DatePicker::make('tgl_awal_perjadin')
-                    ->label("Awal Kegiatan")
-                    ->required(),
-                Forms\Components\DatePicker::make('tgl_akhir_perjadin')
-                    ->label("Akhir Kegiatan")
-                    ->required(),
-                Forms\Components\Select::make('pj_kegiatan_id')
+                    ->maxLength(255)
+                    ->reactive()
+                    ->afterStateUpdated(function (Get $get, Set $set) {
+                        $set('id', Str::slug($get("nama")));
+                    }),
+                Select::make("kegiatan_manmit_id")
+                    ->label("Rangkaian")
+                    ->options(KegiatanManmit::getSelectOptions())
+                    ->searchable()
+                    ->preload()
+                ,
+                Select::make('pj_kegiatan_id')
                     ->options(function(){
                         return Pegawai::get()->pluck('nama','nip');
                     })
+                    ->required()
                     ->searchable(['nama'])
                     ->label("PJ Kegiatan")
             ]);

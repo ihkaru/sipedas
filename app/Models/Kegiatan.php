@@ -20,4 +20,9 @@ class Kegiatan extends Model
     public function penugasans(){
         return $this->hasMany(Penugasan::class,"kegiatan_id","id");
     }
+
+    public function kegiatanManmit(){
+        return $this->belongsTo(KegiatanManmit::class);
+    }
+
 }
