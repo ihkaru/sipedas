@@ -33,8 +33,7 @@ class KegiatanResource extends Resource
     public static function canViewAny(): bool{
         return auth()->user()->hasRole('kepala_satker') ||
         auth()->user()->hasRole('operator_umum') ||
-         auth()->user()->hasRole('pegawai');
-
+         auth()->user()->hasRole('pegawai');q
     }
     public static function form(Form $form): Form
     {
