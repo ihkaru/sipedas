@@ -39,10 +39,10 @@ class MasterSls extends Model
             }
             if($level == Constants::LEVEL_PENUGASAN_KECAMATAN){
                 $master = $masterSls->where("kecamatan",strtoupper(trim($n)))->first();
-                // if($master == null) {
-                //     dump($n,$level,$data);
-                //     return [];
-                // }
+                if($master == null) {
+                    dump($n,$level,$data);
+                    return [];
+                }
                 $res["kecamatan_ids"][] = $master->kec_id;
             }
         }

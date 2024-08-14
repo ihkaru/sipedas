@@ -558,13 +558,27 @@ class Penugasan extends Model
         if($pengajuan?->jenis_surat_tugas == Constants::NON_SPPD || Carbon::parse($pengajuan->tgl_akhir_tugas)->lessThan(now())) $pengajuan?->setujui(checkRole: false,mode_langsung: true,data: $data);
         if(
             $pengajuan?->jenis_surat_tugas != Constants::NON_SPPD &&
-            Carbon::parse($pengajuan->tgl_akhir_tugas)->lessThan(now()->addMonths(-1))
+            Carbon::parse($pengajuan->tgl_akhir_tugas)->lessThan(now()->addDays(-2))
+        ) {
+            dump("start");
+            $pengajuan?->cetak(checkRole: false);
+            dump("end");
+        }
+        if(
+            $pengajuan?->jenis_surat_tugas != Constants::NON_SPPD &&
+            Carbon::parse($pengajuan->tgl_akhir_tugas)->lessThan(now()->addDays(-7))
         ) {
             dump("start");
             $pengajuan?->kumpulkan(checkRole: false);
+            dump("end");
+        }
+        if(
+            $pengajuan?->jenis_surat_tugas != Constants::NON_SPPD &&
+            Carbon::parse($pengajuan->tgl_akhir_tugas)->lessThan(now()->addMonths(-1))
+        ) {
+            dump("start");
             $pengajuan?->cairkan(checkRole: false);
             dump("end");
-
         }
 
         return null;

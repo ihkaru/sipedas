@@ -51,6 +51,8 @@ class PenugasanDisetujuiTable extends BaseWidget
                 $this->getTableQuery()->latest('created_at')
             )
             ->columns([
+                TextColumn::make('tertugas')
+                    ->label("Tertugas"),
                 TextColumn::make('tujuan_penugasan')
                     ->label("Lokasi Penugasan"),
                 TextColumn::make('kegiatan.nama')
