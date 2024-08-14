@@ -45,7 +45,7 @@ class KegiatanResource extends Resource
                     ->lazy()
                     ->required()
                     ->maxLength(255)
-                    ->reactive()
+                    ->live()
                     ->afterStateUpdated(function (Get $get, Set $set) {
                         $set('id', Str::slug($get("nama")));
                     }),
