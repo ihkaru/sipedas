@@ -82,14 +82,34 @@ class UserResource extends Resource
                 Action::make('jadikan_kepala')
                     ->label("Tambah Role Kepala")
                     ->hidden(function(User $record){
-                        return !auth()->user()->hasRole('super_admin') && $record->hasRole('kepala_satker');
+                        return !auth()->user()->hasRole('super_admin') || $record->hasRole('kepala_satker');
                     })
                     ->action(function(User $record){
-                        $record->assignRole('kepala_satker');
-                        Notification::make()
+                        if($record->assignRole('kepala_satker')){
+                            return Notification::make()
                             ->title('Sukses menambahkan role kepala satker ke '.$record->pegawai->nama)
                             ->success();
+                        };
+                        return Notification::make()
+                        ->title('Gagal menambahkan role kepala satker ke '.$record->pegawai->nama)
+                        ->danger();
+                    }),
+                Action::make('lepas_kepala')
+                    ->label('Lepas Role Kepala')
+                    ->hidden(function(User $record){
+                        return !auth()->user()->hasRole('super_admin') || !$record->hasRole('kepala_satker');
                     })
+                    ->action(function(User $record){
+                        if($record->assignRole('kepala_satker')){
+                            return Notification::make()
+                            ->title('Sukses melepaskan role kepala satker dari '.$record->pegawai->nama)
+                            ->success();
+                        };
+                        return Notification::make()
+                        ->title('Gagal melepaskan role kepala satker dari '.$record->pegawai->nama)
+                        ->success();
+                    }),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
