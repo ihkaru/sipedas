@@ -2,13 +2,11 @@
 namespace App\Supports;
 class Constants {
     const NON_SPPD = "NON_SPPD";
-    const PERJALANAN_DINAS_BIASA="PERJALANAN_DINAS_BIASA";
     const PERJALAN_DINAS_DALAM_KOTA="PERJALAN_DINAS_DALAM_KOTA";
     const PERJALANAN_DINAS_LUAR_KOTA="PERJALANAN_DINAS_LUAR_KOTA";
     const PERJALANAN_DINAS_PAKET_MEETING="PERJALANAN_DINAS_PAKET_MEETING";
     const JENIS_SURAT_TUGAS_OPTIONS = [
         "NON_SPPD" => "Non SPPD",
-        "PERJALANAN_DINAS_BIASA" => "Perjalanan Dinas Biasa",
         "PERJALANAN_DINAS_LUAR_KOTA" => "Perjalanan Dinas Luar Kota",
         "PERJALAN_DINAS_DALAM_KOTA" => "Perjalanan Dinas Dalam Kota",
         "PERJALANAN_DINAS_PAKET_MEETING" => "Perjalanan Dinas Paket Meeting",
