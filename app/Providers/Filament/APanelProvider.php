@@ -33,7 +33,7 @@ class APanelProvider extends PanelProvider
             ->path('a')
             ->login()
             ->favicon(env('APP_URL')."/favicon.ico")
-            ->brandLogo(env('APP_URL')."/logo.svg")
+            // ->brandLogo(env('APP_URL')."/logo.svg")
             ->brandName('SIKENDIS')
             ->colors([
                 'primary' => Color::Teal,
