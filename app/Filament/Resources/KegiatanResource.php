@@ -71,6 +71,7 @@ class KegiatanResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('nama')
                     ->sortable()
@@ -79,6 +80,12 @@ class KegiatanResource extends Resource
                     ->sortable()
                     ->label("PJ Kegiatan")
                     ->searchable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label("Dibuat Pada")
+                    ->sortable()
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('tgl_awal_perjadin')
                     ->sortable()
                     ->label("Awal Kegiatan")
@@ -89,11 +96,6 @@ class KegiatanResource extends Resource
                     ->label("Akhir Kegiatan")
                     ->date()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->sortable()
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
