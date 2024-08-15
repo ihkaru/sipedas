@@ -33,6 +33,7 @@ class APanelProvider extends PanelProvider
             ->path('a')
             ->login()
             ->favicon(env('APP_URL')."/favicon.ico")
+            ->brandLogo(env('APP_URL')."/logo.svg")
             ->colors([
                 'primary' => Color::Teal,
             ])
