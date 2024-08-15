@@ -32,7 +32,7 @@ class APanelProvider extends PanelProvider
             ->id('a')
             ->path('a')
             ->login()
-            ->favicon('favicon.ico')
+            ->favicon(env('APP_URL')."/favicon.ico")
             ->colors([
                 'primary' => Color::Teal,
             ])
