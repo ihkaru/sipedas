@@ -280,7 +280,8 @@ class Penugasan extends Model
         (
             $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM ||
             $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_PERLU_REVISI ||
-            $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DISETUJUI
+            $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DISETUJUI ||
+            $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DICETAK
          ) &&
          (
              auth()->user()->pegawai?->nip == $this->nip ||
