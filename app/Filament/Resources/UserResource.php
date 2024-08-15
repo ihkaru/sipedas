@@ -7,11 +7,14 @@ use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use PDO;
 
 class UserResource extends Resource
 {
@@ -76,6 +79,17 @@ class UserResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Action::make('jadikan_kepala')
+                    ->label("Tambah Role Kepala")
+                    ->hidden(function(User $record){
+                        return !auth()->user()->hasRole('super_admin') && $record->hasRole('kepala_satker');
+                    })
+                    ->action(function(User $record){
+                        $record->assignRole('kepala_satker');
+                        Notification::make()
+                            ->title('Sukses menambahkan role kepala satker ke '.$record->pegawai->nama)
+                            ->success();
+                    })
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
