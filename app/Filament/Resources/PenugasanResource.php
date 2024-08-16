@@ -335,11 +335,13 @@ class PenugasanResource extends Resource
                             ->native(false)
                             ->live()
                             ->minDate(function(Get $get){
-                                return $get('tgl_pengajuan_tugas');
+                                $kegiatan = Kegiatan::find($get('kegiatan_id')) ?? null;
+                                return max($get('tgl_pengajuan_tugas'),$kegiatan?->tgl_awal_perjadin);
                             })
                             ->maxDate(function(Get $get){
-                                if($get('tgl_akhir_tugas')) return $get('tgl_akhir_tugas');
-                                return now()->addMonth(2);
+                                // $kegiatan = Kegiatan::find($get('kegiatan_id')) ?? null;
+                                // if($get('tgl_akhir_tugas')) return $get('tgl_akhir_tugas');
+                                return min(now()->addMonth(2),$kegiatan?->tgl_akhir_perjadin,$get('tgl_akhir_tugas'));
                             })
                             ->disabledDates(function(Get $get){
                                 return array_merge(Penugasan::getDisabledDates($get("nips")),TanggalMerah::getLiburDates());

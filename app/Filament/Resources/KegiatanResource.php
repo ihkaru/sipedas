@@ -8,6 +8,7 @@ use App\Models\Kegiatan;
 use App\Models\KegiatanManmit;
 use App\Models\Pegawai;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -57,6 +58,12 @@ class KegiatanResource extends Resource
                     ->searchable()
                     ->preload()
                 ,
+                DatePicker::make('tgl_awal_perjadin')
+                    ->helperText('Tanggal ini digunakan sebagai batas awal tanggal mulai surat tugas')
+                ,
+                DatePicker::make('tgl_akhir_perjadin')
+                    ->helperText('Tanggal ini digunakan sebagai batas awal tanggal mulai surat tugas')
+                ,
                 Select::make('pj_kegiatan_id')
                     ->options(function(){
                         return Pegawai::get()->pluck('nama','nip');
@@ -64,7 +71,7 @@ class KegiatanResource extends Resource
                     ->required()
                     ->preload()
                     ->searchable(['nama'])
-                    ->label("PJ Kegiatan")
+                    ->label("PJ Kegiatan"),
             ]);
     }
 
