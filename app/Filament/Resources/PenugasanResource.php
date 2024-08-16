@@ -312,8 +312,9 @@ class PenugasanResource extends Resource
                             ->multiple(),
                         Select::make("kegiatan_id")
                             ->label("Kegiatan")
+                            ->preload()
                             ->options(function(){
-                                return Kegiatan::pluck('nama','id')->toArray();
+                                return Kegiatan::orderBy('created_at','desc')->pluck('nama','id')->toArray();
                             })
                             ->required()
                             ->searchable(['nama']),
