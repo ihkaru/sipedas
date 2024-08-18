@@ -786,6 +786,8 @@ class PenugasanResource extends Resource
                     ->visible(function (Penugasan $record){
                         return $record->canKumpulkan();
                     ;})
+                    ->requiresConfirmation()
+                    ->modalDescription("Apakah anda yakin akan mengubah status ini 'Dikumpulkan'?")
                     ->action(function (Penugasan $record){
                         if($record->kumpulkan())
                         return self::notify("success","Penugasan berhasil dikumpulkan");
