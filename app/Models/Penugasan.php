@@ -420,7 +420,7 @@ class Penugasan extends Model
     }
     public function batalkanPengumpulan(bool $checkRole = true){
         if(!$this->canBatalkanPengumpulan($checkRole)) return 0;
-        return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DICETAK,"tgl_dicetak",now());
+        return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DICETAK,"tgl_dibuat",now());
     }
     public function cairkan(bool $checkRole = true){
         if(!$this->canCairkan($checkRole)) return 0;
