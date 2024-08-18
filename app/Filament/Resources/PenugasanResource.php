@@ -339,7 +339,7 @@ class PenugasanResource extends Resource
                                 return max($get('tgl_pengajuan_tugas'),$kegiatan?->tgl_awal_perjadin);
                             })
                             ->maxDate(function(Get $get){
-                                // $kegiatan = Kegiatan::find($get('kegiatan_id')) ?? null;
+                                $kegiatan = Kegiatan::find($get('kegiatan_id')) ?? null;
                                 // if($get('tgl_akhir_tugas')) return $get('tgl_akhir_tugas');
                                 return min(now()->addMonth(2),$kegiatan?->tgl_akhir_perjadin,$get('tgl_akhir_tugas'));
                             })
