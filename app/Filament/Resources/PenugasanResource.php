@@ -787,13 +787,25 @@ class PenugasanResource extends Resource
                         return $record->canKumpulkan();
                     ;})
                     ->requiresConfirmation()
-                    ->modalDescription("Apakah anda yakin akan mengubah status ini 'Dikumpulkan'?")
+                    ->modalDescription("Apakah anda yakin akan mengubah status ini menjadi 'Dikumpulkan'?")
                     ->action(function (Penugasan $record){
                         if($record->kumpulkan())
                         return self::notify("success","Penugasan berhasil dikumpulkan");
                         return self::notify("danger","Aksi pengumpulan gagal");
                     })
                     ->label("Kumpulkan"),
+                Action::make("batalkanPengumpulan")
+                    ->visible(function (Penugasan $record){
+                        return $record->canBatalkanPengumpulan();
+                    ;})
+                    ->requiresConfirmation()
+                    ->modalDescription("Apakah anda yakin akan mengubah status ini menjadi 'Dicetak'?")
+                    ->action(function (Penugasan $record){
+                        if($record->batalkanPengumpulan())
+                        return self::notify("success","Penugasan berhasil diubah menjadi 'Dicetak'");
+                        return self::notify("danger","Aksi perubahan gagal");
+                    })
+                    ->label("Batalkan Pengumpulan"),
                 Action::make("Cairkan")
                     ->visible(function (Penugasan $record){
                         return $record->canCairkan();

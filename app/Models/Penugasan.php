@@ -146,6 +146,7 @@ class Penugasan extends Model
     public function tujuanSuratTugas(){
         return $this->hasMany(TujuanSuratTugas::class);
     }
+
     public function suratTugasBersamaDisetujui(array $with = null){
         $query = self::query();
         $surat_tugas_id = $this->surat_tugas_id;
@@ -238,6 +239,7 @@ class Penugasan extends Model
         $res += $pengajuan->riwayatPengajuan->update(["catatan_butuh_perbaikan"=>$data["catatan_butuh_perbaikan"]]);
         return $res!=0;
     }
+
     public static function ajukanRevisi($data){
         $res = 0;
         $pengajuan = self::with("riwayatPengajuan")->find($data['id']);
@@ -307,6 +309,16 @@ class Penugasan extends Model
         if($checkRole == false) return true;
         return
         $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DICETAK &&
+        $this->jenis_surat_tugas != Constants::NON_SPPD &&
+        (
+            auth()->user()->hasRole('operator_umum')
+        )
+        ;
+    }
+    public function canBatalkanPengumpulan(bool $checkRole = true){
+        if($checkRole == false) return true;
+        return
+        $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKUMPULKAN &&
         $this->jenis_surat_tugas != Constants::NON_SPPD &&
         (
             auth()->user()->hasRole('operator_umum')
@@ -406,10 +418,16 @@ class Penugasan extends Model
         if(!$this->canKumpulkan($checkRole)) return 0;
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DIKUMPULKAN,"tgl_dikumpulkan",now());
     }
+    public function batalkanPengumpulan(bool $checkRole = true){
+        if(!$this->canBatalkanPengumpulan($checkRole)) return 0;
+        return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DICETAK,"tgl_dicetak",now());
+    }
     public function cairkan(bool $checkRole = true){
         if(!$this->canCairkan($checkRole)) return 0;
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DICAIRKAN,"tgl_pencairan",now());
     }
+
+
 
     public static function getGrupId(): string {
         $id = Str::orderedUuid();
