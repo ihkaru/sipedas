@@ -37,6 +37,9 @@ class PenugasanDisetujuiTable extends BaseWidget
         return Penugasan::query()
             ->whereHas('riwayatPengajuan',function($query){
                 $query->where('status',Constants::STATUS_PENGAJUAN_DISETUJUI);
+                $query->orWhere('status',Constants::STATUS_PENGAJUAN_DICETAK);
+                $query->orWhere('status',Constants::STATUS_PENGAJUAN_DIKUMPULKAN);
+                $query->orWhere('status',Constants::STATUS_PENGAJUAN_DICAIRKAN);
             })
             ->orderBy('tgl_mulai_tugas','desc');
     }
