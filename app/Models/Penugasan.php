@@ -20,6 +20,7 @@ class Penugasan extends Model
     protected $guarded=[];
     public static Collection $masterSls;
     protected ?Pegawai $pegawaiPlh = null;
+    protected ?Pegawai $plhSaatMulaiPerjalanan = null;
 
     protected function casts(): array
     {
@@ -130,6 +131,11 @@ class Penugasan extends Model
         if($this->pegawaiPlh) return $this->pegawaiPlh;
         $this->pegawaiPlh = Plh::getPlhAktif(Carbon::parse($this->tgl_pengajuan_tugas),returnPegawai:true);
         return $this->pegawaiPlh;
+    }
+    public function plhSaatMulaiPerjalanan(){
+        if($this->plhSaatMulaiPerjalanan) return $this->plhSaatMulaiPerjalanan;
+        $this->plhSaatMulaiPerjalanan = Plh::getPlhAktif(Carbon::parse($this->tgl_mulai_tugas),returnPegawai:true);
+        return $this->plhSaatMulaiPerjalanan;
     }
     public function plh(){
         return $this->belongsTo(Pegawai::class,"plh_id","nip");

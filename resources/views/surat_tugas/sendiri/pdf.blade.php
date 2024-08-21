@@ -2121,8 +2121,8 @@
               text-align: center;
             "
           >
-          @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasan->plhSesuai()->nip)
-            @if($penugasan->plhSesuai()->jabatan == $cons::JABATAN_KASUBBAG)
+          @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasan->plhSaatMulaiPerjalanan()->nip)
+            @if($penugasan->plhSaatMulaiPerjalanan()->jabatan == $cons::JABATAN_KASUBBAG)
                 An. Kepala Badan Pusat Statistik <br/> {{ucwords(strtolower($namaSatker))}}
                 <br>
                 {{$cons::JABATAN_KASUBBAG}}
