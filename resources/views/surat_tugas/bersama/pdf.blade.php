@@ -792,7 +792,7 @@
                 Plh. Kepala Badan Pusat Statistik <br/>{{ucwords(strtolower($namaSatker))}}
             @endif
         @else
-                Kepala Badan Pusat Statistik
+                Kepala Badan Pusat Statistik <br>{{ucwords(strtolower($namaSatker))}}
         @endif
     </p>
     <p style="text-indent: 0pt; text-align: left"><br /><br /></p>
@@ -1142,7 +1142,7 @@
                 Plh. Kepala Badan Pusat Statistik<br/> {{ucwords(strtolower($namaSatker))}}
             @endif
         @else
-                Kepala Badan Pusat Statistik
+                Kepala Badan Pusat Statistik <br>{{ucwords(strtolower($namaSatker))}}
         @endif
           </p>
           <p style="text-indent: 0pt; text-align: left"><br /><br /></p>
@@ -2491,7 +2491,7 @@
                     Plh. Kepala Badan Pusat Statistik <br/>{{ucwords(strtolower($namaSatker))}}
                 @endif
             @else
-                    Kepala Badan Pusat Statistik
+                    Kepala Badan Pusat Statistik <br>{{ucwords(strtolower($namaSatker))}}
             @endif
             </p>
             <p style="text-indent: 0pt; text-align: left"><br /><br /></p>

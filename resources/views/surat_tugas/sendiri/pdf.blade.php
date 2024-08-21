@@ -785,7 +785,7 @@
                 Plh. Kepala Badan Pusat Statistik<br/>{{ucwords(strtolower($namaSatker))}}
             @endif
         @else
-                Kepala Badan Pusat Statistik
+                Kepala Badan Pusat Statistik <br>{{ucwords(strtolower($namaSatker))}}
         @endif
     </p>
     <p style="text-indent: 0pt; text-align: left"><br /><br /></p>
@@ -2121,7 +2121,7 @@
               text-align: center;
             "
           >
-          @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasan->plhSaatMulaiPerjalanan()->nip)
+        @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasan->plhSaatMulaiPerjalanan()->nip)
             @if($penugasan->plhSaatMulaiPerjalanan()->jabatan == $cons::JABATAN_KASUBBAG)
                 An. Kepala Badan Pusat Statistik <br/> {{ucwords(strtolower($namaSatker))}}
                 <br>
@@ -2130,7 +2130,8 @@
                 Plh. Kepala Badan Pusat Statistik<br/>{{ucwords(strtolower($namaSatker))}}
             @endif
         @else
-                Kepala Badan Pusat Statistik
+                Kepala Badan Pusat Statistik <br>
+                {{ucwords(strtolower($namaSatker))}}
         @endif
           </p>
           <p style="text-indent: 0pt; text-align: left"><br /><br /></p>
