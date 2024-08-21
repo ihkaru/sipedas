@@ -320,6 +320,7 @@ class PenugasanResource extends Resource
                             ->searchable(['nama']),
                         DatePicker::make("tgl_pengajuan_tugas")
                             ->native(false)
+                            ->maxDate(now()->endOfDay())
                             ->required()
                             ->label("Tanggal Pengajuan")
                             ->default(now()->startOfDay())
