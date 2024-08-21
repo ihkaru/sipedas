@@ -42,7 +42,7 @@ class PenugasanResource extends Resource
     protected static ?string $navigationGroup = "Surat Tugas";
 
     public static function canViewAny(): bool{
-        return auth()->user()->hasRole('kepala_satker') || auth()->user()->hasRole('operator_umum') || auth()->user()->hasRole('pegawai');
+        return auth()->user()->hasRole('kepala_satker') || auth()->user()->hasRole('operator_umum');
     }
     public static function getWidgets(): array
     {
