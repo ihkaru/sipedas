@@ -64,7 +64,7 @@ class PenugasanDisetujuiTable extends BaseWidget
                     ->date("Y-m-d")
                     ->sortable()
                     ->badge()
-                    ->label("Tanggal pDiajukan"),
+                    ->label("Tanggal Diajukan"),
                 TextColumn::make('tgl_perjadin')
                     ->sortable()
                     ->badge()
