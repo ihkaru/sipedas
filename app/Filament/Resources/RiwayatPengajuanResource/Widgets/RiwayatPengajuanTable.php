@@ -13,7 +13,8 @@ use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
-
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\HtmlString;
 
 class RiwayatPengajuanTable extends BaseWidget
 {
@@ -29,6 +30,7 @@ class RiwayatPengajuanTable extends BaseWidget
                     ->label("Pengajuan Surat Tugas")
                     ->icon("fluentui-document-add-20-o")
                     ->form(self::$resource::formPengajuan())
+                    ->modalDescription(fn()=>new HtmlString("<span style='color:black;'> <b>Setelah disetujui</b>, pegawai silakan <b>mencetak sendiri</b> surat tugas dan <b>diserahkan ke TU</b> untuk ditandatangani </span>"))
                     ->action(function (array $data, array $arguments, Action $action,Set $set):void {
                         if (Penugasan::ajukan($data)) {
                             Notification::make()
