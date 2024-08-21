@@ -320,6 +320,7 @@ class PenugasanResource extends Resource
                             ->searchable(['nama']),
                         DatePicker::make("tgl_pengajuan_tugas")
                             ->native(false)
+                            ->helperText('Tanggal ini bukan tanggal mulai surat tugas, tapi tanggal Anda membuat pengajuan ini.')
                             ->maxDate(now()->endOfDay())
                             ->required()
                             ->label("Tanggal Pengajuan")
