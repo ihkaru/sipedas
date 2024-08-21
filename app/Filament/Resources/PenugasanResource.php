@@ -776,16 +776,16 @@ class PenugasanResource extends Resource
                         return self::notify("danger","Aksi penolakan gagal");
                     })
                     ->label("Tolak"),
-                Action::make("cetak")
-                    ->visible(function (Penugasan $record){
-                        return $record->canCetak();
-                    ;})
-                    ->action(function (Penugasan $record){
-                        if($record->cetak())
-                        return self::notify("success","Penugasan berhasil dicetak");
-                        return self::notify("danger","Aksi pencetakan gagal");
-                    })
-                    ->label("Cetak"),
+                // Action::make("cetak")
+                //     ->visible(function (Penugasan $record){
+                //         return $record->canCetak();
+                //     ;})
+                //     ->action(function (Penugasan $record){
+                //         if($record->cetak())
+                //         return self::notify("success","Penugasan berhasil dicetak");
+                //         return self::notify("danger","Aksi pencetakan gagal");
+                //     })
+                //     ->label("Cetak"),
                 Action::make("kumpulkan")
                     ->visible(function (Penugasan $record){
                         return $record->canKumpulkan();
