@@ -60,7 +60,13 @@ class PenugasanDisetujuiTable extends BaseWidget
                     ->label("Lokasi Penugasan"),
                 TextColumn::make('kegiatan.nama')
                     ->sortable(),
+                TextColumn::make('tgl_pengajuan_tugas')
+                    ->date("Y-m-d")
+                    ->sortable()
+                    ->badge()
+                    ->label("Tanggal Diajukan"),
                 TextColumn::make('tgl_perjadin')
+                    ->sortable()
                     ->badge()
                     ->label('Tanggal Perjadin'),
             ])

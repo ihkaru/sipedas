@@ -57,6 +57,8 @@ class PenugasanResource extends Resource
                 ->multiple()
                 ->searchable()
                 ->preload(),
+            DateRangeFilter::make("tgl_pengajuan_tugas")
+                ->label("Tanggal Pengajuan"),
             DateRangeFilter::make("tgl_mulai_tugas")
                 ->label("Tanggal Mulai Tugas"),
             DateRangeFilter::make("tgl_akhir_tugas")
@@ -300,7 +302,7 @@ class PenugasanResource extends Resource
                             ->afterStateUpdated(function (?array $state, ?array $old,Set $set) {
                                 $set('tgl_mulai_tugas',null);
                             })
-                            ->label("Pegawai")
+                            ->label("Pegawai Ditugaskan")
                             ->live()
                             ->options(function(){
                                 return Pegawai::pluck('nama','nip')->toArray();
@@ -323,7 +325,7 @@ class PenugasanResource extends Resource
                             ->helperText('Tanggal ini bukan tanggal mulai surat tugas, tapi tanggal Anda membuat pengajuan ini.')
                             ->maxDate(now()->endOfDay())
                             ->required()
-                            ->label("Tanggal Pengajuan")
+                            ->label("Tanggal Anda Membuat Pengajuan Surat Tugas (Hari Ini)")
                             ->default(now()->startOfDay())
                             ->live()
                             ,
