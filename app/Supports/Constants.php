@@ -118,6 +118,7 @@ class Constants {
 
     const JABATAN_MITRA = "Mitra Statistik";
     const JABATAN_PEGAWAI = "Pegawai";
+    const JABATAN_KASUBBAG = "Kepala Sub Bagian Umum";
     const JENIS_PERIODE_TRIWULAN = "TW";
     const JENIS_PERIODE_SUBROUND = "SR";
     const JENIS_PERIODE_SEMESTER = "SM";

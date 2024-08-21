@@ -783,10 +783,17 @@
     </p>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <p style="padding-left: 283pt; text-indent: 0pt; text-align: center">
-        @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasans->first()->plhSesuai()->nip)
-            An.
+        @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasan->plhSesuai()->nip)
+            @if($penugasan->plhSesuai()->jabatan == $cons::JABATAN_KASUBBAG)
+                An. Kepala Badan Pusat Statistik <br/> {{ucwords(strtolower($namaSatker))}}
+                <br>
+                {{$cons::JABATAN_KASUBBAG}}
+            @else
+                Plh. Kepala Badan Pusat Statistik <br/>{{ucwords(strtolower($namaSatker))}}
+            @endif
+        @else
+                Kepala Badan Pusat Statistik
         @endif
-      Kepala Badan Pusat Statistik <br/> {{ucwords(strtolower($namaSatker))}}
     </p>
     <p style="text-indent: 0pt; text-align: left"><br /><br /></p>
     <p
@@ -1126,10 +1133,17 @@
           </p>
           <p style="text-indent: 0pt; text-align: left"><br /></p>
           <p style="padding-left: 500px; width: 500px;text-indent: 0pt; text-align: center">
-              @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasans->first()->plhSesuai()->nip)
-                  An.
-              @endif
-            Kepala Badan Pusat Statistik <br/> {{ucwords(strtolower($namaSatker))}}
+        @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasan->plhSesuai()->nip)
+            @if($penugasan->plhSesuai()->jabatan == $cons::JABATAN_KASUBBAG)
+                An. Kepala Badan Pusat Statistik <br/> {{ucwords(strtolower($namaSatker))}}
+                <br>
+                {{$cons::JABATAN_KASUBBAG}}
+            @else
+                Plh. Kepala Badan Pusat Statistik<br/> {{ucwords(strtolower($namaSatker))}}
+            @endif
+        @else
+                Kepala Badan Pusat Statistik
+        @endif
           </p>
           <p style="text-indent: 0pt; text-align: left"><br /><br /></p>
           <p
@@ -2469,9 +2483,16 @@
                 "
             >
             @if($peng::key('ID_PLH_DEFAULT')->nilai != $penugasan->plhSesuai()->nip)
-            An.
+                @if($penugasan->plhSesuai()->jabatan == $cons::JABATAN_KASUBBAG)
+                    An. Kepala Badan Pusat Statistik <br/> {{ucwords(strtolower($namaSatker))}}
+                    <br>
+                    {{$cons::JABATAN_KASUBBAG}}
+                @else
+                    Plh. Kepala Badan Pusat Statistik <br/>{{ucwords(strtolower($namaSatker))}}
+                @endif
+            @else
+                    Kepala Badan Pusat Statistik
             @endif
-            Kepala Badan Pusat Statistik <br/> {{ucwords(strtolower($namaSatker))}}
             </p>
             <p style="text-indent: 0pt; text-align: left"><br /><br /></p>
             <p
@@ -2941,7 +2962,7 @@
                     text-align: center;
                     "
                 >
-                {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}}, {{$c::parse($penugasan->tgl_pengajuan_tugas)->translatedFormat('d F Y')}}
+                {{ucwords(strtolower($namaSatkerTanpaLevelAdministrasi))}}, {{$c::parse($penugasan->tgl_akhir_tugas)->translatedFormat('d F Y')}}
 
                 </p>
                 </td>

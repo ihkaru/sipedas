@@ -6,14 +6,18 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
 use Filament\Forms;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Hash;
 use PDO;
 
 class UserResource extends Resource
@@ -27,7 +31,7 @@ class UserResource extends Resource
     protected static ?string $navigationGroup = "Pengguna";
 
     public static function canViewAny(): bool{
-        return auth()->user()->hasRole('super_admin');
+        return true;
     }
 
     public static function form(Form $form): Form
@@ -109,6 +113,34 @@ class UserResource extends Resource
                         ->title('Gagal melepaskan role kepala satker dari '.$record->pegawai->nama)
                         ->success();
                     }),
+                Action::make('gantiPassword')
+                    ->label('Ganti Password')
+                    ->hidden(function(User $record){
+                        return !(auth()->user()->email == $record->email || (auth()->user()->hasRole('operator_umum') && auth()->user()->hasRole('kepala_satker') || auth()->user()->hasRole('super_admin')));
+                    })
+                    ->form([
+                        TextInput::make('password_lama')
+                            ->label('Password Lama')
+                            ->required(),
+                        TextInput::make('password_baru')
+                            ->label('Password Baru')
+                            ->required(),
+                        TextInput::make('konfirmasi_password_baru')
+                            ->label('Konfirmasi Password Baru')
+                            ->lazy()
+                            ->required()
+                    ])
+                    ->action(function(User $record, array $data){
+
+                        if($data['password_baru'] == $data["konfirmasi_password_baru"] && $record->updatePassword($data['password_lama'],$data['password_baru'])){
+                            Notification::make()
+                            ->title('Sukses mengganti password user '.$record->pegawai->nama)
+                            ->success();
+                        };
+                        Notification::make()
+                        ->title('Gagal mengganti password. Silakan cek kembali password yang diinput')
+                        ->danger();
+                    }),
 
             ])
             ->bulkActions([
@@ -132,5 +164,12 @@ class UserResource extends Resource
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
+    }
+    public static function canCreate() : bool{
+        return auth()->user()->hasRole('operator_umum') || auth()->user()->hasRole('super_admin');
+    }
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('operator_umum') || auth()->user()->email == $record->email;
     }
 }

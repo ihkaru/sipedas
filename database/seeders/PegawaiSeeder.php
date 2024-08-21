@@ -30,7 +30,7 @@ class PegawaiSeeder extends Seeder
             "nip9"=>"340017573",
             "pangkat"=>"III",
             "golongan"=>"b",
-            "jabatan"=>"Kasubbag Umum",
+            "jabatan"=>"Kepala Sub Bagian Umum",
             "email"=>"muh.adwin@bps.go.id",
             "atasan_langsung_id"=>"196908031992111001",
             "unit_kerja"=>"BPS Kabupaten Mempawah"
