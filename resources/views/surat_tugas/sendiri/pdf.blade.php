@@ -802,7 +802,7 @@
       {{$plhAktifSaatPengajuan->nama}}
     </p>
     <p style="padding-left: 283pt; text-indent: 0pt; text-align: center">
-      NIP. <span style="color: #1f1f1f">{{$penugasan->plhSesuai()->nip}}</span>
+      NIP. <span style="color: #1f1f1f">{{$plhAktifSaatPengajuan->nip}}</span>
     </p>
     @if ($penugasan->jenis_surat_tugas != $cons::NON_SPPD)
     <div class="pagebreak"> </div>
@@ -2156,7 +2156,7 @@
               text-align: center;
             "
           >
-            NIP. <span style="color: #1f1f1f">{{$penugasan->plhSesuai()->nip}}</span>
+            NIP. <span style="color: #1f1f1f">{{$plhAktifSaatPerjalanan->nip}}</span>
           </p>
         </td>
       </tr>

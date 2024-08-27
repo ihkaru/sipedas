@@ -808,7 +808,7 @@
       {{$plhAktifSaatPengajuan->nama}}
     </p>
     <p style="padding-left: 283pt; text-indent: 0pt; text-align: center">
-      NIP. <span style="color: #1f1f1f">{{$penugasans->first()->plhSesuai()->nip}}</span>
+      NIP. <span style="color: #1f1f1f">{{$plhAktifSaatPengajuan->nip}}</span>
     </p>
     @if (count($penugasans)>1)
     <div class="pagebreak"></div>
@@ -1159,7 +1159,7 @@
             {{$plhAktifSaatPengajuan->nama}}
           </p>
           <p style="padding-left: 500px; width: 500px; text-indent: 0pt; text-align: center">
-            NIP. <span style="color: #1f1f1f">{{$penugasans->first()->plhSesuai()->nip}}</span>
+            NIP. <span style="color: #1f1f1f">{{$plhAktifSaatPengajuan->nip}}</span>
           </p>
     </div>
 
@@ -2514,7 +2514,7 @@
                 text-align: center;
                 "
             >
-                NIP. <span style="color: #1f1f1f">{{$penugasan->plhSesuai()->nip}}</span>
+                NIP. <span style="color: #1f1f1f">{{$plhAktifSaatPerjalanan->nip}}</span>
             </p>
             </td>
         </tr>
