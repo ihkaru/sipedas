@@ -6,6 +6,7 @@ use App\Models\AlokasiHonor;
 use App\Models\Pegawai;
 use App\Models\Pengaturan;
 use App\Models\Penugasan;
+use App\Models\Plh;
 use App\Supports\Constants;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
@@ -17,11 +18,15 @@ class PdfController extends Controller
         $penugasans = Penugasan::with(['satuSurat','suratTugas','suratPerjadin','kegiatan','pegawai','plh'])->find($id);
         // dd($penugasans);
         $ppk = Pegawai::find(Pengaturan::key("NIP_PPK_SATER")->nilai);
+        $plhAktifSaatPengajuan = Plh::getPlhAktif($penugasans->tgl_pengajuan_tugas,true);
+        $plhAktifSaatPerjalanan = Plh::getPlhAktif($penugasans->tgl_mulai_tugas,true);
         return view('surat_tugas.sendiri.pdf',[
             'penugasans'=>$penugasans,
             "ppk"=>$ppk,
             'namaSatker'=>Pengaturan::key('NAMA_KAKO')->nilai,
             'namaSatkerTanpaLevelAdministrasi'=>Pengaturan::namaSatker(false),
+            'plhAktifSaatPengajuan'=>$plhAktifSaatPengajuan,
+            'plhAktifSaatPerjalanan'=>$plhAktifSaatPerjalanan,
         ])->toHtml();
     }
     public function cetakPenugasanBersama($id){
@@ -30,11 +35,15 @@ class PdfController extends Controller
         $penugasans = $penugasan->suratTugasBersamaDisetujui(['satuSurat','suratTugas','suratPerjadin','kegiatan','pegawai','plh']);
         // dd($penugasans);
         $ppk = Pegawai::find(Pengaturan::key("NIP_PPK_SATER")->nilai);
+        $plhAktifSaatPengajuan = Plh::getPlhAktif($penugasans->first()->tgl_pengajuan_tugas,true);
+        $plhAktifSaatPerjalanan = Plh::getPlhAktif($penugasans->first()->tgl_mulai_tugas,true);
         return view('surat_tugas.bersama.pdf',[
             'penugasans'=>$penugasans,
             "ppk"=>$ppk,
             'namaSatker'=>Pengaturan::key('NAMA_KAKO')->nilai,
             'namaSatkerTanpaLevelAdministrasi'=>Pengaturan::namaSatker(false),
+            "plhAktifSaatPengajuan"=>$plhAktifSaatPengajuan,
+            "plhAktifSaatPerjalanan"=>$plhAktifSaatPerjalanan,
         ])->toHtml();
     }
     public function cetakKontrak(){
