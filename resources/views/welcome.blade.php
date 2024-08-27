@@ -17,17 +17,37 @@
         }
         .navbar {
             background-color: var(--teal-primary) !important;
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
         }
         .navbar-light .navbar-brand,
         .navbar-light .nav-link {
             color: white !important;
         }
         .hero {
+            position: relative;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            color: white;
+        }
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: linear-gradient(rgba(0, 128, 128, 0.7), rgba(0, 128, 128, 0.7)), url('https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
             background-size: cover;
             background-position: center;
-            color: white;
-            padding: 100px 0;
+            background-attachment: fixed;
+            z-index: -1;
+        }
+        .hero-content {
+            z-index: 1;
         }
         .btn-primary {
             background-color: var(--teal-dark);
@@ -75,10 +95,10 @@
     </nav>
 
     <header class="hero text-center" id="beranda">
-        <div class="container">
+        <div class="container hero-content">
             <h1 class="display-4">SIKENDIS</h1>
             <p class="lead">Sistem Informasi Kegiatan Dinas BPS Kabupaten Mempawah</p>
-            <a href="/a/login" class="btn btn-primary btn-lg">Mulai Sekarang</a>
+            <a href="/a" class="btn btn-primary btn-lg">Mulai Sekarang</a>
         </div>
     </header>
 
@@ -140,6 +160,12 @@
                         window.location.hash = hash;
                     });
                 }
+            });
+
+            // Parallax effect
+            $(window).scroll(function() {
+                var scrollTop = $(this).scrollTop();
+                $('.hero::before').css('background-position', 'center ' + (scrollTop * 0.5) + 'px');
             });
         });
     </script>
