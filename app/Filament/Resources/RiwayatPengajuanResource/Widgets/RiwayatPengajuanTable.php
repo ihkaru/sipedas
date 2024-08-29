@@ -70,6 +70,7 @@ class RiwayatPengajuanTable extends BaseWidget
             });
         });
         return $table
+            ->defaultSort('tgl_perjadin','desc')
             ->headerActions(
                 $this->getTableHeaderActions()
             )
