@@ -70,7 +70,7 @@ class RiwayatPengajuanTable extends BaseWidget
             });
         });
         return $table
-            ->defaultSort('tgl_perjadin','desc')
+            ->defaultSort('last_status_timestamp','desc')
             ->headerActions(
                 $this->getTableHeaderActions()
             )
