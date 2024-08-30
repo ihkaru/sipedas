@@ -43,7 +43,7 @@ class Plh extends Model
         // dump(2);
         if($plh) return $plh;
         // dump(3);
-        $plhDefault = Pegawai::find(Pengaturan::key("ID_PLH_DEFAULT")->nilai)->first();
+        $plhDefault = Pegawai::where('nip',Pengaturan::key("ID_PLH_DEFAULT")->nilai)->first();
         $sedangPerjadin = Penugasan::sedangPerjadin($plhDefault->nip,$date);
         if($sedangPerjadin) {
             Plh::create([
@@ -54,7 +54,7 @@ class Plh extends Model
             ]);
             return self::getPlhAktif($date,$returnPegawai);
         }
-        if($returnPegawai) return Pegawai::find(Pengaturan::key("ID_PLH_DEFAULT")->nilai)->first();
+        if($returnPegawai) return $plhDefault;
         // dump(4);
         return null;
     }
