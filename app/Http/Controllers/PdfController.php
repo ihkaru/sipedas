@@ -37,7 +37,7 @@ class PdfController extends Controller
         $ppk = Pegawai::find(Pengaturan::key("NIP_PPK_SATER")->nilai);
         $plhAktifSaatPengajuan = Plh::getPlhAktif($penugasans->first()->tgl_pengajuan_tugas,true);
         $plhAktifSaatPerjalanan = Plh::getPlhAktif($penugasans->first()->tgl_mulai_tugas,true);
-        dd($plhAktifSaatPengajuan,$plhAktifSaatPerjalanan);
+        // dd($plhAktifSaatPengajuan,$plhAktifSaatPerjalanan);
         return view('surat_tugas.bersama.pdf',[
             'penugasans'=>$penugasans,
             "ppk"=>$ppk,
