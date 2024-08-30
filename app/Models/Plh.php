@@ -43,6 +43,17 @@ class Plh extends Model
         // dump(2);
         if($plh) return $plh;
         // dump(3);
+        $plhDefault = Pegawai::find(Pengaturan::key("ID_PLH_DEFAULT"))->first();
+        $sedangPerjadin = Penugasan::sedangPerjadin($plhDefault->nip,$date);
+        if($sedangPerjadin) {
+            Plh::create([
+                "pegawai_pengganti_id"=>"198008112005021004",
+                "tgl_mulai"=>$date,
+                "tgl_selesai"=>$date,
+                "pegawai_digantikan_id"=>Pengaturan::key("ID_PLH_DEFAULT"),
+            ]);
+            return self::getPlhAktif($date,$returnPegawai);
+        }
         if($returnPegawai) return Pegawai::find(Pengaturan::key("ID_PLH_DEFAULT"))->first();
         // dump(4);
         return null;

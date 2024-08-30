@@ -432,6 +432,24 @@ class Penugasan extends Model
         if(!$this->canCairkan($checkRole)) return 0;
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DICAIRKAN,"tgl_pencairan",now());
     }
+    public static function sedangPerjadin($nip,$date){
+        $res = self::whereNotIn('jenis_surat_tugas',[
+            Constants::NON_SPPD
+        ])
+            ->where('nip',$nip)
+            ->whereDate('tgl_mulai_tugas','<=',$date)
+            ->whereDate('tgl_akhir_tugas','>=',$date)
+            ->whereHas('riwayatPengajuan',function ($q){
+                $q->whereIn('status',[
+                    Constants::STATUS_PENGAJUAN_DISETUJUI,
+                    Constants::STATUS_PENGAJUAN_DICETAK,
+                    Constants::STATUS_PENGAJUAN_DIKUMPULKAN,
+                    Constants::STATUS_PENGAJUAN_DICAIRKAN,
+                ]);
+            })->first()
+        ;
+        return $res;
+    }
 
 
 
