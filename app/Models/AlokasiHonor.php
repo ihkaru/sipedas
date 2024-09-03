@@ -39,7 +39,9 @@ class AlokasiHonor extends Model
                                     ->whereRaw('MONTH(tanggal_penanda_tanganan_spk_oleh_petugas) = ?',[$tanggal_pengajuan_spk->month])
                                     ->first()?->surat_perjanjian_kerja_id;
 
-        $surat_perjanjian_kerja_id ??= NomorSurat::generateNomorSuratPerjanjianKerja($tanggal_pengajuan_spk)->id;
+        $surat_perjanjian_kerja = NomorSurat::generateNomorSuratPerjanjianKerja($tanggal_pengajuan_spk);
+        if($surat_perjanjian_kerja->sub_nomor) dd($tanggal_pengajuan_spk->toDateString());
+        $surat_perjanjian_kerja_id ??= $surat_perjanjian_kerja->id;
         $res['surat_perjanjian_kerja_id'] = $surat_perjanjian_kerja_id;
 
         $tanggal_pengajuan_bast =TanggalMerah::getNextWorkDay(Carbon::parse(trim($row['tanggal_akhir_kegiatan'])),step: -1);
@@ -62,9 +64,11 @@ class AlokasiHonor extends Model
         if(!$nomorSuratBast){
             $nomorSuratBast = NomorSurat::generateNomorSuratBast($tanggal_pengajuan_bast);
         }
-
+        dump($tanggal_pengajuan_bast->toDateString(),$res["tanggal_akhir_kegiatan"]->toDateString());
+        if($nomorSuratBast->sub_nomor) dd($res);
         $surat_bast_id ??= $nomorSuratBast->id;
         $res['surat_bast_id'] = $surat_bast_id;
+
 
         return new AlokasiHonor($res);
     }

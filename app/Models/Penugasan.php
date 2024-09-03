@@ -398,9 +398,9 @@ class Penugasan extends Model
         $suratPerjadin = $this->suratPerjadin;
         $this->surat_tugas_id = null;
         $this->surat_perjadin_id = null;
-        $this->save();
         $suratTugas->delete();
         $suratPerjadin->delete();
+        $this->save();
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DITOLAK,"tgl_ditolak",now());
     }
     public function batalkan(bool $checkRole = true){
@@ -557,7 +557,7 @@ class Penugasan extends Model
         $data["tgl_akhir_tugas"] = $data["tanggal_selesai"];
         $data["tgl_pengajuan_tugas"] = Carbon::parse($data['tanggal_mulai'])->addDay(-1);
         $data["jenis_peserta"] = ($data["jenis_petugas"] == "MITRA") ? Constants::JENIS_PESERTA_SURAT_TUGAS_MITRA : Constants::JENIS_PESERTA_SURAT_TUGAS_PEGAWAI;
-        $data["jenis_surat_tugas"] = (1*$data['apakah_sppd'] == 1) ? Constants::PERJALANAN_DINAS_BIASA : Constants::NON_SPPD;
+        $data["jenis_surat_tugas"] = (1*$data['apakah_sppd'] == 1) ? Constants::PERJALAN_DINAS_DALAM_KOTA : Constants::NON_SPPD;
         $data["transportasi"] = Constants::TRANSPORTASI_KENDARAAN_PRIBADI;
         $pengajuan = null;
 
@@ -609,25 +609,25 @@ class Penugasan extends Model
             $pengajuan?->jenis_surat_tugas != Constants::NON_SPPD &&
             Carbon::parse($pengajuan->tgl_akhir_tugas)->lessThan(now()->addDays(-2))
         ) {
-            dump("start");
+            // dump("start");
             $pengajuan?->cetak(checkRole: false);
-            dump("end");
+            // dump("end");
         }
         if(
             $pengajuan?->jenis_surat_tugas != Constants::NON_SPPD &&
             Carbon::parse($pengajuan->tgl_akhir_tugas)->lessThan(now()->addDays(-7))
         ) {
-            dump("start");
+            // dump("start");
             $pengajuan?->kumpulkan(checkRole: false);
-            dump("end");
+            // dump("end");
         }
         if(
             $pengajuan?->jenis_surat_tugas != Constants::NON_SPPD &&
             Carbon::parse($pengajuan->tgl_akhir_tugas)->lessThan(now()->addMonths(-1))
         ) {
-            dump("start");
+            // dump("start");
             $pengajuan?->cairkan(checkRole: false);
-            dump("end");
+            // dump("end");
         }
 
         return null;

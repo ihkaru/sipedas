@@ -235,6 +235,7 @@ class NomorSurat extends Model
         }
         // dump("Tanggal Pengajuan: $tanggal_pengajuan");
         // dump(NomorSurat::orderBy("tanggal_nomor","asc")->orderBy('nomor',"asc")->orderBy('sub_nomor')->get()->pluck('nomor_surat_tugas'));
+
         return $nomorSuratBaru;
     }
     public function scopeBast(Builder $query): void
@@ -317,6 +318,9 @@ class NomorSurat extends Model
         // dump(NomorSurat::orderBy("tanggal_nomor","asc")->orderBy('nomor',"asc")->orderBy('sub_nomor')->get()->pluck('nomor_surat_tugas'));
         // if(TanggalMerah::isLibur(Carbon::parse($nomorSuratBaru->tanggal_nomor))) dd($nomorSuratBaru);
         if(Carbon::parse($nomorSuratBaru->tanggal_nomor)->dayName == "Minggu") dd("haha",$tanggal_pengajuan->toDateString());
+        // if($nomorSuratBaru->sub_nomor){
+        //     dd($nomorSuratBaru);
+        // }
         return $nomorSuratBaru;
     }
     protected function nomorSuratTugas(): Attribute
