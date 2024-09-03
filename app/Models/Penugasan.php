@@ -396,8 +396,6 @@ class Penugasan extends Model
         if(!$this->canTolak($checkRole)) return 0;
         $suratTugas = $this->suratTugas;
         $suratPerjadin = $this->suratPerjadin;
-        $this->surat_tugas_id = null;
-        $this->surat_perjadin_id = null;
         $suratTugas->delete();
         $suratPerjadin->delete();
         $this->save();
