@@ -75,14 +75,14 @@ class PenugasanDisetujuiTable extends BaseWidget
                     ->label('PDF')
                     ->color('success')
                     ->icon('fluentui-arrow-download-48')
-                    ->openUrlInNewTab()
-                    ->action(function (Penugasan $record) {
+                    ->url(function (Penugasan $record) {
                         $record->cetak();
                         if($record->suratTugasBersamaDisetujui()->count()>1){
                             return redirect()->to(route("cetak.penugasan-bersama",['id'=>$record->id]));
                         }
                         return redirect()->to(route("cetak.penugasan",['id'=>$record->id]));
-                    }),
+                    })
+                    ->openUrlInNewTab(),
                 Action::make("lihat")
                     ->modalHeading('Pengajuan Surat Tugas')
                     ->disabledForm()
