@@ -78,9 +78,9 @@ class PenugasanDisetujuiTable extends BaseWidget
                     ->url(function (Penugasan $record) {
                         $record->cetak();
                         if($record->suratTugasBersamaDisetujui()->count()>1){
-                            return redirect()->to(route("cetak.penugasan-bersama",['id'=>$record->id]));
+                            return route("cetak.penugasan-bersama",['id'=>$record->id]);
                         }
-                        return redirect()->to(route("cetak.penugasan",['id'=>$record->id]));
+                        return route("cetak.penugasan",['id'=>$record->id]);
                     })
                     ->openUrlInNewTab(),
                 Action::make("lihat")
