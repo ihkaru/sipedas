@@ -75,6 +75,7 @@ class PenugasanDisetujuiTable extends BaseWidget
                     ->label('PDF')
                     ->color('success')
                     ->icon('fluentui-arrow-download-48')
+                    ->openUrlInNewTab()
                     ->action(function (Penugasan $record) {
                         $record->cetak();
                         if($record->suratTugasBersamaDisetujui()->count()>1){
