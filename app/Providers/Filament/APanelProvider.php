@@ -30,6 +30,7 @@ class APanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('a')
+            ->spa()
             ->path('a')
             ->login()
             ->favicon(env('APP_URL')."/favicon.ico")
