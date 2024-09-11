@@ -769,7 +769,7 @@
                 @if ($penugasans->first()->tgl_mulai_tugas == $penugasans->first()->tgl_akhir_tugas)
                     {{$c::parse($penugasans->first()->tgl_mulai_tugas)->translatedFormat('d F Y')}}
                 @else
-                    {{$c::parse($penugasans->first()->tgl_mulai_tugas)->translatedFormat('d F Y')." s.d. ".$c::parse($penugasans->first()->tgl_akhir_tugas)->translatedFormat('d M Y')}}
+                    {{$c::parse($penugasans->first()->tgl_mulai_tugas)->translatedFormat('d F Y')." s.d. ".$c::parse($penugasans->first()->tgl_akhir_tugas)->translatedFormat('d F Y')}}
                 @endif
 
             @endif
@@ -1610,7 +1610,7 @@
                 @if ($penugasan->tgl_mulai_tugas == $penugasan->tgl_akhir_tugas)
                     {{$c::parse($penugasan->tgl_mulai_tugas)->translatedFormat('d F Y')}}
                 @else
-                    {{$c::parse($penugasan->tgl_mulai_tugas)->translatedFormat('d F Y')." s.d. ".$c::parse($penugasan->tgl_akhir_tugas)->translatedFormat('d M Y')}}
+                    {{$c::parse($penugasan->tgl_mulai_tugas)->translatedFormat('d F Y')." s.d. ".$c::parse($penugasan->tgl_akhir_tugas)->translatedFormat('d F Y')}}
                 @endif
 
             @endif
