@@ -1607,7 +1607,7 @@
                     {{ucwords(strtolower($penugasan->tujuanSuratTugas->first()->kabkot->kabkot))}}
                 @endif
                 pada tanggal
-                @if ($penugasan->tgl_mulai_tugas == $penugasan->tgl_mulai_tugas)
+                @if ($penugasan->tgl_mulai_tugas == $penugasan->tgl_akhir_tugas)
                     {{$c::parse($penugasan->tgl_mulai_tugas)->translatedFormat('d F Y')}}
                 @else
                     {{$c::parse($penugasan->tgl_mulai_tugas)->translatedFormat('d F Y')." s.d. ".$c::parse($penugasan->tgl_akhir_tugas)->translatedFormat('d M Y')}}
