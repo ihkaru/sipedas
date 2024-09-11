@@ -766,7 +766,7 @@
                     {{ucwords(strtolower($penugasans->first()->tujuanSuratTugas->first()->kabkot->kabkot))}}
                 @endif
                 pada tanggal
-                @if ($penugasans->first()->tgl_mulai_tugas == $penugasans->first()->tgl_mulai_tugas)
+                @if ($penugasans->first()->tgl_mulai_tugas == $penugasans->first()->tgl_akhir_tugas)
                     {{$c::parse($penugasans->first()->tgl_mulai_tugas)->translatedFormat('d F Y')}}
                 @else
                     {{$c::parse($penugasans->first()->tgl_mulai_tugas)->translatedFormat('d F Y')." s.d. ".$c::parse($penugasans->first()->tgl_akhir_tugas)->translatedFormat('d M Y')}}
@@ -1043,7 +1043,7 @@
                     text-align: center;
                     "
                 >
-                    {{$penugasan?->pegawai->nama ?? $penugasan?->mitra->nama_1}}
+                    {{$penugasan?->pegawai?->nama ?? $penugasan?->mitra->nama_1}}
                 </p>
                 </td>
                 <td
@@ -1384,8 +1384,10 @@
                 text-align: left;
                 "
             >
-                {{$penugasan->pegawai->nama}} <br />
+                {{$penugasan->pegawai?->nama ?? $penugasan?->mitra->nama_1}} <br />
+                @if ($penugasan->pegawai)
                 NIP. {{$penugasan->pegawai->nip}}
+                @endif
             </p>
             </td>
         </tr>
@@ -2859,7 +2861,7 @@
             </td>
         </tr>
         </table>
-            @if ($penugasan->transportasi != $cons::TRANSPORTASI_KENDARAAN_DINAS)
+            @if ($penugasan->transportasi != $cons::TRANSPORTASI_KENDARAAN_DINAS || !$penugasan->mitra )
                 <div class="pagebreak"></div>
                 <h2
                 style="
@@ -2994,7 +2996,7 @@
                     text-align: center;
                     "
                 >
-                    {{$penugasan->pegawai->nama}} <br/>
+                    {{$penugasan->pegawai?->nama}} <br/>
                 </p>
                 <p
                     style="
@@ -3005,7 +3007,7 @@
                     text-align: center;
                     "
                 >
-                    NIP. {{$penugasan->pegawai->nip}}
+                    NIP. {{$penugasan->pegawai?->nip}}
                 </p>
                 </td>
             </tr>
