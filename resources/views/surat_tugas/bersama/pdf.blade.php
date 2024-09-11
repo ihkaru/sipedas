@@ -1496,7 +1496,7 @@
                 text-align: left;
                 "
             >
-                {{$penugasan->pegawai->pangkat_golongan}}
+                {{$penugasan->pegawai?->pangkat_golongan ?? "-"}}
             </p>
             <p
                 class="s2"
@@ -1509,7 +1509,7 @@
                 text-align: left;
                 "
             >
-            {{$penugasan->pegawai->jabatan}} BPS {{ucwords(strtolower($namaSatker))}} <br/>
+            {{$penugasan->pegawai?->jabatan ?? "Mitra"}} BPS {{ucwords(strtolower($namaSatker))}} <br/>
             C
             </p>
             </td>
