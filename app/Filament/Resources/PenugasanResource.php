@@ -788,7 +788,7 @@ class PenugasanResource extends Resource
                 //     ->label("Cetak"),
                 Action::make("kumpulkan")
                     ->visible(function (Penugasan $record) {
-                        return $record->canKumpulkan();;
+                        return $record->canKumpulkan();
                     })
                     ->requiresConfirmation()
                     ->modalDescription("Apakah anda yakin akan mengubah status ini menjadi 'Dikumpulkan'?")

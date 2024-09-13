@@ -333,7 +333,7 @@ class Penugasan extends Model
             $this->jenis_surat_tugas != Constants::NON_SPPD &&
             (
                 auth()->user()->hasRole('operator_umum') ||
-                auth()->user()->email == $this->nip ||
+                auth()->user()->email == $this->pegawai->email ||
                 auth()->user()->nip == $this->nip_pengaju ||
                 auth()->user()->nip == $this->kegiatan->pj_kegiatan_id
             );
@@ -345,7 +345,10 @@ class Penugasan extends Model
             $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKUMPULKAN &&
             $this->jenis_surat_tugas != Constants::NON_SPPD &&
             (
-                auth()->user()->hasRole('operator_umum')
+                auth()->user()->hasRole('operator_umum') ||
+                auth()->user()->email == $this->nip ||
+                auth()->user()->nip == $this->nip_pengaju ||
+                auth()->user()->nip == $this->kegiatan->pj_kegiatan_id
             );
     }
     public function canCairkan(bool $checkRole = true)
