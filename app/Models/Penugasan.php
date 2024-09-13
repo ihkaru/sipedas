@@ -303,11 +303,11 @@ class Penugasan extends Model
     {
         if ($checkRole == false) return true;
         return (
-                $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM ||
-                $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_PERLU_REVISI ||
-                $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DISETUJUI ||
-                $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DICETAK
-            ) &&
+            $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM ||
+            $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_PERLU_REVISI ||
+            $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DISETUJUI ||
+            $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DICETAK
+        ) &&
             (
                 auth()->user()->pegawai?->nip == $this->nip ||
                 auth()->user()->pegawai?->nip == $this->nip_pengaju ||
@@ -332,7 +332,9 @@ class Penugasan extends Model
             $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DICETAK &&
             $this->jenis_surat_tugas != Constants::NON_SPPD &&
             (
-                auth()->user()->hasRole('operator_umum')
+                auth()->user()->hasRole('operator_umum') ||
+                auth()->user()->email == $this->nip ||
+                auth()->user()->nip == $this->nip_pengaju
             );
     }
     public function canBatalkanPengumpulan(bool $checkRole = true)
