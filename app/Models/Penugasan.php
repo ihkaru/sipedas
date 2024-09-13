@@ -334,8 +334,8 @@ class Penugasan extends Model
             (
                 auth()->user()->hasRole('operator_umum') ||
                 auth()->user()->email == $this->pegawai->email ||
-                auth()->user()->nip == $this->nip_pengaju ||
-                auth()->user()->nip == $this->kegiatan->pj_kegiatan_id
+                auth()->user()->pegawai->nip == $this->nip_pengaju ||
+                auth()->user()->pegawai->nip == $this->kegiatan->pj_kegiatan_id
             );
     }
     public function canBatalkanPengumpulan(bool $checkRole = true)
