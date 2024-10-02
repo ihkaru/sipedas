@@ -28,6 +28,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Illuminate\Support\Carbon;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 
@@ -341,7 +342,7 @@ class PenugasanResource extends Resource
                 ->maxDate(function (Get $get) {
                     $kegiatan = Kegiatan::find($get('kegiatan_id')) ?? null;
                     // if($get('tgl_akhir_tugas')) return $get('tgl_akhir_tugas');
-                    return min(now()->addMonth(2), $kegiatan?->tgl_akhir_perjadin, $get('tgl_akhir_tugas'));
+                    return min(now()->addMonth(2), $kegiatan?->tgl_akhir_perjadin, Carbon::parse($get('tgl_akhir_tugas'))->addSecond() ?? now()->addMonth(2));
                 })
                 ->disabledDates(function (Get $get) {
                     return array_merge(Penugasan::getDisabledDates($get("nips")), TanggalMerah::getLiburDates());
