@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+</body>
+<script>
+    function convertStringToTable(dataString) {
+        const tableHeaders = [
+            "Parameter 1",
+            "Parameter 2",
+            "Pearson r",
+            "Pearson p-value",
+            "Kekuatan Pearson",
+            "Spearman rho",
+            "Spearman p-value",
+            "Kekuatan Spearman"
+        ];
+
+        const rows = dataString.trim().split('\n');
+        const tableData = [];
+
+        let currentParams = [];
+        rows.forEach(row => {
+            if (row.includes(':')) {
+                // Extracting the first two parameters
+                currentParams = row.split(' - ').map(param => param.split(' (')[0].trim());
+            } else if (row.includes('Pearson:')) {
+                const [pearsonData, spearmanData] = row.split('Spearman:').map(str => str.trim());
+
+                const pearsonMatch = /r = ([^,]+), p = ([^,]+), Kekuatan: ([^\n]+)/.exec(pearsonData);
+                const spearmanMatch = /rho = ([^,]+), p = ([^,]+), Kekuatan: ([^\n]+)/.exec(spearmanData);
+
+                if (pearsonMatch && spearmanMatch) {
+                    tableData.push([
+                        currentParams[0],
+                        currentParams[1],
+                        pearsonMatch[1],
+                        pearsonMatch[2],
+                        pearsonMatch[3],
+                        spearmanMatch[1],
+                        spearmanMatch[2],
+                        spearmanMatch[3]
+                    ]);
+                }
+            }
+        });
+
+        let html = '<table border="1">';
+        html += '<thead><tr>';
+        tableHeaders.forEach(header => {
+            html += `<th>${header}</th>`;
+        });
+        html += '</tr></thead>';
+        html += '<tbody>';
+        tableData.forEach(row => {
+            html += '<tr>';
+            row.forEach(cell => {
+                html += `<td>${cell}</td>`;
+            });
+            html += '</tr>';
+        });
+        html += '</tbody>';
+        html += '</table>';
+
+        return html;
+    }
+
+        // Contoh penggunaan
+        const dataString = `Panjang Total Tubuh (mm) - Panjang Tubuh (mm):
+Pearson: r = 0.996, p = 0.0000, Kekuatan: Sangat kuat
+Spearman: rho = 0.976, p = 0.0000, Kekuatan: Sangat kuat
+Panjang Total Pallet (mm) - Panjang Cangkir (mm):
+Pearson: r = 0.928, p = 0.0000, Kekuatan: Sangat kuat
+Spearman: rho = 0.848, p = 0.0000, Kekuatan: Sangat kuat
+Panjang Total Pallet (mm) - Panjang Tangkai (mm):
+Pearson: r = 0.906, p = 0.0000, Kekuatan: Sangat kuat
+Spearman: rho = 0.920, p = 0.0000, Kekuatan: Sangat kuat
+Panjang Cangkang (mm) - Lebar Cangkang (mm):
+Pearson: r = 0.891, p = 0.0000, Kekuatan: Sangat kuat
+Spearman: rho = 0.921, p = 0.0000, Kekuatan: Sangat kuat
+Panjang Cangkir (mm) - Panjang Total Siphon (mm):
+Pearson: r = 0.873, p = 0.0000, Kekuatan: Sangat kuat
+Spearman: rho = 0.738, p = 0.0000, Kekuatan: Kuat
+Panjang Total Tubuh (mm) - Panjang Total Siphon (mm):
+Pearson: r = 0.858, p = 0.0000, Kekuatan: Sangat kuat
+Spearman: rho = 0.412, p = 0.0126, Kekuatan: Sedang
+Panjang Total Pallet (mm) - Panjang Total Siphon (mm):
+Pearson: r = 0.851, p = 0.0000, Kekuatan: Sangat kuat
+Spearman: rho = 0.721, p = 0.0000, Kekuatan: Kuat
+Panjang Tubuh (mm) - Panjang Total Siphon (mm):
+Pearson: r = 0.834, p = 0.0000, Kekuatan: Sangat kuat
+Spearman: rho = 0.316, p = 0.0603, Kekuatan: Lemah
+Lebar Cangkang (mm) - Panjang Lekukan Bawah Cangkang (mm):
+Pearson: r = 0.826, p = 0.0000, Kekuatan: Sangat kuat
+Spearman: rho = 0.856, p = 0.0000, Kekuatan: Sangat kuat
+Panjang Total Tubuh (mm) - Panjang Cangkir (mm):
+Pearson: r = 0.821, p = 0.0000, Kekuatan: Sangat kuat
+Spearman: rho = 0.732, p = 0.0000, Kekuatan: Kuat
+Panjang Tangkai (mm) - Panjang Total Siphon (mm):
+Pearson: r = 0.817, p = 0.0000, Kekuatan: Sangat kuat
+Spearman: rho = 0.718, p = 0.0000, Kekuatan: Kuat
+Panjang Tubuh (mm) - Panjang Cangkir (mm):
+Pearson: r = 0.817, p = 0.0000, Kekuatan: Sangat kuat
+Spearman: rho = 0.692, p = 0.0000, Kekuatan: Kuat
+Panjang Total Tubuh (mm) - Lebar Total Siphon (mm):
+Pearson: r = 0.815, p = 0.0000, Kekuatan: Sangat kuat
+Spearman: rho = 0.598, p = 0.0001, Kekuatan: Sedang
+Panjang Tubuh (mm) - Lebar Total Siphon (mm):
+Pearson: r = 0.800, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.508, p = 0.0016, Kekuatan: Sedang
+Panjang Total Tubuh (mm) - Panjang Total Pallet (mm):
+Pearson: r = 0.800, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.859, p = 0.0000, Kekuatan: Sangat kuat
+Panjang Tubuh (mm) - Panjang Total Pallet (mm):
+Pearson: r = 0.797, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.841, p = 0.0000, Kekuatan: Sangat kuat
+Panjang Tangkai (mm) - Lebar Total Siphon (mm):
+Pearson: r = 0.776, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.613, p = 0.0001, Kekuatan: Kuat
+Panjang Tubuh (mm) - Panjang Tangkai (mm):
+Pearson: r = 0.775, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.811, p = 0.0000, Kekuatan: Sangat kuat
+Panjang Tangkai (mm) - Panjang Cangkir (mm):
+Pearson: r = 0.774, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.662, p = 0.0000, Kekuatan: Kuat
+Panjang Total Tubuh (mm) - Panjang Tangkai (mm):
+Pearson: r = 0.772, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.812, p = 0.0000, Kekuatan: Sangat kuat
+Panjang Total Siphon (mm) - Lebar Total Siphon (mm):
+Pearson: r = 0.771, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.498, p = 0.0020, Kekuatan: Sedang
+Lebar Cangkir (mm) - Lebar Cangkang (mm):
+Pearson: r = 0.762, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.689, p = 0.0000, Kekuatan: Kuat
+Bobot Tubuh (gr) - Panjang Tubuh (mm):
+Pearson: r = 0.761, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.832, p = 0.0000, Kekuatan: Sangat kuat
+Bobot Tubuh (gr) - Panjang Total Tubuh (mm):
+Pearson: r = 0.752, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.826, p = 0.0000, Kekuatan: Sangat kuat
+Panjang Tubuh (mm) - Panjang Cangkang (mm):
+Pearson: r = 0.751, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.708, p = 0.0000, Kekuatan: Kuat
+Panjang Total Pallet (mm) - Lebar Siphon Kecil (mm):
+Pearson: r = 0.749, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.689, p = 0.0000, Kekuatan: Kuat
+Bobot Tubuh (gr) - Lebar Total Siphon (mm):
+Pearson: r = 0.746, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.593, p = 0.0001, Kekuatan: Sedang
+Panjang Total Tubuh (mm) - Panjang Cangkang (mm):
+Pearson: r = 0.741, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.713, p = 0.0000, Kekuatan: Kuat
+Bobot Tubuh (gr) - Panjang Total Siphon (mm):
+Pearson: r = 0.738, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.416, p = 0.0117, Kekuatan: Sedang
+Panjang Cangkang (mm) - Panjang Lekukan Bawah Cangkang (mm):
+Pearson: r = 0.738, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.773, p = 0.0000, Kekuatan: Kuat
+Panjang Cangkir (mm) - Lebar Cangkir (mm):
+Pearson: r = 0.716, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.740, p = 0.0000, Kekuatan: Kuat
+Panjang Cangkir (mm) - Lebar Total Siphon (mm):
+Pearson: r = 0.712, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.549, p = 0.0005, Kekuatan: Sedang
+Lebar Cangkir (mm) - Lebar Siphon Besar (mm):
+Pearson: r = 0.710, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.642, p = 0.0000, Kekuatan: Kuat
+Lebar Siphon Kecil (mm) - Lebar Siphon Besar (mm):
+Pearson: r = 0.708, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.878, p = 0.0000, Kekuatan: Sangat kuat
+Lebar Total Siphon (mm) - Lebar Cangkang (mm):
+Pearson: r = 0.703, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.619, p = 0.0001, Kekuatan: Kuat
+Bobot Tubuh (gr) - Panjang Tangkai (mm):
+Pearson: r = 0.693, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.661, p = 0.0000, Kekuatan: Kuat
+Panjang Tubuh (mm) - Lebar Cangkang (mm):
+Pearson: r = 0.687, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.586, p = 0.0002, Kekuatan: Sedang
+Panjang Tangkai (mm) - Lebar Siphon Besar (mm):
+Pearson: r = 0.680, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.724, p = 0.0000, Kekuatan: Kuat
+Panjang Siphon kecil (mm) - Panjang Siphon Besar (mm):
+Pearson: r = 0.679, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.684, p = 0.0000, Kekuatan: Kuat
+Lebar Total Siphon (mm) - Panjang Cangkang (mm):
+Pearson: r = 0.679, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.611, p = 0.0001, Kekuatan: Kuat
+Lebar Tangkai (mm) - Lebar Cangkir (mm):
+Pearson: r = 0.677, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.799, p = 0.0000, Kekuatan: Kuat
+Panjang Cangkir (mm) - Lebar Siphon Besar (mm):
+Pearson: r = 0.677, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.606, p = 0.0001, Kekuatan: Kuat
+Lebar Siphon Besar (mm) - Lebar Cangkang (mm):
+Pearson: r = 0.672, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.673, p = 0.0000, Kekuatan: Kuat
+Panjang Total Pallet (mm) - Lebar Siphon Besar (mm):
+Pearson: r = 0.670, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.637, p = 0.0000, Kekuatan: Kuat
+Lebar Cangkir (mm) - Panjang Total Siphon (mm):
+Pearson: r = 0.669, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.669, p = 0.0000, Kekuatan: Kuat
+Panjang Cangkir (mm) - Lebar Siphon Kecil (mm):
+Pearson: r = 0.666, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.570, p = 0.0003, Kekuatan: Sedang
+Panjang Total Tubuh (mm) - Lebar Cangkang (mm):
+Pearson: r = 0.665, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.596, p = 0.0001, Kekuatan: Sedang
+Bobot Tubuh (gr) - Panjang Cangkang (mm):
+Pearson: r = 0.663, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.868, p = 0.0000, Kekuatan: Sangat kuat
+Lebar Cangkir (mm) - Lebar Siphon Kecil (mm):
+Pearson: r = 0.650, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.659, p = 0.0000, Kekuatan: Kuat
+Panjang Cangkir (mm) - Panjang Cangkang (mm):
+Pearson: r = 0.649, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.521, p = 0.0011, Kekuatan: Sedang
+Panjang Total Pallet (mm) - Lebar Cangkir (mm):
+Pearson: r = 0.648, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.665, p = 0.0000, Kekuatan: Kuat
+Panjang Total Pallet (mm) - Panjang Cangkang (mm):
+Pearson: r = 0.643, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.614, p = 0.0001, Kekuatan: Kuat
+Panjang Total Pallet (mm) - Lebar Total Siphon (mm):
+Pearson: r = 0.640, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.567, p = 0.0003, Kekuatan: Sedang
+Lebar Cangkir (mm) - Panjang Cangkang (mm):
+Pearson: r = 0.637, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.729, p = 0.0000, Kekuatan: Kuat
+Panjang Cangkir (mm) - Lebar Tangkai (mm):
+Pearson: r = 0.628, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.712, p = 0.0000, Kekuatan: Kuat
+Lebar Total Siphon (mm) - Lebar Siphon Besar (mm):
+Pearson: r = 0.626, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.717, p = 0.0000, Kekuatan: Kuat
+Panjang Cangkir (mm) - Lebar Cangkang (mm):
+Pearson: r = 0.623, p = 0.0000, Kekuatan: Kuat
+Spearman: rho = 0.507, p = 0.0016, Kekuatan: Sedang
+Lebar Siphon Besar (mm) - Panjang Cangkang (mm):
+Pearson: r = 0.620, p = 0.0001, Kekuatan: Kuat
+Spearman: rho = 0.669, p = 0.0000, Kekuatan: Kuat
+Bobot Tubuh (gr) - Panjang Total Pallet (mm):
+Pearson: r = 0.613, p = 0.0001, Kekuatan: Kuat
+Spearman: rho = 0.643, p = 0.0000, Kekuatan: Kuat
+Panjang Total Siphon (mm) - Lebar Cangkang (mm):
+Pearson: r = 0.613, p = 0.0001, Kekuatan: Kuat
+Spearman: rho = 0.462, p = 0.0045, Kekuatan: Sedang
+Panjang Total Siphon (mm) - Lebar Siphon Kecil (mm):
+Pearson: r = 0.612, p = 0.0001, Kekuatan: Kuat
+Spearman: rho = 0.663, p = 0.0000, Kekuatan: Kuat
+Lebar Total Siphon (mm) - Panjang Lekukan Bawah Cangkang (mm):
+Pearson: r = 0.607, p = 0.0001, Kekuatan: Kuat
+Spearman: rho = 0.692, p = 0.0000, Kekuatan: Kuat
+Panjang Tangkai (mm) - Panjang Cangkang (mm):
+Pearson: r = 0.606, p = 0.0001, Kekuatan: Kuat
+Spearman: rho = 0.552, p = 0.0005, Kekuatan: Sedang
+Bobot Tubuh (gr) - Lebar Siphon Besar (mm):
+Pearson: r = 0.604, p = 0.0001, Kekuatan: Kuat
+Spearman: rho = 0.708, p = 0.0000, Kekuatan: Kuat
+Panjang Total Pallet (mm) - Jumlah Cangkir:
+Pearson: r = 0.604, p = 0.0001, Kekuatan: Kuat
+Spearman: rho = 0.661, p = 0.0000, Kekuatan: Kuat
+Lebar Cangkir (mm) - Lebar Total Siphon (mm):
+Pearson: r = 0.601, p = 0.0001, Kekuatan: Kuat
+Spearman: rho = 0.492, p = 0.0023, Kekuatan: Sedang
+Lebar Siphon Besar (mm) - Panjang Lekukan Bawah Cangkang (mm):
+Pearson: r = 0.598, p = 0.0001, Kekuatan: Sedang
+Spearman: rho = 0.634, p = 0.0000, Kekuatan: Kuat
+Jumlah Cangkir - Panjang Siphon kecil (mm):
+Pearson: r = 0.598, p = 0.0001, Kekuatan: Sedang
+Spearman: rho = 0.576, p = 0.0002, Kekuatan: Sedang
+Lebar Tangkai (mm) - Panjang Cangkang (mm):
+Pearson: r = 0.592, p = 0.0001, Kekuatan: Sedang
+Spearman: rho = 0.685, p = 0.0000, Kekuatan: Kuat
+Lebar Tangkai (mm) - Lebar Siphon Besar (mm):
+Pearson: r = 0.588, p = 0.0002, Kekuatan: Sedang
+Spearman: rho = 0.758, p = 0.0000, Kekuatan: Kuat
+Lebar Tangkai (mm) - Lebar Cangkang (mm):
+Pearson: r = 0.583, p = 0.0002, Kekuatan: Sedang
+Spearman: rho = 0.591, p = 0.0001, Kekuatan: Sedang
+Panjang Total Siphon (mm) - Panjang Cangkang (mm):
+Pearson: r = 0.573, p = 0.0003, Kekuatan: Sedang
+Spearman: rho = 0.355, p = 0.0334, Kekuatan: Lemah
+Panjang Total Pallet (mm) - Lebar Cangkang (mm):
+Pearson: r = 0.568, p = 0.0003, Kekuatan: Sedang
+Spearman: rho = 0.548, p = 0.0005, Kekuatan: Sedang
+Panjang Tubuh (mm) - Lebar Cangkir (mm):
+Pearson: r = 0.557, p = 0.0004, Kekuatan: Sedang
+Spearman: rho = 0.605, p = 0.0001, Kekuatan: Kuat
+Bobot Tubuh (gr) - Lebar Cangkang (mm):
+Pearson: r = 0.556, p = 0.0004, Kekuatan: Sedang
+Spearman: rho = 0.752, p = 0.0000, Kekuatan: Kuat
+Lebar Cangkir (mm) - Panjang Lekukan Bawah Cangkang (mm):
+Pearson: r = 0.550, p = 0.0005, Kekuatan: Sedang
+Spearman: rho = 0.520, p = 0.0011, Kekuatan: Sedang
+Panjang Cangkir (mm) - Jumlah Cangkir:
+Pearson: r = 0.540, p = 0.0007, Kekuatan: Sedang
+Spearman: rho = 0.561, p = 0.0004, Kekuatan: Sedang
+Panjang Total Tubuh (mm) - Lebar Cangkir (mm):
+Pearson: r = 0.534, p = 0.0008, Kekuatan: Sedang
+Spearman: rho = 0.641, p = 0.0000, Kekuatan: Kuat
+Panjang Total Siphon (mm) - Lebar Siphon Besar (mm):
+Pearson: r = 0.529, p = 0.0009, Kekuatan: Sedang
+Spearman: rho = 0.502, p = 0.0018, Kekuatan: Sedang
+Panjang Tangkai (mm) - Lebar Siphon Kecil (mm):
+Pearson: r = 0.528, p = 0.0009, Kekuatan: Sedang
+Spearman: rho = 0.738, p = 0.0000, Kekuatan: Kuat
+Panjang Tangkai (mm) - Jumlah Cangkir:
+Pearson: r = 0.524, p = 0.0010, Kekuatan: Sedang
+Spearman: rho = 0.538, p = 0.0007, Kekuatan: Sedang
+Jumlah Cangkir - Panjang Siphon Besar (mm):
+Pearson: r = 0.521, p = 0.0011, Kekuatan: Sedang
+Spearman: rho = 0.568, p = 0.0003, Kekuatan: Sedang
+Panjang Tangkai (mm) - Lebar Cangkang (mm):
+Pearson: r = 0.516, p = 0.0013, Kekuatan: Sedang
+Spearman: rho = 0.494, p = 0.0022, Kekuatan: Sedang
+Bobot Tubuh (gr) - Lebar Siphon Kecil (mm):
+Pearson: r = 0.511, p = 0.0014, Kekuatan: Sedang
+Spearman: rho = 0.683, p = 0.0000, Kekuatan: Kuat
+Panjang Tubuh (mm) - Lebar Siphon Besar (mm):
+Pearson: r = 0.501, p = 0.0019, Kekuatan: Sedang
+Spearman: rho = 0.627, p = 0.0000, Kekuatan: Kuat
+Lebar Siphon Kecil (mm) - Lebar Cangkang (mm):
+Pearson: r = 0.496, p = 0.0021, Kekuatan: Sedang
+Spearman: rho = 0.615, p = 0.0001, Kekuatan: Kuat
+Panjang Tangkai (mm) - Lebar Cangkir (mm):
+Pearson: r = 0.493, p = 0.0022, Kekuatan: Sedang
+Spearman: rho = 0.471, p = 0.0038, Kekuatan: Sedang
+Panjang Total Tubuh (mm) - Lebar Siphon Besar (mm):
+Pearson: r = 0.490, p = 0.0024, Kekuatan: Sedang
+Spearman: rho = 0.699, p = 0.0000, Kekuatan: Kuat
+Panjang Tangkai (mm) - Panjang Siphon Besar (mm):
+Pearson: r = 0.487, p = 0.0026, Kekuatan: Sedang
+Spearman: rho = 0.612, p = 0.0001, Kekuatan: Kuat
+Panjang Total Pallet (mm) - Lebar Tangkai (mm):
+Pearson: r = 0.484, p = 0.0028, Kekuatan: Sedang
+Spearman: rho = 0.682, p = 0.0000, Kekuatan: Kuat
+Lebar Siphon Kecil (mm) - Panjang Cangkang (mm):
+Pearson: r = 0.477, p = 0.0033, Kekuatan: Sedang
+Spearman: rho = 0.637, p = 0.0000, Kekuatan: Kuat
+Panjang Total Siphon (mm) - Panjang Siphon Besar (mm):
+Pearson: r = 0.469, p = 0.0039, Kekuatan: Sedang
+Spearman: rho = 0.824, p = 0.0000, Kekuatan: Sangat kuat
+Bobot Tubuh (gr) - Panjang Cangkir (mm):
+Pearson: r = 0.459, p = 0.0049, Kekuatan: Sedang
+Spearman: rho = 0.439, p = 0.0074, Kekuatan: Sedang
+Panjang Total Pallet (mm) - Panjang Siphon Besar (mm):
+Pearson: r = 0.457, p = 0.0051, Kekuatan: Sedang
+Spearman: rho = 0.603, p = 0.0001, Kekuatan: Kuat
+Lebar Tangkai (mm) - Panjang Lekukan Bawah Cangkang (mm):
+Pearson: r = 0.447, p = 0.0063, Kekuatan: Sedang
+Spearman: rho = 0.464, p = 0.0044, Kekuatan: Sedang
+Jumlah Cangkir - Panjang Total Siphon (mm):
+Pearson: r = 0.446, p = 0.0064, Kekuatan: Sedang
+Spearman: rho = 0.505, p = 0.0017, Kekuatan: Sedang
+Panjang Total Tubuh (mm) - Lebar Siphon Kecil (mm):
+Pearson: r = 0.439, p = 0.0074, Kekuatan: Sedang
+Spearman: rho = 0.680, p = 0.0000, Kekuatan: Kuat
+Panjang Tubuh (mm) - Lebar Siphon Kecil (mm):
+Pearson: r = 0.432, p = 0.0084, Kekuatan: Sedang
+Spearman: rho = 0.624, p = 0.0000, Kekuatan: Kuat
+Panjang Cangkir (mm) - Panjang Siphon Besar (mm):
+Pearson: r = 0.421, p = 0.0106, Kekuatan: Sedang
+Spearman: rho = 0.706, p = 0.0000, Kekuatan: Kuat
+Lebar Siphon Kecil (mm) - Panjang Siphon Besar (mm):
+Pearson: r = 0.420, p = 0.0108, Kekuatan: Sedang
+Spearman: rho = 0.464, p = 0.0044, Kekuatan: Sedang
+Panjang Tangkai (mm) - Lebar Tangkai (mm):
+Pearson: r = 0.405, p = 0.0142, Kekuatan: Sedang
+Spearman: rho = 0.499, p = 0.0020, Kekuatan: Sedang
+Panjang Tubuh (mm) - Lebar Tangkai (mm):
+Pearson: r = 0.401, p = 0.0152, Kekuatan: Sedang
+Spearman: rho = 0.666, p = 0.0000, Kekuatan: Kuat
+Lebar Total Siphon (mm) - Lebar Siphon Kecil (mm):
+Pearson: r = 0.381, p = 0.0219, Kekuatan: Lemah
+Spearman: rho = 0.685, p = 0.0000, Kekuatan: Kuat
+Panjang Total Siphon (mm) - Panjang Lekukan Bawah Cangkang (mm):
+Pearson: r = 0.378, p = 0.0230, Kekuatan: Lemah
+Spearman: rho = 0.404, p = 0.0146, Kekuatan: Sedang
+Panjang Total Tubuh (mm) - Lebar Tangkai (mm):
+Pearson: r = 0.375, p = 0.0241, Kekuatan: Lemah
+Spearman: rho = 0.707, p = 0.0000, Kekuatan: Kuat
+Lebar Siphon Kecil (mm) - Panjang Lekukan Bawah Cangkang (mm):
+Pearson: r = 0.361, p = 0.0305, Kekuatan: Lemah
+Spearman: rho = 0.600, p = 0.0001, Kekuatan: Kuat
+Panjang Tangkai (mm) - Panjang Siphon kecil (mm):
+Pearson: r = 0.357, p = 0.0323, Kekuatan: Lemah
+Spearman: rho = 0.476, p = 0.0033, Kekuatan: Sedang
+Bobot Tubuh (gr) - Lebar Tangkai (mm):
+Pearson: r = 0.339, p = 0.0430, Kekuatan: Lemah
+Spearman: rho = 0.566, p = 0.0003, Kekuatan: Sedang
+Bobot Tubuh (gr) - Lebar Cangkir (mm):
+Pearson: r = 0.336, p = 0.0450, Kekuatan: Lemah
+Spearman: rho = 0.621, p = 0.0001, Kekuatan: Kuat
+Panjang Total Tubuh (mm) - Panjang Lekukan Bawah Cangkang (mm):
+Pearson: r = 0.334, p = 0.0464, Kekuatan: Lemah
+Spearman: rho = 0.316, p = 0.0603, Kekuatan: Lemah
+Panjang Tubuh (mm) - Panjang Lekukan Bawah Cangkang (mm):
+Pearson: r = 0.334, p = 0.0465, Kekuatan: Lemah
+Spearman: rho = 0.324, p = 0.0541, Kekuatan: Lemah
+Panjang Cangkir (mm) - Panjang Lekukan Bawah Cangkang (mm):
+Pearson: r = 0.333, p = 0.0474, Kekuatan: Lemah
+Spearman: rho = 0.294, p = 0.0820, Kekuatan: Lemah
+Panjang Total Tubuh (mm) - Jumlah Cangkir:
+Pearson: r = 0.322, p = 0.0557, Kekuatan: Lemah
+Spearman: rho = 0.430, p = 0.0088, Kekuatan: Sedang
+Lebar Cangkir (mm) - Panjang Siphon Besar (mm):
+Pearson: r = 0.318, p = 0.0585, Kekuatan: Lemah
+Spearman: rho = 0.346, p = 0.0390, Kekuatan: Lemah
+Panjang Total Siphon (mm) - Panjang Siphon kecil (mm):
+Pearson: r = 0.314, p = 0.0623, Kekuatan: Lemah
+Spearman: rho = 0.672, p = 0.0000, Kekuatan: Kuat
+Panjang Tubuh (mm) - Jumlah Cangkir:
+Pearson: r = 0.302, p = 0.0737, Kekuatan: Lemah
+Spearman: rho = 0.404, p = 0.0144, Kekuatan: Sedang
+Lebar Total Siphon (mm) - Panjang Siphon Besar (mm):
+Pearson: r = 0.285, p = 0.0924, Kekuatan: Lemah
+Spearman: rho = 0.437, p = 0.0077, Kekuatan: Sedang
+Lebar Tangkai (mm) - Lebar Total Siphon (mm):
+Pearson: r = 0.281, p = 0.0971, Kekuatan: Lemah
+Spearman: rho = 0.430, p = 0.0088, Kekuatan: Sedang
+Panjang Total Pallet (mm) - Panjang Siphon kecil (mm):
+Pearson: r = 0.228, p = 0.1816, Kekuatan: Lemah
+Spearman: rho = 0.439, p = 0.0074, Kekuatan: Sedang
+Lebar Tangkai (mm) - Lebar Siphon Kecil (mm):
+Pearson: r = 0.206, p = 0.2277, Kekuatan: Lemah
+Spearman: rho = 0.535, p = 0.0008, Kekuatan: Sedang
+Panjang Cangkir (mm) - Panjang Siphon kecil (mm):
+Pearson: r = 0.197, p = 0.2492, Kekuatan: Sangat lemah
+Spearman: rho = 0.476, p = 0.0033, Kekuatan: Sedang
+Lebar Tubuh (mm) - Lebar Siphon Besar (mm):
+Pearson: r = 0.186, p = 0.2783, Kekuatan: Sangat lemah
+Spearman: rho = 0.561, p = 0.0004, Kekuatan: Sedang
+Bobot Tubuh (gr) - Panjang Lekukan Bawah Cangkang (mm):
+Pearson: r = 0.176, p = 0.3046, Kekuatan: Sangat lemah
+Spearman: rho = 0.557, p = 0.0004, Kekuatan: Sedang
+Lebar Tubuh (mm) - Lebar Siphon Kecil (mm):
+Pearson: r = 0.171, p = 0.3188, Kekuatan: Sangat lemah
+Spearman: rho = 0.629, p = 0.0000, Kekuatan: Kuat
+Lebar Tubuh (mm) - Lebar Total Siphon (mm):
+Pearson: r = 0.150, p = 0.3829, Kekuatan: Sangat lemah
+Spearman: rho = 0.540, p = 0.0007, Kekuatan: Sedang
+Lebar Tubuh (mm) - Panjang Lekukan Bawah Cangkang (mm):
+Pearson: r = -0.068, p = 0.6937, Kekuatan: Sangat lemah
+Spearman: rho = 0.563, p = 0.0003, Kekuatan: Sedang
+Panjang Tubuh (mm) - Lebar Tubuh (mm):
+Pearson: r = 0.056, p = 0.7436, Kekuatan: Sangat lemah
+Spearman: rho = 0.431, p = 0.0087, Kekuatan: Sedang
+Panjang Total Tubuh (mm) - Lebar Tubuh (mm):
+Pearson: r = 0.049, p = 0.7746, Kekuatan: Sangat lemah
+Spearman: rho = 0.451, p = 0.0058, Kekuatan: Sedang
+Lebar Tubuh (mm) - Lebar Tangkai (mm):
+Pearson: r = -0.047, p = 0.7875, Kekuatan: Sangat lemah
+Spearman: rho = 0.402, p = 0.0151, Kekuatan: Sedang
+Bobot Tubuh (gr) - Lebar Tubuh (mm):
+Pearson: r = -0.045, p = 0.7952, Kekuatan: Sangat lemah
+Spearman: rho = 0.578, p = 0.0002, Kekuatan: Sedang
+Lebar Tubuh (mm) - Lebar Cangkir (mm):
+Pearson: r = 0.044, p = 0.8007, Kekuatan: Sangat lemah
+Spearman: rho = 0.548, p = 0.0005, Kekuatan: Sedang
+Lebar Tubuh (mm) - Panjang Cangkang (mm):
+Pearson: r = -0.043, p = 0.8029, Kekuatan: Sangat lemah
+Spearman: rho = 0.620, p = 0.0001, Kekuatan: Kuat
+Lebar Tubuh (mm) - Lebar Cangkang (mm):
+Pearson: r = -0.038, p = 0.8245, Kekuatan: Sangat lemah
+Spearman: rho = 0.560, p = 0.0004, Kekuatan: Sedang`; // Copy the entire data string here
+
+        const tableHTML = convertStringToTable(dataString);
+        document.body.innerHTML += tableHTML;
+
+
+</script>
+</html>
