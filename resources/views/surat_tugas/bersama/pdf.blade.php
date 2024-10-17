@@ -2488,7 +2488,11 @@
                 @if($plhAktifSaatPerjalanan->jabatan == $cons::JABATAN_KASUBBAG)
                     An. Kepala Badan Pusat Statistik <br/> {{ucwords(strtolower($namaSatker))}}
                     <br>
+                    @if($plhAktifSaatPerjalanan->jabatan == $cons::JABATAN_KASUBBAG)
                     {{$cons::JABATAN_KASUBBAG}}
+                    @else
+                    Plh. Kepala Badan Pusat Statistik <br /> {{ucwords(strtolower($namaSatker))}}
+                    @endif
                 @else
                     Plh. Kepala Badan Pusat Statistik <br/>{{ucwords(strtolower($namaSatker))}}
                 @endif
