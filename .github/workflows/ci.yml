@@ -3,19 +3,18 @@ on:
   push:
     branches:
       - main
-
 jobs:
   FTP-Deploy-Action:
     name: FTP-Deploy-Action
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - run: composer --version && php --version
-    - name: FTP-Deploy-Action
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-      with:
-        server: ${{ secrets.FTP_SERVER_DVLP }}
-        username: ${{ secrets.FTP_USERNAME_ADMIN }}
-        password: ${{ secrets.FTP_PASSWORD_ADMIN }}
-        protocol: ftps
-        port: 21
+      - uses: actions/checkout@v4
+      - run: composer --version && php --version
+      - name: FTP-Deploy-Action
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER_DVLP }}
+          username: ${{ secrets.FTP_USERNAME_HARGA }}
+          password: ${{ secrets.FTP_PASSWORD_HARGA }}
+          protocol: ftps
+          port: 21

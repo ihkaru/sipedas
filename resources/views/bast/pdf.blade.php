@@ -47,7 +47,7 @@
         font-family: Calibri, sans-serif;
         font-style: normal;
         font-weight: normal;
-        text-decoration: none;
+      text-decoration: none;
         font-size: 8pt;
       }
       .s3 {
