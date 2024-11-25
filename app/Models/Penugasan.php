@@ -434,7 +434,6 @@ class Penugasan extends Model
         $this->save();
         NomorSurat::whereIn('id', [$suratTugasId, $suratPerjadinId])->delete();
         $this->delete();
-
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DIBATALKAN, "tgl_dibatalkan", now());
     }
     public function cetak(bool $checkRole = true)
