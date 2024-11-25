@@ -438,6 +438,7 @@ class Penugasan extends Model
     }
     public function cetak(bool $checkRole = true)
     {
+
         if (!$this->canCetak($checkRole)) return 0;
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DICETAK, "tgl_dibuat", now());
     }
