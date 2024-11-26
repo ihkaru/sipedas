@@ -429,12 +429,10 @@ class Penugasan extends Model
         if (!$this->canBatalkan($checkRole)) return 0;
         $suratTugasId = $this->suratTugas;
         $suratPerjadinId = $this->suratPerjadin;
-        $this->suratTugas = null;
-        $this->suratPerjadin = null;
         $this->save();
         NomorSurat::whereIn('id', [$suratTugasId, $suratPerjadinId])->delete();
-        $this->delete();
-        return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DIBATALKAN, "tgl_dibatalkan", now());
+        $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DIBATALKAN, "tgl_dibatalkan", now());
+        return $this->delete();
     }
     public function cetak(bool $checkRole = true)
     {
