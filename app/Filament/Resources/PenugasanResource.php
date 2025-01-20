@@ -344,6 +344,9 @@ class PenugasanResource extends Resource
                     return min(now()->addMonth(2), $kegiatan?->tgl_akhir_perjadin, $get('tgl_akhir_tugas'));
                 })
                 ->disabledDates(function (Get $get) {
+                    if ($get('jenis_surat_tugas') == Constants::NON_SPPD) {
+                        return Penugasan::getDisabledDates($get("nips"));
+                    }
                     return array_merge(Penugasan::getDisabledDates($get("nips")), TanggalMerah::getLiburDates());
                 })
                 ->required()
