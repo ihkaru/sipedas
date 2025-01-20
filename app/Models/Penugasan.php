@@ -223,6 +223,7 @@ class Penugasan extends Model
             RiwayatPengajuan::kirim([$pengajuan->id]);
             TujuanSuratTugas::ajukan($data, $pengajuan->id);
             if ($pengajuan) $res += 1;
+            if ($pengajuan->jenis_surat_tugas == Constants::NON_SPPD) $pengajuan->setujui(checkRole: false);
         }
         foreach ($data["mitras"] as $n) {
             $pengajuan = self::create([
