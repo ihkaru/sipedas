@@ -279,6 +279,7 @@ class PenugasanResource extends Resource
                 ->afterStateUpdated(function (?array $state, ?array $old, Set $set) {
                     $set('tgl_mulai_tugas', null);
                 })
+
                 ->label("Mitra Ditugaskan")
                 ->live()
                 ->options(function () {
