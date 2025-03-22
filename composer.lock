@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "723ffacc4e7e81bff9cfc104e2a13b3e",
+    "content-hash": "6e83a55415dbe4f2f1e95f9201b51eff",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -2338,6 +2338,64 @@
             "time": "2023-07-27T20:14:03+00:00"
         },
         {
+            "name": "guava/filament-icon-picker",
+            "version": "2.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/lukas-frey/filament-icon-picker.git",
+                "reference": "ed309fee35e9566356d67635176af2f312fa687b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/lukas-frey/filament-icon-picker/zipball/ed309fee35e9566356d67635176af2f312fa687b",
+                "reference": "ed309fee35e9566356d67635176af2f312fa687b",
+                "shasum": ""
+            },
+            "require": {
+                "filament/filament": "^3.0@stable",
+                "illuminate/contracts": "^9.0|^10.0|^11.0",
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^7.0|^8.0|^9.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Guava\\FilamentIconPicker\\FilamentIconPickerServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Guava\\FilamentIconPicker\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Lukas Frey",
+                    "email": "mail@lukasfrey.cz"
+                }
+            ],
+            "description": "A filament plugin that adds an icon picker field.",
+            "support": {
+                "issues": "https://github.com/lukas-frey/filament-icon-picker/issues",
+                "source": "https://github.com/lukas-frey/filament-icon-picker/tree/2.2.4"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/LukasFreyCZ",
+                    "type": "github"
+                }
+            ],
+            "time": "2024-06-27T07:07:31+00:00"
+        },
+        {
             "name": "guzzlehttp/guzzle",
             "version": "7.8.1",
             "source": {
@@ -3071,6 +3129,70 @@
                 "source": "https://github.com/laravel/prompts/tree/v0.1.20"
             },
             "time": "2024-04-18T00:45:25+00:00"
+        },
+        {
+            "name": "laravel/sanctum",
+            "version": "v4.0.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laravel/sanctum.git",
+                "reference": "698064236a46df016e64a7eb059b1414e0b281df"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/laravel/sanctum/zipball/698064236a46df016e64a7eb059b1414e0b281df",
+                "reference": "698064236a46df016e64a7eb059b1414e0b281df",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "illuminate/console": "^11.0",
+                "illuminate/contracts": "^11.0",
+                "illuminate/database": "^11.0",
+                "illuminate/support": "^11.0",
+                "php": "^8.2",
+                "symfony/console": "^7.0"
+            },
+            "require-dev": {
+                "mockery/mockery": "^1.6",
+                "orchestra/testbench": "^9.0",
+                "phpstan/phpstan": "^1.10",
+                "phpunit/phpunit": "^10.5"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Laravel\\Sanctum\\SanctumServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Laravel\\Sanctum\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                }
+            ],
+            "description": "Laravel Sanctum provides a featherweight authentication system for SPAs and simple APIs.",
+            "keywords": [
+                "auth",
+                "laravel",
+                "sanctum"
+            ],
+            "support": {
+                "issues": "https://github.com/laravel/sanctum/issues",
+                "source": "https://github.com/laravel/sanctum"
+            },
+            "time": "2024-12-11T16:40:21+00:00"
         },
         {
             "name": "laravel/serializable-closure",
@@ -5423,6 +5545,77 @@
                 }
             ],
             "time": "2024-03-03T02:14:58+00:00"
+        },
+        {
+            "name": "postare/blade-mdi",
+            "version": "v1.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/postare/blade-mdi.git",
+                "reference": "1d40876b11315116157e6a82c4ed2927739ae3ff"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/postare/blade-mdi/zipball/1d40876b11315116157e6a82c4ed2927739ae3ff",
+                "reference": "1d40876b11315116157e6a82c4ed2927739ae3ff",
+                "shasum": ""
+            },
+            "require": {
+                "blade-ui-kit/blade-icons": "^1.5",
+                "illuminate/support": "^8.0|^9.0|^10.0|^11.0",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^7.0|^8.0",
+                "phpunit/phpunit": "^9.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Postare\\BladeMdi\\BladeMdiServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Postare\\BladeMdi\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "inerba",
+                    "homepage": "https://github.com/inerba",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Material Design Icons for Laravel Blade views.",
+            "homepage": "https://github.com/renoki-co/blade-mdi",
+            "keywords": [
+                "blade",
+                "design",
+                "icons",
+                "kit",
+                "laravel",
+                "material",
+                "mdi",
+                "php",
+                "ui"
+            ],
+            "support": {
+                "source": "https://github.com/postare/blade-mdi/tree/v1.1.1"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/renoki-co",
+                    "type": "github"
+                }
+            ],
+            "time": "2024-10-11T07:27:54+00:00"
         },
         {
             "name": "psr/cache",
