@@ -17,7 +17,12 @@ class StatusPembayaranResource extends Resource
 {
     protected static ?string $model = StatusPembayaran::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $label = "Status Pembayaran";
+    protected static ?string $navigationLabel = "Status Pembayaran";
+    protected static ?string $pluralModelLabel = "Status Pembayaran";
+    protected static ?string $navigationIcon = 'heroicon-o-banknotes';
+    protected static ?string $navigationGroup = "Pembayaran";
+    protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
     {

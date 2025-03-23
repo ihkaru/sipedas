@@ -17,7 +17,12 @@ class JenisDokumenResource extends Resource
 {
     protected static ?string $model = JenisDokumen::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $label = "Jenis Dokumen";
+    protected static ?string $navigationLabel = "Jenis Dokumen";
+    protected static ?string $pluralModelLabel = "Jenis Dokumen";
+    protected static ?string $navigationIcon = 'heroicon-o-document';
+    protected static ?string $navigationGroup = "Pembayaran";
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
