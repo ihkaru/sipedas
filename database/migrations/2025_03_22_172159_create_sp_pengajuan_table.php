@@ -22,10 +22,15 @@ return new class extends Migration
             $table->string('link_folder_dokumen')->nullable();
 
             $table->foreignId('posisi_dokumen_id')->nullable()->constrained('sp_posisi_dokumen')->nullOnDelete();
-            $table->foreignId('status_pengajuan_id')->nullable()->constrained('sp_status_pengajuan')->nullOnDelete();
+            $table->foreignId('status_pengajuan_ppk_id')->nullable()->constrained('sp_status_pengajuan')->nullOnDelete();
+            $table->foreignId('status_pengajuan_ppspm_id')->nullable()->constrained('sp_status_pengajuan')->nullOnDelete();
 
-            $table->text('catatan')->nullable();
-            $table->text('tanggapan_pengaju')->nullable();
+            $table->text('catatan_ppk')->nullable();
+            $table->text('catatan_ppspm')->nullable();
+            $table->text('catatan_bendahara')->nullable();
+            $table->text('tanggapan_pengaju_ke_ppk')->nullable();
+            $table->text('tanggapan_pengaju_ke_ppspm')->nullable();
+            $table->text('tanggapan_pengaju_ke_bendahara')->nullable();
             $table->decimal('nominal_dibayarkan', 15, 2)->nullable();
             $table->decimal('nominal_dikembalikan', 15, 2)->nullable();
 
@@ -41,7 +46,8 @@ return new class extends Migration
             // Indexes
             $table->index('nomor_pengajuan');
             $table->index('tanggal_pengajuan');
-            $table->index('status_pengajuan_id');
+            $table->index('status_pengajuan_ppk_id');
+            $table->index('status_pengajuan_ppspm_id');
             $table->index('status_pembayaran_id');
         });
     }

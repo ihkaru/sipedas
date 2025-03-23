@@ -12,6 +12,10 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Columns\TextColumn;
 
 class PengajuanResource extends Resource
 {
@@ -24,53 +28,65 @@ class PengajuanResource extends Resource
     protected static ?string $navigationGroup = "Pembayaran";
     protected static ?int $navigationSort = 1;
 
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('nomor_pengajuan')
+                TextInput::make('nomor_pengajuan')
                     ->required()
                     ->maxLength(50),
-                Forms\Components\DatePicker::make('tanggal_pengajuan')
+                DatePicker::make('tanggal_pengajuan')
                     ->required(),
-                Forms\Components\TextInput::make('nomor_form_pembayaran')
+                TextInput::make('nomor_form_pembayaran')
                     ->maxLength(50)
                     ->default(null),
-                Forms\Components\TextInput::make('nomor_detail_fa')
+                TextInput::make('nomor_detail_fa')
                     ->maxLength(50)
                     ->default(null),
-                Forms\Components\Textarea::make('uraian_pengajuan')
+                Textarea::make('uraian_pengajuan')
                     ->columnSpanFull(),
-                Forms\Components\TextInput::make('nominal_pengajuan')
+                TextInput::make('nominal_pengajuan')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('link_folder_dokumen')
+                TextInput::make('link_folder_dokumen')
                     ->maxLength(255)
                     ->default(null),
-                Forms\Components\TextInput::make('posisi_dokumen_id')
+                TextInput::make('posisi_dokumen_id')
                     ->numeric()
                     ->default(null),
-                Forms\Components\TextInput::make('status_pengajuan_id')
+                TextInput::make('status_pengajuan_ppk_id')
                     ->numeric()
                     ->default(null),
-                Forms\Components\Textarea::make('catatan')
+                TextInput::make('status_pengajuan_ppspm_id')
+                    ->numeric()
+                    ->default(null),
+                Textarea::make('catatan_ppk')
                     ->columnSpanFull(),
-                Forms\Components\Textarea::make('tanggapan_pengaju')
+                Textarea::make('catatan_bendahara')
                     ->columnSpanFull(),
-                Forms\Components\TextInput::make('nominal_dibayarkan')
+                Textarea::make('catatan_ppspm')
+                    ->columnSpanFull(),
+                Textarea::make('tanggapan_pengaju_ke_ppk')
+                    ->columnSpanFull(),
+                Textarea::make('tanggapan_pengaju_ke_ppspm')
+                    ->columnSpanFull(),
+                Textarea::make('tanggapan_pengaju_ke_bendahara')
+                    ->columnSpanFull(),
+                TextInput::make('nominal_dibayarkan')
                     ->numeric()
                     ->default(null),
-                Forms\Components\TextInput::make('nominal_dikembalikan')
+                TextInput::make('nominal_dikembalikan')
                     ->numeric()
                     ->default(null),
-                Forms\Components\TextInput::make('status_pembayaran_id')
+                TextInput::make('status_pembayaran_id')
                     ->numeric()
                     ->default(null),
-                Forms\Components\DatePicker::make('tanggal_pembayaran'),
-                Forms\Components\TextInput::make('jenis_dokumen_id')
+                DatePicker::make('tanggal_pembayaran'),
+                TextInput::make('jenis_dokumen_id')
                     ->numeric()
                     ->default(null),
-                Forms\Components\TextInput::make('nomor_dokumen')
+                TextInput::make('nomor_dokumen')
                     ->maxLength(50)
                     ->default(null),
             ]);
@@ -80,48 +96,51 @@ class PengajuanResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nomor_pengajuan')
+                TextColumn::make('nomor_pengajuan')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('tanggal_pengajuan')
+                TextColumn::make('tanggal_pengajuan')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('nomor_form_pembayaran')
+                TextColumn::make('nomor_form_pembayaran')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('nomor_detail_fa')
+                TextColumn::make('nomor_detail_fa')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('nominal_pengajuan')
+                TextColumn::make('nominal_pengajuan')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('link_folder_dokumen')
+                TextColumn::make('link_folder_dokumen')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('posisi_dokumen_id')
+                TextColumn::make('posisi_dokumen_id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('status_pengajuan_id')
+                TextColumn::make('status_pengajuan_ppk_id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('nominal_dibayarkan')
+                TextColumn::make('status_pengajuan_ppspm_id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('nominal_dikembalikan')
+                TextColumn::make('nominal_dibayarkan')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('status_pembayaran_id')
+                TextColumn::make('nominal_dikembalikan')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('tanggal_pembayaran')
+                TextColumn::make('status_pembayaran_id')
+                    ->numeric()
+                    ->sortable(),
+                TextColumn::make('tanggal_pembayaran')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('jenis_dokumen_id')
+                TextColumn::make('jenis_dokumen_id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('nomor_dokumen')
+                TextColumn::make('nomor_dokumen')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
