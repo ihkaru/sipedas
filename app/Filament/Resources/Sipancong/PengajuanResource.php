@@ -4,7 +4,12 @@ namespace App\Filament\Resources\Sipancong;
 
 use App\Filament\Resources\Sipancong\PengajuanResource\Pages;
 use App\Filament\Resources\Sipancong\PengajuanResource\RelationManagers;
+use App\Models\Sipancong\JenisDokumen;
 use App\Models\Sipancong\Pengajuan;
+use App\Models\Sipancong\PosisiDokumen;
+use App\Models\Sipancong\StatusPembayaran;
+use App\Models\Sipancong\StatusPengajuan;
+use App\Services\Sipancong\PengajuanServices;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -15,7 +20,11 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
 
 class PengajuanResource extends Resource
 {
@@ -39,27 +48,39 @@ class PengajuanResource extends Resource
                 DatePicker::make('tanggal_pengajuan')
                     ->required(),
                 TextInput::make('nomor_form_pembayaran')
+                    ->required()
                     ->maxLength(50)
                     ->default(null),
                 TextInput::make('nomor_detail_fa')
+                    ->required()
                     ->maxLength(50)
                     ->default(null),
                 Textarea::make('uraian_pengajuan')
+                    ->required()
                     ->columnSpanFull(),
                 TextInput::make('nominal_pengajuan')
                     ->required()
                     ->numeric(),
                 TextInput::make('link_folder_dokumen')
+                    ->required()
                     ->maxLength(255)
                     ->default(null),
-                TextInput::make('posisi_dokumen_id')
-                    ->numeric()
+                Select::make('posisi_dokumen_id')
+                    ->label("Posisi Dokumen")
+                    ->options(PosisiDokumen::pluck('nama', 'id'))
+                    ->required()
                     ->default(null),
-                TextInput::make('status_pengajuan_ppk_id')
-                    ->numeric()
+                Select::make('status_pengajuan_ppk_id')
+                    ->label("Status Pengajuan di PPK")
+                    ->options(StatusPengajuan::pluck('nama', 'id'))
                     ->default(null),
-                TextInput::make('status_pengajuan_ppspm_id')
-                    ->numeric()
+                Select::make('status_pengajuan_ppspm_id')
+                    ->label("Status Pengajuan di PPSPM")
+                    ->options(StatusPengajuan::pluck('nama', 'id'))
+                    ->default(null),
+                Select::make('status_pengajuan_bendahara_id')
+                    ->label("Status Pengajuan di Bendahara")
+                    ->options(StatusPengajuan::pluck('nama', 'id'))
                     ->default(null),
                 Textarea::make('catatan_ppk')
                     ->columnSpanFull(),
@@ -68,23 +89,30 @@ class PengajuanResource extends Resource
                 Textarea::make('catatan_ppspm')
                     ->columnSpanFull(),
                 Textarea::make('tanggapan_pengaju_ke_ppk')
+                    ->label("Tanggapan Pengaju ke PPK")
                     ->columnSpanFull(),
                 Textarea::make('tanggapan_pengaju_ke_ppspm')
+                    ->label("Tanggapan Pengaju ke PPSPM")
                     ->columnSpanFull(),
                 Textarea::make('tanggapan_pengaju_ke_bendahara')
+                    ->label("Tanggapan Pengaju ke Bendahara")
                     ->columnSpanFull(),
                 TextInput::make('nominal_dibayarkan')
+                    ->label("Nominal Dibayarkan")
                     ->numeric()
                     ->default(null),
                 TextInput::make('nominal_dikembalikan')
+                    ->label("Nominal Dikembalikan")
                     ->numeric()
                     ->default(null),
-                TextInput::make('status_pembayaran_id')
-                    ->numeric()
+                Select::make('status_pembayaran_id')
+                    ->label("Status Pembayaran")
+                    ->options(StatusPembayaran::pluck("nama", "id"))
                     ->default(null),
                 DatePicker::make('tanggal_pembayaran'),
-                TextInput::make('jenis_dokumen_id')
-                    ->numeric()
+                Select::make('jenis_dokumen_id')
+                    ->options(JenisDokumen::pluck("nama", "id"))
+                    ->label("Jenis Dokumen")
                     ->default(null),
                 TextInput::make('nomor_dokumen')
                     ->maxLength(50)
@@ -97,15 +125,25 @@ class PengajuanResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('nomor_pengajuan')
+                    ->label("No")
                     ->searchable(),
+                TextColumn::make("uraian_pengajuan")
+                    ->searchable()
+                    ->label("Uraian Pengajuan"),
+                TextColumn::make("pegawai.nama")
+                    ->label("Pengaju"),
                 TextColumn::make('tanggal_pengajuan')
+                    ->label("Tanggal Pengajuan")
                     ->date()
                     ->sortable(),
                 TextColumn::make('nomor_form_pembayaran')
+                    ->label("No. Form Pembayaran")
                     ->searchable(),
                 TextColumn::make('nomor_detail_fa')
+                    ->label("No. Detail FA")
                     ->searchable(),
                 TextColumn::make('nominal_pengajuan')
+                    ->label("Nominal Pengajuan")
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('link_folder_dokumen')
@@ -149,13 +187,53 @@ class PengajuanResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+                ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                    Action::make("Link")
+                        ->icon("heroicon-m-link")
+                        ->url(fn(Pengajuan $record): string => $record->link_folder_dokumen)
+                        ->openUrlInNewTab()
+                        ->hidden(function (Pengajuan $record) {
+                            return !($record->link_folder_dokumen);
+                        }),
+                    Action::make("Aksi Pengaju")
+                        ->label("Tanggapan Pengaju")
+                        ->icon("heroicon-o-pencil")
+                        ->form([
+                            Textarea::make('uraian_pengajuan')
+                                ->readOnly(),
+                            Select::make('status_pengajuan_ppk_id')
+                                ->label("Status Pengajuan di PPK")
+                                ->options(StatusPengajuan::pluck('nama', 'id'))
+                                ->disabled(),
+                            Select::make('status_pengajuan_ppspm_id')
+                                ->label("Status Pengajuan di PPSPM")
+                                ->options(StatusPengajuan::pluck('nama', 'id'))
+                                ->disabled(),
+                            Select::make('status_pengajuan_bendahara_id')
+                                ->label("Status Pengajuan di Bendahara")
+                                ->options(StatusPengajuan::pluck('nama', 'id'))
+                                ->disabled(),
+                            Textarea::make('tanggapan_pengaju_ke_ppk')
+                                ->label("Tanggapan Pengaju ke PPK")
+                                ->columnSpanFull(),
+                            Textarea::make('tanggapan_pengaju_ke_ppspm')
+                                ->label("Tanggapan Pengaju ke PPSPM")
+                                ->columnSpanFull(),
+                            Textarea::make('tanggapan_pengaju_ke_bendahara')
+                                ->label("Tanggapan Pengaju ke Bendahara")
+                                ->columnSpanFull(),
+                        ])
+                        ->fillForm(function (Pengajuan $record): array {
+                            return $record->toArray();
+                        })
+                        ->action(function (array $data, Pengajuan $record) {
+                            PengajuanServices::tanggapi($data, $record);
+                        })
+                ])->link()->label("Aksi"),
+
+            ], position: ActionsPosition::BeforeColumns)
+            ->bulkActions([]);
     }
 
     public static function getRelations(): array

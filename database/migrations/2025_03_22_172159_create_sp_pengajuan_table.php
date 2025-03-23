@@ -15,12 +15,13 @@ return new class extends Migration
             $table->id();
             $table->string('nomor_pengajuan', 50)->unique();
             $table->string('sub_fungsi', 50)->nullable()->constrained('sp_sub_fungsi')->nullOnDelete();;
-            $table->date('tanggal_pengajuan');
+            $table->timestamp('tanggal_pengajuan');
             $table->string('nomor_form_pembayaran', 50)->nullable();
             $table->string('nomor_detail_fa', 50)->nullable();
             $table->text('uraian_pengajuan')->nullable();
             $table->decimal('nominal_pengajuan', 15, 2);
             $table->string('link_folder_dokumen')->nullable();
+            $table->string("nip_pengaju")->nullable();
 
             $table->foreignId('posisi_dokumen_id')->nullable()->constrained('sp_posisi_dokumen')->nullOnDelete();
             $table->foreignId('status_pengajuan_ppk_id')->nullable()->constrained('sp_status_pengajuan')->nullOnDelete();

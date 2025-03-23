@@ -9,4 +9,5 @@ class StatusPembayaran extends Model
 {
     use HasFactory;
     protected $table = 'sp_status_pembayaran';
+    protected $guarded = [];
 }

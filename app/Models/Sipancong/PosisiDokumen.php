@@ -9,4 +9,5 @@ class PosisiDokumen extends Model
 {
     use HasFactory;
     protected $table = 'sp_posisi_dokumen';
+    protected $guarded = [];
 }

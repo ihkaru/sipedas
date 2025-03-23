@@ -3,8 +3,13 @@
 namespace App\Filament\Resources\Sipancong\PengajuanResource\Pages;
 
 use App\Filament\Resources\Sipancong\PengajuanResource;
+use App\Models\Sipancong\Pengajuan;
+use App\Models\Sipancong\PosisiDokumen;
+use App\Models\Sipancong\Subfungsi;
+use App\Services\Sipancong\PengajuanServices;
 use Filament\Actions;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\ListRecords;
@@ -25,7 +30,9 @@ class ListPengajuans extends ListRecords
                     Textarea::make("uraian_pengajuan")
                         ->label("Uraian Pengajuan")
                         ->required(),
-                    Textarea::make("sub_fungsi")
+                    Select::make("sub_fungsi")
+                        ->options(Subfungsi::pluck('nama', 'id'))
+                        ->preload()
                         ->label("Sub Fungsi")
                         ->required(),
                     TextInput::make("nomor_form_pembayaran")
@@ -42,7 +49,15 @@ class ListPengajuans extends ListRecords
                         ->label("Link Folder Dokumen")
                         ->helperText("Pastikan akses sudah folder sudah terbuka untuk edit!")
                         ->required(),
-                ]),
+                    Select::make("posisi_dokumen_id")
+                        ->label("Posisi Dokumen Fisik")
+                        ->options(PosisiDokumen::pluck("nama", "id"))
+                        ->helperText("Jika setelah pengajuan ini Anda memberikan dokumen fisik ke PPK, maka isikan PPK")
+                        ->required(),
+                ])
+                ->action(function (array $data) {
+                    PengajuanServices::ajukan($data);
+                }),
         ];
     }
 }
