@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('sp_pengajuan', function (Blueprint $table) {
             $table->id();
             $table->string('nomor_pengajuan', 50)->unique();
+            $table->string('sub_fungsi', 50)->nullable()->constrained('sp_sub_fungsi')->nullOnDelete();;
             $table->date('tanggal_pengajuan');
             $table->string('nomor_form_pembayaran', 50)->nullable();
             $table->string('nomor_detail_fa', 50)->nullable();
