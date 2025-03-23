@@ -235,7 +235,7 @@ class PegawaiSeeder extends Seeder
         ]);
         Pegawai::create([
             "nama" => "Sukma Andini, S.Tr.Stat",
-            "nip" => "200306242024122001",
+            "nip" => "200202152024122003",
             "nip9" => "340063547",
             "pangkat" => "III",
             "golongan" => "a",
