@@ -143,7 +143,7 @@ class PegawaiSeeder extends Seeder
             "jabatan" => "Statistisi Ahli Pertama",
             "email" => "mariash@bps.go.id",
             "atasan_langsung_id" => "196908031992111001",
-            "unit_kerja" => "BPS Kabupaten Mempawah"
+            "unit_kerja" => "BPS Kabupaten Toba Samosir"
         ]);
         Pegawai::create([
             "nama" => "Najia Helmiah S.Tr.Stat.",
@@ -208,6 +208,61 @@ class PegawaiSeeder extends Seeder
             "golongan" => "b",
             "jabatan" => "Statistisi Ahli Pertama",
             "email" => "yulfi.ramanda@bps.go.id",
+            "atasan_langsung_id" => "196908031992111001",
+            "unit_kerja" => "BPS Kabupaten Mempawah"
+        ]);
+        Pegawai::create([
+            "nama" => "Ahmad Aulia Rahman, S.Tr.Stat.",
+            "nip" => "200109122024121001",
+            "nip9" => "340062981",
+            "pangkat" => "III",
+            "golongan" => "a",
+            "jabatan" => "Statistisi Ahli Pertama",
+            "email" => "ahmad.aulia@bps.go.id",
+            "atasan_langsung_id" => "196908031992111001",
+            "unit_kerja" => "BPS Kabupaten Mempawah"
+        ]);
+        Pegawai::create([
+            "nama" => "Vaniya Dewi Wulandari, A.Md.Stat.",
+            "nip" => "200306242024122001",
+            "nip9" => "340063573",
+            "pangkat" => "II",
+            "golongan" => "d",
+            "jabatan" => "Statistisi Terampil",
+            "email" => "vaniya.dewi@bps.go.id",
+            "atasan_langsung_id" => "196908031992111001",
+            "unit_kerja" => "BPS Kabupaten Mempawah"
+        ]);
+        Pegawai::create([
+            "nama" => "Sukma Andini, S.Tr.Stat",
+            "nip" => "200306242024122001",
+            "nip9" => "340063547",
+            "pangkat" => "III",
+            "golongan" => "a",
+            "jabatan" => "Pranata Komputer Ahli Pertama",
+            "email" => "sukma.andini@bps.go.id",
+            "atasan_langsung_id" => "196908031992111001",
+            "unit_kerja" => "BPS Kabupaten Mempawah"
+        ]);
+        Pegawai::create([
+            "nama" => "Muhammad Syihabuddin Alhaq S.E.",
+            "nip" => "198407112011011007",
+            "nip9" => "340055291",
+            "pangkat" => "III",
+            "golongan" => "d",
+            "jabatan" => "Statistisi Ahli Pertama",
+            "email" => "alhaq@bps.go.id",
+            "atasan_langsung_id" => "196908031992111001",
+            "unit_kerja" => "BPS Kabupaten Mempawah"
+        ]);
+        Pegawai::create([
+            "nama" => "Supandi S.Si, M.Ec.Dev",
+            "nip" => "198603272009021005",
+            "nip9" => "340051340 ",
+            "pangkat" => "IV",
+            "golongan" => "a",
+            "jabatan" => "Statistisi Ahli Madya",
+            "email" => "supandi@bps.go.id",
             "atasan_langsung_id" => "196908031992111001",
             "unit_kerja" => "BPS Kabupaten Mempawah"
         ]);

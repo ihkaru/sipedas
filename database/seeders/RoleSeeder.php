@@ -14,16 +14,28 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         Role::create([
-            "name"=>"kepala_satker",
-            "guard_name"=>"web"
+            "name" => "kepala_satker",
+            "guard_name" => "web"
         ]);
         Role::create([
-            "name"=>"operator_umum",
-            "guard_name"=>"web"
+            "name" => "operator_umum",
+            "guard_name" => "web"
         ]);
         Role::create([
-            "name"=>"pegawai",
-            "guard_name"=>"web"
+            "name" => "pegawai",
+            "guard_name" => "web"
+        ]);
+        Role::create([
+            "name" => "ppspm",
+            "guard_name" => "web"
+        ]);
+        Role::create([
+            "name" => "ppk",
+            "guard_name" => "web"
+        ]);
+        Role::create([
+            "name" => "bendahara",
+            "guard_name" => "web"
         ]);
     }
 }
