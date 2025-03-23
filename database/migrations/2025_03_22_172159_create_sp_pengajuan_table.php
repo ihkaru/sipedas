@@ -24,6 +24,7 @@ return new class extends Migration
             $table->foreignId('posisi_dokumen_id')->nullable()->constrained('sp_posisi_dokumen')->nullOnDelete();
             $table->foreignId('status_pengajuan_ppk_id')->nullable()->constrained('sp_status_pengajuan')->nullOnDelete();
             $table->foreignId('status_pengajuan_ppspm_id')->nullable()->constrained('sp_status_pengajuan')->nullOnDelete();
+            $table->foreignId('status_pengajuan_bendahara_id')->nullable()->constrained('sp_status_pengajuan')->nullOnDelete();
 
             $table->text('catatan_ppk')->nullable();
             $table->text('catatan_ppspm')->nullable();
@@ -31,6 +32,8 @@ return new class extends Migration
             $table->text('tanggapan_pengaju_ke_ppk')->nullable();
             $table->text('tanggapan_pengaju_ke_ppspm')->nullable();
             $table->text('tanggapan_pengaju_ke_bendahara')->nullable();
+
+
             $table->decimal('nominal_dibayarkan', 15, 2)->nullable();
             $table->decimal('nominal_dikembalikan', 15, 2)->nullable();
 
@@ -48,6 +51,7 @@ return new class extends Migration
             $table->index('tanggal_pengajuan');
             $table->index('status_pengajuan_ppk_id');
             $table->index('status_pengajuan_ppspm_id');
+            $table->index('status_pengajuan_bendahara_id');
             $table->index('status_pembayaran_id');
         });
     }

@@ -17,6 +17,7 @@ class SipancongSeeder extends Seeder
         DB::table('sp_posisi_dokumen')->insert([
             ['nama' => 'Di Pengaju Pembayaran'],
             ['nama' => 'Di PPK'],
+            ['nama' => 'Di PPSPM'],
             ['nama' => 'Di Bendahara'],
         ]);
 
