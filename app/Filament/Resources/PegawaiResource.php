@@ -30,7 +30,7 @@ class PegawaiResource extends Resource
                 Forms\Components\TextInput::make('nama')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('NIP')
+                Forms\Components\TextInput::make('nip')
                     ->label("NIP")
                     ->required()
                     ->maxLength(255),
