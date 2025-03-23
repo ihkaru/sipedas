@@ -44,5 +44,13 @@ class SipancongSeeder extends Seeder
             ['nama' => 'SPM'],
             ['nama' => 'SPBY'],
         ]);
+        DB::table('sp_sub_fungsi')->insert([
+            ['nama' => 'Umum'],
+            ['nama' => 'Produksi'],
+            ['nama' => 'Distribusi'],
+            ['nama' => 'Sosial'],
+            ['nama' => 'Neraca'],
+            ['nama' => 'IPDS'],
+        ]);
     }
 }
