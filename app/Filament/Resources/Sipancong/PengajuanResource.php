@@ -9,6 +9,7 @@ use App\Models\Sipancong\Pengajuan;
 use App\Models\Sipancong\PosisiDokumen;
 use App\Models\Sipancong\StatusPembayaran;
 use App\Models\Sipancong\StatusPengajuan;
+use App\Models\Sipancong\Subfungsi;
 use App\Services\Sipancong\PengajuanServices;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -23,6 +24,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\ActionsPosition;
 
@@ -47,21 +49,31 @@ class PengajuanResource extends Resource
                     ->maxLength(50),
                 DatePicker::make('tanggal_pengajuan')
                     ->required(),
+                Select::make("sub_fungsi_id")
+                    ->label("Sub Fungsi")
+                    ->options(Subfungsi::pluck("nama", "id"))
+                    ->required(),
                 TextInput::make('nomor_form_pembayaran')
+                    ->label("Nomor Form Pembayaran")
+                    ->helperText("Bisa lebih dari satu nomor. Gunakan koma sebagai pemisah nomor. Contoh: 12,13,140")
                     ->required()
                     ->maxLength(50)
                     ->default(null),
                 TextInput::make('nomor_detail_fa')
+                    ->label("Nomor Detail FA")
                     ->required()
+                    ->helperText("Bisa lebih dari satu nomor. Gunakan koma sebagai pemisah nomor. Contoh: 12,13,140")
                     ->maxLength(50)
                     ->default(null),
                 Textarea::make('uraian_pengajuan')
+                    ->label("Uraian Pengajuan")
                     ->required()
                     ->columnSpanFull(),
                 TextInput::make('nominal_pengajuan')
                     ->required()
                     ->numeric(),
                 TextInput::make('link_folder_dokumen')
+                    ->helperText("Pastikan akses sudah folder sudah terbuka untuk edit!")
                     ->required()
                     ->maxLength(255)
                     ->default(null),
@@ -123,7 +135,12 @@ class PengajuanResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort("updated_at", "desc")
             ->columns([
+                TextColumn::make('statusPengajuanPpspm.nama')
+                    ->searchable()
+                    ->badge()
+                    ->sortable(),
                 TextColumn::make('nomor_pengajuan')
                     ->label("No")
                     ->searchable(),
@@ -148,14 +165,14 @@ class PengajuanResource extends Resource
                     ->sortable(),
                 TextColumn::make('link_folder_dokumen')
                     ->searchable(),
-                TextColumn::make('posisi_dokumen_id')
+                TextColumn::make('posisiDokumen.nama')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('status_pengajuan_ppk_id')
-                    ->numeric()
+                TextColumn::make('statusPengajuanPpk.nama')
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('status_pengajuan_ppspm_id')
-                    ->numeric()
+                TextColumn::make('statusPengajuanBendahara.nama')
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('nominal_dibayarkan')
                     ->numeric()
@@ -229,7 +246,9 @@ class PengajuanResource extends Resource
                         })
                         ->action(function (array $data, Pengajuan $record) {
                             PengajuanServices::tanggapi($data, $record);
-                        })
+                        }),
+                    DeleteAction::make("hapus")
+
                 ])->link()->label("Aksi"),
 
             ], position: ActionsPosition::BeforeColumns)

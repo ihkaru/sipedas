@@ -33,9 +33,9 @@ class APanelProvider extends PanelProvider
             ->spa()
             ->path('a')
             ->login()
-            ->favicon(env('APP_URL')."/favicon.ico")
+            ->favicon(env('APP_URL') . "/favicon.ico")
             // ->brandLogo(env('APP_URL')."/logo.svg")
-            ->brandName('SIKENDIS')
+            ->brandName('SIMPAN-ADIK')
             ->colors([
                 'primary' => Color::Teal,
             ])
@@ -71,6 +71,6 @@ class APanelProvider extends PanelProvider
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make()
             ])
-            ;
+        ;
     }
 }

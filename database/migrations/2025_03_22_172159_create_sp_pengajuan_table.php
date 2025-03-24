@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('sp_pengajuan', function (Blueprint $table) {
             $table->id();
             $table->string('nomor_pengajuan', 50)->unique();
-            $table->string('sub_fungsi', 50)->nullable()->constrained('sp_sub_fungsi')->nullOnDelete();;
+            $table->foreignId('sub_fungsi_id')->nullable()->constrained('sp_sub_fungsi')->nullOnDelete();;
             $table->timestamp('tanggal_pengajuan');
             $table->string('nomor_form_pembayaran', 50)->nullable();
             $table->string('nomor_detail_fa', 50)->nullable();
             $table->text('uraian_pengajuan')->nullable();
-            $table->decimal('nominal_pengajuan', 15, 2);
+            $table->decimal('nominal_pengajuan', 15, 2)->nullable();
             $table->string('link_folder_dokumen')->nullable();
             $table->string("nip_pengaju")->nullable();
 

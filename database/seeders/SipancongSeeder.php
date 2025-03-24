@@ -27,6 +27,7 @@ class SipancongSeeder extends Seeder
             ['nama' => 'Disetujui dengan catatan'],
             ['nama' => 'Ditunda'],
             ['nama' => 'Ditolak'],
+            ['nama' => 'Disetujui tanpa catatan'],
         ]);
 
         // Seeder untuk status_pembayaran
@@ -37,6 +38,7 @@ class SipancongSeeder extends Seeder
             ['nama' => 'Proses Catat SPBY'],
             ['nama' => 'Sudah Cair dan Diproses'],
             ['nama' => 'Proses Catat LS'],
+            ['nama' => 'Sudah Tunai'],
         ]);
 
         // Seeder untuk jenis_dokumen

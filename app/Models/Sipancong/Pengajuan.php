@@ -20,4 +20,28 @@ class Pengajuan extends Model
     {
         return $this->hasOne(PosisiDokumen::class, "id", "posisi_dokumen_id");
     }
+    public function subfungsi()
+    {
+        return $this->hasOne(Subfungsi::class, "id", "sub_fungsi_id");
+    }
+    public function statusPembayaran()
+    {
+        return $this->hasOne(StatusPembayaran::class, "id", "status_pembayaran_id");
+    }
+    public function jenisDokumen()
+    {
+        return $this->hasOne(JenisDokumen::class, "id", "jenis_dokumen_id");
+    }
+    public function statusPengajuanPpk()
+    {
+        return $this->hasOne(StatusPengajuan::class, "id", "status_pengajuan_ppk_id");
+    }
+    public function statusPengajuanPpspm()
+    {
+        return $this->hasOne(StatusPengajuan::class, "id", "status_pengajuan_ppspm_id");
+    }
+    public function statusPengajuanBendahara()
+    {
+        return $this->hasOne(StatusPengajuan::class, "id", "status_pengajuan_bendahara_id");
+    }
 }

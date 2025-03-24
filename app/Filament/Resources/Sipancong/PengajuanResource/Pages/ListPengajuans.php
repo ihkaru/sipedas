@@ -30,16 +30,18 @@ class ListPengajuans extends ListRecords
                     Textarea::make("uraian_pengajuan")
                         ->label("Uraian Pengajuan")
                         ->required(),
-                    Select::make("sub_fungsi")
+                    Select::make("sub_fungsi_id")
                         ->options(Subfungsi::pluck('nama', 'id'))
                         ->preload()
                         ->label("Sub Fungsi")
                         ->required(),
                     TextInput::make("nomor_form_pembayaran")
                         ->label("Nomor Form Pembayaran (FP)")
+                        ->helperText("Bisa lebih dari satu nomor. Gunakan koma sebagai pemisah nomor. Contoh: 12,13,140")
                         ->required(),
                     TextInput::make("nomor_detail_fa")
                         ->label("Nomor Detail FA")
+                        ->helperText("Bisa lebih dari satu nomor. Gunakan koma sebagai pemisah nomor. Contoh: 12,13,140")
                         ->required(),
                     TextInput::make("nominal_pengajuan")
                         ->label("Nominal Pengajuan")
