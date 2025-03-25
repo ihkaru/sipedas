@@ -246,6 +246,16 @@ class PengajuanResource extends Resource
                         ->action(function (array $data, Pengajuan $record) {
                             PengajuanServices::tanggapi($data, $record);
                         }),
+                    Action::make("Aksi PPK")
+                        ->label("Aksi PPK")
+                        ->icon("heroicon-o-pencil")
+                        ->form(PengajuanForms::pemeriksaanPpk())
+                        ->fillForm(function (Pengajuan $record): array {
+                            return $record->toArray();
+                        })
+                        ->action(function (array $data, Pengajuan $record) {
+                            PengajuanServices::pemeriksaanPpk($data, $record);
+                        }),
                     DeleteAction::make("hapus")
 
                 ])->link()->label("Aksi"),

@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources\Sipancong\PengajuanResource\Forms;
 
+use App\Models\Sipancong\Pengajuan;
 use App\Models\Sipancong\PosisiDokumen;
 use App\Models\Sipancong\StatusPengajuan;
 use App\Models\Sipancong\Subfungsi;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -72,6 +74,34 @@ class PengajuanForms
             Textarea::make('tanggapan_pengaju_ke_bendahara')
                 ->label("Tanggapan Pengaju ke Bendahara")
                 ->columnSpanFull(),
+        ];
+    }
+    public static function pemeriksaanPpk()
+    {
+        return [
+            Textarea::make("uraian_pengajuan")
+                ->label("Uraian Pengajuan")
+                ->required(),
+            TextInput::make("link_folder_dokumen")
+                ->hintAction(
+                    Action::make("bukaFolder")
+                        ->icon("heroicon-m-link")
+                        ->url(fn(Pengajuan $record): string => $record->link_folder_dokumen)
+                        ->openUrlInNewTab()
+                )
+                ->label("Link Folder Dokumen")
+                ->readOnly()
+                ->helperText("Anda dapat menimpa (replace) file yang sudah ditandatangani di folder ini")
+                ->required(),
+            Select::make("status_pengajuan_ppk_id")
+                ->options(StatusPengajuan::whereNot('nama', 'Diajukan')->pluck("nama", "id"))
+                ->label("Hasil Pemeriksaan PPK")
+                ->required(),
+            Textarea::make("catatan_ppk")
+                ->label("Catatan"),
+            Textarea::make("tanggapan_pengaju_ke_ppk")
+                ->label("Tanggapan dari Pengaju ke PPK")
+                ->readOnly()
         ];
     }
 }

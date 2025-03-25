@@ -44,4 +44,19 @@ class PengajuanServices
                 ->send();
         }
     }
+    public static function pemeriksaanPpk(array $data, Pengajuan $record)
+    {
+        try {
+            $record->update($data);
+            Notification::make()
+                ->success()
+                ->title("Berhasil menyimpan hasil pemeriksaan")
+                ->send();
+        } catch (\Throwable $th) {
+            Notification::make()
+                ->danger()
+                ->title("Gagal menyimpan hasil pemeriksaan " . $th->getMessage())
+                ->send();
+        }
+    }
 }
