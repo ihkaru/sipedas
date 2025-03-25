@@ -127,4 +127,52 @@ class PengajuanServices
                 ->send();
         }
     }
+    public static function isSiapDiperiksaPpk(Pengajuan $pengajuan)
+    {
+        return !(
+            $pengajuan->status_pengajuan_ppk_id == 2 ||
+            $pengajuan->status_pengajuan_ppk_id == 5
+        );
+    }
+    public static function isSiapDiperiksaBendahara(Pengajuan $pengajuan)
+    {
+        return (
+            $pengajuan->status_pengajuan_ppk_id == 2 ||
+            $pengajuan->status_pengajuan_ppk_id == 5
+        ) &&
+            !(
+                $pengajuan->status_pengajuan_bendahara_id == 2 ||
+                $pengajuan->status_pengajuan_bendahara_id == 5
+            );
+    }
+    public static function isSiapDiperiksaPpspm(Pengajuan $pengajuan)
+    {
+        return (
+            $pengajuan->status_pengajuan_ppk_id == 2 ||
+            $pengajuan->status_pengajuan_ppk_id == 5
+        ) &&
+            (
+                $pengajuan->status_pengajuan_bendahara_id == 2 ||
+                $pengajuan->status_pengajuan_bendahara_id == 5
+            ) &&
+            !(
+                $pengajuan->status_pengajuan_ppspm_id == 2 ||
+                $pengajuan->status_pengajuan_ppspm_id == 5
+            );
+    }
+    public static function isSiapDiprosesBendahara(Pengajuan $pengajuan)
+    {
+        return (
+            $pengajuan->status_pengajuan_ppk_id == 2 ||
+            $pengajuan->status_pengajuan_ppk_id == 5
+        ) &&
+            (
+                $pengajuan->status_pengajuan_bendahara_id == 2 ||
+                $pengajuan->status_pengajuan_bendahara_id == 5
+            ) &&
+            (
+                $pengajuan->status_pengajuan_ppspm_id == 2 ||
+                $pengajuan->status_pengajuan_ppspm_id == 5
+            );
+    }
 }

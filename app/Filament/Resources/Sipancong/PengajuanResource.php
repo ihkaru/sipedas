@@ -30,7 +30,9 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\ActionsPosition;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\HtmlString;
 
 class PengajuanResource extends Resource
 {
@@ -77,7 +79,7 @@ class PengajuanResource extends Resource
                     ->required()
                     ->numeric(),
                 TextInput::make('link_folder_dokumen')
-                    ->helperText("Pastikan akses sudah folder sudah terbuka untuk edit!")
+                    ->helperText(new HtmlString("Pastikan akses sudah folder sudah terbuka untuk edit! Pastikan dokumen sudah ditandatangani <strong>selain</strong> PPK, Bendahara, Kepala Satker"))
                     ->required()
                     ->maxLength(255)
                     ->default(null),
@@ -264,6 +266,9 @@ class PengajuanResource extends Resource
                     Action::make("Aksi PPK")
                         ->label("Aksi PPK")
                         ->modalHeading('Pemeriksaan PPK')
+                        ->hidden(function (Pengajuan $record): bool {
+                            return !PengajuanServices::isSiapDiperiksaPpk($record);
+                        })
                         ->icon("heroicon-o-pencil")
                         ->form(PengajuanForms::pemeriksaanPpk())
                         ->fillForm(function (Pengajuan $record): array {
@@ -275,6 +280,9 @@ class PengajuanResource extends Resource
                     Action::make("Aksi Bendahara")
                         ->modalHeading('Pemeriksaan Bendahara')
                         ->label("Aksi Bendahara")
+                        ->hidden(function (Pengajuan $record): bool {
+                            return !PengajuanServices::isSiapDiperiksaBendahara($record);
+                        })
                         ->icon("heroicon-o-pencil")->form(PengajuanForms::pemeriksaanBendahara())
                         ->fillForm(function (Pengajuan $record): array {
                             return $record->toArray();
@@ -285,6 +293,9 @@ class PengajuanResource extends Resource
                     Action::make("Aksi PPSPM")
                         ->label("Aksi PPSPM")
                         ->modalHeading('Pemeriksaan PPSPM')
+                        ->hidden(function (Pengajuan $record): bool {
+                            return !PengajuanServices::isSiapDiperiksaPpspm($record);
+                        })
                         ->icon("heroicon-o-pencil")->form(PengajuanForms::pemeriksaanPpspm())
                         ->fillForm(function (Pengajuan $record): array {
                             return $record->toArray();
@@ -294,6 +305,9 @@ class PengajuanResource extends Resource
                         }),
                     Action::make("pemrosesanBendahara")
                         ->label("Proses Bendahara")
+                        ->hidden(function (Pengajuan $record): bool {
+                            return !PengajuanServices::isSiapDiprosesBendahara($record);
+                        })
                         ->modalHeading('Pemrosesan Pembayaran')
                         ->icon("heroicon-o-credit-card")->form(PengajuanForms::pemrosesanBendahara())
                         ->fillForm(function (Pengajuan $record): array {

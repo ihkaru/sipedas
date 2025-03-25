@@ -15,44 +15,45 @@ class SipancongSeeder extends Seeder
     {
         // Seeder untuk posisi_dokumen
         DB::table('sp_posisi_dokumen')->insert([
-            ['nama' => 'Di Pengaju Pembayaran'],
-            ['nama' => 'Di PPK'],
-            ['nama' => 'Di PPSPM'],
-            ['nama' => 'Di Bendahara'],
+            ['nama' => 'Di Pengaju Pembayaran'], // 1
+            ['nama' => 'Di PPK'], // 2
+            ['nama' => 'Di PPSPM'], // 3
+            ['nama' => 'Di Bendahara'], // 4
         ]);
 
         // Seeder untuk status_pengajuan
         DB::table('sp_status_pengajuan')->insert([
-            ['nama' => 'Diajukan'],
-            ['nama' => 'Disetujui dengan catatan'],
-            ['nama' => 'Ditunda'],
-            ['nama' => 'Ditolak'],
-            ['nama' => 'Disetujui tanpa catatan'],
+            ['nama' => 'Diajukan'], // 1
+            ['nama' => 'Disetujui dengan catatan'], // 2
+            ['nama' => 'Ditunda'], // 3
+            ['nama' => 'Ditolak'], // 4
+            ['nama' => 'Disetujui tanpa catatan'], // 5
         ]);
 
         // Seeder untuk status_pembayaran
         DB::table('sp_status_pembayaran')->insert([
-            ['nama' => 'Sudah CMS'],
-            ['nama' => 'Sudah LS'],
-            ['nama' => 'Belum Tersedia Dok Fisik'],
-            ['nama' => 'Proses Catat SPBY'],
-            ['nama' => 'Sudah Cair dan Diproses'],
-            ['nama' => 'Proses Catat LS'],
-            ['nama' => 'Sudah Tunai'],
+            ['nama' => 'Sudah CMS'], // 1
+            ['nama' => 'Sudah LS'], // 2
+            ['nama' => 'Belum Tersedia Dok Fisik'], // 3
+            ['nama' => 'Proses Catat SPBY'], // 4
+            ['nama' => 'Sudah Cair dan Diproses'], // 5
+            ['nama' => 'Proses Catat LS'], // 6
+            ['nama' => 'Sudah Tunai'], // 7
         ]);
+
 
         // Seeder untuk jenis_dokumen
         DB::table('sp_jenis_dokumen')->insert([
-            ['nama' => 'SPM'],
-            ['nama' => 'SPBY'],
+            ['nama' => 'SPM'], // 1
+            ['nama' => 'SPBY'], // 2
         ]);
         DB::table('sp_sub_fungsi')->insert([
-            ['nama' => 'Umum'],
-            ['nama' => 'Produksi'],
-            ['nama' => 'Distribusi'],
-            ['nama' => 'Sosial'],
-            ['nama' => 'Neraca'],
-            ['nama' => 'IPDS'],
+            ['nama' => 'Umum'], // 1
+            ['nama' => 'Produksi'], // 2
+            ['nama' => 'Distribusi'], // 3
+            ['nama' => 'Sosial'], // 4
+            ['nama' => 'Neraca'], // 5
+            ['nama' => 'IPDS'], // 6
         ]);
     }
 }

@@ -14,6 +14,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
+use Illuminate\Support\HtmlString;
 
 class PengajuanForms
 {
@@ -30,6 +31,7 @@ class PengajuanForms
                 ->label("Uraian Pengajuan")
                 ->required(),
             TextInput::make("link_folder_dokumen")
+                ->helperText(new HtmlString("Pastikan akses sudah folder sudah terbuka untuk edit! Pastikan dokumen sudah ditandatangani <strong>selain</strong> PPK, Bendahara, Kepala Satker/PLH"))
                 ->label("Link Folder Dokumen")
                 ->helperText("Pastikan akses sudah folder sudah terbuka untuk edit!")
                 ->required(),
@@ -112,6 +114,7 @@ class PengajuanForms
             Select::make("status_pengajuan_ppk_id")
                 ->options(StatusPengajuan::whereNot('nama', 'Diajukan')->pluck("nama", "id"))
                 ->label("Hasil Pemeriksaan PPK")
+                ->helperText(new HtmlString("Pastikan PPK <strong>telah menandatangani</strong> dokumen fisik atau softfile sebelum menyetujui!"))
                 ->required(),
             Textarea::make("catatan_ppk")
                 ->label("Catatan"),
@@ -148,10 +151,11 @@ class PengajuanForms
             Select::make("status_pengajuan_ppk_id")
                 ->options(StatusPengajuan::whereNot('nama', 'Diajukan')->pluck("nama", "id"))
                 ->disabled()
-                ->label("Hasil Pemeriksaan PPK")
+                ->label("Hasil Pemeriksaan Bendahara")
                 ->required(),
             Select::make("status_pengajuan_bendahara_id")
                 ->options(StatusPengajuan::whereNot('nama', 'Diajukan')->pluck("nama", "id"))
+                ->helperText(new HtmlString("Pastikan Bendahara <strong>telah menandatangani</strong> dokumen fisik atau softfile sebelum menyetujui!"))
                 ->label("Hasil Pemeriksaan Bendahara")
                 ->required(),
             Textarea::make("catatan_ppk")
@@ -202,6 +206,7 @@ class PengajuanForms
                 ->disabled(),
             Select::make("status_pengajuan_ppspm_id")
                 ->options(StatusPengajuan::whereNot('nama', 'Diajukan')->pluck("nama", "id"))
+                ->helperText(new HtmlString("Pastikan Kepala Satker <strong>telah menandatangani</strong> dokumen fisik atau softfile sebelum menyetujui!"))
                 ->label("Hasil Pemeriksaan PPSPM")
                 ->required(),
             Textarea::make("catatan_ppk")
