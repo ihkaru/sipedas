@@ -59,4 +59,72 @@ class PengajuanServices
                 ->send();
         }
     }
+    public static function pemeriksaanBendahara(array $data, Pengajuan $record)
+    {
+        try {
+            $record->update($data);
+            Notification::make()
+                ->success()
+                ->title("Berhasil menyimpan hasil pemeriksaan")
+                ->send();
+        } catch (\Throwable $th) {
+            Notification::make()
+                ->danger()
+                ->title("Gagal menyimpan hasil pemeriksaan " . $th->getMessage())
+                ->send();
+        }
+    }
+    public static function pemeriksaanPpspm(array $data, Pengajuan $record)
+    {
+        try {
+            $record->update($data);
+            Notification::make()
+                ->success()
+                ->title("Berhasil menyimpan hasil pemeriksaan")
+                ->send();
+        } catch (\Throwable $th) {
+            Notification::make()
+                ->danger()
+                ->title("Gagal menyimpan hasil pemeriksaan " . $th->getMessage())
+                ->send();
+        }
+    }
+    public static function ubahPengajuan(array $data, Pengajuan $record)
+    {
+        try {
+            $record->update($data);
+            Notification::make()
+                ->success()
+                ->title("Berhasil menyimpan hasil perubahan")
+                ->send();
+        } catch (\Throwable $th) {
+            Notification::make()
+                ->danger()
+                ->title("Gagal menyimpan hasil perubahan " . $th->getMessage())
+                ->send();
+        }
+    }
+    public static function pemrosesanBendahara(array $data, Pengajuan $record)
+    {
+        try {
+            $data = [
+                ...$data,
+                "nominal_dibayarkan" => $data["nominal_dibayarkan"] ?? null,
+                "nominal_dikembalikan" => $data["nominal_dikembalikan"] ?? null,
+                "tanggal_pembayaran" => $data["tanggal_pembayaran"] ?? null,
+                "jenis_dokumen_id" => $data["jenis_dokumen_id"] ?? null,
+                "nomor_dokumen" => $data["nomor_dokumen"] ?? null,
+            ];
+            $record->update($data);
+            Notification::make()
+                ->success()
+                ->title("Berhasil menyimpan hasil pemrosesan pembayaran")
+                ->send();
+        } catch (\Throwable $th) {
+            Notification::make()
+                ->danger()
+                ->title("Gagal menyimpan hasil pemrosesan pembayaran " . $th->getMessage())
+                ->send();
+        }
+    }
 }
