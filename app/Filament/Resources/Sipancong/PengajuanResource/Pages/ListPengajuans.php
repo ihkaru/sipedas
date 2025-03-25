@@ -39,6 +39,20 @@ class ListPengajuans extends ListRecords
     {
         return [
             'Semua' => Tab::make(),
+            'Pengaju' => Tab::make()
+                ->modifyQueryUsing(
+                    fn(Builder $query) =>
+                    $query->orWhere('posisi_dokumen_id', 1)
+                        ->orWhere('status_pengajuan_ppk_id', 1)
+                        ->orWhere('status_pengajuan_ppk_id', 3)
+                        ->orWhere('status_pengajuan_ppk_id', 4)
+                        ->orWhere('status_pengajuan_bendahara_id', 1)
+                        ->orWhere('status_pengajuan_bendahara_id', 3)
+                        ->orWhere('status_pengajuan_bendahara_id', 4)
+                        ->orWhere('status_pengajuan_ppspm_id', 1)
+                        ->orWhere('status_pengajuan_ppspm_id', 3)
+                        ->orWhere('status_pengajuan_ppspm_id', 4)
+                ),
             'PPK' => Tab::make()
                 ->modifyQueryUsing(
                     fn(Builder $query) =>

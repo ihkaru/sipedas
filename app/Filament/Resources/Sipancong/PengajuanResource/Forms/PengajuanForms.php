@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Sipancong\PengajuanResource\Forms;
 
+use App\Models\Pegawai;
 use App\Models\Sipancong\JenisDokumen;
 use App\Models\Sipancong\Pengajuan;
 use App\Models\Sipancong\PosisiDokumen;
@@ -22,6 +23,10 @@ class PengajuanForms
     public static function pengajuanPembayaran()
     {
         return [
+            Select::make("nip_penanggung_jawab")
+                ->label("Penanggung Jawab")
+                ->options(Pegawai::pluck("nama", "nip"))
+                ->required(),
             Select::make("sub_fungsi_id")
                 ->options(Subfungsi::pluck('nama', 'id'))
                 ->preload()
@@ -58,6 +63,10 @@ class PengajuanForms
     public static function tanggapanPengaju()
     {
         return [
+            Select::make("nip_penanggung_jawab")
+                ->label("Penanggung Jawab")
+                ->options(Pegawai::pluck("nama", "nip"))
+                ->disabled(),
             Textarea::make('uraian_pengajuan')
                 ->readOnly(),
             TextInput::make("nominal_pengajuan")
@@ -95,6 +104,10 @@ class PengajuanForms
     public static function pemeriksaanPpk()
     {
         return [
+            Select::make("nip_penanggung_jawab")
+                ->label("Penanggung Jawab")
+                ->options(Pegawai::pluck("nama", "nip"))
+                ->disabled(),
             Textarea::make("uraian_pengajuan")
                 ->label("Uraian Pengajuan")
                 ->readOnly(),
@@ -131,6 +144,10 @@ class PengajuanForms
     public static function pemeriksaanBendahara()
     {
         return [
+            Select::make("nip_penanggung_jawab")
+                ->label("Penanggung Jawab")
+                ->options(Pegawai::pluck("nama", "nip"))
+                ->disabled(),
             Textarea::make("uraian_pengajuan")
                 ->label("Uraian Pengajuan")
                 ->readOnly(),
@@ -179,6 +196,10 @@ class PengajuanForms
     public static function pemeriksaanPpspm()
     {
         return [
+            Select::make("nip_penanggung_jawab")
+                ->label("Penanggung Jawab")
+                ->options(Pegawai::pluck("nama", "nip"))
+                ->disabled(),
             Textarea::make("uraian_pengajuan")
                 ->label("Uraian Pengajuan")
                 ->readOnly(),
@@ -236,6 +257,10 @@ class PengajuanForms
     public static function pemrosesanBendahara()
     {
         return [
+            Select::make("nip_penanggung_jawab")
+                ->label("Penanggung Jawab")
+                ->options(Pegawai::pluck("nama", "nip"))
+                ->disabled(),
             Textarea::make("uraian_pengajuan")
                 ->label("Uraian Pengajuan")
                 ->readOnly(),

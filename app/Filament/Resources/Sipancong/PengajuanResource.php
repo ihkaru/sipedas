@@ -141,9 +141,11 @@ class PengajuanResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->deferLoading()
             ->defaultSort("updated_at", "desc")
             ->columns([
                 TextColumn::make('subfungsi.nama')
+                    ->searchable()
                     ->label("Subfungsi")
                     ->searchable(),
                 TextColumn::make('nomor_pengajuan')
@@ -176,6 +178,7 @@ class PengajuanResource extends Resource
                     ->sortable(),
 
                 TextColumn::make("pegawai.nama")
+                    ->searchable()
                     ->label("Pengaju"),
                 TextColumn::make('tanggal_pengajuan')
                     ->label("Tanggal Pengajuan")

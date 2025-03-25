@@ -22,6 +22,7 @@ return new class extends Migration
             $table->decimal('nominal_pengajuan', 15, 2)->nullable();
             $table->string('link_folder_dokumen')->nullable();
             $table->string("nip_pengaju")->nullable();
+            $table->string("nip_penanggung_jawab")->nullable();
 
             $table->foreignId('posisi_dokumen_id')->nullable()->constrained('sp_posisi_dokumen')->nullOnDelete();
             $table->foreignId('status_pengajuan_ppk_id')->nullable()->constrained('sp_status_pengajuan')->nullOnDelete();
