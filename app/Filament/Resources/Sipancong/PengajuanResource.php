@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Sipancong;
 
+use App\Filament\Resources\Sipancong\PengajuanResource\Forms\PengajuanForms;
 use App\Filament\Resources\Sipancong\PengajuanResource\Pages;
 use App\Filament\Resources\Sipancong\PengajuanResource\RelationManagers;
 use App\Models\Sipancong\JenisDokumen;
@@ -27,6 +28,7 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\ActionsPosition;
+use Illuminate\Support\Facades\DB;
 
 class PengajuanResource extends Resource
 {
@@ -137,16 +139,35 @@ class PengajuanResource extends Resource
         return $table
             ->defaultSort("updated_at", "desc")
             ->columns([
-                TextColumn::make('statusPengajuanPpspm.nama')
-                    ->searchable()
-                    ->badge()
-                    ->sortable(),
                 TextColumn::make('nomor_pengajuan')
+                    ->sortable(
+                        query: fn($query, $direction) => $query->orderBy(
+                            DB::raw('CAST(nomor_pengajuan AS UNSIGNED)'),
+                            $direction
+                        )
+                    )
+                    ->numeric()
                     ->label("No")
                     ->searchable(),
                 TextColumn::make("uraian_pengajuan")
                     ->searchable()
                     ->label("Uraian Pengajuan"),
+                TextColumn::make('statusPengajuanPpk.nama')
+                    ->label("Status di PPK")
+                    ->badge()
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('statusPengajuanBendahara.nama')
+                    ->label("Status di Bendahara")
+                    ->badge()
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('statusPengajuanPpspm.nama')
+                    ->label("Status di PPSPM")
+                    ->searchable()
+                    ->badge()
+                    ->sortable(),
+
                 TextColumn::make("pegawai.nama")
                     ->label("Pengaju"),
                 TextColumn::make('tanggal_pengajuan')
@@ -164,32 +185,34 @@ class PengajuanResource extends Resource
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('link_folder_dokumen')
+                    ->label("Link Folder")
                     ->searchable(),
                 TextColumn::make('posisiDokumen.nama')
+                    ->label("Posisi Dokumen")
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('statusPengajuanPpk.nama')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('statusPengajuanBendahara.nama')
-                    ->searchable()
-                    ->sortable(),
+
                 TextColumn::make('nominal_dibayarkan')
+                    ->label("Nominal dibayarkan")
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('nominal_dikembalikan')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label("Nominal Dikembalikan")
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('status_pembayaran_id')
-                    ->numeric()
+                TextColumn::make('statusPembayaran.nama')
+                    ->label("Status Pembayaran")
                     ->sortable(),
                 TextColumn::make('tanggal_pembayaran')
                     ->date()
                     ->sortable(),
-                TextColumn::make('jenis_dokumen_id')
-                    ->numeric()
+                TextColumn::make('jenisDokumen.nama')
+                    ->label("Jenis Dokumen")
                     ->sortable(),
                 TextColumn::make('nomor_dokumen')
+                    ->label("No SPM/SPBY")
                     ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -216,31 +239,7 @@ class PengajuanResource extends Resource
                     Action::make("Aksi Pengaju")
                         ->label("Tanggapan Pengaju")
                         ->icon("heroicon-o-pencil")
-                        ->form([
-                            Textarea::make('uraian_pengajuan')
-                                ->readOnly(),
-                            Select::make('status_pengajuan_ppk_id')
-                                ->label("Status Pengajuan di PPK")
-                                ->options(StatusPengajuan::pluck('nama', 'id'))
-                                ->disabled(),
-                            Select::make('status_pengajuan_ppspm_id')
-                                ->label("Status Pengajuan di PPSPM")
-                                ->options(StatusPengajuan::pluck('nama', 'id'))
-                                ->disabled(),
-                            Select::make('status_pengajuan_bendahara_id')
-                                ->label("Status Pengajuan di Bendahara")
-                                ->options(StatusPengajuan::pluck('nama', 'id'))
-                                ->disabled(),
-                            Textarea::make('tanggapan_pengaju_ke_ppk')
-                                ->label("Tanggapan Pengaju ke PPK")
-                                ->columnSpanFull(),
-                            Textarea::make('tanggapan_pengaju_ke_ppspm')
-                                ->label("Tanggapan Pengaju ke PPSPM")
-                                ->columnSpanFull(),
-                            Textarea::make('tanggapan_pengaju_ke_bendahara')
-                                ->label("Tanggapan Pengaju ke Bendahara")
-                                ->columnSpanFull(),
-                        ])
+                        ->form(PengajuanForms::tanggapanPengaju())
                         ->fillForm(function (Pengajuan $record): array {
                             return $record->toArray();
                         })
