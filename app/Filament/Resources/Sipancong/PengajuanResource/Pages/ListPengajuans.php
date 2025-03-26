@@ -52,30 +52,30 @@ class ListPengajuans extends ListRecords
     public function getTabs(): array
     {
         return [
-            'Semua' => Tab::make(),
-            'Pengaju' => Tab::make()
+            'Semua' => Tab::make("Semua"),
+            'Pengaju' => Tab::make("Pengaju")
                 ->modifyQueryUsing(
                     fn(Builder $query) =>
                     $query->whereRaw(PengajuanServices::rawPerluPemeriksaanPengaju())
                 ),
-            'PPK' => Tab::make()
+            'PPK' => Tab::make("PPK")
                 ->modifyQueryUsing(
                     fn(Builder $query) =>
                     $query->whereRaw(PengajuanServices::rawPerluPemeriksaanPpk())
 
                 ),
-            'Bendahara' => Tab::make()
+            'Bendahara' => Tab::make("Bendahara")
                 ->modifyQueryUsing(
                     fn(Builder $query) =>
                     $query
                         ->whereRaw("(" . PengajuanServices::rawPerluPemeriksaanBendahara() . ") OR (" . PengajuanServices::rawPerluProsesBendahara() . ")")
                 ),
-            'PPSPM' => Tab::make()
+            'PPSPM' => Tab::make("PPSPM")
                 ->modifyQueryUsing(
                     fn(Builder $query) =>
                     $query->whereRaw(PengajuanServices::rawPerluPemeriksaanPpspm())
                 ),
-            'Selesai' => Tab::make()
+            'Selesai' => Tab::make("Selesai")
                 ->modifyQueryUsing(
                     fn(Builder $query) =>
                     $query->orWhere('status_pembayaran_id', 1)

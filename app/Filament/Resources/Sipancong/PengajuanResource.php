@@ -30,6 +30,7 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
@@ -249,12 +250,53 @@ class PengajuanResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('nip_penanggung_jawab')
+                    ->label("Penanggung Jawab")
+                    ->relationship('penanggungJawab', 'nama')
+                    ->searchable()
+                    ->preload(),
+                SelectFilter::make('nip_pengaju')
+                    ->label("Pengaju")
+                    ->relationship('pegawai', 'nama')
+                    ->multiple()
+                    ->searchable()
+                    ->preload(),
+                SelectFilter::make('sub_fungsi_id')
+                    ->label("Sub Fungsi")
+                    ->relationship('subfungsi', 'nama')
+                    ->multiple()
+                    ->preload(),
+                SelectFilter::make('status_pembayaran_id')
+                    ->label("Status Pembayaran")
+                    ->relationship('statusPembayaran', 'nama')
+                    ->multiple()
+                    ->preload(),
+                SelectFilter::make('status_pengajuan_ppk_id')
+                    ->label("Status Pengajuan ke PPK")
+                    ->relationship('statusPengajuanPpk', 'nama')
+                    ->multiple()
+                    ->preload(),
+                SelectFilter::make('status_pengajuan_bendahara_id')
+                    ->label("Status Pengajuan ke Bendahara")
+                    ->relationship('statusPengajuanBendahara', 'nama')
+                    ->multiple()
+                    ->preload(),
+                SelectFilter::make('status_pengajuan_ppspm_id')
+                    ->label("Status Pengajuan ke PPSPM")
+                    ->relationship('statusPengajuanPpspm', 'nama')
+                    ->multiple()
+                    ->preload(),
+                SelectFilter::make('jenisDokumen')
+                    ->label("Jenis Dokumen")
+                    ->relationship('jenisDokumen', 'nama')
+                    ->multiple()
+                    ->preload(),
             ])
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\EditAction::make(),
-                    Action::make("Link Folder")
+                    Action::make("linkfolder")
+                        ->label("Lihat Dokumen")
                         ->icon("heroicon-m-link")
                         ->url(fn(Pengajuan $record): string => $record->link_folder_dokumen)
                         ->openUrlInNewTab()
