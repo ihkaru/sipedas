@@ -161,6 +161,10 @@ class PengajuanResource extends Resource
                 TextColumn::make("uraian_pengajuan")
                     ->searchable()
                     ->label("Uraian Pengajuan"),
+                TextColumn::make('penanggungJawab.nama')
+                    ->label("Penanggung Jawab")
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('statusPengajuanPpk.nama')
                     ->label("Status di PPK")
                     ->badge()

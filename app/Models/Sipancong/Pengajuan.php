@@ -16,6 +16,10 @@ class Pengajuan extends Model
     {
         return $this->hasOne(Pegawai::class, "nip", "nip_pengaju");
     }
+    public function penanggungJawab()
+    {
+        return $this->hasOne(Pegawai::class, "nip", "nip_penanggung_jawab");
+    }
     public function posisiDokumen()
     {
         return $this->hasOne(PosisiDokumen::class, "id", "posisi_dokumen_id");
