@@ -82,6 +82,15 @@ class ListPengajuans extends ListRecords
                         ->orWhere('status_pengajuan_ppspm_id', 3)
                         ->orWhere('status_pengajuan_ppspm_id', 4)
                 ),
+            'Selesai' => Tab::make()
+                ->modifyQueryUsing(
+                    fn(Builder $query) =>
+                    $query->orWhere('status_pembayaran_id', 1)
+                        ->orWhere('status_pembayaran_id', 2)
+                        ->orWhere('status_pembayaran_id', 5)
+                        ->orWhere('status_pembayaran_id', 6)
+                        ->orWhere('status_pembayaran_id', 7)
+                ),
         ];
     }
 }

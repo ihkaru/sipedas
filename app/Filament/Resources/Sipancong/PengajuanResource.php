@@ -213,6 +213,7 @@ class PengajuanResource extends Resource
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('statusPembayaran.nama')
+                    ->badge()
                     ->label("Status Pembayaran")
                     ->sortable(),
                 TextColumn::make('tanggal_pembayaran')
