@@ -141,6 +141,7 @@ class PengajuanResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+
             ->deferLoading()
             ->defaultSort("updated_at", "desc")
             ->columns([
@@ -180,7 +181,16 @@ class PengajuanResource extends Resource
                     ->searchable()
                     ->badge()
                     ->sortable(),
-
+                TextColumn::make('error')
+                    ->label('Error Pengajuan')
+                    ->badge()
+                    ->color("danger")
+                    ->getStateUsing(function ($record) {
+                        $text = "";
+                        $text = ($record->link_folder_dokumen) ? $text . "" : $text . " Link folder dokumen tidak boleh kosong.";
+                        $text = ($record->nip_penanggung_jawab) ? $text . "" : $text . " Penanggung jawab tidak boleh kosong.";
+                        return trim($text) ? trim($text) : "-";
+                    }),
                 TextColumn::make("pegawai.nama")
                     ->searchable()
                     ->label("Pengaju"),

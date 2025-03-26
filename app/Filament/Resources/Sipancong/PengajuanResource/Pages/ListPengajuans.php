@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Sipancong\PengajuanResource\Pages;
 
 use App\Filament\Resources\Sipancong\PengajuanResource;
 use App\Filament\Resources\Sipancong\PengajuanResource\Forms\PengajuanForms;
+use App\Filament\Resources\Sipancong\PenugasanResource\Widgets\StatsProsesPembayaran;
 use App\Models\Sipancong\Pengajuan;
 use App\Models\Sipancong\PosisiDokumen;
 use App\Models\Sipancong\Subfungsi;
@@ -15,6 +16,8 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Widgets\StatsOverviewWidget;
+use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Database\Eloquent\Builder;
 
 class ListPengajuans extends ListRecords
@@ -35,6 +38,17 @@ class ListPengajuans extends ListRecords
                 }),
         ];
     }
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            StatsProsesPembayaran::class
+        ];
+    }
+    public function getHeaderWidgetsColumns(): int|string|array
+    {
+        return 4;
+    }
+
     public function getTabs(): array
     {
         return [
@@ -42,45 +56,24 @@ class ListPengajuans extends ListRecords
             'Pengaju' => Tab::make()
                 ->modifyQueryUsing(
                     fn(Builder $query) =>
-                    $query->orWhere('posisi_dokumen_id', 1)
-                        ->orWhere('status_pengajuan_ppk_id', 1)
-                        ->orWhere('status_pengajuan_ppk_id', 3)
-                        ->orWhere('status_pengajuan_ppk_id', 4)
-                        ->orWhere('status_pengajuan_bendahara_id', 1)
-                        ->orWhere('status_pengajuan_bendahara_id', 3)
-                        ->orWhere('status_pengajuan_bendahara_id', 4)
-                        ->orWhere('status_pengajuan_ppspm_id', 1)
-                        ->orWhere('status_pengajuan_ppspm_id', 3)
-                        ->orWhere('status_pengajuan_ppspm_id', 4)
+                    $query->whereRaw(PengajuanServices::rawPerluPemeriksaanPengaju())
                 ),
             'PPK' => Tab::make()
                 ->modifyQueryUsing(
                     fn(Builder $query) =>
-                    $query->orWhere('posisi_dokumen_id', 2)
-                        ->orWhere('status_pengajuan_ppk_id', 1)
-                        ->orWhere('status_pengajuan_ppk_id', 3)
-                        ->orWhere('status_pengajuan_ppk_id', 4)
+                    $query->whereRaw(PengajuanServices::rawPerluPemeriksaanPpk())
 
                 ),
             'Bendahara' => Tab::make()
                 ->modifyQueryUsing(
                     fn(Builder $query) =>
                     $query
-                        ->orWhere('status_pengajuan_bendahara_id', 1)
-                        ->orWhere('status_pengajuan_bendahara_id', 3)
-                        ->orWhere('status_pengajuan_bendahara_id', 4)
-                        ->orWhere('status_pembayaran_id', 3)
-                        ->orWhere('status_pembayaran_id', 4)
-                        ->orWhere('status_pembayaran_id', 6)
-
+                        ->whereRaw("(" . PengajuanServices::rawPerluPemeriksaanBendahara() . ") OR (" . PengajuanServices::rawPerluProsesBendahara() . ")")
                 ),
             'PPSPM' => Tab::make()
                 ->modifyQueryUsing(
                     fn(Builder $query) =>
-                    $query->orWhere('posisi_dokumen_id', 3)
-                        ->orWhere('status_pengajuan_ppspm_id', 1)
-                        ->orWhere('status_pengajuan_ppspm_id', 3)
-                        ->orWhere('status_pengajuan_ppspm_id', 4)
+                    $query->whereRaw(PengajuanServices::rawPerluPemeriksaanPpspm())
                 ),
             'Selesai' => Tab::make()
                 ->modifyQueryUsing(

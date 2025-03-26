@@ -132,7 +132,7 @@ class PengajuanServices
         return !(
             $pengajuan->status_pengajuan_ppk_id == 2 ||
             $pengajuan->status_pengajuan_ppk_id == 5
-        );
+        ) || $pengajuan->posisi_dokumen_id == 2;
     }
     public static function isSiapDiperiksaBendahara(Pengajuan $pengajuan)
     {
@@ -143,7 +143,8 @@ class PengajuanServices
             !(
                 $pengajuan->status_pengajuan_bendahara_id == 2 ||
                 $pengajuan->status_pengajuan_bendahara_id == 5
-            );
+            )
+            || ($pengajuan->status_pembayaran_id == 3);
     }
     public static function isSiapDiperiksaPpspm(Pengajuan $pengajuan)
     {
@@ -158,7 +159,7 @@ class PengajuanServices
             !(
                 $pengajuan->status_pengajuan_ppspm_id == 2 ||
                 $pengajuan->status_pengajuan_ppspm_id == 5
-            );
+            ) || $pengajuan->posisi_dokumen_id == 3;;
     }
     public static function isSiapDiprosesBendahara(Pengajuan $pengajuan)
     {
@@ -174,5 +175,47 @@ class PengajuanServices
                 $pengajuan->status_pengajuan_ppspm_id == 2 ||
                 $pengajuan->status_pengajuan_ppspm_id == 5
             );
+    }
+
+    public static function jumlahPerluPemeriksaanPpk()
+    {
+        return Pengajuan::whereRaw(self::rawPerluPemeriksaanPpk())->count();
+    }
+    public static function jumlahPerluPemeriksaanBendahara()
+    {
+        return Pengajuan::whereRaw(self::rawPerluPemeriksaanBendahara())->count();
+    }
+    public static function jumlahPerluPemeriksaanPpspm()
+    {
+        return Pengajuan::whereRaw(self::rawPerluPemeriksaanPpspm())->count();
+    }
+    public static function jumlahPerluProsesBendahara()
+    {
+        return Pengajuan::whereRaw(self::rawPerluProsesBendahara())->count();
+    }
+
+    public static function rawPerluPemeriksaanPengaju()
+    {
+        return "status_pengajuan_ppk_id IN (1,3,4) OR status_pengajuan_bendahara_id IN (1,3,4) OR status_pengajuan_ppspm_id IN (1,3,4) OR link_folder_dokumen IS NULL";
+    }
+    public static function rawPerluPemeriksaanPpk()
+    {
+        return "status_pengajuan_ppk_id NOT IN (2,5) OR status_pengajuan_ppk_id IS NULL";
+    }
+    public static function rawPerluPemeriksaanBendahara()
+    {
+        return "status_pengajuan_bendahara_id IS NULL OR status_pengajuan_ppk_id IN (2,5) AND status_pengajuan_bendahara_id NOT IN (2,5) OR (status_pembayaran_id = 3)";
+    }
+    public static function rawPerluPemeriksaanPpspm()
+    {
+        return "status_pengajuan_ppk_id IN (2,5) AND status_pengajuan_bendahara_id IN (2,5) AND (status_pengajuan_bendahara_id IN (3,4,NULL))";
+    }
+    public static function rawPerluProsesBendahara()
+    {
+        return "((status_pengajuan_ppk_id IN (2,5) AND status_pengajuan_bendahara_id IN (2,5) AND status_pengajuan_bendahara_id IN (2,5) AND tanggal_pembayaran IS NULL OR status_pembayaran_id IS NULL) OR (tanggal_pembayaran IS NOT NULL AND status_pembayaran_id = 7))";
+    }
+    public static function rawSelesaiProsesBendahara()
+    {
+        return "tanggal_pembayaran IS NOT NULL AND status_pembayaran_id IS NOT NULL";
     }
 }

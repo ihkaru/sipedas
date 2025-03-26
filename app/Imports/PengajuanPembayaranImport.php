@@ -43,8 +43,10 @@ class PengajuanPembayaranImport implements ToModel, WithHeadingRow, WithValidati
             'nomor_detail_fa' => trim($row['nomor_detail_fa']),
             'uraian_pengajuan' => trim($row['uraian_pengajuan']),
             'nominal_pengajuan' => $nominal_pengajuan,
-            'link_folder_dokumen' => trim($row['link_folder_dokumen']),
+            'link_folder_dokumen' => trim($row['link_folder_dokumen']) == '' ? null : trim($row['link_folder_dokumen']),
             'posisi_dokumen_id' => trim($row['posisi_dokumen_id']) == '' ? null : trim($row['posisi_dokumen_id']),
+            'status_pengajuan_ppk_id' => trim($row['status_pengajuan_ppk_id']) == '' ? null : trim($row['status_pengajuan_ppk_id']),
+            'status_pengajuan_bendahara_id' => trim($row['status_pengajuan_bendahara_id']) == '' ? null : trim($row['status_pengajuan_bendahara_id']),
             'status_pengajuan_ppspm_id' => trim($row['status_pengajuan_ppspm_id']) == '' ? null : trim($row['status_pengajuan_ppspm_id']),
             'catatan_ppspm' => trim($row['catatan_ppspm']),
             'tanggapan_pengaju_ke_ppspm' => trim($row['tanggapan_pengaju_ke_ppspm']),
@@ -52,8 +54,9 @@ class PengajuanPembayaranImport implements ToModel, WithHeadingRow, WithValidati
             'nominal_dikembalikan' => $nominal_dikembalikan,
             'status_pembayaran_id' => trim($row['status_pembayaran_id']) == '' ? null : trim($row['status_pembayaran_id']),
             'tanggal_pembayaran' => $tanggal_pembayaran,
+            'tanggal_pengajuan' => ($tanggal_pembayaran) ? Carbon::parse($tanggal_pembayaran)->addDay(-1) : now(),
             'jenis_dokumen_id' => trim($row['jenis_dokumen_id']) == '' ? null : trim($row['jenis_dokumen_id']),
-            'nomor_dokumen' => trim($row['nomor_dokumen']),
+            'nomor_dokumen' => trim($row['nomor_dokumen']) == '' ? null : trim($row['nomor_dokumen']),
         ]);
     }
 

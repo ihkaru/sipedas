@@ -28,6 +28,9 @@ class PengajuanForms
                 ->searchable()
                 ->options(Pegawai::pluck("nama", "nip"))
                 ->required(),
+            DatePicker::make("tanggal_pengajuan")
+                ->label("Tanggal Pengajuan")
+                ->helperText("Tanggal Pengajuan Harus Sama atau Lebih Akhir daripada Tanggal Penyelesaian Kegiatan di Dokumen"),
             Select::make("sub_fungsi_id")
                 ->options(Subfungsi::pluck('nama', 'id'))
                 ->preload()
@@ -56,7 +59,7 @@ class PengajuanForms
 
             Select::make("posisi_dokumen_id")
                 ->label("Posisi Dokumen Fisik")
-                ->options(PosisiDokumen::pluck("nama", "id"))
+                ->options(PosisiDokumen::whereIn('nama', ["Di PPK"])->pluck("nama", "id"))
                 ->helperText("Jika setelah pengajuan ini Anda memberikan dokumen fisik ke PPK, maka isikan PPK")
                 ->required(),
         ];
@@ -73,6 +76,10 @@ class PengajuanForms
             TextInput::make("nominal_pengajuan")
                 ->label("Nominal Pengajuan")
                 ->readOnly(),
+            Select::make("posisi_dokumen_id")
+                ->label("Posisi Dokumen Fisik")
+                ->options(PosisiDokumen::pluck("nama", "id"))
+                ->disabled(),
             Select::make('status_pengajuan_ppk_id')
                 ->label("Status Pengajuan di PPK")
                 ->options(StatusPengajuan::pluck('nama', 'id'))
@@ -137,7 +144,7 @@ class PengajuanForms
                 ->readOnly(),
             Select::make("posisi_dokumen_id")
                 ->label("Posisi Dokumen Fisik")
-                ->options(PosisiDokumen::pluck("nama", "id"))
+                ->options(PosisiDokumen::whereIn("nama", ["Di PPK", "Di Bendahara"])->pluck("nama", "id"))
                 ->helperText("Jika setelah pengajuan ini Anda memberikan dokumen fisik ke Bendahara, maka isikan Bendahara")
                 ->required(),
         ];
@@ -169,7 +176,7 @@ class PengajuanForms
             Select::make("status_pengajuan_ppk_id")
                 ->options(StatusPengajuan::whereNot('nama', 'Diajukan')->pluck("nama", "id"))
                 ->disabled()
-                ->label("Hasil Pemeriksaan Bendahara")
+                ->label("Hasil Pemeriksaan PPK")
                 ->required(),
             Select::make("status_pengajuan_bendahara_id")
                 ->options(StatusPengajuan::whereNot('nama', 'Diajukan')->pluck("nama", "id"))
@@ -189,7 +196,7 @@ class PengajuanForms
                 ->readOnly(),
             Select::make("posisi_dokumen_id")
                 ->label("Posisi Dokumen Fisik")
-                ->options(PosisiDokumen::pluck("nama", "id"))
+                ->options(PosisiDokumen::whereIn("nama", ["Di Bendahara", "Di PPSPM"])->pluck("nama", "id"))
                 ->helperText("Jika setelah pengajuan ini Anda memberikan dokumen fisik ke PPSPM, maka isikan PPSPM")
                 ->required(),
         ];
@@ -250,7 +257,7 @@ class PengajuanForms
                 ->readOnly(),
             Select::make("posisi_dokumen_id")
                 ->label("Posisi Dokumen Fisik")
-                ->options(PosisiDokumen::pluck("nama", "id"))
+                ->options(PosisiDokumen::whereIn("nama", ["Di Bendahara", "Di PPSPM"])->pluck("nama", "id"))
                 ->helperText("Jika setelah pengajuan ini Anda memberikan dokumen fisik ke Bendahara, maka isikan Bendahara")
                 ->required(),
         ];
