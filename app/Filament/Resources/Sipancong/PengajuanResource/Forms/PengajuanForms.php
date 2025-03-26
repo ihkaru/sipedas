@@ -25,6 +25,7 @@ class PengajuanForms
         return [
             Select::make("nip_penanggung_jawab")
                 ->label("Penanggung Jawab")
+                ->searchable()
                 ->options(Pegawai::pluck("nama", "nip"))
                 ->required(),
             Select::make("sub_fungsi_id")
