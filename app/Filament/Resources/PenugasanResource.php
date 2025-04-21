@@ -750,7 +750,7 @@ class PenugasanResource extends Resource
                     ]),
                 Action::make("setujui")
                     ->visible(function (Penugasan $record) {
-                        return $record->canSetujui();;
+                        return $record->canSetujui();
                     })
                     ->action(function (Penugasan $record) {
                         if ($record->setujui())

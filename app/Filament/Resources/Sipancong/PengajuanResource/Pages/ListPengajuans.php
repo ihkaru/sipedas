@@ -55,8 +55,10 @@ class ListPengajuans extends ListRecords
             'Semua' => Tab::make("Semua"),
             'Pengaju' => Tab::make("Pengaju")
                 ->modifyQueryUsing(
-                    fn(Builder $query) =>
-                    $query->whereRaw(PengajuanServices::rawPerluPemeriksaanPengaju())
+                    function () {
+                        // dd($this->getFilteredTableQuery()->clone());
+                        return $this->whereRaw(PengajuanServices::rawPerluPemeriksaanPengaju());
+                    }
                 ),
             'PPK' => Tab::make("PPK")
                 ->modifyQueryUsing(
