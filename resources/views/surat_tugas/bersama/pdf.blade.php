@@ -1214,7 +1214,7 @@
                     text-align: left;
                 "
                 >
-                Nomor : {{$penugasans->first()->suratPerjadin->nomor_surat_perjadin}}
+                Nomor : {{$penugasan->suratPerjadin->nomor_surat_perjadin}}
                 </p>
             </div>
         </div>
