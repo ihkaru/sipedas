@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIKENDIS - Sistem Informasi Kegiatan Dinas</title>
+    <title>DOKTER-V - Sistem Informasi Kegiatan Dinas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
@@ -76,7 +76,7 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container">
-            <a class="navbar-brand" href="#">SIKENDIS</a>
+            <a class="navbar-brand" href="#">DOKTER-V</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -98,44 +98,61 @@
 
     <header class="hero text-center" id="beranda">
         <div class="container hero-content">
-            <h1 class="display-4" data-aos="fade-up">SIKENDIS</h1>
-            <p class="lead" data-aos="fade-up">Sistem Informasi Kegiatan Dinas BPS Kabupaten Mempawah</p>
+            <h1 class="display-4" style="font-weight: medium" data-aos="fade-up">DOKTER-V</h1>
+            <p class="lead" data-aos="fade-up">Digitalisasi dan Otomasi Kelola Transaksi Keuangan Elektronik Real-time - Verifikasi.</p>
             <a href="/a" class="btn btn-primary btn-lg" data-aos="fade-up">Mulai Sekarang</a>
         </div>
     </header>
 
-    <section class="py-5" id="fitur">
-        <div class="container">
-            <h2 class="text-center mb-5">Fitur Utama</h2>
-            <div class="row">
-                <div class="col-md-4 text-center mb-4" data-aos="fade-up">
-                    <i class="fas fa-file-alt feature-icon"></i>
-                    <h3>Pembuatan Surat Tugas</h3>
-                    <p>Buat surat tugas dengan mudah dan cepat sesuai kebutuhan Anda.</p>
-                </div>
-                <div class="col-md-4 text-center mb-4" data-aos="fade-up">
-                    <i class="fas fa-plane feature-icon"></i>
-                    <h3>Perjalanan Dinas</h3>
-                    <p>Kelola surat perjalanan dinas dengan efisien dan terorganisir.</p>
-                </div>
-                <div class="col-md-4 text-center mb-4" data-aos="fade-up">
-                    <i class="fas fa-chart-line feature-icon"></i>
-                    <h3>Monitoring</h3>
-                    <p>Pantau status surat tugas dan perjalanan dinas dari awal hingga akhir.</p>
-                </div>
+<section class="py-5" id="fitur">
+    <div class="container">
+        <h2 class="text-center mb-5">Fitur Utama</h2>
+        <div class="row">
+            <div class="col-md-4 text-center mb-4" data-aos="fade-up">
+                <i class="fas fa-file-alt feature-icon"></i>
+                <h3>Pembuatan Surat Tugas</h3>
+                <p>Buat surat tugas dengan mudah dan cepat sesuai kebutuhan Anda.</p>
+            </div>
+            <div class="col-md-4 text-center mb-4" data-aos="fade-up">
+                <i class="fas fa-plane feature-icon"></i>
+                <h3>Perjalanan Dinas</h3>
+                <p>Kelola surat perjalanan dinas dengan efisien dan terorganisir.</p>
+            </div>
+            <div class="col-md-4 text-center mb-4" data-aos="fade-up">
+                <i class="fas fa-chart-line feature-icon"></i>
+                <h3>Monitoring</h3>
+                <p>Pantau status surat tugas dan perjalanan dinas dari awal hingga akhir.</p>
+            </div>
+            <div class="col-md-4 text-center mb-4" data-aos="fade-up">
+                <i class="fas fa-money-bill-wave feature-icon"></i>
+                <h3>Monitoring Pembayaran</h3>
+                <p>Pantau kelengkapan dokumen untuk semua jenis pencairan keuangan (Transport Lokal, Perjalanan Dinas,
+                    Honor Survei, dan Uang Makan/Lembur, dll).</p>
+            </div>
+            <div class="col-md-4 text-center mb-4" data-aos="fade-up">
+                <i class="fas fa-check-circle feature-icon"></i>
+                <h3>Verifikasi Dokumen</h3>
+                <p>Cek status pemenuhan dan validasi dokumen untuk setiap jenis pembayaran.</p>
+            </div>
+            <div class="col-md-4 text-center mb-4" data-aos="fade-up">
+                <i class="fas fa-bell feature-icon"></i>
+                <h3>Notifikasi</h3>
+                <p>Dapatkan pemberitahuan otomatis untuk dokumen yang belum lengkap atau memerlukan tindakan lebih
+                    lanjut.</p>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
     <section class="bg-light py-5" id="tentang">
         <div class="container">
-            <h2 class="text-center mb-5">Tentang SIKENDIS</h2>
+            <h2 class="text-center mb-5">Tentang DOKTER-V</h2>
             <div class="row">
                 <div class="col-md-6" data-aos="fade-up">
-                    <p>SIKENDIS adalah aplikasi yang dikembangkan oleh Pranata Komputer BPS Kabupaten Mempawah untuk mengakomodasi berbagai kebutuhan di satuan kerja yang belum terpenuhi oleh aplikasi lain.</p>
+                    <p>DOKTER-V adalah aplikasi yang dikembangkan oleh Kepala Sub Bagian Umum bersama Pranata Komputer BPS Kabupaten Mempawah untuk mengakomodasi berbagai kebutuhan di satuan kerja yang belum terpenuhi oleh aplikasi lain.</p>
                 </div>
                 <div class="col-md-6" data-aos="fade-up">
-                    <p>Dengan SIKENDIS, proses pembuatan surat tugas dan perjalanan dinas menjadi lebih efisien, terorganisir, dan mudah dimonitor. Aplikasi ini memastikan setiap langkah dalam proses administrasi berjalan lancar dan sesuai prosedur.</p>
+                    <p>Dengan DOKTER-V, proses pembuatan surat tugas dan pengajuan pembayaran menjadi lebih efisien, terorganisir, dan mudah dimonitor. Aplikasi ini memastikan setiap langkah dalam proses administrasi berjalan lancar dan sesuai prosedur.</p>
                 </div>
             </div>
         </div>
@@ -143,7 +160,7 @@
 
     <footer class="bg-dark text-white py-4">
         <div class="container text-center">
-            <p>&copy; 2024 SIKENDIS - BPS Kabupaten Mempawah. All rights reserved.</p>
+            <p>&copy; 2024 DOKTER-V - BPS Kabupaten Mempawah. All rights reserved.</p>
         </div>
     </footer>
 

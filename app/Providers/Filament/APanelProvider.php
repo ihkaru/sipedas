@@ -35,7 +35,7 @@ class APanelProvider extends PanelProvider
             ->login()
             ->favicon(env('APP_URL') . "/favicon.ico")
             // ->brandLogo(env('APP_URL')."/logo.svg")
-            ->brandName('SIMPAN-ADIK')
+            ->brandName('DOKTER-V')
             ->colors([
                 'primary' => Color::Teal,
             ])
