@@ -693,6 +693,7 @@
           @if($penugasan->pegawai?->nip)
             {{$penugasan->pegawai->jabatan}}
           @else
+
           {{$penugasan->jenisPetugas}} BPS {{ucwords(strtolower($namaSatker))}}
           @endif
           </p>
