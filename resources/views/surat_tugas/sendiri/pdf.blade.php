@@ -690,7 +690,7 @@
               text-align: left;
             "
           >
-            @if ($penugasan->pegawai?->nip)
+          @if($penugasan->pegawai?->nip)
             {{$penugasan->pegawai->jabatan}}
           @else
           {{$penugasan->jenisPetugas}} BPS {{ucwords(strtolower($namaSatker))}}
