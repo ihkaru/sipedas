@@ -690,7 +690,11 @@
               text-align: left;
             "
           >
-            {{$penugasan->jenisPetugas}} BPS {{ucwords(strtolower($namaSatker))}}
+            @if ($penugasan->pegawai)
+            {{$penugasan->pegawai->jabatan}}
+          @else
+          {{$penugasan->jenisPetugas}} BPS {{ucwords(strtolower($namaSatker))}}
+          @endif
           </p>
           <br>
         </td>
