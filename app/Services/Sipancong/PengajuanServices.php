@@ -137,7 +137,7 @@ class PengajuanServices
             $namaPanggilanPpk = $userPpk?->pegawai?->panggilan;
             // $namaPanggilanPenerima = $pegawaiPenerima->panggilan;
             $targetWa = $pegawaiPenerima->nomor_wa;
-            $message = "*Perlu Perbaikan | DOKTER-V* \n\nHalo, *$pengaju*\nPengajuanmu dengan uraian\n$uraianPengajuan\nNominal: $nominalPengajuan\n\nSudah diperiksa oleh *$namaPanggilanPpk* sebagai PPK\n\nCatatan dari beliau gini nih:\n *$hasilPemeriksaan*\n\nBuka link berikut buat melanjutkan proses perbaikan dengan *Perbaiki Pengajuan* ya!\n\n$linkKeAksi\n\nSemangatt!!";
+            $message = "*Perlu Perbaikan | DOKTER-V* \n\nHalo, *$pengaju*\nPengajuanmu dengan uraian\n$uraianPengajuan\nNominal: $nominalPengajuan\n\nSudah diperiksa oleh *$namaPanggilanPpk* sebagai PPK\n\nCatatan dari beliau gini nih:\n *$hasilPemeriksaan*\n\nBuka link berikut buat melanjutkan proses perbaikan dengan aksi *Perbaiki Pengajuan* dan *Tanggapan Pengaju* ya!\n\n$linkKeAksi\n\nSemangatt!!";
         }
 
         // Notifikasi Disetujui ke PPSPM
@@ -197,7 +197,7 @@ class PengajuanServices
             $namaPanggilanPpspm = $userPpspm?->pegawai?->panggilan;
             // $namaPanggilanPenerima = $pegawaiPenerima->panggilan;
             $targetWa = $pegawaiPenerima->nomor_wa;
-            $message = "*Perlu Perbaikan | DOKTER-V* \n\nHalo, *$pengaju*\nPengajuanmu dengan uraian\n$uraianPengajuan\nNominal: $nominalPengajuan\n\nSudah diperiksa oleh *$namaPanggilanPpspm* sebagai PPSPM\n\nCatatan dari beliau gini nih:\n *$hasilPemeriksaan*\n\nBuka link berikut buat melanjutkan proses perbaikannya dengan *Perbaiki Pengajuan* ya!\n\n$linkKeAksi\n\nSemangatt!!";
+            $message = "*Perlu Perbaikan | DOKTER-V* \n\nHalo, *$pengaju*\nPengajuanmu dengan uraian\n$uraianPengajuan\nNominal: $nominalPengajuan\n\nSudah diperiksa oleh *$namaPanggilanPpspm* sebagai PPSPM\n\nCatatan dari beliau gini nih:\n *$hasilPemeriksaan*\n\nBuka link berikut buat melanjutkan proses perbaikannya dengan aksi *Perbaiki Pengajuan* dan *Tanggapan Pengaju* ya!\n\n$linkKeAksi\n\nSemangatt!!";
         }
 
         // Notifikasi Disetujui ke Bendahara
@@ -256,7 +256,7 @@ class PengajuanServices
             $namaPanggilanBendahara = $userBendahara?->pegawai?->panggilan;
             // $namaPanggilanPenerima = $pegawaiPenerima->panggilan;
             $targetWa = $pegawaiPenerima->nomor_wa;
-            $message = "*Perlu Perbaikan | DOKTER-V* \n\nHalo, *$pengaju*\nPengajuanmu dengan uraian\n$namaPanggilanBendahara\nNominal: $nominalPengajuan\n\nSudah diperiksa oleh *$namaPanggilanBendahara* sebagai Bendahara nih\n\nCatatan dari beliau gini nih:\n *$hasilPemeriksaan*\n\nBuka link berikut buat melanjutkan proses perbaikannya dengan *Perbaiki Pengajuan* ya!\n\n$linkKeAksi\n\nSemangatt!!";
+            $message = "*Perlu Perbaikan | DOKTER-V* \n\nHalo, *$pengaju*\nPengajuanmu dengan uraian\n$namaPanggilanBendahara\nNominal: $nominalPengajuan\n\nSudah diperiksa oleh *$namaPanggilanBendahara* sebagai Bendahara nih\n\nCatatan dari beliau gini nih:\n *$hasilPemeriksaan*\n\nBuka link berikut buat melanjutkan proses perbaikannya dengan aksi *Perbaiki Pengajuan* dan *Tanggapan Pengaju* ya!\n\n$linkKeAksi\n\nSemangatt!!";
         }
 
         // Notifikasi Disetujui ke Pengaju
