@@ -57,6 +57,12 @@ class PegawaiResource extends Resource
                 Forms\Components\TextInput::make('unit_kerja')
                     ->required()
                     ->maxLength(255),
+                Forms\Components\TextInput::make('panggilan')
+                    ->required()
+                    ->maxLength(255),
+                Forms\Components\TextInput::make('nomor_wa')
+                    ->required()
+                    ->maxLength(255),
             ]);
     }
 

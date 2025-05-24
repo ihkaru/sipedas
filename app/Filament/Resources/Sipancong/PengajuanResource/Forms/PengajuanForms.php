@@ -57,11 +57,11 @@ class PengajuanForms
                 ->required()
                 ->numeric(),
 
-            Select::make("posisi_dokumen_id")
-                ->label("Posisi Dokumen Fisik")
-                ->options(PosisiDokumen::whereIn('nama', ["Di PPK"])->pluck("nama", "id"))
-                ->helperText("Jika setelah pengajuan ini Anda memberikan dokumen fisik ke PPK, maka isikan PPK")
-                ->required(),
+            // Select::make("posisi_dokumen_id")
+            //     ->label("Posisi Dokumen Fisik")
+            //     ->options(PosisiDokumen::whereIn('nama', ["Di PPK"])->pluck("nama", "id"))
+            //     ->helperText("Jika setelah pengajuan ini Anda memberikan dokumen fisik ke PPK, maka isikan PPK")
+            //     ->required(),
         ];
     }
     public static function tanggapanPengaju()
@@ -130,8 +130,7 @@ class PengajuanForms
                     ->openUrlInNewTab())
                 ->label("Link Folder Dokumen")
                 ->readOnly()
-                ->helperText("Anda dapat menimpa (replace) file yang sudah ditandatangani di folder ini")
-                ->required(),
+                ->helperText("Anda dapat menimpa (replace) file yang sudah ditandatangani di folder ini"),
             Select::make("status_pengajuan_ppk_id")
                 ->options(StatusPengajuan::whereNot('nama', 'Diajukan')->pluck("nama", "id"))
                 ->label("Hasil Pemeriksaan PPK")
@@ -142,11 +141,11 @@ class PengajuanForms
             Textarea::make("tanggapan_pengaju_ke_ppk")
                 ->label("Tanggapan dari Pengaju ke PPK")
                 ->readOnly(),
-            Select::make("posisi_dokumen_id")
-                ->label("Posisi Dokumen Fisik")
-                ->options(PosisiDokumen::whereIn("nama", ["Di PPK", "Di Bendahara"])->pluck("nama", "id"))
-                ->helperText("Jika setelah pengajuan ini Anda memberikan dokumen fisik ke Bendahara, maka isikan Bendahara")
-                ->required(),
+            // Select::make("posisi_dokumen_id")
+            //     ->label("Posisi Dokumen Fisik")
+            //     ->options(PosisiDokumen::whereIn("nama", ["Di PPK", "Di Bendahara"])->pluck("nama", "id"))
+            //     ->helperText("Jika setelah pengajuan ini Anda memberikan dokumen fisik ke Bendahara, maka isikan Bendahara")
+            //     ->required(),
         ];
     }
     public static function pemeriksaanBendahara()
@@ -172,12 +171,11 @@ class PengajuanForms
                 )
                 ->label("Link Folder Dokumen")
                 ->readOnly()
-                ->helperText("Anda dapat menimpa (replace) file yang sudah ditandatangani di folder ini"),
+                ->helperText("Jangan lupa menambahkan bukti dukung yang diperlukan di folder ini ya!"),
             Select::make("status_pengajuan_ppk_id")
                 ->options(StatusPengajuan::whereNot('nama', 'Diajukan')->pluck("nama", "id"))
                 ->disabled()
-                ->label("Hasil Pemeriksaan PPK")
-                ->required(),
+                ->label("Hasil Pemeriksaan PPK"),
             Select::make("status_pengajuan_bendahara_id")
                 ->options(StatusPengajuan::whereNot('nama', 'Diajukan')->pluck("nama", "id"))
                 ->helperText(new HtmlString("Pastikan Bendahara <strong>telah menandatangani</strong> dokumen fisik atau softfile sebelum menyetujui!"))
@@ -194,11 +192,11 @@ class PengajuanForms
             Textarea::make("tanggapan_pengaju_ke_bendahara")
                 ->label("Tanggapan dari Pengaju ke Bendahara")
                 ->readOnly(),
-            Select::make("posisi_dokumen_id")
-                ->label("Posisi Dokumen Fisik")
-                ->options(PosisiDokumen::whereIn("nama", ["Di Bendahara", "Di PPSPM"])->pluck("nama", "id"))
-                ->helperText("Jika setelah pengajuan ini Anda memberikan dokumen fisik ke PPSPM, maka isikan PPSPM")
-                ->required(),
+            // Select::make("posisi_dokumen_id")
+            //     ->label("Posisi Dokumen Fisik")
+            //     ->options(PosisiDokumen::whereIn("nama", ["Di PPK", "Di Bendahara", "Di PPSPM"])->pluck("nama", "id"))
+            //     ->helperText("Jika setelah pengajuan ini Anda memberikan dokumen fisik ke PPSPM, maka isikan PPSPM. Pilih 'Di PPK' untuk mengembalikan ke PPK")
+            //     ->required(),
         ];
     }
     public static function pemeriksaanPpspm()
@@ -255,11 +253,11 @@ class PengajuanForms
             Textarea::make("tanggapan_pengaju_ke_ppspm")
                 ->label("Tanggapan dari Pengaju ke PPSPM")
                 ->readOnly(),
-            Select::make("posisi_dokumen_id")
-                ->label("Posisi Dokumen Fisik")
-                ->options(PosisiDokumen::whereIn("nama", ["Di Bendahara", "Di PPSPM"])->pluck("nama", "id"))
-                ->helperText("Jika setelah pengajuan ini Anda memberikan dokumen fisik ke Bendahara, maka isikan Bendahara")
-                ->required(),
+            // Select::make("posisi_dokumen_id")
+            //     ->label("Posisi Dokumen Fisik")
+            //     ->options(PosisiDokumen::whereIn("nama", ["Di Bendahara", "Di PPSPM"])->pluck("nama", "id"))
+            //     ->helperText("Jika setelah pengajuan ini Anda memberikan dokumen fisik ke Bendahara, maka isikan Bendahara")
+            //     ->required(),
         ];
     }
     public static function pemrosesanBendahara()
@@ -276,7 +274,7 @@ class PengajuanForms
                 ->label("Nominal Pengajuan")
                 ->readOnly(),
             TextInput::make("link_folder_dokumen")
-                ->hintAction(
+                ->suffixAction(
                     Action::make("bukaFolder")
                         ->hidden(fn(Pengajuan $record): bool => !($record->link_folder_dokumen))
                         ->icon("heroicon-m-link")
@@ -311,8 +309,7 @@ class PengajuanForms
                 ->required(function (Get $get) {
                     return collect([1, 2, 4, 5, 6, 7])->contains($get('status_pembayaran_id'));
                 })
-                ->numeric()
-                ->required(),
+                ->numeric(),
             TextInput::make("nominal_dikembalikan")
                 ->label("Nominal yang Dikembalikan")
                 ->numeric()

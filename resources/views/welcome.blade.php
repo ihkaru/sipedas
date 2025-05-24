@@ -99,7 +99,7 @@
     <header class="hero text-center" id="beranda">
         <div class="container hero-content">
             <h1 class="display-4" style="font-weight: medium" data-aos="fade-up">DOKTER-V</h1>
-            <p class="lead" data-aos="fade-up">Digitalisasi dan Otomasi Kelola Transaksi Keuangan Elektronik Real-time - Verifikasi.</p>
+            <p class="lead" data-aos="fade-up">Digitalisasi dan Otomatisasi Kelola Transaksi Keuangan Elektronik Real-time - Verifikasi.</p>
             <a href="/a" class="btn btn-primary btn-lg" data-aos="fade-up">Mulai Sekarang</a>
         </div>
     </header>

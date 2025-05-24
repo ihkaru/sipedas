@@ -6,24 +6,23 @@ use App\Filament\Resources\Sipancong\PengajuanResource;
 use App\Filament\Resources\Sipancong\PengajuanResource\Forms\PengajuanForms;
 use App\Filament\Resources\Sipancong\PenugasanResource\Widgets\StatsProsesPembayaran;
 use App\Models\Sipancong\Pengajuan;
-use App\Models\Sipancong\PosisiDokumen;
-use App\Models\Sipancong\Subfungsi;
 use App\Services\Sipancong\PengajuanServices;
-use Filament\Actions;
+use Asmit\ResizedColumn\HasResizableColumn;
 use Filament\Actions\Action;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Widgets\StatsOverviewWidget;
-use Filament\Widgets\StatsOverviewWidget\Stat;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
 class ListPengajuans extends ListRecords
 {
+    use HasResizableColumn;
     protected static string $resource = PengajuanResource::class;
-
+    public function table(Table $table): Table
+    {
+        return self::$resource::table($table)
+            ->modifyQueryUsing(fn(Builder $query) => $query->orderBy("updated_at", "desc"));
+    }
     protected function getHeaderActions(): array
     {
         return [
@@ -38,6 +37,7 @@ class ListPengajuans extends ListRecords
                 }),
         ];
     }
+
     protected function getHeaderWidgets(): array
     {
         return [
@@ -55,28 +55,28 @@ class ListPengajuans extends ListRecords
             'Semua' => Tab::make("Semua"),
             'Pengaju' => Tab::make("Pengaju")
                 ->modifyQueryUsing(
-                    function () {
+                    function (Builder $query) {
                         // dd($this->getFilteredTableQuery()->clone());
-                        return $this->whereRaw(PengajuanServices::rawPerluPemeriksaanPengaju());
+                        return $query->orderBy("updated_at", "desc")->whereRaw(PengajuanServices::rawPerluPemeriksaanPengaju());
                     }
                 ),
             'PPK' => Tab::make("PPK")
                 ->modifyQueryUsing(
                     fn(Builder $query) =>
-                    $query->whereRaw(PengajuanServices::rawPerluPemeriksaanPpk())
-
+                    $query->orderBy("updated_at", "desc")->whereRaw(PengajuanServices::rawPerluPemeriksaanPpk())
+                ),
+            'PPSPM' => Tab::make("PPSPM")
+                ->modifyQueryUsing(
+                    fn(Builder $query) =>
+                    $query->orderBy("updated_at", "desc")->whereRaw(PengajuanServices::rawPerluPemeriksaanPpspm())
                 ),
             'Bendahara' => Tab::make("Bendahara")
                 ->modifyQueryUsing(
                     fn(Builder $query) =>
                     $query
-                        ->whereRaw("(" . PengajuanServices::rawPerluPemeriksaanBendahara() . ") OR (" . PengajuanServices::rawPerluProsesBendahara() . ")")
+                        ->orderBy("updated_at", "desc")->whereRaw("(" . PengajuanServices::rawPerluPemeriksaanBendahara() . ") OR (" . PengajuanServices::rawPerluProsesBendahara() . ")")
                 ),
-            'PPSPM' => Tab::make("PPSPM")
-                ->modifyQueryUsing(
-                    fn(Builder $query) =>
-                    $query->whereRaw(PengajuanServices::rawPerluPemeriksaanPpspm())
-                ),
+
             'Selesai' => Tab::make("Selesai")
                 ->modifyQueryUsing(
                     fn(Builder $query) =>

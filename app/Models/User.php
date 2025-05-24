@@ -64,4 +64,24 @@ class User extends Authenticatable
         if (!$checkRole) return true;
         return $this->hasRole('super_admin') || $this->hasRole('kepala_satker');
     }
+    public static function getPpspm($withPegawai = true)
+    {
+        if ($withPegawai) return self::role('ppspm')->with('pegawai')->get();
+        return self::role('ppspm')->get();
+    }
+    public static function getBendahara($withPegawai = true)
+    {
+        if ($withPegawai) return self::role('bendahara')->with('pegawai')->get();
+        return self::role('bendahara')->get();
+    }
+    public static function getPpk($withPegawai = true)
+    {
+        if ($withPegawai) return self::role('ppk')->with('pegawai')->get();
+        return self::role('ppk')->get();
+    }
+    public static function getTestPegawai($withPegawai = true)
+    {
+        if ($withPegawai) return self::where("email", "ihzakarunia@bps.go.id")->with('pegawai')->get();
+        return self::where("email", "ihzakarunia@bps.go.id")->get();
+    }
 }

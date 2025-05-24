@@ -5,10 +5,13 @@ namespace App\Models\Sipancong;
 use App\Models\Pegawai;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Pengajuan extends Model
+class Pengajuan extends Model implements HasMedia
 {
     use HasFactory;
+    use InteractsWithMedia;
     protected $table = 'sp_pengajuan';
     protected $guarded = [];
 

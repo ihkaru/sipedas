@@ -7,6 +7,8 @@ use App\Filament\Resources\PenugasanResource\Widgets\PenugasanTable;
 use App\Filament\Resources\PenugasanResource\Widgets\StatusSuratTugasAndaChart;
 use App\Filament\Resources\PenugasanResource\Widgets\StatusSuratTugasChart;
 use App\Filament\Resources\RiwayatPengajuanResource\Widgets\RiwayatPengajuanTable;
+use Asmit\ResizedColumn\ResizedColumnPlugin;
+use Filament\FontProviders\SpatieGoogleFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -33,6 +35,7 @@ class APanelProvider extends PanelProvider
             ->spa()
             ->path('a')
             ->login()
+            ->font('Inter', provider: SpatieGoogleFontProvider::class)
             ->favicon(env('APP_URL') . "/favicon.ico")
             // ->brandLogo(env('APP_URL')."/logo.svg")
             ->brandName('DOKTER-V')
@@ -69,7 +72,8 @@ class APanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->plugins([
-                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make()
+                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
+                ResizedColumnPlugin::make()
             ])
         ;
     }

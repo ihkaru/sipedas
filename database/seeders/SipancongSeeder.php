@@ -19,6 +19,8 @@ class SipancongSeeder extends Seeder
             ['nama' => 'Di PPK'], // 2
             ['nama' => 'Di PPSPM'], // 3
             ['nama' => 'Di Bendahara'], // 4
+            ['nama' => 'Siap Cetak'], // 5
+            ['nama' => 'Selesai'], // 6
         ]);
 
         // Seeder untuk status_pengajuan

@@ -10,8 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 class Pegawai extends Model
 {
     use HasFactory;
-    protected $guarded=[];
-    protected $primaryKey="nip";
+    protected $guarded = [];
+    protected $primaryKey = "nip";
 
     protected function casts(): array
     {
@@ -20,27 +20,28 @@ class Pegawai extends Model
         ];
     }
 
-    public function user(){
-        return $this->hasOne(User::class,"email","email");
+    public function user()
+    {
+        return $this->hasOne(User::class, "email", "email");
     }
 
-    public function penugasans(){
-        return $this->hasMany(Penugasan::class,"nip","nip");
+    public function penugasans()
+    {
+        return $this->hasMany(Penugasan::class, "nip", "nip");
     }
 
-    public function atasanLangsung(){
-        return $this->hasOne(Pegawai::class,"nip","atasan_langsung_id");
+    public function atasanLangsung()
+    {
+        return $this->hasOne(Pegawai::class, "nip", "atasan_langsung_id");
     }
     protected function pangkatGolongan(): Attribute
     {
         return Attribute::make(
-            get: function (mixed $value, array $attributes){
+            get: function (mixed $value, array $attributes) {
                 $golongan = $attributes['pangkat'] == Constants::PANGKAT_IV ? Constants::GOLONGAN_IV_OPTIONS[$attributes['golongan']] : Constants::GOLONGAN_I_III_OPTIONS[$attributes['golongan']];
-                $res = Constants::PANGKAT_OPTIONS[$attributes['pangkat']].' '.($golongan ? ''.$golongan.' ' : '')."(".strtoupper($attributes['pangkat'])."/".$attributes['golongan'].")";
+                $res = Constants::PANGKAT_OPTIONS[$attributes['pangkat']] . ' ' . ($golongan ? '' . $golongan . ' ' : '') . "(" . strtoupper($attributes['pangkat']) . "/" . $attributes['golongan'] . ")";
                 return $res;
             },
         );
     }
-
-
 }

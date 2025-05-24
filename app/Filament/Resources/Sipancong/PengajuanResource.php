@@ -24,10 +24,12 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Resources\Components\Tab;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Filters\SelectFilter;
@@ -80,10 +82,11 @@ class PengajuanResource extends Resource
                     ->required()
                     ->numeric(),
                 TextInput::make('link_folder_dokumen')
-                    ->helperText(new HtmlString("Pastikan akses sudah folder sudah terbuka untuk edit! Pastikan dokumen sudah ditandatangani <strong>selain</strong> PPK, Bendahara, Kepala Satker"))
+                    ->helperText(new HtmlString("Pastikan akses sudah folder sudah terbuka untuk edit! Pastikan dokumen sudah ditandatangani orang <strong>selain</strong> PPK, Bendahara, Kepala Satker"))
                     ->required()
                     ->maxLength(255)
-                    ->default(null),
+                    ->default(null)
+                    ->label('Bukti Dukung Lainnya'),
                 Select::make('posisi_dokumen_id')
                     ->label("Posisi Dokumen")
                     ->options(PosisiDokumen::pluck('nama', 'id'))
@@ -145,9 +148,99 @@ class PengajuanResource extends Resource
 
             ->deferLoading()
             ->defaultSort("updated_at", "desc")
+            ->actions([
+                ActionGroup::make([
+                    EditAction::make(),
+                    Action::make("linkfolder")
+                        ->label("Lihat Dokumen")
+                        ->icon("heroicon-m-link")
+                        ->url(fn(Pengajuan $record): string => $record->link_folder_dokumen)
+                        ->openUrlInNewTab()
+                        ->hidden(function (Pengajuan $record) {
+                            return !($record->link_folder_dokumen);
+                        }),
+                    Action::make("Ubah Pengajuan")
+                        ->label("Ubah Pengajuan")
+                        ->icon("heroicon-o-pencil")
+                        ->form(PengajuanForms::pengajuanPembayaran())
+                        ->fillForm(function (Pengajuan $record): array {
+                            return $record->toArray();
+                        })
+                        ->action(function (array $data, Pengajuan $record) {
+                            PengajuanServices::ubahPengajuan($data, $record);
+                        }),
+                    Action::make("Aksi Pengaju")
+                        ->label("Tanggapan Pengaju")
+                        ->icon("heroicon-o-pencil")
+                        ->form(PengajuanForms::tanggapanPengaju())
+                        ->fillForm(function (Pengajuan $record): array {
+                            return $record->toArray();
+                        })
+                        ->action(function (array $data, Pengajuan $record) {
+                            PengajuanServices::tanggapi($data, $record);
+                        }),
+                    Action::make("Aksi PPK")
+                        ->label("Aksi PPK")
+                        ->modalHeading('Pemeriksaan PPK')
+                        ->hidden(function (Pengajuan $record): bool {
+                            return !PengajuanServices::isSiapDiperiksaPpk($record);
+                        })
+                        ->icon("heroicon-o-pencil")
+                        ->form(PengajuanForms::pemeriksaanPpk())
+                        ->fillForm(function (Pengajuan $record): array {
+                            return $record->toArray();
+                        })
+                        ->action(function (array $data, Pengajuan $record) {
+                            PengajuanServices::pemeriksaanPpk($data, $record);
+                        }),
+                    Action::make("Aksi Bendahara")
+                        ->modalHeading('Pemeriksaan Bendahara')
+                        ->label("Aksi Bendahara")
+                        ->hidden(function (Pengajuan $record): bool {
+                            return !PengajuanServices::isSiapDiperiksaBendahara($record);
+                        })
+                        ->icon("heroicon-o-pencil")->form(PengajuanForms::pemeriksaanBendahara())
+                        ->fillForm(function (Pengajuan $record): array {
+                            return $record->toArray();
+                        })
+                        ->action(function (array $data, Pengajuan $record) {
+                            PengajuanServices::pemeriksaanBendahara($data, $record);
+                        }),
+                    Action::make("Aksi PPSPM")
+                        ->label("Aksi PPSPM")
+                        ->modalHeading('Pemeriksaan PPSPM')
+                        ->hidden(function (Pengajuan $record): bool {
+                            return !PengajuanServices::isSiapDiperiksaPpspm($record);
+                        })
+                        ->icon("heroicon-o-pencil")->form(PengajuanForms::pemeriksaanPpspm())
+                        ->fillForm(function (Pengajuan $record): array {
+                            return $record->toArray();
+                        })
+                        ->action(function (array $data, Pengajuan $record) {
+                            PengajuanServices::pemeriksaanPpspm($data, $record);
+                        }),
+                    Action::make("pemrosesanBendahara")
+                        ->label("Proses Bendahara")
+                        ->hidden(function (Pengajuan $record): bool {
+                            return !PengajuanServices::isSiapDiprosesBendahara($record);
+                        })
+                        ->modalHeading('Pemrosesan Pembayaran')
+                        ->icon("heroicon-o-credit-card")
+                        ->form(PengajuanForms::pemrosesanBendahara())
+                        ->fillForm(function (Pengajuan $record): array {
+                            return $record->toArray();
+                        })
+                        ->action(function (array $data, Pengajuan $record) {
+                            PengajuanServices::pemrosesanBendahara($data, $record);
+                        }),
+                    DeleteAction::make("hapus")
+
+                ])->link()->label("Aksi"),
+
+            ], position: ActionsPosition::BeforeColumns)
             ->columns([
                 TextColumn::make('subfungsi.nama')
-                    ->searchable()
+                    ->sortable()
                     ->label("Subfungsi")
                     ->searchable(),
                 TextColumn::make('nomor_pengajuan')
@@ -183,7 +276,7 @@ class PengajuanResource extends Resource
                     ->badge()
                     ->sortable(),
                 TextColumn::make('error')
-                    ->label('Error Pengajuan')
+                    ->label('Status')
                     ->badge()
                     ->color("danger")
                     ->getStateUsing(function ($record) {
@@ -292,95 +385,6 @@ class PengajuanResource extends Resource
                     ->multiple()
                     ->preload(),
             ])
-            ->actions([
-                ActionGroup::make([
-                    Tables\Actions\EditAction::make(),
-                    Action::make("linkfolder")
-                        ->label("Lihat Dokumen")
-                        ->icon("heroicon-m-link")
-                        ->url(fn(Pengajuan $record): string => $record->link_folder_dokumen)
-                        ->openUrlInNewTab()
-                        ->hidden(function (Pengajuan $record) {
-                            return !($record->link_folder_dokumen);
-                        }),
-                    Action::make("Ubah Pengajuan")
-                        ->label("Ubah Pengajuan")
-                        ->icon("heroicon-o-pencil")
-                        ->form(PengajuanForms::pengajuanPembayaran())
-                        ->fillForm(function (Pengajuan $record): array {
-                            return $record->toArray();
-                        })
-                        ->action(function (array $data, Pengajuan $record) {
-                            PengajuanServices::ubahPengajuan($data, $record);
-                        }),
-                    Action::make("Aksi Pengaju")
-                        ->label("Tanggapan Pengaju")
-                        ->icon("heroicon-o-pencil")
-                        ->form(PengajuanForms::tanggapanPengaju())
-                        ->fillForm(function (Pengajuan $record): array {
-                            return $record->toArray();
-                        })
-                        ->action(function (array $data, Pengajuan $record) {
-                            PengajuanServices::tanggapi($data, $record);
-                        }),
-                    Action::make("Aksi PPK")
-                        ->label("Aksi PPK")
-                        ->modalHeading('Pemeriksaan PPK')
-                        ->hidden(function (Pengajuan $record): bool {
-                            return !PengajuanServices::isSiapDiperiksaPpk($record);
-                        })
-                        ->icon("heroicon-o-pencil")
-                        ->form(PengajuanForms::pemeriksaanPpk())
-                        ->fillForm(function (Pengajuan $record): array {
-                            return $record->toArray();
-                        })
-                        ->action(function (array $data, Pengajuan $record) {
-                            PengajuanServices::pemeriksaanPpk($data, $record);
-                        }),
-                    Action::make("Aksi Bendahara")
-                        ->modalHeading('Pemeriksaan Bendahara')
-                        ->label("Aksi Bendahara")
-                        ->hidden(function (Pengajuan $record): bool {
-                            return !PengajuanServices::isSiapDiperiksaBendahara($record);
-                        })
-                        ->icon("heroicon-o-pencil")->form(PengajuanForms::pemeriksaanBendahara())
-                        ->fillForm(function (Pengajuan $record): array {
-                            return $record->toArray();
-                        })
-                        ->action(function (array $data, Pengajuan $record) {
-                            PengajuanServices::pemeriksaanBendahara($data, $record);
-                        }),
-                    Action::make("Aksi PPSPM")
-                        ->label("Aksi PPSPM")
-                        ->modalHeading('Pemeriksaan PPSPM')
-                        ->hidden(function (Pengajuan $record): bool {
-                            return !PengajuanServices::isSiapDiperiksaPpspm($record);
-                        })
-                        ->icon("heroicon-o-pencil")->form(PengajuanForms::pemeriksaanPpspm())
-                        ->fillForm(function (Pengajuan $record): array {
-                            return $record->toArray();
-                        })
-                        ->action(function (array $data, Pengajuan $record) {
-                            PengajuanServices::pemeriksaanPpspm($data, $record);
-                        }),
-                    Action::make("pemrosesanBendahara")
-                        ->label("Proses Bendahara")
-                        ->hidden(function (Pengajuan $record): bool {
-                            return !PengajuanServices::isSiapDiprosesBendahara($record);
-                        })
-                        ->modalHeading('Pemrosesan Pembayaran')
-                        ->icon("heroicon-o-credit-card")->form(PengajuanForms::pemrosesanBendahara())
-                        ->fillForm(function (Pengajuan $record): array {
-                            return $record->toArray();
-                        })
-                        ->action(function (array $data, Pengajuan $record) {
-                            PengajuanServices::pemrosesanBendahara($data, $record);
-                        }),
-                    DeleteAction::make("hapus")
-
-                ])->link()->label("Aksi"),
-
-            ], position: ActionsPosition::BeforeColumns)
             ->bulkActions([]);
     }
 

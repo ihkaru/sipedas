@@ -22,6 +22,8 @@ return new class extends Migration
             $table->string("atasan_langsung_id")->nullable();
             $table->foreign("atasan_langsung_id")->references("nip")->on("pegawais");
             $table->string("unit_kerja");
+            $table->string("nomor_wa")->nullable();
+            $table->string("panggilan");
             $table->timestamps();
         });
     }
