@@ -33,7 +33,7 @@ class PengajuanServices
         $targetWa = $userPpk?->pegawai?->nomor_wa;
 
         // Notifikasi Pengajuan Baru ke PPK
-        $message = "*Pengajuan Baru | DOKTER-V* \n \nHalo, $namaPanggilanPpk \nAda pengajuan pembayaran baru dari *$namaPengaju* nih! \n\nUraian: $uraianPengajuan \n\nNominal: $nominalPengajuan \n\nBuka link ini untuk  ngeceknya ya:\n\nhttps://admin.dvlp.asia/a\n\n Semangat!!";
+        $message = "*Pengajuan Baru | DOKTER-V* \n \nHalo, $namaPanggilanPpk \nAda pengajuan pembayaran baru dari *$namaPengaju* nih! \n\nUraian: $uraianPengajuan \n\nNominal: $nominalPengajuan \n\nBuka link ini untuk ngeceknya dan melakukan *Aksi PPK* ya:\n\nhttps://admin.dvlp.asia/a\n\n Semangat!!";
         WhatsappNotifier::send($targetWa, $message);
     }
     public static function ajukan(array $data)
@@ -71,7 +71,7 @@ class PengajuanServices
             $tanggapanPengaju = $record->tanggapan_pengaju_ke_ppk;
             $targetWa = $userPpk?->pegawai?->nomor_wa;
             $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=PPK";
-            $message = "*Tanggapan Pengaju | DOKTER-V* \n\nHalo, *$namaPanggilanPpk*\nPengajuan dengan uraian\n$uraianPengajuan\n\nNominal: $nominalPengajuan\n\nSudah ditanggapi oleh *$pengaju*\n\nSebelumnya hasil pemeriksaanmu:\n *$hasilPemeriksaanSebelumnya*\n\nIni tanggapan dari *$pengaju*:\n*$tanggapanPengaju*\n\nBuka link berikut buat melanjutkan proses pembayaran ya!\n\n$linkKeAksi\n\nSemangatt!!";
+            $message = "*Tanggapan Pengaju | DOKTER-V* \n\nHalo, *$namaPanggilanPpk*\nPengajuan dengan uraian\n$uraianPengajuan\n\nNominal: $nominalPengajuan\n\nSudah ditanggapi oleh *$pengaju*\n\nSebelumnya hasil pemeriksaanmu:\n *$hasilPemeriksaanSebelumnya*\n\nIni tanggapan dari *$pengaju*:\n*$tanggapanPengaju*\n\nBuka link berikut buat melanjutkan proses pembayaran dengan *Aksi PPK* ya!\n\n$linkKeAksi\n\nSemangatt!!";
         }
         // Tanggapan ke PPSPM
         else if ($data["posisi_dokumen_id"] == 3) {
@@ -81,7 +81,7 @@ class PengajuanServices
             $pegawaiPenerima = User::getPpspm()->first()->pegawai;
             $namaPanggilanPenerima = $pegawaiPenerima->panggilan;
             $targetWa = $pegawaiPenerima->nomor_wa;
-            $message = "*Tanggapan Pengaju | DOKTER-V* \n\nHalo, *$namaPanggilanPenerima*\nPengajuan dengan uraian\n$uraianPengajuan\nNominal: $nominalPengajuan\n\nSudah ditanggapi oleh *$pengaju*\n\nSebelumnya hasil pemeriksaanmu:\n *$hasilPemeriksaanSebelumnya*\n\nIni tanggapan dari *$pengaju*:\n*$tanggapanPengaju*\n\nBuka link berikut buat melanjutkan proses pembayaran ya!\n\n$linkKeAksi\n\nSemangatt!!";
+            $message = "*Tanggapan Pengaju | DOKTER-V* \n\nHalo, *$namaPanggilanPenerima*\nPengajuan dengan uraian\n$uraianPengajuan\nNominal: $nominalPengajuan\n\nSudah ditanggapi oleh *$pengaju*\n\nSebelumnya hasil pemeriksaanmu:\n *$hasilPemeriksaanSebelumnya*\n\nIni tanggapan dari *$pengaju*:\n*$tanggapanPengaju*\n\nBuka link berikut buat melanjutkan proses pembayaran dengan *Aksi PPSPM* ya!\n\n$linkKeAksi\n\nSemangatt!!";
         }
         // Tanggapan ke Bendahara
         else if ($data["posisi_dokumen_id"] == 4) {
@@ -91,7 +91,7 @@ class PengajuanServices
             $tanggapanPengaju = $record->tanggapan_pengaju_ke_bendahara;
             $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=Bendahara";
             $namaPanggilanPenerima = $pegawaiPenerima->panggilan;
-            $message = "*Tanggapan Pengaju | DOKTER-V* \n\nHalo, *$namaPanggilanPenerima*\nPengajuan dengan uraian\n$uraianPengajuan\nNominal: $nominalPengajuan\n\nSudah ditanggapi oleh *$pengaju*\n\nSebelumnya hasil pemeriksaanmu:\n *$hasilPemeriksaanSebelumnya*\n\nIni tanggapan dari *$pengaju*:\n*$tanggapanPengaju*\n\nBuka link berikut buat melanjutkan proses pembayaran ya!\n\n$linkKeAksi\n\nSemangatt!!";
+            $message = "*Tanggapan Pengaju | DOKTER-V* \n\nHalo, *$namaPanggilanPenerima*\nPengajuan dengan uraian\n$uraianPengajuan\nNominal: $nominalPengajuan\n\nSudah ditanggapi oleh *$pengaju*\n\nSebelumnya hasil pemeriksaanmu:\n *$hasilPemeriksaanSebelumnya*\n\nIni tanggapan dari *$pengaju*:\n*$tanggapanPengaju*\n\nBuka link berikut buat melanjutkan proses pembayaran dengan *Aksi Bendahara* ya!\n\n$linkKeAksi\n\nSemangatt!!";
         }
         WhatsappNotifier::send($targetWa, $message);
     }
@@ -137,7 +137,7 @@ class PengajuanServices
             $namaPanggilanPpk = $userPpk?->pegawai?->panggilan;
             // $namaPanggilanPenerima = $pegawaiPenerima->panggilan;
             $targetWa = $pegawaiPenerima->nomor_wa;
-            $message = "*Perlu Perbaikan | DOKTER-V* \n\nHalo, *$pengaju*\nPengajuanmu dengan uraian\n$uraianPengajuan\nNominal: $nominalPengajuan\n\nSudah diperiksa oleh *$namaPanggilanPpk* sebagai PPK\n\nCatatan dari beliau gini nih:\n *$hasilPemeriksaan*\n\nBuka link berikut buat melanjutkan proses perbaikannya ya!\n\n$linkKeAksi\n\nSemangatt!!";
+            $message = "*Perlu Perbaikan | DOKTER-V* \n\nHalo, *$pengaju*\nPengajuanmu dengan uraian\n$uraianPengajuan\nNominal: $nominalPengajuan\n\nSudah diperiksa oleh *$namaPanggilanPpk* sebagai PPK\n\nCatatan dari beliau gini nih:\n *$hasilPemeriksaan*\n\nBuka link berikut buat melanjutkan proses perbaikan dengan *Perbaiki Pengajuan* ya!\n\n$linkKeAksi\n\nSemangatt!!";
         }
 
         // Notifikasi Disetujui ke PPSPM
@@ -150,9 +150,7 @@ class PengajuanServices
             $targetWa = $userPpspm?->pegawai?->nomor_wa;
             $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=PPSPM";
 
-
-            // Notifikasi Pengajuan Baru ke PPK
-            $message = "*Pengajuan Baru | DOKTER-V* \n \nHalo, $namaPanggilanPpspm \nAda pengajuan pembayaran baru dari *$namaPengaju* nih! \n\nUraian: $uraianPengajuan \n\nNominal: $nominalPengajuan \n\nBuka link ini untuk  ngeceknya ya:\n\n$linkKeAksi\n\n Semangat!!";
+            $message = "*Pengajuan Baru | DOKTER-V* \n \nHalo, $namaPanggilanPpspm \nAda pengajuan pembayaran baru dari *$namaPengaju* nih! \n\nUraian: $uraianPengajuan \n\nNominal: $nominalPengajuan \n\nBuka link ini untuk melanjutkan proses pembayaran dengan *Aksi PPSPM* ya:\n\n$linkKeAksi\n\n Semangat!!";
         };
         WhatsappNotifier::send($targetWa, $message);
     }
@@ -199,7 +197,7 @@ class PengajuanServices
             $namaPanggilanPpspm = $userPpspm?->pegawai?->panggilan;
             // $namaPanggilanPenerima = $pegawaiPenerima->panggilan;
             $targetWa = $pegawaiPenerima->nomor_wa;
-            $message = "*Perlu Perbaikan | DOKTER-V* \n\nHalo, *$pengaju*\nPengajuanmu dengan uraian\n$uraianPengajuan\nNominal: $nominalPengajuan\n\nSudah diperiksa oleh *$namaPanggilanPpspm* sebagai PPSPM\n\nCatatan dari beliau gini nih:\n *$hasilPemeriksaan*\n\nBuka link berikut buat melanjutkan proses perbaikannya ya!\n\n$linkKeAksi\n\nSemangatt!!";
+            $message = "*Perlu Perbaikan | DOKTER-V* \n\nHalo, *$pengaju*\nPengajuanmu dengan uraian\n$uraianPengajuan\nNominal: $nominalPengajuan\n\nSudah diperiksa oleh *$namaPanggilanPpspm* sebagai PPSPM\n\nCatatan dari beliau gini nih:\n *$hasilPemeriksaan*\n\nBuka link berikut buat melanjutkan proses perbaikannya dengan *Perbaiki Pengajuan* ya!\n\n$linkKeAksi\n\nSemangatt!!";
         }
 
         // Notifikasi Disetujui ke Bendahara
@@ -213,7 +211,7 @@ class PengajuanServices
             $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=Bendahara";
 
             // Notifikasi Pengajuan Baru ke Bendahara
-            $message = "*Pengajuan Baru | DOKTER-V* \n \nHalo, $namaPanggilanBendahara \nAda pengajuan pembayaran baru dari *$namaPengaju* nih! \n\nUraian: $uraianPengajuan \n\nNominal: $nominalPengajuan \n\nBuka link ini untuk  ngeceknya ya:\n\n$linkKeAksi\n\n Semangat!!";
+            $message = "*Pengajuan Baru | DOKTER-V* \n \nHalo, $namaPanggilanBendahara \nAda pengajuan pembayaran baru dari *$namaPengaju* nih! \n\nUraian: $uraianPengajuan \n\nNominal: $nominalPengajuan \n\nBuka link ini untuk ngecek dengan *Aksi Bendahara* ya:\n\n$linkKeAksi\n\n Semangat!!";
         };
         WhatsappNotifier::send($targetWa, $message);
     }
@@ -258,7 +256,7 @@ class PengajuanServices
             $namaPanggilanBendahara = $userBendahara?->pegawai?->panggilan;
             // $namaPanggilanPenerima = $pegawaiPenerima->panggilan;
             $targetWa = $pegawaiPenerima->nomor_wa;
-            $message = "*Perlu Perbaikan | DOKTER-V* \n\nHalo, *$pengaju*\nPengajuanmu dengan uraian\n$namaPanggilanBendahara\nNominal: $nominalPengajuan\n\nSudah diperiksa oleh *$namaPanggilanBendahara* sebagai Bendahara nih\n\nCatatan dari beliau gini nih:\n *$hasilPemeriksaan*\n\nBuka link berikut buat melanjutkan proses perbaikannya ya!\n\n$linkKeAksi\n\nSemangatt!!";
+            $message = "*Perlu Perbaikan | DOKTER-V* \n\nHalo, *$pengaju*\nPengajuanmu dengan uraian\n$namaPanggilanBendahara\nNominal: $nominalPengajuan\n\nSudah diperiksa oleh *$namaPanggilanBendahara* sebagai Bendahara nih\n\nCatatan dari beliau gini nih:\n *$hasilPemeriksaan*\n\nBuka link berikut buat melanjutkan proses perbaikannya dengan *Perbaiki Pengajuan* ya!\n\n$linkKeAksi\n\nSemangatt!!";
         }
 
         // Notifikasi Disetujui ke Pengaju

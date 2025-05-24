@@ -159,8 +159,8 @@ class PengajuanResource extends Resource
                         ->hidden(function (Pengajuan $record) {
                             return !($record->link_folder_dokumen);
                         }),
-                    Action::make("Ubah Pengajuan")
-                        ->label("Ubah Pengajuan")
+                    Action::make("Perbaiki Pengajuan")
+                        ->label("Perbaiki Pengajuan")
                         ->icon("heroicon-o-pencil")
                         ->form(PengajuanForms::pengajuanPembayaran())
                         ->fillForm(function (Pengajuan $record): array {
