@@ -161,6 +161,10 @@ class PengajuanResource extends Resource
                         }),
                     Action::make("Perbaiki Pengajuan")
                         ->label("Perbaiki Pengajuan")
+                        ->color(function (Pengajuan $record) {
+                            if ($record->posisiDokumen->nama == "Di Pengaju Pembayaran") return "primary";
+                            return null;
+                        })
                         ->icon("heroicon-o-pencil")
                         ->form(PengajuanForms::pengajuanPembayaran())
                         ->fillForm(function (Pengajuan $record): array {
@@ -171,6 +175,10 @@ class PengajuanResource extends Resource
                         }),
                     Action::make("Aksi Pengaju")
                         ->label("Tanggapan Pengaju")
+                        ->color(function (Pengajuan $record) {
+                            if ($record->posisiDokumen->nama == "Di Pengaju Pembayaran") return "primary";
+                            return null;
+                        })
                         ->icon("heroicon-o-pencil")
                         ->form(PengajuanForms::tanggapanPengaju())
                         ->fillForm(function (Pengajuan $record): array {
@@ -181,6 +189,10 @@ class PengajuanResource extends Resource
                         }),
                     Action::make("Aksi PPK")
                         ->label("Aksi PPK")
+                        ->color(function (Pengajuan $record) {
+                            if ($record->posisiDokumen->nama == "Di PPK") return "primary";
+                            return null;
+                        })
                         ->modalHeading('Pemeriksaan PPK')
                         ->hidden(function (Pengajuan $record): bool {
                             return !PengajuanServices::isSiapDiperiksaPpk($record);
@@ -196,6 +208,10 @@ class PengajuanResource extends Resource
                     Action::make("Aksi Bendahara")
                         ->modalHeading('Pemeriksaan Bendahara')
                         ->label("Aksi Bendahara")
+                        ->color(function (Pengajuan $record) {
+                            if ($record->posisiDokumen->nama == "Di Bendahara") return "primary";
+                            return null;
+                        })
                         ->hidden(function (Pengajuan $record): bool {
                             return !PengajuanServices::isSiapDiperiksaBendahara($record);
                         })
@@ -212,6 +228,10 @@ class PengajuanResource extends Resource
                         ->hidden(function (Pengajuan $record): bool {
                             return !PengajuanServices::isSiapDiperiksaPpspm($record);
                         })
+                        ->color(function (Pengajuan $record) {
+                            if ($record->posisiDokumen->nama == "Di PPSPM") return "primary";
+                            return null;
+                        })
                         ->icon("heroicon-o-pencil")->form(PengajuanForms::pemeriksaanPpspm())
                         ->fillForm(function (Pengajuan $record): array {
                             return $record->toArray();
@@ -224,6 +244,10 @@ class PengajuanResource extends Resource
                         ->hidden(function (Pengajuan $record): bool {
                             return !PengajuanServices::isSiapDiprosesBendahara($record);
                         })
+                        ->color(function (Pengajuan $record) {
+                            if ($record->posisiDokumen->nama == "Di Bendahara") return "primary";
+                            return null;
+                        })
                         ->modalHeading('Pemrosesan Pembayaran')
                         ->icon("heroicon-o-credit-card")
                         ->form(PengajuanForms::pemrosesanBendahara())
@@ -234,6 +258,9 @@ class PengajuanResource extends Resource
                             PengajuanServices::pemrosesanBendahara($data, $record);
                         }),
                     DeleteAction::make("hapus")
+                        ->hidden(function () {
+                            return !(auth()->user()->hasRole("super_admin") || auth()->user()->hasRole("operator_bmn"));
+                        })
 
                 ])->link()->label("Aksi"),
 
