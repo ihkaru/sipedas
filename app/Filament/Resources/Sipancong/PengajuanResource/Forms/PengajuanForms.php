@@ -19,7 +19,6 @@ use Illuminate\Support\HtmlString;
 
 class PengajuanForms
 {
-
     public static function pengajuanPembayaran()
     {
         return [
