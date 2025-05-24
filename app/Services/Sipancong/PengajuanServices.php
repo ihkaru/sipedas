@@ -441,10 +441,11 @@ class PengajuanServices
     }
     public static function rawPerluProsesBendahara()
     {
-        return "((status_pengajuan_ppk_id IN (2,5) AND status_pengajuan_bendahara_id IN (2,5) AND tanggal_pembayaran IS NULL OR status_pembayaran_id IS NULL) OR (tanggal_pembayaran IS NOT NULL AND status_pembayaran_id = 7))";
+        // return "((status_pengajuan_ppk_id IN (2,5) AND status_pengajuan_bendahara_id IN (2,5) AND (tanggal_pembayaran IS NULL OR status_pembayaran_id IS NULL)) OR (tanggal_pembayaran IS NOT NULL AND status_pembayaran_id = 7))";
+        return "((status_pengajuan_ppk_id IN (2,5) AND status_pengajuan_bendahara_id IN (2,5) AND (tanggal_pembayaran IS NULL OR status_pembayaran_id IS NULL)))";
     }
     public static function rawSelesaiProsesBendahara()
     {
-        return "tanggal_pembayaran IS NOT NULL AND status_pembayaran_id IN (1,2,5,7)";
+        return "status_pembayaran_id IN (1,2,5,7)";
     }
 }

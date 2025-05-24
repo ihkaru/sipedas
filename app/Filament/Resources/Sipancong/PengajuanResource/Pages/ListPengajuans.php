@@ -6,9 +6,11 @@ use App\Filament\Resources\Sipancong\PengajuanResource;
 use App\Filament\Resources\Sipancong\PengajuanResource\Forms\PengajuanForms;
 use App\Filament\Resources\Sipancong\PenugasanResource\Widgets\StatsProsesPembayaran;
 use App\Models\Sipancong\Pengajuan;
+use App\Services\Sipancong\PengajuanFixer;
 use App\Services\Sipancong\PengajuanServices;
 use Asmit\ResizedColumn\HasResizableColumn;
 use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables\Table;
@@ -35,6 +37,20 @@ class ListPengajuans extends ListRecords
                 ->action(function (array $data) {
                     PengajuanServices::ajukan($data);
                 }),
+            Action::make("fix")
+                ->requiresConfirmation()
+                ->label("Perbaiki Pengajuan")
+                ->icon("heroicon-o-cog-6-tooth")
+                ->hidden(function () {
+                    return !auth()->user()->hasRole("operator_umum");
+                })
+                ->action(function () {
+                    PengajuanFixer::fix();
+                    Notification::make()
+                        ->success()
+                        ->title("Perbaikan Pengajuan Selesai")
+                        ->send();
+                })
         ];
     }
 
