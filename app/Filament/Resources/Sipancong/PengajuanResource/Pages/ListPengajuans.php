@@ -39,7 +39,7 @@ class ListPengajuans extends ListRecords
                 }),
             Action::make("fix")
                 ->requiresConfirmation()
-                ->label("Perbaiki Pengajuan")
+                ->label("Perbaiki Konsistensi")
                 ->icon("heroicon-o-cog-6-tooth")
                 ->hidden(function () {
                     return !auth()->user()->hasRole("operator_umum");
@@ -48,7 +48,7 @@ class ListPengajuans extends ListRecords
                     PengajuanFixer::fix();
                     Notification::make()
                         ->success()
-                        ->title("Perbaikan Pengajuan Selesai")
+                        ->title("Perbaikan Konsistensi Pengajuan Selesai")
                         ->send();
                 })
         ];

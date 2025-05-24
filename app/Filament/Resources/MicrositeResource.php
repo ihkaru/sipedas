@@ -17,6 +17,8 @@ class MicrositeResource extends Resource
     protected static ?string $model = Microsite::class;
     protected static ?string $navigationIcon = 'heroicon-o-link';
     protected static ?string $navigationGroup = 'Content Management';
+    protected static ?int $navigationSort = 9;
+
 
     public static function form(Form $form): Form
     {

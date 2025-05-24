@@ -22,5 +22,8 @@ class PengajuanFixer
             "status_pengajuan_bendahara_id" => 5,
             "tanggal_pembayaran" => Carbon::parse("2025-05-23")
         ]);
+        Pengajuan::whereRaw("status_pembayaran_id IS NULL")->update([
+            "posisi_dokumen_id" => 1,
+        ]);
     }
 }

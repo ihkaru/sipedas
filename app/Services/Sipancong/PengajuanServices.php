@@ -418,16 +418,31 @@ class PengajuanServices
     {
         return Pengajuan::whereRaw(self::rawPerluProsesBendahara())->count();
     }
+    public static function jumlahPerluPerbaikanPengaju()
+    {
+        return Pengajuan::whereRaw(self::rawPerluPemeriksaanPengaju())->count();
+    }
+    public static function jumlahSelesaiSubfungsi($namaSubfungsi)
+    {
+        $jumlahSelesai = Pengajuan::whereHas("subfungsi", function ($q) use ($namaSubfungsi) {
+            $q->where("nama", $namaSubfungsi);
+        })->where("posisi_dokumen_id", 6)->count();
+        $jumlahTotal = Pengajuan::whereHas("subfungsi", function ($q) use ($namaSubfungsi) {
+            $q->where("nama", $namaSubfungsi);
+        })->count();
+        if ($jumlahTotal == 0) return 0;
+        return round($jumlahSelesai / $jumlahTotal * 100, 0);
+    }
 
     public static function rawPerluPemeriksaanPengaju()
     {
         // return "status_pengajuan_ppk_id IN (1,3,4) OR status_pengajuan_bendahara_id IN (1,3,4) OR status_pengajuan_ppspm_id IN (1,3,4) OR link_folder_dokumen IS NULL";
-        return "posisi_dokumen_id=1 OR link_folder_dokumen IS NULL";
+        return "posisi_dokumen_id=1";
     }
     public static function rawPerluPemeriksaanPpk()
     {
         // return "status_pengajuan_ppk_id NOT IN (2,5) OR status_pengajuan_ppk_id IS NULL";
-        return "posisi_dokumen_id=2 OR status_pengajuan_ppk_id IS NULL";
+        return "posisi_dokumen_id=2";
     }
     public static function rawPerluPemeriksaanBendahara()
     {

@@ -24,6 +24,12 @@ class StatusPengajuanResource extends Resource
     protected static ?string $navigationGroup = "Pembayaran";
     protected static ?int $navigationSort = 5;
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole("super_admin") || auth()->user()->hasRole("operator_umum");
+    }
+
+
     public static function form(Form $form): Form
     {
         return $form

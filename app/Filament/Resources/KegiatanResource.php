@@ -30,21 +30,23 @@ class KegiatanResource extends Resource
     protected static ?string $pluralModelLabel = "Kegiatan";
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
     protected static ?string $navigationGroup = "Surat Tugas";
+    protected static ?int $navigationSort = 6;
 
-    public static function canViewAny(): bool{
+    public static function canViewAny(): bool
+    {
         return auth()->user()->hasRole('kepala_satker') ||
-        auth()->user()->hasRole('operator_umum') ||
-         auth()->user()->hasRole('pegawai');
+            auth()->user()->hasRole('operator_umum') ||
+            auth()->user()->hasRole('pegawai');
     }
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 TextInput::make('id')
-                ->disabled()
-                ->dehydrated(true)
-                ->live()
-                ->unique(ignoreRecord: true),
+                    ->disabled()
+                    ->dehydrated(true)
+                    ->live()
+                    ->unique(ignoreRecord: true),
                 TextInput::make('nama')
                     ->lazy()
                     ->required()
@@ -56,17 +58,14 @@ class KegiatanResource extends Resource
                     ->label("Rangkaian")
                     ->options(KegiatanManmit::getSelectOptions())
                     ->searchable()
-                    ->preload()
-                ,
+                    ->preload(),
                 DatePicker::make('tgl_awal_perjadin')
-                    ->helperText('Tanggal ini digunakan sebagai batas awal tanggal mulai surat tugas')
-                ,
+                    ->helperText('Tanggal ini digunakan sebagai batas awal tanggal mulai surat tugas'),
                 DatePicker::make('tgl_akhir_perjadin')
-                    ->helperText('Tanggal ini digunakan sebagai batas awal tanggal mulai surat tugas')
-                ,
+                    ->helperText('Tanggal ini digunakan sebagai batas awal tanggal mulai surat tugas'),
                 Select::make('pj_kegiatan_id')
-                    ->options(function(){
-                        return Pegawai::get()->pluck('nama','nip');
+                    ->options(function () {
+                        return Pegawai::get()->pluck('nama', 'nip');
                     })
                     ->required()
                     ->preload()

@@ -27,8 +27,11 @@ class PlhResource extends Resource
     protected static ?string $pluralModelLabel = "PLH";
     protected static ?string $navigationIcon = 'fluentui-people-swap-16-o';
     protected static ?string $navigationGroup = "Surat Tugas";
+    protected static ?int $navigationSort = 7;
 
-    public static function canViewAny(): bool{
+
+    public static function canViewAny(): bool
+    {
         return auth()->user()->hasRole('kepala_satker') || auth()->user()->hasRole('operator_umum');
     }
     public static function form(Form $form): Form
@@ -38,12 +41,11 @@ class PlhResource extends Resource
                 Hidden::make('pegawai_digantikan_id')
                     ->default(Pengaturan::key('ID_PLH_DEFAULT')->nilai),
                 Select::make('pegawai_pengganti_id')
-                    ->options(function(){
-                        return Pegawai::pluck('nama','nip');
+                    ->options(function () {
+                        return Pegawai::pluck('nama', 'nip');
                     })
                     ->searchable(['nama'])
-                    ->label("Pegawai Pengganti")
-                    ,
+                    ->label("Pegawai Pengganti"),
                 Forms\Components\DatePicker::make('tgl_mulai')
                     ->label("Tanggal Mulai"),
                 Forms\Components\DatePicker::make('tgl_selesai')
