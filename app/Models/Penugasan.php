@@ -322,7 +322,7 @@ class Penugasan extends Model
         return
             $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DISETUJUI &&
             (
-                auth()->user()->pegawai->nip == $this->nip ||
+                auth()->user()->pegawai?->nip == $this->nip ||
                 auth()->user()->hasRole('operator_umum')
             );
     }
@@ -335,8 +335,8 @@ class Penugasan extends Model
             (
                 auth()->user()->hasRole('operator_umum') ||
                 auth()->user()->email == $this->pegawai->email ||
-                auth()->user()->pegawai->nip == $this->nip_pengaju ||
-                auth()->user()->pegawai->nip == $this->kegiatan->pj_kegiatan_id
+                auth()->user()->pegawai?->nip == $this->nip_pengaju ||
+                auth()->user()->pegawai?->nip == $this->kegiatan->pj_kegiatan_id
             );
     }
     public function canBatalkanPengumpulan(bool $checkRole = true)
