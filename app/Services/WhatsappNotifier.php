@@ -20,7 +20,7 @@ class WhatsappNotifier
             'message' => $message,
             'countryCode' => '62',
         ]);
-        dd($response, $response->body());
+        // dd($response, $response->body());
         return $response;
         // if ($token == "") dd($token, env('FONNTE_TOKEN'), $targetNumber, $message);
         // try {
