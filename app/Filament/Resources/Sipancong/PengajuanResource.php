@@ -82,7 +82,7 @@ class PengajuanResource extends Resource
                     ->required()
                     ->numeric(),
                 TextInput::make('link_folder_dokumen')
-                    ->helperText(new HtmlString("Pastikan akses sudah folder sudah terbuka untuk edit! Pastikan dokumen sudah ditandatangani orang <strong>selain</strong> PPK, Bendahara, Kepala Satker"))
+                    ->helperText(new HtmlString("Pastikan akses sudah folder sudah terbuka untuk edit!"))
                     ->required()
                     ->maxLength(255)
                     ->default(null)
@@ -150,7 +150,10 @@ class PengajuanResource extends Resource
             ->defaultSort("updated_at", "desc")
             ->actions([
                 ActionGroup::make([
-                    EditAction::make(),
+                    EditAction::make()
+                        ->hidden(function () {
+                            return auth()->user()->hasRole("ppspm") || auth()->user()->hasRole("super_admin");
+                        }),
                     Action::make("linkfolder")
                         ->label("Lihat Dokumen")
                         ->icon("heroicon-m-link")
@@ -162,7 +165,7 @@ class PengajuanResource extends Resource
                     Action::make("Perbaiki Pengajuan")
                         ->label("Perbaiki Pengajuan")
                         ->color(function (Pengajuan $record) {
-                            if ($record->posisiDokumen->nama == "Di Pengaju Pembayaran") return "primary";
+                            if ($record->posisiDokumen?->nama == "Di Pengaju Pembayaran") return "primary";
                             return null;
                         })
                         ->icon("heroicon-o-pencil")
@@ -176,7 +179,7 @@ class PengajuanResource extends Resource
                     Action::make("Aksi Pengaju")
                         ->label("Tanggapan Pengaju")
                         ->color(function (Pengajuan $record) {
-                            if ($record->posisiDokumen->nama == "Di Pengaju Pembayaran") return "primary";
+                            if ($record->posisiDokumen?->nama == "Di Pengaju Pembayaran") return "primary";
                             return null;
                         })
                         ->icon("heroicon-o-pencil")
@@ -190,7 +193,7 @@ class PengajuanResource extends Resource
                     Action::make("Aksi PPK")
                         ->label("Aksi PPK")
                         ->color(function (Pengajuan $record) {
-                            if ($record->posisiDokumen->nama == "Di PPK") return "primary";
+                            if ($record->posisiDokumen?->nama == "Di PPK") return "primary";
                             return null;
                         })
                         ->modalHeading('Pemeriksaan PPK')
@@ -209,7 +212,7 @@ class PengajuanResource extends Resource
                         ->modalHeading('Pemeriksaan Bendahara')
                         ->label("Aksi Bendahara")
                         ->color(function (Pengajuan $record) {
-                            if ($record->posisiDokumen->nama == "Di Bendahara") return "primary";
+                            if ($record->posisiDokumen?->nama == "Di Bendahara") return "primary";
                             return null;
                         })
                         ->hidden(function (Pengajuan $record): bool {
@@ -229,7 +232,7 @@ class PengajuanResource extends Resource
                             return !PengajuanServices::isSiapDiperiksaPpspm($record);
                         })
                         ->color(function (Pengajuan $record) {
-                            if ($record->posisiDokumen->nama == "Di PPSPM") return "primary";
+                            if ($record->posisiDokumen?->nama == "Di PPSPM") return "primary";
                             return null;
                         })
                         ->icon("heroicon-o-pencil")->form(PengajuanForms::pemeriksaanPpspm())
@@ -245,7 +248,7 @@ class PengajuanResource extends Resource
                             return !PengajuanServices::isSiapDiprosesBendahara($record);
                         })
                         ->color(function (Pengajuan $record) {
-                            if ($record->posisiDokumen->nama == "Di Bendahara") return "primary";
+                            if ($record->posisiDokumen?->nama == "Di Bendahara") return "primary";
                             return null;
                         })
                         ->modalHeading('Pemrosesan Pembayaran')
@@ -369,6 +372,7 @@ class PengajuanResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->recordUrl(null)
             ->filters([
                 SelectFilter::make('nip_penanggung_jawab')
                     ->label("Penanggung Jawab")

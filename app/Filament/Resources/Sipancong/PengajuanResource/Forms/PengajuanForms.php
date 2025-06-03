@@ -39,7 +39,7 @@ class PengajuanForms
                 ->label("Uraian Pengajuan")
                 ->required(),
             TextInput::make("link_folder_dokumen")
-                ->helperText(new HtmlString("Pastikan akses sudah folder sudah terbuka untuk edit! Pastikan dokumen sudah ditandatangani <strong>selain</strong> PPK, Bendahara, Kepala Satker/PLH"))
+                ->helperText(new HtmlString("Pastikan akses sudah folder sudah terbuka untuk edit!"))
                 ->label("Link Folder Dokumen")
                 ->helperText("Pastikan akses sudah folder sudah terbuka untuk edit!")
                 ->required(),
@@ -128,12 +128,10 @@ class PengajuanForms
                     ->url(fn(Pengajuan $record): string => $record->link_folder_dokumen)
                     ->openUrlInNewTab())
                 ->label("Link Folder Dokumen")
-                ->readOnly()
-                ->helperText("Anda dapat menimpa (replace) file yang sudah ditandatangani di folder ini"),
+                ->readOnly(),
             Select::make("status_pengajuan_ppk_id")
                 ->options(StatusPengajuan::whereNot('nama', 'Diajukan')->pluck("nama", "id"))
                 ->label("Hasil Pemeriksaan PPK")
-                ->helperText(new HtmlString("Pastikan PPK <strong>telah menandatangani</strong> dokumen fisik atau softfile sebelum menyetujui!"))
                 ->required(),
             Textarea::make("catatan_ppk")
                 ->label("Catatan"),
@@ -177,7 +175,6 @@ class PengajuanForms
                 ->label("Hasil Pemeriksaan PPK"),
             Select::make("status_pengajuan_bendahara_id")
                 ->options(StatusPengajuan::whereNot('nama', 'Diajukan')->pluck("nama", "id"))
-                ->helperText(new HtmlString("Pastikan Bendahara <strong>telah menandatangani</strong> dokumen fisik atau softfile sebelum menyetujui!"))
                 ->label("Hasil Pemeriksaan Bendahara")
                 ->required(),
             Textarea::make("catatan_ppk")

@@ -271,7 +271,7 @@ class PengajuanServices
             $targetWa = $userBendahara?->pegawai?->nomor_wa;
             $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=Bendahara";
 
-            $message = "*Pengajuan Selesai! | DOKTER-V* \n\nHalo, $namaPengaju \nPengajuanmu dengan uraian: \n\n$uraianPengajuan \nNominal: $nominalPengajuan \n\n*Udah disetujui sama Bendahara!*\nNanti aku kabarin lagi kalau udah dicairin\n\nSemangat!!";
+            $message = "*Pengajuan Selesai! | DOKTER-V* \n\nHalo, $namaPengaju \nPengajuanmu dengan uraian: \n\n$uraianPengajuan \nNominal: $nominalPengajuan \n\n*Udah disetujui sama Bendahara!*\n\nSelanjutnya lakukan *cetak bukti dukung* yang butuh tanda tangan non ETTD ya!\n*Setelah itu* , scan dan upload ulang versi lengkapnya di link bukti dukung ini ya!\n\nNanti aku kabarin lagi kalau udah dicairin\n\nSemangat!!";
         };
         WhatsappNotifier::send($targetWa, $message);
     }
