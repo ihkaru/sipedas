@@ -33,7 +33,9 @@ class PengajuanServices
         $targetWa = $userPpk?->pegawai?->nomor_wa;
 
         // Notifikasi Pengajuan Baru ke PPK
-        $message = "*Pengajuan Baru | DOKTER-V* \n \nHalo, $namaPanggilanPpk \nAda pengajuan pembayaran baru dari *$namaPengaju* nih! \n\nUraian: $uraianPengajuan \n\nNominal: $nominalPengajuan \n\nBuka link ini untuk ngeceknya dan melakukan *Aksi PPK* ya:\n\nhttps://admin.dvlp.asia/a\n\n Semangat!!";
+        $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=PPK";
+
+        $message = "*Pengajuan Baru | DOKTER-V* \n \nHalo, $namaPanggilanPpk \nAda pengajuan pembayaran baru dari *$namaPengaju* nih! \n\nUraian: $uraianPengajuan \n\nNominal: $nominalPengajuan \n\nBuka link ini untuk ngeceknya dan melakukan *Aksi PPK* ya:\n\n$linkKeAksi\n\n Semangat!!";
         WhatsappNotifier::send($targetWa, $message);
     }
     public static function ajukan(array $data)
