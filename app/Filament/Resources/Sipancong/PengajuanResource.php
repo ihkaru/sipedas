@@ -152,7 +152,7 @@ class PengajuanResource extends Resource
                 ActionGroup::make([
                     EditAction::make()
                         ->hidden(function () {
-                            return auth()->user()->hasRole("ppspm") || auth()->user()->hasRole("super_admin");
+                            return !(auth()->user()->hasRole("ppspm") || auth()->user()->hasRole("super_admin"));
                         }),
                     Action::make("linkfolder")
                         ->label("Lihat Dokumen")
