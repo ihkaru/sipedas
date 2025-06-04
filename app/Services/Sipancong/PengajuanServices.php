@@ -268,7 +268,7 @@ class PengajuanServices
             $pengaju = Pegawai::where("nip", $record->nip_pengaju)->first();
             $namaPengaju = $pengaju->panggilan;
             $namaPanggilanBendahara = $userBendahara?->pegawai?->panggilan;
-            $targetWa = $userBendahara?->pegawai?->nomor_wa;
+            $targetWa = $pengaju?->nomor_wa;
             $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=Bendahara";
 
             $message = "*Pengajuan Selesai! | DOKTER-V* \n\nHalo, $namaPengaju \nPengajuanmu dengan uraian: \n\n$uraianPengajuan \nNominal: $nominalPengajuan \n\n*Udah disetujui sama Bendahara!*\n\nSelanjutnya lakukan *cetak bukti dukung* yang butuh tanda tangan non ETTD ya!\n*Setelah itu* , scan dan upload ulang versi lengkapnya di link bukti dukung ini ya!\n\nNanti aku kabarin lagi kalau udah dicairin\n\nSemangat!!";
