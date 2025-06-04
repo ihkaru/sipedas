@@ -305,6 +305,15 @@ class PengajuanResource extends Resource
                     ->searchable()
                     ->badge()
                     ->sortable(),
+                TextColumn::make('catatan_ppk')
+                    ->label("Catatan PPK")
+                    ->searchable(),
+                TextColumn::make('catatan_ppspm')
+                    ->label("Catatan PPSPM")
+                    ->searchable(),
+                TextColumn::make('catatan_bendahara')
+                    ->label("Catatan Bendahara")
+                    ->searchable(),
                 TextColumn::make('error')
                     ->label('Status')
                     ->badge()
