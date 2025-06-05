@@ -23,7 +23,8 @@ class ListPengajuans extends ListRecords
     public function table(Table $table): Table
     {
         return self::$resource::table($table)
-            ->modifyQueryUsing(fn(Builder $query) => $query->orderBy("updated_at", "desc"));
+            // ->recordClasses("border-green-600")
+            ->modifyQueryUsing(fn(Builder $query) => $query->orderBy("created_at", "asc"));
     }
     protected function getHeaderActions(): array
     {
@@ -101,6 +102,7 @@ class ListPengajuans extends ListRecords
                         ->orWhere('status_pembayaran_id', 5)
                         ->orWhere('status_pembayaran_id', 6)
                         ->orWhere('status_pembayaran_id', 7)
+                        ->orderBy('updated_at', 'desc')
                 ),
         ];
     }

@@ -51,4 +51,13 @@ class Pengajuan extends Model implements HasMedia
     {
         return $this->hasOne(StatusPengajuan::class, "id", "status_pengajuan_bendahara_id");
     }
+    public function getRowClassAttribute()
+    {
+        if ($this->posisiDokumen?->nama == "Selesai") {
+            return "bg-green-100";
+        } else if ($this->posisiDokumen?->nama == "Di Pengaju Pembayaran" && auth()->user()->pegawai?->nip == $this->nip_pengaju) {
+            return "bg-blue-100";
+        }
+        return "bg-blue-100";
+    }
 }

@@ -81,6 +81,7 @@ class PengajuanServices
             $hasilPemeriksaanSebelumnya = $record->catatan_ppspm;
             $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=PPSPM";
             $pegawaiPenerima = User::getPpspm()->first()->pegawai;
+            // $pegawaiPenerima = User::getTestPegawai()->first()->pegawai;
             $namaPanggilanPenerima = $pegawaiPenerima->panggilan;
             $targetWa = $pegawaiPenerima->nomor_wa;
             $message = "*Tanggapan Pengaju | DOKTER-V* \n\nHalo, *$namaPanggilanPenerima*\nPengajuan dengan uraian\n$uraianPengajuan\nNominal: $nominalPengajuan\n\nSudah ditanggapi oleh *$pengaju*\n\nSebelumnya hasil pemeriksaanmu:\n *$hasilPemeriksaanSebelumnya*\n\nIni tanggapan dari *$pengaju*:\n*$tanggapanPengaju*\n\nBuka link berikut buat melanjutkan proses pembayaran dengan *Aksi PPSPM* ya!\n\n$linkKeAksi\n\nSemangatt!!";
@@ -195,6 +196,7 @@ class PengajuanServices
             $hasilPemeriksaan = $record->catatan_ppspm;
             $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=Pengaju";
             $pegawaiPenerima = Pegawai::where("nip", $record->nip_pengaju)->first();
+            // $pegawaiPenerima = User::getTestPegawai()->first()->pegawai;
             $userPpspm = User::getPpspm()->first();
             $namaPanggilanPpspm = $userPpspm?->pegawai?->panggilan;
             // $namaPanggilanPenerima = $pegawaiPenerima->panggilan;
@@ -204,8 +206,8 @@ class PengajuanServices
 
         // Notifikasi Disetujui ke Bendahara
         else if ($data["posisi_dokumen_id"] == 4) {
-            // $userBendahara = User::getBendahara()->first();
             $userBendahara = User::getBendahara()->first();
+            // $userBendahara = User::getTestPegawai()->first();
             $pengaju = Pegawai::where("nip", $record->nip_pengaju)->first();
             $namaPengaju = $pengaju->panggilan;
             $namaPanggilanBendahara = $userBendahara?->pegawai?->panggilan;
@@ -254,6 +256,7 @@ class PengajuanServices
             $hasilPemeriksaan = $record->catatan_bendahara;
             $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=Pengaju";
             $pegawaiPenerima = User::where("nip", $record->nip_pengaju)->first();
+            // $pegawaiPenerima = User::getTestPegawai()->first();
             $userBendahara = User::getBendahara()->first();
             $namaPanggilanBendahara = $userBendahara?->pegawai?->panggilan;
             // $namaPanggilanPenerima = $pegawaiPenerima->panggilan;
@@ -266,6 +269,7 @@ class PengajuanServices
             $userBendahara = User::getBendahara()->first();
             // $userBendahara = User::getTestPegawai()->first();
             $pengaju = Pegawai::where("nip", $record->nip_pengaju)->first();
+            // $pengaju = User::getTestPegawai()->first()->pegawai;
             $namaPengaju = $pengaju->panggilan;
             $namaPanggilanBendahara = $userBendahara?->pegawai?->panggilan;
             $targetWa = $pengaju?->nomor_wa;
@@ -308,6 +312,7 @@ class PengajuanServices
         $uraianPengajuan = $record->uraian_pengajuan;
         $nominalPengajuan = self::toRupiah($record->nominal_pengajuan * 1);
         $pengaju = Pegawai::where("nip", $record->nip_pengaju)->first();
+        // $pengaju = User::getTestPegawai()->first()->pegawai;
         $namaPengaju = $pengaju->panggilan;
         $targetWa = $pengaju->nomor_wa;
         $message = "*Pengajuan Cair! | DOKTER-V* \n \nHalo, $namaPengaju \nPengajuanmu dengan uraian: \n\n $uraianPengajuan \nNominal: $nominalPengajuan \n\nUdah dicairin sama Bendahara!\nMakasih banget yaa udah ngelancarin proses pembayaran ini\n\n Semangat!!";
