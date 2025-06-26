@@ -6,467 +6,322 @@ use App\Models\Pegawai;
 use App\Models\Sipancong\Pengajuan;
 use App\Models\User;
 use App\Services\WhatsappNotifier;
-use App\Supports\Constants;
+use App\Supports\SipancongConstants as Constants; // Ganti nama alias jika perlu
 use Filament\Notifications\Notification;
+use Throwable;
 
 class PengajuanServices
 {
-    public static function getPosisiPengajuan(array $data)
-    {
-        // Di PPK
-        // Di PPSPM
-        // Di Bendahara
-    }
     public static function toRupiah($angka)
     {
         return "Rp " . number_format($angka, 0, ',', '.');
     }
-    public static function ajukanNotifier(array $data)
-    {
-        $userPpk = User::getPpk()->first();
-        // $userPpk = User::getTestPegawai()->first();
-        $pengaju = Pegawai::where("nip", $data["nip_pengaju"])->first();
-        $namaPengaju = $pengaju->panggilan;
-        $namaPanggilanPpk = $userPpk?->pegawai?->panggilan;
-        $uraianPengajuan = $data["uraian_pengajuan"];
-        $nominalPengajuan = self::toRupiah($data["nominal_pengajuan"] * 1);
-        $targetWa = $userPpk?->pegawai?->nomor_wa;
 
-        // Notifikasi Pengajuan Baru ke PPK
-        $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=PPK";
+    // =========================================================================
+    // PROSES PENGAJUAN AWAL
+    // =========================================================================
 
-        $message = "*Pengajuan Baru | DOKTER-V* \n \nHalo, $namaPanggilanPpk \nAda pengajuan pembayaran baru dari *$namaPengaju* nih! \n\nUraian: $uraianPengajuan \n\nNominal: $nominalPengajuan \n\nBuka link ini untuk ngeceknya dan melakukan *Aksi PPK* ya:\n\n$linkKeAksi\n\n Semangat!!";
-        WhatsappNotifier::send($targetWa, $message);
-    }
     public static function ajukan(array $data)
     {
-        $last_pengajuan = Pengajuan::whereBetween("tanggal_pengajuan", [now()->startOfYear(), now()->endOfYear()])
-            ->orderBy('tanggal_pengajuan', "desc")->first();
-        $data["nomor_pengajuan"] = ($last_pengajuan) ? $last_pengajuan->nomor_pengajuan + 1 : 1;
-        $data["posisi_dokumen_id"] = 2;
-        $data["nip_pengaju"] = auth()->user()->pegawai->nip;
-        Pengajuan::create($data);
-        self::ajukanNotifier($data);
-        Notification::make()
-            ->success()
-            ->title("Pengajuan berhasil")
-            ->send();
         try {
-        } catch (\Throwable $th) {
-            Notification::make()
-                ->danger()
-                ->title("Pengajuan gagal: " . $th->getMessage())
-                ->send();
+            $last_pengajuan = Pengajuan::whereBetween("tanggal_pengajuan", [now()->startOfYear(), now()->endOfYear()])
+                ->orderBy('tanggal_pengajuan', "desc")->first();
+
+            $data["nomor_pengajuan"] = ($last_pengajuan) ? $last_pengajuan->nomor_pengajuan + 1 : 1;
+            $data["posisi_dokumen_id"] = Constants::POSISI_PPK; // Langsung ke PPK
+            $data["nip_pengaju"] = auth()->user()->pegawai->nip;
+            $pengajuan = Pengajuan::create($data);
+
+            // Kirim Notifikasi
+            self::ajukanNotifier($pengajuan);
+
+            Notification::make()->success()->title("Pengajuan berhasil dikirim")->send();
+        } catch (Throwable $th) {
+            Notification::make()->danger()->title("Pengajuan gagal: " . $th->getMessage())->send();
         }
     }
-    public static function tanggapiNotifier(array $data, Pengajuan $record)
+
+    private static function ajukanNotifier(Pengajuan $record)
     {
-        $pengaju = Pegawai::where("nip", $record->nip_pengaju)->first()?->panggilan;
-        $uraianPengajuan = $record->uraian_pengajuan;
-        $nominalPengajuan = self::toRupiah($record->nominal_pengajuan * 1);
-        // Tanggapan ke PPK
-        if ($data["posisi_dokumen_id"] == 2) {
-            $userPpk = User::getPpk()->first();
-            // $userPpk = User::getTestPegawai()->first();
-            $namaPanggilanPpk = $userPpk?->pegawai?->panggilan;
-            $hasilPemeriksaanSebelumnya = $record->catatan_ppk;
-            $tanggapanPengaju = $record->tanggapan_pengaju_ke_ppk;
-            $targetWa = $userPpk?->pegawai?->nomor_wa;
-            $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=PPK";
-            $message = "*Tanggapan Pengaju | DOKTER-V* \n\nHalo, *$namaPanggilanPpk*\nPengajuan dengan uraian\n$uraianPengajuan\n\nNominal: $nominalPengajuan\n\nSudah ditanggapi oleh *$pengaju*\n\nSebelumnya hasil pemeriksaanmu:\n *$hasilPemeriksaanSebelumnya*\n\nIni tanggapan dari *$pengaju*:\n*$tanggapanPengaju*\n\nBuka link berikut buat melanjutkan proses pembayaran dengan *Aksi PPK* ya!\n\n$linkKeAksi\n\nSemangatt!!";
-        }
-        // Tanggapan ke PPSPM
-        else if ($data["posisi_dokumen_id"] == 3) {
-            $tanggapanPengaju = $record->tanggapan_pengaju_ke_ppspm;
-            $hasilPemeriksaanSebelumnya = $record->catatan_ppspm;
-            $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=PPSPM";
-            $pegawaiPenerima = User::getPpspm()->first()->pegawai;
-            // $pegawaiPenerima = User::getTestPegawai()->first()->pegawai;
-            $namaPanggilanPenerima = $pegawaiPenerima->panggilan;
-            $targetWa = $pegawaiPenerima->nomor_wa;
-            $message = "*Tanggapan Pengaju | DOKTER-V* \n\nHalo, *$namaPanggilanPenerima*\nPengajuan dengan uraian\n$uraianPengajuan\nNominal: $nominalPengajuan\n\nSudah ditanggapi oleh *$pengaju*\n\nSebelumnya hasil pemeriksaanmu:\n *$hasilPemeriksaanSebelumnya*\n\nIni tanggapan dari *$pengaju*:\n*$tanggapanPengaju*\n\nBuka link berikut buat melanjutkan proses pembayaran dengan *Aksi PPSPM* ya!\n\n$linkKeAksi\n\nSemangatt!!";
-        }
-        // Tanggapan ke Bendahara
-        else if ($data["posisi_dokumen_id"] == 4) {
-            $hasilPemeriksaanSebelumnya = $record->catatan_bendahara;
-            $pegawaiPenerima = User::getBendahara()->first()->pegawai;
-            $targetWa = $pegawaiPenerima->nomor_wa;
-            $tanggapanPengaju = $record->tanggapan_pengaju_ke_bendahara;
-            $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=Bendahara";
-            $namaPanggilanPenerima = $pegawaiPenerima->panggilan;
-            $message = "*Tanggapan Pengaju | DOKTER-V* \n\nHalo, *$namaPanggilanPenerima*\nPengajuan dengan uraian\n$uraianPengajuan\nNominal: $nominalPengajuan\n\nSudah ditanggapi oleh *$pengaju*\n\nSebelumnya hasil pemeriksaanmu:\n *$hasilPemeriksaanSebelumnya*\n\nIni tanggapan dari *$pengaju*:\n*$tanggapanPengaju*\n\nBuka link berikut buat melanjutkan proses pembayaran dengan *Aksi Bendahara* ya!\n\n$linkKeAksi\n\nSemangatt!!";
-        }
-        WhatsappNotifier::send($targetWa, $message);
+        $userPpk = User::getPpk()->first();
+        if (!$userPpk) return;
+
+        $namaPanggilanPpk = $userPpk->pegawai?->panggilan ?? 'Bapak/Ibu';
+        $namaPengaju = $record->pengaju?->panggilan ?? 'Pengaju';
+        $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=PPK";
+
+        $message = "*Pengajuan Baru | DOKTER-V* \n \nHalo, $namaPanggilanPpk \nAda pengajuan pembayaran baru dari *$namaPengaju* nih! \n\nUraian: {$record->uraian_pengajuan} \nNominal: " . self::toRupiah($record->nominal_pengajuan) . " \n\nBuka link ini untuk memeriksa dan melakukan *Aksi PPK* ya:\n\n$linkKeAksi\n\nSemangat!!";
+        WhatsappNotifier::send($userPpk->pegawai?->nomor_wa, $message);
     }
+
+    // =========================================================================
+    // PROSES TANGGAPAN DARI PENGAJU (SETELAH DITOLAK)
+    // =========================================================================
+
     public static function tanggapi(array $data, Pengajuan $record)
     {
         try {
-            // Tentukan siapa yang menolak pengajuan
-            if (($record->status_pengajuan_ppk_id == 3) || ($record->status_pengajuan_ppk_id == 4)) {
-                $data["posisi_dokumen_id"] = 2;
-            } else if (($record->status_pengajuan_ppspm_id == 3) || ($record->status_pengajuan_ppspm_id  == 4)) {
-                $data["posisi_dokumen_id"] = 3;
-            } else if (($record->status_pengajuan_bendahara_id == 3) || ($record->status_pengajuan_bendahara_id == 4)) {
-                $data["posisi_dokumen_id"] = 4;
+            // Tentukan siapa yang menolak sebelumnya untuk dikembalikan kesana
+            if ($record->status_pengajuan_ppk_id == Constants::STATUS_DITOLAK) {
+                $data["posisi_dokumen_id"] = Constants::POSISI_PPK;
+            } else if ($record->status_pengajuan_ppspm_id == Constants::STATUS_DITOLAK) {
+                $data["posisi_dokumen_id"] = Constants::POSISI_PPSPM;
+            } else if ($record->status_pengajuan_bendahara_id == Constants::STATUS_DITOLAK) {
+                $data["posisi_dokumen_id"] = Constants::POSISI_BENDAHARA;
             }
+
             $record->update($data);
-            // Notifikasikan lewat whatsapp
-            self::tanggapiNotifier($data, $record);
-            Notification::make()
-                ->success()
-                ->title("Berhasil memberi tanggapan")
-                ->send();
-        } catch (\Throwable $th) {
-            Notification::make()
-                ->danger()
-                ->title("Tanggapan gagal: " . $th->getMessage())
-                ->send();
+            self::tanggapiNotifier($record);
+
+            Notification::make()->success()->title("Berhasil memberi tanggapan")->send();
+        } catch (Throwable $th) {
+            Notification::make()->danger()->title("Tanggapan gagal: " . $th->getMessage())->send();
         }
     }
-    public static function pemeriksaanPpkNotifier(array $data, Pengajuan $record)
+
+    private static function tanggapiNotifier(Pengajuan $record)
     {
-        $pengaju = Pegawai::where("nip", $record->nip_pengaju)->first()?->panggilan;
-        $uraianPengajuan = $record->uraian_pengajuan;
-        $nominalPengajuan = self::toRupiah($record->nominal_pengajuan * 1);
+        $pengaju = $record->pengaju?->panggilan ?? 'Pengaju';
+        $message = "";
+        $targetWa = null;
+        $link = "";
+        $pemeriksa = "";
+        $jabatan = "";
+        $catatanSebelumnya = "";
+        $tanggapanPengaju = "";
 
-        // Notifikasi Tidak Disetujui ke Pengaju
-        if ($data["posisi_dokumen_id"] == 1) {
-            $hasilPemeriksaan = $record->catatan_ppk;
-            $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=Pengaju";
-            $pegawaiPenerima = Pegawai::where("nip", $record->nip_pengaju)->first();
-            // $pegawaiPenerima = User::getTestPegawai()->first()->pegawai;
-            $userPpk = User::getPpk()->first();
-            // $userPpk = User::getTestPegawai()->first();
-            $namaPanggilanPpk = $userPpk?->pegawai?->panggilan;
-            // $namaPanggilanPenerima = $pegawaiPenerima->panggilan;
-            $targetWa = $pegawaiPenerima->nomor_wa;
-            $message = "*Perlu Perbaikan | DOKTER-V* \n\nHalo, *$pengaju*\nPengajuanmu dengan uraian\n$uraianPengajuan\nNominal: $nominalPengajuan\n\nSudah diperiksa oleh *$namaPanggilanPpk* sebagai PPK\n\nCatatan dari beliau gini nih:\n *$hasilPemeriksaan*\n\nBuka link berikut buat melanjutkan proses perbaikan dengan aksi *Perbaiki Pengajuan* dan *Tanggapan Pengaju* ya!\n\n$linkKeAksi\n\nSemangatt!!";
+        if ($record->posisi_dokumen_id == Constants::POSISI_PPK) {
+            $userPemeriksa = User::getPpk()->first();
+            $pemeriksa = $userPemeriksa?->pegawai?->panggilan ?? 'PPK';
+            $jabatan = "PPK";
+            $targetWa = $userPemeriksa?->pegawai?->nomor_wa;
+            $catatanSebelumnya = $record->catatan_ppk;
+            $tanggapanPengaju = $data['tanggapan_pengaju_ke_ppk'] ?? $record->tanggapan_pengaju_ke_ppk;
+            $link = config("app.url") . "/a/sipancong/pengajuans?activeTab=PPK";
+        } else if ($record->posisi_dokumen_id == Constants::POSISI_PPSPM) {
+            $userPemeriksa = User::getPpspm()->first();
+            $pemeriksa = $userPemeriksa?->pegawai?->panggilan ?? 'PPSPM';
+            $jabatan = "PPSPM";
+            $targetWa = $userPemeriksa?->pegawai?->nomor_wa;
+            $catatanSebelumnya = $record->catatan_ppspm;
+            $tanggapanPengaju = $data['tanggapan_pengaju_ke_ppspm'] ?? $record->tanggapan_pengaju_ke_ppspm;
+            $link = config("app.url") . "/a/sipancong/pengajuans?activeTab=PPSPM";
+        } else if ($record->posisi_dokumen_id == Constants::POSISI_BENDAHARA) {
+            $userPemeriksa = User::getBendahara()->first();
+            $pemeriksa = $userPemeriksa?->pegawai?->panggilan ?? 'Bendahara';
+            $jabatan = "Bendahara";
+            $targetWa = $userPemeriksa?->pegawai?->nomor_wa;
+            $catatanSebelumnya = $record->catatan_bendahara;
+            $tanggapanPengaju = $data['tanggapan_pengaju_ke_bendahara'] ?? $record->tanggapan_pengaju_ke_bendahara;
+            $link = config("app.url") . "/a/sipancong/pengajuans?activeTab=Bendahara";
         }
 
-        // Notifikasi Disetujui ke PPSPM
-        else if ($data["posisi_dokumen_id"] == 3) {
-            $userPpspm = User::getPpspm()->first();
-            // $userPpspm = User::getTestPegawai()->first();
-            $pengaju = Pegawai::where("nip", $record->nip_pengaju)->first();
-            $namaPengaju = $pengaju->panggilan;
-            $namaPanggilanPpspm = $userPpspm?->pegawai?->panggilan;
-            $targetWa = $userPpspm?->pegawai?->nomor_wa;
-            $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=PPSPM";
-
-            $message = "*Pengajuan Baru | DOKTER-V* \n \nHalo, $namaPanggilanPpspm \nAda pengajuan pembayaran baru dari *$namaPengaju* nih! \n\nUraian: $uraianPengajuan \n\nNominal: $nominalPengajuan \n\nBuka link ini untuk melanjutkan proses pembayaran dengan *Aksi PPSPM* ya:\n\n$linkKeAksi\n\n Semangat!!";
-        };
-        WhatsappNotifier::send($targetWa, $message);
+        if ($targetWa) {
+            $message = "*Tanggapan Pengaju | DOKTER-V* \n\nHalo, *$pemeriksa*,\nPengajuan dengan uraian '{$record->uraian_pengajuan}' sudah ditanggapi oleh *$pengaju*.\n\nHasil pemeriksaanmu sebelumnya:\n\"*$catatanSebelumnya*\"\n\nTanggapan dari *$pengaju*:\n\"*$tanggapanPengaju*\"\n\nSilakan periksa kembali dan lanjutkan proses dengan *Aksi $jabatan* di link berikut:\n\n$link\n\nSemangat!";
+            WhatsappNotifier::send($targetWa, $message);
+        }
     }
+
+    // =========================================================================
+    // PROSES PEMERIKSAAN (PPK, PPSPM, BENDAHARA)
+    // =========================================================================
+
+    private static function handlePemeriksaan(string $role, array $data, Pengajuan $record)
+    {
+        try {
+            $statusField = "status_pengajuan_{$role}_id";
+            $statusId = $data[$statusField] ?? null;
+
+            if (Constants::isDisetujui($statusId)) {
+                $nextPosition = ($role == 'ppk') ? Constants::POSISI_PPSPM : (($role == 'ppspm') ? Constants::POSISI_BENDAHARA : Constants::POSISI_BENDAHARA);
+                $data['posisi_dokumen_id'] = $nextPosition;
+            } elseif ($statusId == Constants::STATUS_DITOLAK) {
+                $data['posisi_dokumen_id'] = Constants::POSISI_PENGAJU;
+            }
+            // Jika status DITUNDA, posisi dokumen tidak berubah (tetap di pemeriksa).
+
+            $record->update($data);
+            self::pemeriksaanNotifier($role, $record);
+
+            Notification::make()->success()->title("Hasil pemeriksaan berhasil disimpan")->send();
+        } catch (Throwable $th) {
+            Notification::make()->danger()->title("Gagal menyimpan hasil pemeriksaan: " . $th->getMessage())->send();
+        }
+    }
+
     public static function pemeriksaanPpk(array $data, Pengajuan $record)
     {
-        // Dokumen Dikembalikan
-        if (($data["status_pengajuan_ppk_id"] == 3) || ($data["status_pengajuan_ppk_id"] == 4)) {
-            $data["posisi_dokumen_id"] = 1;
-        }
-
-        // Dokumen Dimajukan Ke PPSPM
-        if (($data["status_pengajuan_ppk_id"] == 2) || ($data["status_pengajuan_ppk_id"] == 5)) {
-            $data["posisi_dokumen_id"] = 3;
-        }
-        $record->update($data);
-        if (!$data["status_pengajuan_ppk_id"]) dd($record, $data);
-
-        // Notifikasikan lewat whatsapp
-        self::pemeriksaanPpkNotifier($data, $record);
-        Notification::make()
-            ->success()
-            ->title("Berhasil menyimpan hasil pemeriksaan")
-            ->send();
-        try {
-        } catch (\Throwable $th) {
-            Notification::make()
-                ->danger()
-                ->title("Gagal menyimpan hasil pemeriksaan " . $th->getMessage())
-                ->send();
-        }
+        self::handlePemeriksaan('ppk', $data, $record);
     }
-    public static function pemeriksaanPpspmNotifier(array $data, Pengajuan $record)
-    {
-        $pengaju = Pegawai::where("nip", $record->nip_pengaju)->first()?->panggilan;
-        $uraianPengajuan = $record->uraian_pengajuan;
-        $nominalPengajuan = self::toRupiah($record->nominal_pengajuan * 1);
 
-        // Notifikasi Tidak Disetujui ke Pengaju
-        if ($data["posisi_dokumen_id"] == 1) {
-            $hasilPemeriksaan = $record->catatan_ppspm;
-            $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=Pengaju";
-            $pegawaiPenerima = Pegawai::where("nip", $record->nip_pengaju)->first();
-            // $pegawaiPenerima = User::getTestPegawai()->first()->pegawai;
-            $userPpspm = User::getPpspm()->first();
-            $namaPanggilanPpspm = $userPpspm?->pegawai?->panggilan;
-            // $namaPanggilanPenerima = $pegawaiPenerima->panggilan;
-            $targetWa = $pegawaiPenerima->nomor_wa;
-            $message = "*Perlu Perbaikan | DOKTER-V* \n\nHalo, *$pengaju*\nPengajuanmu dengan uraian\n$uraianPengajuan\nNominal: $nominalPengajuan\n\nSudah diperiksa oleh *$namaPanggilanPpspm* sebagai PPSPM\n\nCatatan dari beliau gini nih:\n *$hasilPemeriksaan*\n\nBuka link berikut buat melanjutkan proses perbaikannya dengan aksi *Perbaiki Pengajuan* dan *Tanggapan Pengaju* ya!\n\n$linkKeAksi\n\nSemangatt!!";
-        }
-
-        // Notifikasi Disetujui ke Bendahara
-        else if ($data["posisi_dokumen_id"] == 4) {
-            $userBendahara = User::getBendahara()->first();
-            // $userBendahara = User::getTestPegawai()->first();
-            $pengaju = Pegawai::where("nip", $record->nip_pengaju)->first();
-            $namaPengaju = $pengaju->panggilan;
-            $namaPanggilanBendahara = $userBendahara?->pegawai?->panggilan;
-            $targetWa = $userBendahara?->pegawai?->nomor_wa;
-            $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=Bendahara";
-
-            // Notifikasi Pengajuan Baru ke Bendahara
-            $message = "*Pengajuan Baru | DOKTER-V* \n \nHalo, $namaPanggilanBendahara \nAda pengajuan pembayaran baru dari *$namaPengaju* nih! \n\nUraian: $uraianPengajuan \n\nNominal: $nominalPengajuan \n\nBuka link ini untuk ngecek dengan *Aksi Bendahara* ya:\n\n$linkKeAksi\n\n Semangat!!";
-        };
-        WhatsappNotifier::send($targetWa, $message);
-    }
     public static function pemeriksaanPpspm(array $data, Pengajuan $record)
     {
-        // Dokumen Di PPSPM
-        if (($data["status_pengajuan_ppspm_id"] == 3) || ($data["status_pengajuan_ppspm_id"] == 4)) {
-            $data["posisi_dokumen_id"] = 1;
-        }
-
-        // Dokumen Di Bendahara
-        if (($data["status_pengajuan_ppspm_id"] == 2) || ($data["status_pengajuan_ppspm_id"] == 5)) {
-            $data["posisi_dokumen_id"] = 4;
-        }
-        $record->update($data);
-        // Notifikasikan lewat whatsapp
-        self::pemeriksaanPpspmNotifier($data, $record);
-        Notification::make()
-            ->success()
-            ->title("Berhasil menyimpan hasil pemeriksaan")
-            ->send();
-        try {
-        } catch (\Throwable $th) {
-            Notification::make()
-                ->danger()
-                ->title("Gagal menyimpan hasil pemeriksaan " . $th->getMessage())
-                ->send();
-        }
+        self::handlePemeriksaan('ppspm', $data, $record);
     }
-    public static function pemeriksaanBendaharaNotifier(array $data, Pengajuan $record)
-    {
-        $pengaju = Pegawai::where("nip", $record->nip_pengaju)->first()?->panggilan;
-        $uraianPengajuan = $record->uraian_pengajuan;
-        $nominalPengajuan = self::toRupiah($record->nominal_pengajuan * 1);
 
-        // Notifikasi Tidak Disetujui ke Pengaju
-        if ($data["posisi_dokumen_id"] == 1) {
-            $hasilPemeriksaan = $record->catatan_bendahara;
-            $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=Pengaju";
-            $pegawaiPenerima = User::where("nip", $record->nip_pengaju)->first();
-            // $pegawaiPenerima = User::getTestPegawai()->first();
-            $userBendahara = User::getBendahara()->first();
-            $namaPanggilanBendahara = $userBendahara?->pegawai?->panggilan;
-            // $namaPanggilanPenerima = $pegawaiPenerima->panggilan;
-            $targetWa = $pegawaiPenerima->nomor_wa;
-            $message = "*Perlu Perbaikan | DOKTER-V* \n\nHalo, *$pengaju*\nPengajuanmu dengan uraian\n$namaPanggilanBendahara\nNominal: $nominalPengajuan\n\nSudah diperiksa oleh *$namaPanggilanBendahara* sebagai Bendahara nih\n\nCatatan dari beliau gini nih:\n *$hasilPemeriksaan*\n\nBuka link berikut buat melanjutkan proses perbaikannya dengan aksi *Perbaiki Pengajuan* dan *Tanggapan Pengaju* ya!\n\n$linkKeAksi\n\nSemangatt!!";
-        }
-
-        // Notifikasi Disetujui ke Pengaju
-        else if ($data["posisi_dokumen_id"] == 4) {
-            $userBendahara = User::getBendahara()->first();
-            // $userBendahara = User::getTestPegawai()->first();
-            $pengaju = Pegawai::where("nip", $record->nip_pengaju)->first();
-            // $pengaju = User::getTestPegawai()->first()->pegawai;
-            $namaPengaju = $pengaju->panggilan;
-            $namaPanggilanBendahara = $userBendahara?->pegawai?->panggilan;
-            $targetWa = $pengaju?->nomor_wa;
-            $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=Bendahara";
-
-            $message = "*Pengajuan Selesai! | DOKTER-V* \n\nHalo, $namaPengaju \nPengajuanmu dengan uraian: \n\n$uraianPengajuan \nNominal: $nominalPengajuan \n\n*Udah disetujui sama Bendahara!*\n\nSelanjutnya lakukan *cetak bukti dukung* yang butuh tanda tangan non ETTD ya!\n*Setelah itu* , scan dan upload ulang versi lengkapnya di link bukti dukung ini ya!\n\nNanti aku kabarin lagi kalau udah dicairin\n\nSemangat!!";
-        };
-        WhatsappNotifier::send($targetWa, $message);
-    }
     public static function pemeriksaanBendahara(array $data, Pengajuan $record)
     {
-        try {
-            // Dokumen Dikembalikan
-            if (($data["status_pengajuan_bendahara_id"] == 3) || ($data["status_pengajuan_bendahara_id"] == 4)) {
-                $data["posisi_dokumen_id"] = 1;
+        self::handlePemeriksaan('bendahara', $data, $record);
+    }
+
+    private static function pemeriksaanNotifier(string $role, Pengajuan $record)
+    {
+        $statusField = "status_pengajuan_{$role}_id";
+        $catatanField = "catatan_{$role}";
+        $statusId = $record->$statusField;
+        $catatan = $record->$catatanField;
+        $uraian = $record->uraian_pengajuan;
+        $nominal = self::toRupiah($record->nominal_pengajuan);
+        $pengaju = $record->pengaju?->panggilan ?? 'Pengaju';
+        $targetWa = null;
+        $message = "";
+
+        $pemeriksaUser = ($role == 'ppk') ? User::getPpk()->first() : (($role == 'ppspm') ? User::getPpspm()->first() : User::getBendahara()->first());
+        $namaPemeriksa = $pemeriksaUser?->pegawai?->panggilan ?? strtoupper($role);
+
+        // Jika Ditolak atau Perlu Perbaikan, notif ke Pengaju
+        if ($statusId == Constants::STATUS_DITOLAK) {
+            $targetWa = $record->pengaju?->nomor_wa;
+            $link = config("app.url") . "/a/sipancong/pengajuans?activeTab=Pengaju";
+            $message = "*Perlu Perbaikan | DOKTER-V* \n\nHalo, *$pengaju*,\nPengajuanmu '$uraian' (Nominal: $nominal) telah diperiksa oleh *$namaPemeriksa* sebagai " . strtoupper($role) . ".\n\nCatatan dari beliau:\n\"*$catatan*\"\n\nSilakan buka link berikut untuk melakukan *Perbaikan* atau memberi *Tanggapan*:\n\n$link\n\nSemangat!!";
+        }
+        // Jika Disetujui, notif ke Pemeriksa Selanjutnya
+        elseif (Constants::isDisetujui($statusId)) {
+            $catatanTambahan = "";
+            if ($statusId == Constants::STATUS_DISETUJUI_DENGAN_CATATAN) {
+                $catatanTambahan = "\n\n*Dengan Catatan*:\n\"*$catatan*\"";
             }
 
-            // Dokumen Di Bendahara
-            if (($data["status_pengajuan_bendahara_id"] == 2) || ($data["status_pengajuan_bendahara_id"] == 5)) {
-                $data["posisi_dokumen_id"] = 4;
+            if ($role == 'ppk') {
+                $userPenerima = User::getPpspm()->first();
+                $namaPenerima = $userPenerima?->pegawai?->panggilan ?? 'PPSPM';
+                $targetWa = $userPenerima?->pegawai?->nomor_wa;
+                $link = config("app.url") . "/a/sipancong/pengajuans?activeTab=PPSPM";
+                $message = "*Pengajuan Baru | DOKTER-V* \n\nHalo, $namaPenerima,\nAda pengajuan dari *$pengaju* yang sudah disetujui PPK.\n\nUraian: $uraian\nNominal: $nominal" . $catatanTambahan . "\n\nSilakan lanjutkan proses dengan *Aksi PPSPM*:\n\n$link\n\nSemangat!";
+            } elseif ($role == 'ppspm') {
+                $userPenerima = User::getBendahara()->first();
+                $namaPenerima = $userPenerima?->pegawai?->panggilan ?? 'Bendahara';
+                $targetWa = $userPenerima?->pegawai?->nomor_wa;
+                $link = config("app.url") . "/a/sipancong/pengajuans?activeTab=Bendahara";
+                $message = "*Pengajuan Baru | DOKTER-V* \n\nHalo, $namaPenerima,\nAda pengajuan dari *$pengaju* yang sudah disetujui PPSPM.\n\nUraian: $uraian\nNominal: $nominal" . $catatanTambahan . "\n\nSilakan lanjutkan proses dengan *Aksi Bendahara*:\n\n$link\n\nSemangat!";
+            } elseif ($role == 'bendahara') {
+                $targetWa = $record->pengaju?->nomor_wa;
+
+                // Cek apakah ada catatan dari pemeriksa manapun
+                $pesanFinalCatatan = "";
+                if (
+                    $record->status_pengajuan_ppk_id == Constants::STATUS_DISETUJUI_DENGAN_CATATAN ||
+                    $record->status_pengajuan_ppspm_id == Constants::STATUS_DISETUJUI_DENGAN_CATATAN ||
+                    $record->status_pengajuan_bendahara_id == Constants::STATUS_DISETUJUI_DENGAN_CATATAN
+                ) {
+                    $pesanFinalCatatan = "\n\n*PENTING:*\nWalaupun pengajuan sudah disetujui, masih terdapat beberapa catatan yang perlu Anda penuhi. Pengajuan ini baru dianggap benar-benar selesai setelah semua catatan terpenuhi.";
+                }
+
+                $message = "*Pengajuan Selesai Diperiksa! | DOKTER-V* \n\nHalo, *$pengaju*,\nKabar baik! Pengajuanmu '$uraian' (Nominal: $nominal) *sudah disetujui Bendahara*! \n\nSelanjutnya, pengajuanmu akan diproses untuk pembayaran." . $catatanTambahan . "\n\nAku akan kabari lagi kalau dananya sudah dicairkan ya." . $pesanFinalCatatan . "\n\nSemangat!!";
             }
-            $record->update($data);
-            // Notifikasikan lewat whatsapp
-            self::pemeriksaanBendaharaNotifier($data, $record);
-            if (!$data["status_pengajuan_bendahara_id"]) dd($record, $data);
-            Notification::make()
-                ->success()
-                ->title("Berhasil menyimpan hasil pemeriksaan")
-                ->send();
-        } catch (\Throwable $th) {
-            Notification::make()
-                ->danger()
-                ->title("Gagal menyimpan hasil pemeriksaan " . $th->getMessage())
-                ->send();
+        }
+        // Jika ditunda, tidak ada notifikasi yang dikirim.
+
+        if ($targetWa && $message) {
+            WhatsappNotifier::send($targetWa, $message);
         }
     }
 
-    public static function pemrosesanBendaharaNotifier(array $data, Pengajuan $record)
-    {
-        $uraianPengajuan = $record->uraian_pengajuan;
-        $nominalPengajuan = self::toRupiah($record->nominal_pengajuan * 1);
-        $pengaju = Pegawai::where("nip", $record->nip_pengaju)->first();
-        // $pengaju = User::getTestPegawai()->first()->pegawai;
-        $namaPengaju = $pengaju->panggilan;
-        $targetWa = $pengaju->nomor_wa;
-        $message = "*Pengajuan Cair! | DOKTER-V* \n \nHalo, $namaPengaju \nPengajuanmu dengan uraian: \n\n $uraianPengajuan \nNominal: $nominalPengajuan \n\nUdah dicairin sama Bendahara!\nMakasih banget yaa udah ngelancarin proses pembayaran ini\n\n Semangat!!";
-        WhatsappNotifier::send($targetWa, $message);
-    }
+    // =========================================================================
+    // PROSES PEMBAYARAN OLEH BENDAHARA
+    // =========================================================================
+
     public static function pemrosesanBendahara(array $data, Pengajuan $record)
     {
         try {
-            $data = [
-                ...$data,
-                "nominal_dibayarkan" => $data["nominal_dibayarkan"] ?? null,
-                "nominal_dikembalikan" => $data["nominal_dikembalikan"] ?? null,
-                "tanggal_pembayaran" => $data["tanggal_pembayaran"] ?? null,
-                "jenis_dokumen_id" => $data["jenis_dokumen_id"] ?? null,
-                "nomor_dokumen" => $data["nomor_dokumen"] ?? null,
-            ];
-            $data["posisi_dokumen_id"] = 6;
+            $statusPembayaranId = $data['status_pembayaran_id'] ?? null;
+
+            // Tentukan posisi akhir dokumen berdasarkan status pembayaran
+            if (Constants::isSelesaiDibayar($statusPembayaranId)) {
+                $data['posisi_dokumen_id'] = Constants::POSISI_SELESAI;
+            } else {
+                // Untuk status seperti "Belum Tersedia Dok Fisik", "Proses Catat", dll.
+                // Dokumen masih dianggap aktif dan berada di Bendahara.
+                $data['posisi_dokumen_id'] = Constants::POSISI_BENDAHARA;
+            }
+
             $record->update($data);
-            self::pemrosesanBendaharaNotifier($data, $record);
-            Notification::make()
-                ->success()
-                ->title("Berhasil menyimpan hasil pemrosesan pembayaran")
-                ->send();
-        } catch (\Throwable $th) {
-            Notification::make()
-                ->danger()
-                ->title("Gagal menyimpan hasil pemrosesan pembayaran " . $th->getMessage())
-                ->send();
+
+            // Kirim notifikasi HANYA jika pembayaran sudah selesai (cair)
+            if (Constants::isSelesaiDibayar($statusPembayaranId)) {
+                self::pemrosesanBendaharaNotifier($record);
+            }
+
+            Notification::make()->success()->title("Status pembayaran berhasil diperbarui")->send();
+        } catch (Throwable $th) {
+            Notification::make()->danger()->title("Gagal menyimpan status pembayaran: " . $th->getMessage())->send();
         }
     }
+
+    private static function pemrosesanBendaharaNotifier(Pengajuan $record)
+    {
+        $namaPengaju = $record->pengaju?->panggilan ?? 'Pengaju';
+        $targetWa = $record->pengaju?->nomor_wa;
+        $uraian = $record->uraian_pengajuan;
+        $nominal = self::toRupiah($record->nominal_dibayarkan ?? $record->nominal_pengajuan);
+
+        if ($targetWa) {
+            $message = "*Pengajuan Cair! | DOKTER-V* \n \nHalo, *$namaPengaju*,\nPengajuanmu dengan uraian '$uraian' sebesar *$nominal* sudah dicairkan oleh Bendahara!\n\nTerima kasih sudah menggunakan Dokter-V untuk memperlancar proses pembayaran ini.\n\nSemangat!!";
+            WhatsappNotifier::send($targetWa, $message);
+        }
+    }
+
+    // =========================================================================
+    // FUNGSI LAIN-LAIN (UBAH PENGAJUAN, HELPER QUERY)
+    // =========================================================================
+
     public static function ubahPengajuan(array $data, Pengajuan $record)
     {
         try {
             $record->update($data);
-            Notification::make()
-                ->success()
-                ->title("Berhasil menyimpan hasil perubahan")
-                ->send();
-        } catch (\Throwable $th) {
-            Notification::make()
-                ->danger()
-                ->title("Gagal menyimpan hasil perubahan " . $th->getMessage())
-                ->send();
+            Notification::make()->success()->title("Berhasil menyimpan perubahan")->send();
+        } catch (Throwable $th) {
+            Notification::make()->danger()->title("Gagal menyimpan perubahan: " . $th->getMessage())->send();
         }
     }
-    public static function isSiapDiperiksaPpk(Pengajuan $pengajuan)
-    {
-        return !(
-            $pengajuan->status_pengajuan_ppk_id == 2 ||
-            $pengajuan->status_pengajuan_ppk_id == 5
-        ) || $pengajuan->posisi_dokumen_id == 2;
-    }
-    public static function isSiapDiperiksaBendahara(Pengajuan $pengajuan)
-    {
-        return (
-            $pengajuan->status_pengajuan_ppk_id == 2 ||
-            $pengajuan->status_pengajuan_ppk_id == 5
-        ) &&
-            !(
-                $pengajuan->status_pengajuan_bendahara_id == 2 ||
-                $pengajuan->status_pengajuan_bendahara_id == 5
-            )
-            || ($pengajuan->status_pembayaran_id == 3);
-    }
-    public static function isSiapDiperiksaPpspm(Pengajuan $pengajuan)
-    {
-        return (
-            $pengajuan->status_pengajuan_ppk_id == 2 ||
-            $pengajuan->status_pengajuan_ppk_id == 5
-        ) &&
-            (
-                $pengajuan->status_pengajuan_bendahara_id == 2 ||
-                $pengajuan->status_pengajuan_bendahara_id == 5
-            ) &&
-            !(
-                $pengajuan->status_pengajuan_ppspm_id == 2 ||
-                $pengajuan->status_pengajuan_ppspm_id == 5
-            ) || $pengajuan->posisi_dokumen_id == 3;;
-    }
-    public static function isSiapDiprosesBendahara(Pengajuan $pengajuan)
-    {
-        return (
-            $pengajuan->status_pengajuan_ppk_id == 2 ||
-            $pengajuan->status_pengajuan_ppk_id == 5
-        ) &&
-            (
-                $pengajuan->status_pengajuan_bendahara_id == 2 ||
-                $pengajuan->status_pengajuan_bendahara_id == 5
-            ) &&
-            (
-                $pengajuan->status_pengajuan_ppspm_id == 2 ||
-                $pengajuan->status_pengajuan_ppspm_id == 5
-            );
-    }
 
+    // Helper untuk badge di navigasi Filament (disarankan berbasis posisi dokumen)
+    public static function jumlahPerluPerbaikanPengaju()
+    {
+        return Pengajuan::where('posisi_dokumen_id', Constants::POSISI_PENGAJU)->count();
+    }
     public static function jumlahPerluPemeriksaanPpk()
     {
-        return Pengajuan::whereRaw(self::rawPerluPemeriksaanPpk())->count();
-    }
-    public static function jumlahPerluPemeriksaanBendahara()
-    {
-        return Pengajuan::whereRaw(self::rawPerluPemeriksaanBendahara())->count();
+        return Pengajuan::where('posisi_dokumen_id', Constants::POSISI_PPK)->count();
     }
     public static function jumlahPerluPemeriksaanPpspm()
     {
-        return Pengajuan::whereRaw(self::rawPerluPemeriksaanPpspm())->count();
+        return Pengajuan::where('posisi_dokumen_id', Constants::POSISI_PPSPM)->count();
     }
-    public static function jumlahPerluProsesBendahara()
+    public static function jumlahPerluPemeriksaanAtauProsesBendahara()
     {
-        return Pengajuan::whereRaw(self::rawPerluProsesBendahara())->count();
-    }
-    public static function jumlahPerluPerbaikanPengaju()
-    {
-        return Pengajuan::whereRaw(self::rawPerluPemeriksaanPengaju())->count();
-    }
-    public static function jumlahSelesaiSubfungsi($namaSubfungsi)
-    {
-        $jumlahSelesai = Pengajuan::whereHas("subfungsi", function ($q) use ($namaSubfungsi) {
-            $q->where("nama", $namaSubfungsi);
-        })->where("posisi_dokumen_id", 6)->count();
-        $jumlahTotal = Pengajuan::whereHas("subfungsi", function ($q) use ($namaSubfungsi) {
-            $q->where("nama", $namaSubfungsi);
-        })->count();
-        if ($jumlahTotal == 0) return 0;
-        return round($jumlahSelesai / $jumlahTotal * 100, 0);
+        return Pengajuan::where('posisi_dokumen_id', Constants::POSISI_BENDAHARA)->count();
     }
 
+    // RAW Queries untuk tab di resource (jika masih diperlukan)
     public static function rawPerluPemeriksaanPengaju()
     {
-        // return "status_pengajuan_ppk_id IN (1,3,4) OR status_pengajuan_bendahara_id IN (1,3,4) OR status_pengajuan_ppspm_id IN (1,3,4) OR link_folder_dokumen IS NULL";
-        return "posisi_dokumen_id=1";
+        return "posisi_dokumen_id = " . Constants::POSISI_PENGAJU;
     }
     public static function rawPerluPemeriksaanPpk()
     {
-        // return "status_pengajuan_ppk_id NOT IN (2,5) OR status_pengajuan_ppk_id IS NULL";
-        return "posisi_dokumen_id=2";
-    }
-    public static function rawPerluPemeriksaanBendahara()
-    {
-        // return "status_pengajuan_bendahara_id IS NULL OR status_pengajuan_ppk_id IN (2,5) AND status_pengajuan_bendahara_id NOT IN (2,5) OR (status_pembayaran_id = 3)";
-        return "posisi_dokumen_id=4";
+        return "posisi_dokumen_id = " . Constants::POSISI_PPK;
     }
     public static function rawPerluPemeriksaanPpspm()
     {
-        // return "(status_pengajuan_ppk_id IN (2,5)) AND (status_pengajuan_bendahara_id IN (2,5)) AND (status_pengajuan_ppspm_id IN (3,4,NULL) or status_pengajuan_ppspm_id IS NULL)";
-        return "posisi_dokumen_id=3";
+        return "posisi_dokumen_id = " . Constants::POSISI_PPSPM;
     }
-    public static function rawPerluProsesBendahara()
+    public static function rawPerluPemeriksaanAtauProsesBendahara()
     {
-        // return "((status_pengajuan_ppk_id IN (2,5) AND status_pengajuan_bendahara_id IN (2,5) AND (tanggal_pembayaran IS NULL OR status_pembayaran_id IS NULL)) OR (tanggal_pembayaran IS NOT NULL AND status_pembayaran_id = 7))";
-        return "((status_pengajuan_ppk_id IN (2,5) AND status_pengajuan_bendahara_id IN (2,5) AND (tanggal_pembayaran IS NULL OR status_pembayaran_id IS NULL)))";
+        return "posisi_dokumen_id = " . Constants::POSISI_BENDAHARA;
     }
-    public static function rawSelesaiProsesBendahara()
+    public static function rawSelesai()
     {
-        return "status_pembayaran_id IN (1,2,5,7)";
+        return "posisi_dokumen_id = " . Constants::POSISI_SELESAI;
     }
 }
