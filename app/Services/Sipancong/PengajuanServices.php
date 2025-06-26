@@ -285,6 +285,49 @@ class PengajuanServices
         }
     }
 
+    // =========================================================================
+    // HELPER UNTUK LOGIKA TAMPILAN DI FILAMENT RESOURCE
+    // =========================================================================
+
+    public static function canShowPengajuActions(Pengajuan $record): bool
+    {
+        $user = auth()->user();
+        return ($user->pegawai?->nip == $record->nip_pengaju) && $record->posisi_dokumen_id == Constants::POSISI_PENGAJU;
+    }
+
+    public static function canShowPpkActions(Pengajuan $record): bool
+    {
+        return $record->posisi_dokumen_id == Constants::POSISI_PPK;
+    }
+
+    public static function canShowPpspmActions(Pengajuan $record): bool
+    {
+        return $record->posisi_dokumen_id == Constants::POSISI_PPSPM;
+    }
+
+    private static function areAllVerificationsApproved(Pengajuan $record): bool
+    {
+        return Constants::isDisetujui($record->status_pengajuan_ppk_id) &&
+            Constants::isDisetujui($record->status_pengajuan_ppspm_id) &&
+            Constants::isDisetujui($record->status_pengajuan_bendahara_id);
+    }
+
+    public static function canShowBendaharaVerificationAction(Pengajuan $record): bool
+    {
+        // Tampilkan aksi verifikasi jika dokumen ada di Bendahara DAN belum semua persetujuan verifikasi didapat
+        return
+            $record->posisi_dokumen_id == Constants::POSISI_BENDAHARA &&
+            !self::areAllVerificationsApproved($record);
+    }
+
+    public static function canShowBendaharaPaymentAction(Pengajuan $record): bool
+    {
+        // Tampilkan aksi pembayaran jika dokumen ada di Bendahara DAN SEMUA persetujuan verifikasi sudah didapat
+        return
+            $record->posisi_dokumen_id == Constants::POSISI_BENDAHARA &&
+            self::areAllVerificationsApproved($record);
+    }
+
     // Helper untuk badge di navigasi Filament (disarankan berbasis posisi dokumen)
     public static function jumlahPerluPerbaikanPengaju()
     {
@@ -304,24 +347,114 @@ class PengajuanServices
     }
 
     // RAW Queries untuk tab di resource (jika masih diperlukan)
-    public static function rawPerluPemeriksaanPengaju()
+    public static function rawPerluPerbaikanPengaju(): string
     {
         return "posisi_dokumen_id = " . Constants::POSISI_PENGAJU;
     }
-    public static function rawPerluPemeriksaanPpk()
+
+    public static function rawPerluPemeriksaanPpk(): string
     {
         return "posisi_dokumen_id = " . Constants::POSISI_PPK;
     }
-    public static function rawPerluPemeriksaanPpspm()
+
+    public static function rawPerluPemeriksaanPpspm(): string
     {
         return "posisi_dokumen_id = " . Constants::POSISI_PPSPM;
     }
-    public static function rawPerluPemeriksaanAtauProsesBendahara()
+
+    /**
+     * Raw query untuk semua item yang memerlukan aksi dari Bendahara
+     * (baik verifikasi maupun pembayaran).
+     */
+    public static function rawPerluAksiBendahara(): string
     {
         return "posisi_dokumen_id = " . Constants::POSISI_BENDAHARA;
     }
-    public static function rawSelesai()
+
+    /**
+     * Raw query untuk item yang perlu DIVERIFIKASI Bendahara.
+     * Logika ini lebih kompleks dan sebaiknya dihindari jika bisa,
+     * gunakan rawPerluAksiBendahara() yang lebih sederhana.
+     */
+    public static function rawPerluPemeriksaanBendahara(): string
+    {
+        // Query ini akan mencari dokumen di posisi Bendahara yang belum disetujui oleh semua pihak sebelumnya.
+        // Ini adalah implementasi yang lebih 'aman' untuk memastikan hanya verifikasi yang muncul.
+        return "posisi_dokumen_id = " . Constants::POSISI_BENDAHARA . " AND ( " .
+            "status_pengajuan_ppk_id NOT IN (" . Constants::STATUS_DISETUJUI_DENGAN_CATATAN . "," . Constants::STATUS_DISETUJUI_TANPA_CATATAN . ") OR " .
+            "status_pengajuan_ppspm_id NOT IN (" . Constants::STATUS_DISETUJUI_DENGAN_CATATAN . "," . Constants::STATUS_DISETUJUI_TANPA_CATATAN . ") OR " .
+            "status_pengajuan_bendahara_id NOT IN (" . Constants::STATUS_DISETUJUI_DENGAN_CATATAN . "," . Constants::STATUS_DISETUJUI_TANPA_CATATAN . ") )";
+    }
+
+    /**
+     * Raw query untuk item yang perlu DIPROSES PEMBAYARANNYA oleh Bendahara.
+     */
+    public static function rawPerluProsesBendahara(): string
+    {
+        return "posisi_dokumen_id = " . Constants::POSISI_BENDAHARA . " AND " .
+            "status_pengajuan_ppk_id IN (" . Constants::STATUS_DISETUJUI_DENGAN_CATATAN . "," . Constants::STATUS_DISETUJUI_TANPA_CATATAN . ") AND " .
+            "status_pengajuan_ppspm_id IN (" . Constants::STATUS_DISETUJUI_DENGAN_CATATAN . "," . Constants::STATUS_DISETUJUI_TANPA_CATATAN . ") AND " .
+            "status_pengajuan_bendahara_id IN (" . Constants::STATUS_DISETUJUI_DENGAN_CATATAN . "," . Constants::STATUS_DISETUJUI_TANPA_CATATAN . ")";
+    }
+
+    /**
+     * Raw query untuk semua item yang sudah selesai.
+     */
+    public static function rawSelesai(): string
     {
         return "posisi_dokumen_id = " . Constants::POSISI_SELESAI;
+    }
+
+
+
+    // --- METODE BARU YANG DIBUTUHKAN WIDGET ---
+
+    /**
+     * Menghitung jumlah pengajuan yang perlu diverifikasi oleh Bendahara.
+     * Yaitu, yang posisinya di Bendahara TAPI belum semua verifikasi disetujui.
+     */
+    public static function jumlahPerluPemeriksaanBendahara(): int
+    {
+        return Pengajuan::where('posisi_dokumen_id', Constants::POSISI_BENDAHARA)
+            ->where(function ($query) {
+                $query->where('status_pengajuan_ppk_id', '!=', Constants::STATUS_DISETUJUI_TANPA_CATATAN)
+                    ->where('status_pengajuan_ppk_id', '!=', Constants::STATUS_DISETUJUI_DENGAN_CATATAN)
+                    ->orWhere('status_pengajuan_ppspm_id', '!=', Constants::STATUS_DISETUJUI_TANPA_CATATAN)
+                    ->orWhere('status_pengajuan_ppspm_id', '!=', Constants::STATUS_DISETUJUI_DENGAN_CATATAN)
+                    ->orWhereNull('status_pengajuan_bendahara_id'); // Belum diperiksa bendahara
+            })
+            ->count();
+    }
+
+    /**
+     * Menghitung jumlah pengajuan yang siap diproses pembayarannya oleh Bendahara.
+     * Yaitu, yang posisinya di Bendahara DAN SEMUA verifikasi sudah disetujui.
+     */
+    public static function jumlahPerluProsesBendahara(): int
+    {
+        return Pengajuan::where('posisi_dokumen_id', Constants::POSISI_BENDAHARA)
+            ->whereIn('status_pengajuan_ppk_id', [Constants::STATUS_DISETUJUI_TANPA_CATATAN, Constants::STATUS_DISETUJUI_DENGAN_CATATAN])
+            ->whereIn('status_pengajuan_ppspm_id', [Constants::STATUS_DISETUJUI_TANPA_CATATAN, Constants::STATUS_DISETUJUI_DENGAN_CATATAN])
+            ->whereIn('status_pengajuan_bendahara_id', [Constants::STATUS_DISETUJUI_TANPA_CATATAN, Constants::STATUS_DISETUJUI_DENGAN_CATATAN])
+            ->count();
+    }
+
+    /**
+     * Menghitung persentase penyelesaian pengajuan per subfungsi.
+     */
+    public static function jumlahSelesaiSubfungsi(string $namaSubfungsi): int
+    {
+        $query = Pengajuan::whereHas("subfungsi", function ($q) use ($namaSubfungsi) {
+            $q->where("nama", $namaSubfungsi);
+        });
+
+        $total = (clone $query)->count();
+        if ($total === 0) {
+            return 0;
+        }
+
+        $selesai = (clone $query)->where('posisi_dokumen_id', Constants::POSISI_SELESAI)->count();
+
+        return round(($selesai / $total) * 100);
     }
 }

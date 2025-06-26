@@ -17,11 +17,6 @@ class StatsProsesPembayaran extends BaseWidget
         $neraca = PengajuanServices::jumlahSelesaiSubfungsi("Neraca");
         $ipds = PengajuanServices::jumlahSelesaiSubfungsi("IPDS");
         return [
-            Stat::make("Perlu Perbaikan Pengaju", "" . PengajuanServices::jumlahPerluPerbaikanPengaju()),
-            Stat::make("Perlu Pemeriksaan PPK", "" . PengajuanServices::jumlahPerluPemeriksaanPpk()),
-            Stat::make("Perlu Pemeriksaan Bendahara", "" . PengajuanServices::jumlahPerluPemeriksaanBendahara()),
-            Stat::make("Perlu Pemeriksaan PPSPM", "" . PengajuanServices::jumlahPerluPemeriksaanPpspm()),
-            Stat::make("Perlu Proses Pembayaran Bendahara", "" . PengajuanServices::jumlahPerluProsesBendahara()),
             Stat::make("Pengajuan Umum Selesai", "" . $umum == 0 ? "-" : ($umum . "%")),
             Stat::make("Pengajuan Produksi Selesai", "" . $produksi == 0 ? "-" : ($produksi . "%")),
             Stat::make("Pengajuan Distribusi Selesai", "" . $distribusi == 0 ? "-" : ($distribusi . "%")),

@@ -4,27 +4,13 @@ namespace App\Filament\Resources\Sipancong;
 
 use App\Filament\Resources\Sipancong\PengajuanResource\Forms\PengajuanForms;
 use App\Filament\Resources\Sipancong\PengajuanResource\Pages;
-use App\Filament\Resources\Sipancong\PengajuanResource\RelationManagers;
-use App\Models\Sipancong\JenisDokumen;
 use App\Models\Sipancong\Pengajuan;
-use App\Models\Sipancong\PosisiDokumen;
-use App\Models\Sipancong\StatusPembayaran;
-use App\Models\Sipancong\StatusPengajuan;
-use App\Models\Sipancong\Subfungsi;
 use App\Services\Sipancong\PengajuanServices;
-use Dom\Text;
-use Filament\Forms;
+use App\Supports\SipancongConstants as Constants;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Resources\Components\Tab;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
@@ -33,14 +19,12 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\HtmlString;
 
 class PengajuanResource extends Resource
 {
     protected static ?string $model = Pengajuan::class;
-
     protected static ?string $label = "Pengajuan";
     protected static ?string $navigationLabel = "Pengajuan";
     protected static ?string $pluralModelLabel = "Pengajuan";
@@ -48,98 +32,10 @@ class PengajuanResource extends Resource
     protected static ?string $navigationGroup = "Pembayaran";
     protected static ?int $navigationSort = 1;
 
-
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                TextInput::make('nomor_pengajuan')
-                    ->required()
-                    ->maxLength(50),
-                DatePicker::make('tanggal_pengajuan')
-                    ->required(),
-                Select::make("sub_fungsi_id")
-                    ->label("Sub Fungsi")
-                    ->options(Subfungsi::pluck("nama", "id"))
-                    ->required(),
-                TextInput::make('nomor_form_pembayaran')
-                    ->label("Nomor Form Pembayaran")
-                    ->helperText("Bisa lebih dari satu nomor. Gunakan koma sebagai pemisah nomor. Contoh: 12,13,140")
-                    ->required()
-                    ->maxLength(50)
-                    ->default(null),
-                TextInput::make('nomor_detail_fa')
-                    ->label("Nomor Detail FA")
-                    ->required()
-                    ->helperText("Bisa lebih dari satu nomor. Gunakan koma sebagai pemisah nomor. Contoh: 12,13,140")
-                    ->maxLength(50)
-                    ->default(null),
-                Textarea::make('uraian_pengajuan')
-                    ->label("Uraian Pengajuan")
-                    ->required()
-                    ->columnSpanFull(),
-                TextInput::make('nominal_pengajuan')
-                    ->required()
-                    ->numeric(),
-                TextInput::make('link_folder_dokumen')
-                    ->helperText(new HtmlString("Pastikan akses sudah folder sudah terbuka untuk edit!"))
-                    ->required()
-                    ->maxLength(255)
-                    ->default(null)
-                    ->label('Bukti Dukung Lainnya'),
-                Select::make('posisi_dokumen_id')
-                    ->label("Posisi Dokumen")
-                    ->options(PosisiDokumen::pluck('nama', 'id'))
-                    ->required()
-                    ->default(null),
-                Select::make('status_pengajuan_ppk_id')
-                    ->label("Status Pengajuan di PPK")
-                    ->options(StatusPengajuan::pluck('nama', 'id'))
-                    ->default(null),
-                Select::make('status_pengajuan_ppspm_id')
-                    ->label("Status Pengajuan di PPSPM")
-                    ->options(StatusPengajuan::pluck('nama', 'id'))
-                    ->default(null),
-                Select::make('status_pengajuan_bendahara_id')
-                    ->label("Status Pengajuan di Bendahara")
-                    ->options(StatusPengajuan::pluck('nama', 'id'))
-                    ->default(null),
-                Textarea::make('catatan_ppk')
-                    ->columnSpanFull(),
-                Textarea::make('catatan_bendahara')
-                    ->columnSpanFull(),
-                Textarea::make('catatan_ppspm')
-                    ->columnSpanFull(),
-                Textarea::make('tanggapan_pengaju_ke_ppk')
-                    ->label("Tanggapan Pengaju ke PPK")
-                    ->columnSpanFull(),
-                Textarea::make('tanggapan_pengaju_ke_ppspm')
-                    ->label("Tanggapan Pengaju ke PPSPM")
-                    ->columnSpanFull(),
-                Textarea::make('tanggapan_pengaju_ke_bendahara')
-                    ->label("Tanggapan Pengaju ke Bendahara")
-                    ->columnSpanFull(),
-                TextInput::make('nominal_dibayarkan')
-                    ->label("Nominal Dibayarkan")
-                    ->numeric()
-                    ->default(null),
-                TextInput::make('nominal_dikembalikan')
-                    ->label("Nominal Dikembalikan")
-                    ->numeric()
-                    ->default(null),
-                Select::make('status_pembayaran_id')
-                    ->label("Status Pembayaran")
-                    ->options(StatusPembayaran::pluck("nama", "id"))
-                    ->default(null),
-                DatePicker::make('tanggal_pembayaran'),
-                Select::make('jenis_dokumen_id')
-                    ->options(JenisDokumen::pluck("nama", "id"))
-                    ->label("Jenis Dokumen")
-                    ->default(null),
-                TextInput::make('nomor_dokumen')
-                    ->maxLength(50)
-                    ->default(null),
-            ]);
+        // Form ini hanya untuk super_admin, form per aksi ada di PengajuanForms
+        return $form->schema(PengajuanForms::fullForm());
     }
 
     public static function table(Table $table): Table
@@ -149,300 +45,148 @@ class PengajuanResource extends Resource
             ->defaultSort("updated_at", "desc")
             ->actions([
                 ActionGroup::make([
-                    EditAction::make()
-                        ->hidden(function () {
-                            return !(auth()->user()->hasRole("ppspm") || auth()->user()->hasRole("super_admin"));
-                        }),
+                    EditAction::make('edit_admin')
+                        ->label('Edit (Admin)')
+                        ->form(PengajuanForms::fullForm())
+                        ->hidden(fn(): bool => !auth()->user()->hasRole(['super_admin', 'Admin'])),
+
                     Action::make("linkfolder")
                         ->label("Lihat Dokumen")
                         ->icon("heroicon-m-link")
-                        ->url(fn(Pengajuan $record): string => $record->link_folder_dokumen)
+                        ->url(fn(Pengajuan $record): string => $record->link_folder_dokumen ?? '#')
                         ->openUrlInNewTab()
-                        ->hidden(function (Pengajuan $record) {
-                            return !($record->link_folder_dokumen);
-                        }),
+                        ->hidden(fn(Pengajuan $record) => !$record->link_folder_dokumen),
+
+                    // --- AKSI UNTUK PENGAJU ---
                     Action::make("Perbaiki Pengajuan")
-                        ->label("Perbaiki Pengajuan")
-                        ->color(function (Pengajuan $record) {
-                            if ($record->posisiDokumen?->nama == "Di Pengaju Pembayaran") return "primary";
-                            return null;
-                        })
                         ->icon("heroicon-o-pencil")
                         ->form(PengajuanForms::pengajuanPembayaran())
-                        ->fillForm(function (Pengajuan $record): array {
-                            return $record->toArray();
-                        })
-                        ->action(function (array $data, Pengajuan $record) {
-                            PengajuanServices::ubahPengajuan($data, $record);
-                        }),
-                    Action::make("Aksi Pengaju")
-                        ->label("Tanggapan Pengaju")
-                        ->color(function (Pengajuan $record) {
-                            if ($record->posisiDokumen?->nama == "Di Pengaju Pembayaran") return "primary";
-                            return null;
-                        })
-                        ->icon("heroicon-o-pencil")
+                        ->action(fn(array $data, Pengajuan $record) => PengajuanServices::ubahPengajuan($data, $record))
+                        ->hidden(fn(Pengajuan $record): bool => !PengajuanServices::canShowPengajuActions($record)),
+
+                    Action::make("Tanggapan Pengaju")
+                        ->icon("heroicon-o-chat-bubble-left-right")
                         ->form(PengajuanForms::tanggapanPengaju())
-                        ->fillForm(function (Pengajuan $record): array {
-                            return $record->toArray();
-                        })
-                        ->action(function (array $data, Pengajuan $record) {
-                            PengajuanServices::tanggapi($data, $record);
-                        }),
+                        ->action(fn(array $data, Pengajuan $record) => PengajuanServices::tanggapi($data, $record))
+                        ->hidden(fn(Pengajuan $record): bool => !PengajuanServices::canShowPengajuActions($record)),
+
+                    // --- AKSI UNTUK PEMERIKSA ---
                     Action::make("Aksi PPK")
-                        ->label("Aksi PPK")
-                        ->color(function (Pengajuan $record) {
-                            if ($record->posisiDokumen?->nama == "Di PPK") return "primary";
-                            return null;
-                        })
                         ->modalHeading('Pemeriksaan PPK')
-                        ->hidden(function (Pengajuan $record): bool {
-                            return !PengajuanServices::isSiapDiperiksaPpk($record);
-                        })
-                        ->icon("heroicon-o-pencil")
+                        ->icon("heroicon-o-check")
                         ->form(PengajuanForms::pemeriksaanPpk())
-                        ->fillForm(function (Pengajuan $record): array {
-                            return $record->toArray();
-                        })
-                        ->action(function (array $data, Pengajuan $record) {
-                            PengajuanServices::pemeriksaanPpk($data, $record);
-                        }),
-                    Action::make("Aksi Bendahara")
-                        ->modalHeading('Pemeriksaan Bendahara')
-                        ->label("Aksi Bendahara")
-                        ->color(function (Pengajuan $record) {
-                            if ($record->posisiDokumen?->nama == "Di Bendahara") return "primary";
-                            return null;
-                        })
-                        ->hidden(function (Pengajuan $record): bool {
-                            return !PengajuanServices::isSiapDiperiksaBendahara($record);
-                        })
-                        ->icon("heroicon-o-pencil")->form(PengajuanForms::pemeriksaanBendahara())
-                        ->fillForm(function (Pengajuan $record): array {
-                            return $record->toArray();
-                        })
-                        ->action(function (array $data, Pengajuan $record) {
-                            PengajuanServices::pemeriksaanBendahara($data, $record);
-                        }),
+                        ->action(fn(array $data, Pengajuan $record) => PengajuanServices::pemeriksaanPpk($data, $record))
+                        ->hidden(fn(Pengajuan $record): bool => !PengajuanServices::canShowPpkActions($record)),
+
                     Action::make("Aksi PPSPM")
-                        ->label("Aksi PPSPM")
                         ->modalHeading('Pemeriksaan PPSPM')
-                        ->hidden(function (Pengajuan $record): bool {
-                            return !PengajuanServices::isSiapDiperiksaPpspm($record);
-                        })
-                        ->color(function (Pengajuan $record) {
-                            if ($record->posisiDokumen?->nama == "Di PPSPM") return "primary";
-                            return null;
-                        })
-                        ->icon("heroicon-o-pencil")->form(PengajuanForms::pemeriksaanPpspm())
-                        ->fillForm(function (Pengajuan $record): array {
-                            return $record->toArray();
-                        })
-                        ->action(function (array $data, Pengajuan $record) {
-                            PengajuanServices::pemeriksaanPpspm($data, $record);
-                        }),
-                    Action::make("pemrosesanBendahara")
-                        ->label("Proses Bendahara")
-                        ->hidden(function (Pengajuan $record): bool {
-                            return !PengajuanServices::isSiapDiprosesBendahara($record);
-                        })
-                        ->color(function (Pengajuan $record) {
-                            if ($record->posisiDokumen?->nama == "Di Bendahara") return "primary";
-                            return null;
-                        })
+                        ->icon("heroicon-o-check")
+                        ->form(PengajuanForms::pemeriksaanPpspm())
+                        ->action(fn(array $data, Pengajuan $record) => PengajuanServices::pemeriksaanPpspm($data, $record))
+                        ->hidden(fn(Pengajuan $record): bool => !PengajuanServices::canShowPpspmActions($record)),
+
+                    // --- AKSI UNTUK BENDAHARA (DIBAGI DUA) ---
+                    Action::make("Aksi Verifikasi Bendahara")
+                        ->label('Verifikasi Bendahara')
+                        ->modalHeading('Pemeriksaan/Verifikasi Bendahara')
+                        ->icon("heroicon-o-check")
+                        ->form(PengajuanForms::pemeriksaanBendahara())
+                        ->action(fn(array $data, Pengajuan $record) => PengajuanServices::pemeriksaanBendahara($data, $record))
+                        ->hidden(fn(Pengajuan $record): bool => !PengajuanServices::canShowBendaharaVerificationAction($record)),
+
+                    Action::make("Proses Pembayaran")
+                        ->label("Proses Pembayaran")
                         ->modalHeading('Pemrosesan Pembayaran')
                         ->icon("heroicon-o-credit-card")
                         ->form(PengajuanForms::pemrosesanBendahara())
-                        ->fillForm(function (Pengajuan $record): array {
-                            return $record->toArray();
-                        })
-                        ->action(function (array $data, Pengajuan $record) {
-                            PengajuanServices::pemrosesanBendahara($data, $record);
-                        }),
+                        ->action(fn(array $data, Pengajuan $record) => PengajuanServices::pemrosesanBendahara($data, $record))
+                        ->hidden(fn(Pengajuan $record): bool => !PengajuanServices::canShowBendaharaPaymentAction($record)),
+
                     DeleteAction::make("hapus")
-                        ->hidden(function () {
-                            return !(auth()->user()->hasRole("super_admin") || auth()->user()->hasRole("operator_bmn"));
-                        })
+                        ->hidden(fn(): bool => !auth()->user()->hasRole(['super_admin', 'Admin'])),
 
                 ])->link()->label("Aksi"),
-
             ], position: ActionsPosition::BeforeColumns)
             ->columns([
-                TextColumn::make('subfungsi.nama')
-                    ->sortable()
-                    ->label("Subfungsi")
-                    ->searchable(),
-                TextColumn::make('nomor_pengajuan')
-                    ->sortable(
-                        query: fn($query, $direction) => $query->orderBy(
-                            DB::raw('CAST(nomor_pengajuan AS UNSIGNED)'),
-                            $direction
-                        )
-                    )
-                    ->numeric()
-                    ->label("No")
-                    ->searchable(),
-                TextColumn::make("uraian_pengajuan")
-                    ->searchable()
-                    ->label("Uraian Pengajuan"),
-                TextColumn::make('penanggungJawab.nama')
-                    ->label("Penanggung Jawab")
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('statusPengajuanPpk.nama')
-                    ->label("Status di PPK")
-                    ->badge()
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('statusPengajuanBendahara.nama')
-                    ->label("Status di Bendahara")
-                    ->badge()
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('statusPengajuanPpspm.nama')
-                    ->label("Status di PPSPM")
-                    ->searchable()
-                    ->badge()
-                    ->sortable(),
-                TextColumn::make('catatan_ppk')
-                    ->label("Catatan PPK")
-                    ->searchable(),
-                TextColumn::make('catatan_ppspm')
-                    ->label("Catatan PPSPM")
-                    ->searchable(),
-                TextColumn::make('catatan_bendahara')
-                    ->label("Catatan Bendahara")
-                    ->searchable(),
-                TextColumn::make('error')
-                    ->label('Status')
-                    ->badge()
-                    ->color("danger")
-                    ->getStateUsing(function ($record) {
-                        $text = "";
-                        $text = ($record->link_folder_dokumen) ? $text . "" : $text . " Link folder dokumen tidak boleh kosong.";
-                        $text = ($record->nip_penanggung_jawab) ? $text . "" : $text . " Penanggung jawab tidak boleh kosong.";
-                        return trim($text) ? trim($text) : "-";
-                    }),
-                TextColumn::make("pegawai.nama")
-                    ->searchable()
-                    ->label("Pengaju"),
-                TextColumn::make('tanggal_pengajuan')
-                    ->label("Tanggal Pengajuan")
-                    ->date()
-                    ->sortable(),
-                TextColumn::make('nomor_form_pembayaran')
-                    ->label("No. Form Pembayaran")
-                    ->searchable(),
-                TextColumn::make('nomor_detail_fa')
-                    ->label("No. Detail FA")
-                    ->searchable(),
-                TextColumn::make('nominal_pengajuan')
-                    ->label("Nominal Pengajuan")
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('link_folder_dokumen')
-                    ->label("Link Folder")
-                    ->searchable(),
                 TextColumn::make('posisiDokumen.nama')
                     ->label("Posisi Dokumen")
-                    ->numeric()
-                    ->sortable(),
-
-                TextColumn::make('nominal_dibayarkan')
-                    ->label("Nominal dibayarkan")
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('nominal_dikembalikan')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->label("Nominal Dikembalikan")
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('statusPembayaran.nama')
                     ->badge()
-                    ->label("Status Pembayaran")
+                    ->color(fn(string $state): string => match ($state) {
+                        'Di Pengaju Pembayaran' => 'warning',
+                        'Di PPK' => 'info',
+                        'Di PPSPM' => 'info',
+                        'Di Bendahara' => 'primary',
+                        'Selesai' => 'success',
+                        default => 'gray',
+                    })
                     ->sortable(),
-                TextColumn::make('tanggal_pembayaran')
-                    ->date()
-                    ->sortable(),
-                TextColumn::make('jenisDokumen.nama')
-                    ->label("Jenis Dokumen")
-                    ->sortable(),
-                TextColumn::make('nomor_dokumen')
-                    ->label("No SPM/SPBY")
+                TextColumn::make('nomor_pengajuan')
+                    ->label("No")
+                    ->sortable(query: fn($query, $direction) => $query->orderBy(DB::raw('CAST(nomor_pengajuan AS UNSIGNED)'), $direction))
                     ->searchable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make("uraian_pengajuan")->searchable()->label("Uraian"),
+                TextColumn::make('penanggungJawab.panggilan')->label("Pj.")->sortable()->searchable(),
+                TextColumn::make('pengaju.panggilan')->label("Pengaju")->sortable()->searchable(),
+                TextColumn::make('statusPengajuanPpk.nama')->label("PPK")->badge()->sortable(),
+                TextColumn::make('statusPengajuanPpspm.nama')->label("PPSPM")->badge()->sortable(),
+                TextColumn::make('statusPengajuanBendahara.nama')->label("Bdh.")->badge()->sortable(),
+                TextColumn::make('statusPembayaran.nama')->label("Bayar")->badge()->sortable(),
+                TextColumn::make('nominal_pengajuan')->label("Nominal")->numeric()->sortable()->searchable(),
+                TextColumn::make('updated_at')->label("Last Update")->since()->sortable(),
             ])
             ->recordUrl(null)
             ->filters([
-                SelectFilter::make('nip_penanggung_jawab')
-                    ->label("Penanggung Jawab")
-                    ->relationship('penanggungJawab', 'nama')
-                    ->searchable()
-                    ->preload(),
-                SelectFilter::make('nip_pengaju')
-                    ->label("Pengaju")
-                    ->relationship('pegawai', 'nama')
-                    ->multiple()
-                    ->searchable()
-                    ->preload(),
-                SelectFilter::make('sub_fungsi_id')
-                    ->label("Sub Fungsi")
-                    ->relationship('subfungsi', 'nama')
-                    ->multiple()
-                    ->preload(),
-                SelectFilter::make('status_pembayaran_id')
-                    ->label("Status Pembayaran")
-                    ->relationship('statusPembayaran', 'nama')
-                    ->multiple()
-                    ->preload(),
-                SelectFilter::make('status_pengajuan_ppk_id')
-                    ->label("Status Pengajuan ke PPK")
-                    ->relationship('statusPengajuanPpk', 'nama')
-                    ->multiple()
-                    ->preload(),
-                SelectFilter::make('status_pengajuan_bendahara_id')
-                    ->label("Status Pengajuan ke Bendahara")
-                    ->relationship('statusPengajuanBendahara', 'nama')
-                    ->multiple()
-                    ->preload(),
-                SelectFilter::make('status_pengajuan_ppspm_id')
-                    ->label("Status Pengajuan ke PPSPM")
-                    ->relationship('statusPengajuanPpspm', 'nama')
-                    ->multiple()
-                    ->preload(),
-                SelectFilter::make('jenisDokumen')
-                    ->label("Jenis Dokumen")
-                    ->relationship('jenisDokumen', 'nama')
-                    ->multiple()
-                    ->preload(),
+                // Filters from your original code are fine
+                // SelectFilter::make('nip_penanggung_jawab')->label("Penanggung Jawab")->relationship('penanggungJawab', 'nama')->searchable()->preload(),
+                // SelectFilter::make('nip_pengaju')->label("Pengaju")->relationship('pengaju', 'nama')->multiple()->searchable()->preload(),
+                // SelectFilter::make('sub_fungsi_id')->label("Sub Fungsi")->relationship('subfungsi', 'nama')->multiple()->preload(),
+                // SelectFilter::make('posisi_dokumen_id')->label("Posisi Dokumen")->relationship('posisiDokumen', 'nama')->multiple()->preload(),
             ])
             ->bulkActions([]);
     }
 
-    public static function getRelations(): array
+    public static function getTabs(): array
     {
+        $user = auth()->user();
+        $queryPengaju = ($user->hasRole(['super_admin', 'Admin'])) ? PengajuanServices::rawPerluPerbaikanPengaju() : PengajuanServices::rawPerluPerbaikanPengaju() . " AND nip_pengaju = '{$user->pegawai?->nip}'";
+
         return [
-            //
+            'Semua' => Tab::make(),
+            'Perlu Perbaikan' => Tab::make()
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereRaw($queryPengaju))
+                ->badge(PengajuanServices::jumlahPerluPerbaikanPengaju())
+                ->badgeColor('warning'),
+            'PPK' => Tab::make()
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereRaw(PengajuanServices::rawPerluPemeriksaanPpk()))
+                ->badge(PengajuanServices::jumlahPerluPemeriksaanPpk())
+                ->badgeColor('info')
+                ->hidden(fn(): bool => !auth()->user()->hasAnyRole(['super_admin', 'Admin', 'ppk'])),
+            'PPSPM' => Tab::make()
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereRaw(PengajuanServices::rawPerluPemeriksaanPpspm()))
+                ->badge(PengajuanServices::jumlahPerluPemeriksaanPpspm())
+                ->badgeColor('info')
+                ->hidden(fn(): bool => !auth()->user()->hasAnyRole(['super_admin', 'Admin', 'ppspm'])),
+            'Bendahara' => Tab::make()
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereRaw(PengajuanServices::rawPerluPemeriksaanAtauProsesBendahara()))
+                ->badge(PengajuanServices::jumlahPerluPemeriksaanAtauProsesBendahara())
+                ->badgeColor('primary')
+                ->hidden(fn(): bool => !auth()->user()->hasAnyRole(['super_admin', 'Admin', 'bendahara'])),
+            'Selesai' => Tab::make()
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('posisi_dokumen_id', Constants::POSISI_SELESAI)),
         ];
     }
 
-
-    #Custom
-
+    public static function getRelations(): array
+    {
+        return [];
+    }
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListPengajuans::route('/'),
-            'create' => Pages\CreatePengajuan::route('/create'),
-            'edit' => Pages\EditPengajuan::route('/{record}/edit'),
+            // Hapus create dan edit default jika kamu ingin semua aksi via modal
+            // 'create' => Pages\CreatePengajuan::route('/create'),
+            // 'edit' => Pages\EditPengajuan::route('/{record}/edit'),
         ];
     }
 }

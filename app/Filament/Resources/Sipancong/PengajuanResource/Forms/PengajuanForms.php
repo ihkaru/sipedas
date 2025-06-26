@@ -4,13 +4,14 @@ namespace App\Filament\Resources\Sipancong\PengajuanResource\Forms;
 
 use App\Models\Pegawai;
 use App\Models\Sipancong\JenisDokumen;
-use App\Models\Sipancong\Pengajuan;
-use App\Models\Sipancong\PosisiDokumen;
 use App\Models\Sipancong\StatusPembayaran;
 use App\Models\Sipancong\StatusPengajuan;
 use App\Models\Sipancong\Subfungsi;
+use App\Supports\SipancongConstants as Constants;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Fieldset;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -19,329 +20,274 @@ use Illuminate\Support\HtmlString;
 
 class PengajuanForms
 {
-    public static function pengajuanPembayaran()
+    /**
+     * Form untuk Aksi "Buat Pengajuan" atau "Perbaiki Pengajuan".
+     * Semua field bisa diedit.
+     */
+    public static function pengajuanPembayaran(): array
     {
         return [
-            Select::make("nip_penanggung_jawab")
-                ->label("Penanggung Jawab")
-                ->searchable()
-                ->options(Pegawai::pluck("nama", "nip"))
-                ->required(),
-            DatePicker::make("tanggal_pengajuan")
-                ->label("Tanggal Pengajuan")
-                ->helperText("Tanggal Pengajuan Harus Sama atau Lebih Akhir daripada Tanggal Penyelesaian Kegiatan di Dokumen"),
-            Select::make("sub_fungsi_id")
-                ->options(Subfungsi::pluck('nama', 'id'))
-                ->preload()
-                ->label("Sub Fungsi")
-                ->required(),
-            Textarea::make("uraian_pengajuan")
-                ->label("Uraian Pengajuan")
-                ->required(),
-            TextInput::make("link_folder_dokumen")
-                ->helperText(new HtmlString("Pastikan akses sudah folder sudah terbuka untuk edit!"))
-                ->label("Link Folder Dokumen")
-                ->helperText("Pastikan akses sudah folder sudah terbuka untuk edit!")
-                ->required(),
-            TextInput::make("nomor_form_pembayaran")
-                ->label("Nomor Form Pembayaran (FP)")
-                ->helperText("Bisa lebih dari satu nomor. Gunakan koma sebagai pemisah nomor. Contoh: 12,13,140")
-                ->required(),
-            TextInput::make("nomor_detail_fa")
-                ->label("Nomor Detail FA")
-                ->helperText("Bisa lebih dari satu nomor. Gunakan koma sebagai pemisah nomor. Contoh: 12,13,140")
-                ->required(),
-            TextInput::make("nominal_pengajuan")
-                ->label("Nominal Pengajuan")
-                ->required()
-                ->numeric(),
+            Fieldset::make('Informasi Utama Pengajuan')
+                ->schema([
+                    Grid::make(2)->schema([
+                        Select::make("nip_penanggung_jawab")
+                            ->label("Penanggung Jawab")
+                            // ->relationship('penanggungJawab', 'nama')
+                            ->searchable()
+                            ->preload()
+                            ->required(),
+                        Select::make("sub_fungsi_id")
+                            ->label("Sub Fungsi")
+                            ->options(Subfungsi::pluck('nama', 'id'))
+                            ->searchable()
+                            ->preload()
+                            ->required(),
+                    ]),
+                    Textarea::make("uraian_pengajuan")
+                        ->label("Uraian Pengajuan")
+                        ->required(),
+                    Grid::make(2)->schema([
+                        TextInput::make("nomor_form_pembayaran")
+                            ->label("Nomor Form Pembayaran (FP)")
+                            ->helperText("Pisahkan dengan koma jika lebih dari satu.")
+                            ->required(),
+                        TextInput::make("nomor_detail_fa")
+                            ->label("Nomor Detail FA")
+                            ->helperText("Pisahkan dengan koma jika lebih dari satu.")
+                            ->required(),
+                    ]),
+                    Grid::make(2)->schema([
+                        TextInput::make("nominal_pengajuan")
+                            ->label("Nominal Pengajuan")
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->required(),
+                        DatePicker::make("tanggal_pengajuan")
+                            ->label("Tanggal Pengajuan")
+                            ->helperText("Sesuaikan dengan tanggal di dokumen.")
+                            ->required(),
+                    ]),
+                    TextInput::make("link_folder_dokumen")
+                        ->label("Link Folder Bukti Dukung")
+                        ->url()
+                        ->helperText(new HtmlString("Pastikan akses folder sudah <strong>terbuka untuk edit</strong>!"))
+                        ->required(),
+                ])
+        ];
+    }
 
-            // Select::make("posisi_dokumen_id")
-            //     ->label("Posisi Dokumen Fisik")
-            //     ->options(PosisiDokumen::whereIn('nama', ["Di PPK"])->pluck("nama", "id"))
-            //     ->helperText("Jika setelah pengajuan ini Anda memberikan dokumen fisik ke PPK, maka isikan PPK")
-            //     ->required(),
-        ];
-    }
-    public static function tanggapanPengaju()
+    /**
+     * Form untuk Aksi "Tanggapan Pengaju" setelah dokumen ditolak.
+     * Hanya field tanggapan yang bisa diisi.
+     */
+    public static function tanggapanPengaju(): array
     {
         return [
-            Select::make("nip_penanggung_jawab")
-                ->label("Penanggung Jawab")
-                ->options(Pegawai::pluck("nama", "nip"))
-                ->disabled(),
-            Textarea::make('uraian_pengajuan')
-                ->readOnly(),
-            TextInput::make("nominal_pengajuan")
-                ->label("Nominal Pengajuan")
-                ->readOnly(),
-            Select::make("posisi_dokumen_id")
-                ->label("Posisi Dokumen Fisik")
-                ->options(PosisiDokumen::pluck("nama", "id"))
-                ->disabled(),
-            Select::make('status_pengajuan_ppk_id')
-                ->label("Status Pengajuan di PPK")
-                ->options(StatusPengajuan::pluck('nama', 'id'))
-                ->disabled(),
-            Select::make('status_pengajuan_ppspm_id')
-                ->label("Status Pengajuan di PPSPM")
-                ->options(StatusPengajuan::pluck('nama', 'id'))
-                ->disabled(),
-            Select::make('status_pengajuan_bendahara_id')
-                ->label("Status Pengajuan di Bendahara")
-                ->options(StatusPengajuan::pluck('nama', 'id'))
-                ->disabled(),
-            Textarea::make("catatan_ppk")
-                ->label("Catatan PPK")
-                ->readOnly(),
-            Textarea::make("tanggapan_pengaju_ke_ppk")
-                ->label("Tanggapan dari Pengaju ke PPK"),
-            Textarea::make("catatan_bendahara")
-                ->label("Catatan Bendahara")
-                ->readOnly(),
-            Textarea::make("tanggapan_pengaju_ke_bendahara")
-                ->label("Tanggapan dari Pengaju ke Bendahara"),
-            Textarea::make("catatan_ppspm")
-                ->label("Catatan PPSPM")
-                ->readOnly(),
-            Textarea::make("tanggapan_pengaju_ke_ppspm")
-                ->label("Tanggapan dari Pengaju ke PPSPM")
+            Fieldset::make('Detail Pengajuan (Read-only)')
+                ->schema([
+                    Textarea::make('uraian_pengajuan')->readOnly(),
+                    TextInput::make("nominal_pengajuan")->numeric()->prefix('Rp')->readOnly(),
+                ]),
+
+            // Menampilkan catatan dan kolom tanggapan hanya jika ada catatan dari pemeriksa tersebut.
+            Fieldset::make('Tanggapan untuk PPK')
+                // ->relationship('statusPengajuanPpk') // <-- HAPUS BARIS INI
+                ->hidden(fn(Get $get) => $get('status_pengajuan_ppk_id') != Constants::STATUS_DITOLAK)
+                ->schema([
+                    Textarea::make("catatan_ppk")->label("Catatan dari PPK")->readOnly(),
+                    Textarea::make("tanggapan_pengaju_ke_ppk")->label("Tanggapan Anda untuk PPK")->required(),
+                ]),
+
+            Fieldset::make('Tanggapan untuk PPSPM')
+                // ->relationship('statusPengajuanPpspm') // <-- HAPUS BARIS INI
+                ->hidden(fn(Get $get) => $get('status_pengajuan_ppspm_id') != Constants::STATUS_DITOLAK)
+                ->schema([
+                    Textarea::make("catatan_ppspm")->label("Catatan dari PPSPM")->readOnly(),
+                    Textarea::make("tanggapan_pengaju_ke_ppspm")->label("Tanggapan Anda untuk PPSPM")->required(),
+                ]),
+
+            Fieldset::make('Tanggapan untuk Bendahara')
+                // ->relationship('statusPengajuanBendahara') // <-- HAPUS BARIS INI
+                ->hidden(fn(Get $get) => $get('status_pengajuan_bendahara_id') != Constants::STATUS_DITOLAK)
+                ->schema([
+                    Textarea::make("catatan_bendahara")->label("Catatan dari Bendahara")->readOnly(),
+                    Textarea::make("tanggapan_pengaju_ke_bendahara")->label("Tanggapan Anda untuk Bendahara")->required(),
+                ]),
         ];
     }
-    public static function pemeriksaanPpk()
+
+    /**
+     * Form untuk Aksi "Pemeriksaan PPK".
+     */
+    public static function pemeriksaanPpk(): array
     {
         return [
-            Select::make("nip_penanggung_jawab")
-                ->label("Penanggung Jawab")
-                ->options(Pegawai::pluck("nama", "nip"))
-                ->disabled(),
-            Textarea::make("uraian_pengajuan")
-                ->label("Uraian Pengajuan")
-                ->readOnly(),
-            TextInput::make("nominal_pengajuan")
-                ->label("Nominal Pengajuan")
-                ->readOnly(),
+            Fieldset::make('Detail Pengajuan (Read-only)')
+                ->schema(self::getReadOnlyInfoFields()),
+
+            Fieldset::make('Tanggapan dari Pengaju (jika ada)')
+                ->hidden(fn(Get $get) => is_null($get('tanggapan_pengaju_ke_ppk')))
+                ->schema([
+                    Textarea::make("tanggapan_pengaju_ke_ppk")->label("Tanggapan Pengaju")->readOnly(),
+                ]),
+
+            Fieldset::make('Hasil Pemeriksaan PPK')
+                ->schema([
+                    Select::make("status_pengajuan_ppk_id")
+                        ->label("Status Pemeriksaan")
+                        ->options(StatusPengajuan::where('id', '!=', Constants::STATUS_DIAJUKAN)->pluck("nama", "id"))
+                        ->live()
+                        ->required(),
+                    Textarea::make("catatan_ppk")
+                        ->label("Catatan")
+                        ->helperText("Wajib diisi jika status Ditolak atau Disetujui dengan Catatan.")
+                        ->required(fn(Get $get) => in_array($get('status_pengajuan_ppk_id'), [Constants::STATUS_DITOLAK, Constants::STATUS_DISETUJUI_DENGAN_CATATAN])),
+                ]),
+        ];
+    }
+
+    /**
+     * Form untuk Aksi "Pemeriksaan PPSPM".
+     */
+    public static function pemeriksaanPpspm(): array
+    {
+        return [
+            Fieldset::make('Detail Pengajuan & Hasil Pemeriksaan Sebelumnya (Read-only)')
+                ->schema(array_merge(self::getReadOnlyInfoFields(), [
+                    Textarea::make('catatan_ppk')->label('Catatan PPK')->readOnly(),
+                ])),
+
+            Fieldset::make('Tanggapan dari Pengaju (jika ada)')
+                ->hidden(fn(Get $get) => is_null($get('tanggapan_pengaju_ke_ppspm')))
+                ->schema([
+                    Textarea::make("tanggapan_pengaju_ke_ppspm")->label("Tanggapan Pengaju")->readOnly(),
+                ]),
+
+            Fieldset::make('Hasil Pemeriksaan PPSPM')
+                ->schema([
+                    Select::make("status_pengajuan_ppspm_id")
+                        ->label("Status Pemeriksaan")
+                        ->options(StatusPengajuan::where('id', '!=', Constants::STATUS_DIAJUKAN)->pluck("nama", "id"))
+                        ->live()
+                        ->required(),
+                    Textarea::make("catatan_ppspm")
+                        ->label("Catatan")
+                        ->helperText("Wajib diisi jika status Ditolak atau Disetujui dengan Catatan.")
+                        ->required(fn(Get $get) => in_array($get('status_pengajuan_ppspm_id'), [Constants::STATUS_DITOLAK, Constants::STATUS_DISETUJUI_DENGAN_CATATAN])),
+                ]),
+        ];
+    }
+
+    /**
+     * Form untuk Aksi "Verifikasi Bendahara".
+     */
+    public static function pemeriksaanBendahara(): array
+    {
+        return [
+            Fieldset::make('Detail Pengajuan & Hasil Pemeriksaan Sebelumnya (Read-only)')
+                ->schema(array_merge(self::getReadOnlyInfoFields(), [
+                    Textarea::make('catatan_ppk')->label('Catatan PPK')->readOnly(),
+                    Textarea::make('catatan_ppspm')->label('Catatan PPSPM')->readOnly(),
+                ])),
+
+            Fieldset::make('Tanggapan dari Pengaju (jika ada)')
+                ->hidden(fn(Get $get) => is_null($get('tanggapan_pengaju_ke_bendahara')))
+                ->schema([
+                    Textarea::make("tanggapan_pengaju_ke_bendahara")->label("Tanggapan Pengaju")->readOnly(),
+                ]),
+
+            Fieldset::make('Hasil Verifikasi Bendahara')
+                ->schema([
+                    Select::make("status_pengajuan_bendahara_id")
+                        ->label("Status Verifikasi")
+                        ->options(StatusPengajuan::where('id', '!=', Constants::STATUS_DIAJUKAN)->pluck("nama", "id"))
+                        ->live()
+                        ->required(),
+                    Textarea::make("catatan_bendahara")
+                        ->label("Catatan")
+                        ->helperText("Wajib diisi jika status Ditolak atau Disetujui dengan Catatan.")
+                        ->required(fn(Get $get) => in_array($get('status_pengajuan_bendahara_id'), [Constants::STATUS_DITOLAK, Constants::STATUS_DISETUJUI_DENGAN_CATATAN])),
+                ]),
+        ];
+    }
+
+    /**
+     * Form untuk Aksi "Proses Pembayaran" oleh Bendahara.
+     */
+    public static function pemrosesanBendahara(): array
+    {
+        return [
+            Fieldset::make('Detail Pengajuan (Read-only)')
+                ->schema(self::getReadOnlyInfoFields()),
+
+            Fieldset::make('Proses Pembayaran')
+                ->schema([
+                    Select::make("status_pembayaran_id")
+                        ->label("Status Pembayaran")
+                        ->options(StatusPembayaran::pluck("nama", "id"))
+                        ->live()
+                        ->searchable()
+                        ->required(),
+                    Grid::make(2)->schema([
+                        TextInput::make("nominal_dibayarkan")
+                            ->label("Nominal Dibayarkan")
+                            ->numeric()->prefix('Rp')
+                            ->required(fn(Get $get) => Constants::isSelesaiDibayar($get('status_pembayaran_id')))
+                            ->visible(fn(Get $get) => !is_null($get('status_pembayaran_id')) && $get('status_pembayaran_id') != Constants::PEMBAYARAN_BELUM_DOK_FISIK),
+                        TextInput::make("nominal_dikembalikan")
+                            ->label("Nominal Dikembalikan")
+                            ->numeric()->prefix('Rp')
+                            ->required(fn(Get $get) => Constants::isSelesaiDibayar($get('status_pembayaran_id')))
+                            ->visible(fn(Get $get) => !is_null($get('status_pembayaran_id')) && $get('status_pembayaran_id') != Constants::PEMBAYARAN_BELUM_DOK_FISIK),
+                    ]),
+                    Grid::make(2)->schema([
+                        Select::make("jenis_dokumen_id")
+                            ->label("Jenis Dokumen Dasar")
+                            ->options(JenisDokumen::pluck('nama', 'id'))
+                            ->required(fn(Get $get) => in_array($get('status_pembayaran_id'), [Constants::PEMBAYARAN_PROSES_CATAT_LS, Constants::PEMBAYARAN_PROSES_CATAT_SPBY]))
+                            ->visible(fn(Get $get) => in_array($get('status_pembayaran_id'), [Constants::PEMBAYARAN_PROSES_CATAT_LS, Constants::PEMBAYARAN_PROSES_CATAT_SPBY])),
+                        TextInput::make("nomor_dokumen")
+                            ->label("Nomor SPM / SPBY")
+                            ->required(fn(Get $get) => in_array($get('status_pembayaran_id'), [Constants::PEMBAYARAN_PROSES_CATAT_LS, Constants::PEMBAYARAN_PROSES_CATAT_SPBY]))
+                            ->visible(fn(Get $get) => in_array($get('status_pembayaran_id'), [Constants::PEMBAYARAN_PROSES_CATAT_LS, Constants::PEMBAYARAN_PROSES_CATAT_SPBY])),
+                    ]),
+                    DatePicker::make('tanggal_pembayaran')
+                        ->label("Tanggal Pembayaran/Cair")
+                        ->required(fn(Get $get) => Constants::isSelesaiDibayar($get('status_pembayaran_id')))
+                        ->visible(fn(Get $get) => Constants::isSelesaiDibayar($get('status_pembayaran_id'))),
+                ]),
+        ];
+    }
+
+    /**
+     * Helper untuk field info yang selalu read-only di form pemeriksaan.
+     */
+    private static function getReadOnlyInfoFields(): array
+    {
+        return [
+            Textarea::make('uraian_pengajuan')->label('Uraian')->readOnly(),
+            TextInput::make("nominal_pengajuan")->label('Nominal')->numeric()->prefix('Rp')->readOnly(),
             TextInput::make("link_folder_dokumen")
-                ->hintAction(Action::make("bukaFolder")
-                    ->hidden(fn(Pengajuan $record): bool => !($record->link_folder_dokumen))
-                    ->icon("heroicon-m-link")
-                    ->url(fn(Pengajuan $record): string => $record->link_folder_dokumen)
-                    ->openUrlInNewTab())
-                ->label("Link Folder Dokumen")
-                ->readOnly(),
-            Select::make("status_pengajuan_ppk_id")
-                ->options(StatusPengajuan::whereNot('nama', 'Diajukan')->pluck("nama", "id"))
-                ->label("Hasil Pemeriksaan PPK")
-                ->required(),
-            Textarea::make("catatan_ppk")
-                ->label("Catatan"),
-            Textarea::make("tanggapan_pengaju_ke_ppk")
-                ->label("Tanggapan dari Pengaju ke PPK")
-                ->readOnly(),
-            // Select::make("posisi_dokumen_id")
-            //     ->label("Posisi Dokumen Fisik")
-            //     ->options(PosisiDokumen::whereIn("nama", ["Di PPK", "Di Bendahara"])->pluck("nama", "id"))
-            //     ->helperText("Jika setelah pengajuan ini Anda memberikan dokumen fisik ke Bendahara, maka isikan Bendahara")
-            //     ->required(),
-        ];
-    }
-    public static function pemeriksaanBendahara()
-    {
-        return [
-            Select::make("nip_penanggung_jawab")
-                ->label("Penanggung Jawab")
-                ->options(Pegawai::pluck("nama", "nip"))
-                ->disabled(),
-            Textarea::make("uraian_pengajuan")
-                ->label("Uraian Pengajuan")
-                ->readOnly(),
-            TextInput::make("nominal_pengajuan")
-                ->label("Nominal Pengajuan")
-                ->readOnly(),
-            TextInput::make("link_folder_dokumen")
-                ->hintAction(
-                    Action::make("bukaFolder")
-                        ->hidden(fn(Pengajuan $record): bool => !($record->link_folder_dokumen))
-                        ->icon("heroicon-m-link")
-                        ->url(fn(Pengajuan $record): string => $record->link_folder_dokumen)
-                        ->openUrlInNewTab()
-                )
                 ->label("Link Folder Dokumen")
                 ->readOnly()
-                ->helperText("Jangan lupa menambahkan bukti dukung yang diperlukan di folder ini ya!"),
-            Select::make("status_pengajuan_ppk_id")
-                ->options(StatusPengajuan::whereNot('nama', 'Diajukan')->pluck("nama", "id"))
-                ->disabled()
-                ->label("Hasil Pemeriksaan PPK"),
-            Select::make("status_pengajuan_bendahara_id")
-                ->options(StatusPengajuan::whereNot('nama', 'Diajukan')->pluck("nama", "id"))
-                ->label("Hasil Pemeriksaan Bendahara")
-                ->required(),
-            Textarea::make("catatan_ppk")
-                ->label("Catatan PPK")
-                ->readOnly(),
-            Textarea::make("tanggapan_pengaju_ke_ppk")
-                ->label("Tanggapan dari Pengaju ke PPK")
-                ->readOnly(),
-            Textarea::make("catatan_bendahara")
-                ->label("Catatan Bendahara"),
-            Textarea::make("tanggapan_pengaju_ke_bendahara")
-                ->label("Tanggapan dari Pengaju ke Bendahara")
-                ->readOnly(),
-            // Select::make("posisi_dokumen_id")
-            //     ->label("Posisi Dokumen Fisik")
-            //     ->options(PosisiDokumen::whereIn("nama", ["Di PPK", "Di Bendahara", "Di PPSPM"])->pluck("nama", "id"))
-            //     ->helperText("Jika setelah pengajuan ini Anda memberikan dokumen fisik ke PPSPM, maka isikan PPSPM. Pilih 'Di PPK' untuk mengembalikan ke PPK")
-            //     ->required(),
-        ];
-    }
-    public static function pemeriksaanPpspm()
-    {
-        return [
-            Select::make("nip_penanggung_jawab")
-                ->label("Penanggung Jawab")
-                ->options(Pegawai::pluck("nama", "nip"))
-                ->disabled(),
-            Textarea::make("uraian_pengajuan")
-                ->label("Uraian Pengajuan")
-                ->readOnly(),
-            TextInput::make("nominal_pengajuan")
-                ->label("Nominal Pengajuan")
-                ->readOnly(),
-            TextInput::make("link_folder_dokumen")
-                ->hintAction(
-                    Action::make("bukaFolder")
-                        ->hidden(fn(Pengajuan $record): bool => !($record->link_folder_dokumen))
-                        ->icon("heroicon-m-link")
-                        ->url(fn(Pengajuan $record): string => $record->link_folder_dokumen)
-                        ->openUrlInNewTab()
-                )
-                ->label("Link Folder Dokumen")
-                ->readOnly()
-                ->helperText("Anda dapat menimpa (replace) file yang sudah ditandatangani di folder ini"),
-            Select::make("status_pengajuan_ppk_id")
-                ->options(StatusPengajuan::whereNot('nama', 'Diajukan')->pluck("nama", "id"))
-                ->disabled()
-                ->label("Hasil Pemeriksaan PPK"),
-            Select::make("status_pengajuan_bendahara_id")
-                ->options(StatusPengajuan::whereNot('nama', 'Diajukan')->pluck("nama", "id"))
-                ->label("Hasil Pemeriksaan Bendahara")
-                ->disabled(),
-            Select::make("status_pengajuan_ppspm_id")
-                ->options(StatusPengajuan::whereNot('nama', 'Diajukan')->pluck("nama", "id"))
-                ->helperText(new HtmlString("Pastikan Kepala Satker <strong>telah menandatangani</strong> dokumen fisik atau softfile sebelum menyetujui!"))
-                ->label("Hasil Pemeriksaan PPSPM")
-                ->required(),
-            Textarea::make("catatan_ppk")
-                ->label("Catatan PPK")
-                ->readOnly(),
-            Textarea::make("tanggapan_pengaju_ke_ppk")
-                ->label("Tanggapan dari Pengaju ke PPK")
-                ->readOnly(),
-            Textarea::make("catatan_bendahara")
-                ->label("Catatan Bendahara")
-                ->readOnly(),
-            Textarea::make("tanggapan_pengaju_ke_bendahara")
-                ->label("Tanggapan dari Pengaju ke Bendahara")
-                ->readOnly(),
-            Textarea::make("catatan_ppspm")
-                ->label("Catatan PPSPM"),
-            Textarea::make("tanggapan_pengaju_ke_ppspm")
-                ->label("Tanggapan dari Pengaju ke PPSPM")
-                ->readOnly(),
-            // Select::make("posisi_dokumen_id")
-            //     ->label("Posisi Dokumen Fisik")
-            //     ->options(PosisiDokumen::whereIn("nama", ["Di Bendahara", "Di PPSPM"])->pluck("nama", "id"))
-            //     ->helperText("Jika setelah pengajuan ini Anda memberikan dokumen fisik ke Bendahara, maka isikan Bendahara")
-            //     ->required(),
-        ];
-    }
-    public static function pemrosesanBendahara()
-    {
-        return [
-            Select::make("nip_penanggung_jawab")
-                ->label("Penanggung Jawab")
-                ->options(Pegawai::pluck("nama", "nip"))
-                ->disabled(),
-            Textarea::make("uraian_pengajuan")
-                ->label("Uraian Pengajuan")
-                ->readOnly(),
-            TextInput::make("nominal_pengajuan")
-                ->label("Nominal Pengajuan")
-                ->readOnly(),
-            TextInput::make("link_folder_dokumen")
                 ->suffixAction(
                     Action::make("bukaFolder")
-                        ->hidden(fn(Pengajuan $record): bool => !($record->link_folder_dokumen))
                         ->icon("heroicon-m-link")
-                        ->url(fn(Pengajuan $record): string => $record->link_folder_dokumen)
+                        ->url(fn(?Pengajuan $record): string => $record?->link_folder_dokumen ?? '#')
                         ->openUrlInNewTab()
-                )
-                ->label("Link Folder Dokumen")
-                ->readOnly()
-                ->helperText("Anda dapat menimpa (replace) file yang sudah ditandatangani di folder ini"),
-            Select::make("status_pengajuan_ppk_id")
-                ->options(StatusPengajuan::whereNot('nama', 'Diajukan')->pluck("nama", "id"))
-                ->disabled()
-                ->label("Hasil Pemeriksaan PPK"),
-            Select::make("status_pengajuan_bendahara_id")
-                ->options(StatusPengajuan::whereNot('nama', 'Diajukan')->pluck("nama", "id"))
-                ->label("Hasil Pemeriksaan Bendahara")
-                ->disabled(),
-            Select::make("status_pengajuan_ppspm_id")
-                ->options(StatusPengajuan::whereNot('nama', 'Diajukan')->pluck("nama", "id"))
-                ->label("Hasil Pemeriksaan PPSPM")
-                ->disabled(),
-            Select::make("status_pembayaran_id")
-                ->options(StatusPembayaran::pluck("nama", "id"))
-                ->live()
-                ->label("Hasil Pemrosesan")
-                ->required(),
-            TextInput::make("nominal_dibayarkan")
-                ->label("Nominal yang Dibayarkan")
-                ->hidden(function (Get $get) {
-                    return !collect([1, 2, 4, 5, 6, 7])->contains($get('status_pembayaran_id'));
-                })
-                ->required(function (Get $get) {
-                    return collect([1, 2, 4, 5, 6, 7])->contains($get('status_pembayaran_id'));
-                })
-                ->numeric(),
-            TextInput::make("nominal_dikembalikan")
-                ->label("Nominal yang Dikembalikan")
-                ->numeric()
-                ->hidden(function (Get $get) {
-                    return !collect([1, 2, 4, 5, 6, 7])->contains($get('status_pembayaran_id'));
-                })
-                ->required(function (Get $get) {
-                    return collect([1, 2, 4, 5, 6, 7])->contains($get('status_pembayaran_id'));
-                })
-                ->required(),
-            DatePicker::make('tanggal_pembayaran')
-                ->label("Tanggal Pembayaran")
-                ->hidden(function (Get $get) {
-                    return !collect([1, 2, 5, 7])->contains($get('status_pembayaran_id'));
-                })
-                ->required(function (Get $get) {
-                    return collect([1, 2, 5, 7])->contains($get('status_pembayaran_id'));
-                }),
-            Select::make("jenis_dokumen_id")
-                ->label("Jenis Dokumen (SPM/SPBY)")
-                ->options(JenisDokumen::pluck('nama', 'id'))
-                ->hidden(function (Get $get) {
-                    return !collect([1, 2, 4, 5, 6])->contains($get('status_pembayaran_id'));
-                })
-                ->required(function (Get $get) {
-                    return collect([1, 2, 4, 5, 6])->contains($get('status_pembayaran_id'));
-                }),
-            TextInput::make("nomor_dokumen")
-                ->label("Nomor Dokumen (SPM/SPBY)")
-                ->hidden(function (Get $get) {
-                    return !collect([1, 2, 4, 5, 6])->contains($get('status_pembayaran_id'));
-                })
-                ->required(function (Get $get) {
-                    return collect([1, 2, 4, 5, 6])->contains($get('status_pembayaran_id'));
-                }),
+                ),
+        ];
+    }
 
+    /**
+     * Form lengkap untuk halaman Edit Admin.
+     */
+    public static function fullForm(): array
+    {
+        return [
+            // Gabungkan semua field dari form lain di sini jika perlu.
+            // Untuk saat ini kita biarkan kosong agar memakai form default dari Resource.
+            // Atau bisa diisi dengan skema yang ada di PengajuanResource::form()
         ];
     }
 }
