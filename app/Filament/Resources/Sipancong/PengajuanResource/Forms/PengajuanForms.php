@@ -32,7 +32,7 @@ class PengajuanForms
                     Grid::make(2)->schema([
                         Select::make("nip_penanggung_jawab")
                             ->label("Penanggung Jawab")
-                            // ->relationship('penanggungJawab', 'nama')
+                            ->relationship('penanggungJawab', 'nama')
                             ->searchable()
                             ->preload()
                             ->required(),
