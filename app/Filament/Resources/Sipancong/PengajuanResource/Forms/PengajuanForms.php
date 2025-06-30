@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Sipancong\PengajuanResource\Forms;
 
 use App\Models\Pegawai;
 use App\Models\Sipancong\JenisDokumen;
+use App\Models\Sipancong\Pengajuan;
 use App\Models\Sipancong\StatusPembayaran;
 use App\Models\Sipancong\StatusPengajuan;
 use App\Models\Sipancong\Subfungsi;
