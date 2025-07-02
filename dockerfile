@@ -49,6 +49,8 @@ RUN composer install --prefer-dist --no-scripts --no-progress
 # Copy the rest of the application code
 COPY . .
 
+COPY docker/php/conf.d/opcache.ini /usr/local/etc/php/conf.d/zz-opcache.ini
+
 # Create storage and bootstrap cache directories for Laravel
 # This ensures composer scripts and the app have a place to write files.
 RUN mkdir -p storage/framework/sessions \
@@ -57,8 +59,8 @@ RUN mkdir -p storage/framework/sessions \
     storage/logs \
     bootstrap/cache
 
-# Finish composer install
-RUN composer dump-autoload --optimize
+RUN composer dump-autoload --optimize --classmap-authoritative --no-dev
+
 
 # --- THIS IS THE NEW OPTIMIZATION STEP ---
 # Build all the application caches. This makes boot-up much faster.
