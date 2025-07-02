@@ -1,0 +1,17 @@
+{
+    # Tell Caddy to not try to guess the server name
+    frankenphp
+    order php_server before file_server
+}
+
+# Your site address. Use http:// to disable automatic HTTPS.
+http://:80 {
+    # The root directory of your Laravel public folder
+    root * /app/public
+
+    # Enable compression
+    encode zstd br gzip
+
+    # The FrankenPHP directive
+    php_server
+}

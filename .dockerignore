@@ -1,0 +1,33 @@
+# .dockerignore
+
+# Ignore Git files
+.git
+.gitignore
+
+# Ignore IDE/editor configuration
+.idea/
+.vscode/
+
+# Ignore environment files (these are injected at runtime)
+.env
+.env.example
+
+# Ignore Composer dependencies (these should be installed in the image)
+vendor/
+
+# Ignore Node.js dependencies (these should be installed in the image)
+node_modules/
+node_modules
+package-lock.json
+npm-debug.log
+
+# Ignore Laravel's storage and bootstrap cache files (runtime data)
+storage/
+bootstrap/cache/
+
+# Explicitly ignore the problematic symlink that causes the error
+public/storage
+
+# Ignore Docker-related files that aren't needed in the image itself
+Dockerfile
+docker-compose.yml

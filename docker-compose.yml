@@ -1,0 +1,81 @@
+services:
+    # Laravel App with FrankenPHP
+    app:
+        build:
+            context: .
+            target: dev
+        container_name: sikendis-app
+        restart: unless-stopped
+        volumes:
+            - ./:/app:cached
+            - /app/vendor
+            - /app/node_modules
+            - /app/storage
+        ports:
+            - "8000:80"
+        # --- THIS IS THE KEY CHANGE ---
+        # This now waits for the db and redis services to be fully ready
+        depends_on:
+            db:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+        env_file:
+            - .env.docker
+
+    # MySQL Database
+    db:
+        image: mysql:8.0
+        container_name: sikendis-db
+        restart: unless-stopped
+        ports:
+            - "3307:3306"
+        environment:
+            MYSQL_DATABASE: ${DB_DATABASE}
+        volumes:
+            - mysql_data:/var/lib/mysql
+        # This healthcheck is what the app container waits for
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        env_file:
+            - .env.docker
+
+    # Redis Cache
+    redis:
+        image: redis:alpine
+        container_name: sikendis-redis
+        restart: unless-stopped
+        volumes:
+            - redis_data:/data
+        # We add a healthcheck to redis as well for good measure
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        env_file:
+            - .env.docker
+
+    # phpMyAdmin
+    phpmyadmin:
+        image: phpmyadmin
+        container_name: sikendis-pma
+        restart: unless-stopped
+        ports:
+            - "8081:80"
+        environment:
+            PMA_HOST: db
+            PMA_PORT: 3306
+            UPLOAD_LIMIT: 200M
+        depends_on:
+            - db
+        # phpMyAdmin doesn't need all the app variables, so we can remove this
+        # env_file:
+        #    - .env.docker
+
+volumes:
+    mysql_data:
+    redis_data:

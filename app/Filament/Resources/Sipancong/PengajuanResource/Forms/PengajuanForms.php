@@ -33,12 +33,14 @@ class PengajuanForms
                     Grid::make(2)->schema([
                         Select::make("nip_penanggung_jawab")
                             ->label("Penanggung Jawab")
+                            ->preload()
                             ->relationship('penanggungJawab', 'nama')
                             ->searchable()
                             ->preload()
                             ->required(),
                         Select::make("sub_fungsi_id")
                             ->label("Sub Fungsi")
+                            ->preload()
                             ->options(Subfungsi::pluck('nama', 'id'))
                             ->searchable()
                             ->preload()
@@ -136,6 +138,7 @@ class PengajuanForms
                 ->schema([
                     Select::make("status_pengajuan_ppk_id")
                         ->label("Status Pemeriksaan")
+                        ->preload()
                         ->options(StatusPengajuan::where('id', '!=', Constants::STATUS_DIAJUKAN)->pluck("nama", "id"))
                         ->live()
                         ->required(),
@@ -168,6 +171,7 @@ class PengajuanForms
                 ->schema([
                     Select::make("status_pengajuan_ppspm_id")
                         ->label("Status Pemeriksaan")
+                        ->preload()
                         ->options(StatusPengajuan::where('id', '!=', Constants::STATUS_DIAJUKAN)->pluck("nama", "id"))
                         ->live()
                         ->required(),
@@ -201,6 +205,7 @@ class PengajuanForms
                 ->schema([
                     Select::make("status_pengajuan_bendahara_id")
                         ->label("Status Verifikasi")
+                        ->preload()
                         ->options(StatusPengajuan::where('id', '!=', Constants::STATUS_DIAJUKAN)->pluck("nama", "id"))
                         ->live()
                         ->required(),
@@ -225,6 +230,7 @@ class PengajuanForms
                 ->schema([
                     Select::make("status_pembayaran_id")
                         ->label("Status Pembayaran")
+                        ->preload()
                         ->options(StatusPembayaran::pluck("nama", "id"))
                         ->live()
                         ->searchable()
@@ -244,6 +250,7 @@ class PengajuanForms
                     Grid::make(2)->schema([
                         Select::make("jenis_dokumen_id")
                             ->label("Jenis Dokumen Dasar")
+                            ->preload()
                             ->options(JenisDokumen::pluck('nama', 'id'))
                             ->required(fn(Get $get) => in_array($get('status_pembayaran_id'), [Constants::PEMBAYARAN_PROSES_CATAT_LS, Constants::PEMBAYARAN_PROSES_CATAT_SPBY]))
                             ->visible(fn(Get $get) => in_array($get('status_pembayaran_id'), [Constants::PEMBAYARAN_PROSES_CATAT_LS, Constants::PEMBAYARAN_PROSES_CATAT_SPBY])),
