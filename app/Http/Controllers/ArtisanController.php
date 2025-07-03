@@ -99,5 +99,9 @@ class ArtisanController extends Controller
             Artisan::call("config:clear", [], $output);
             return $output->fetch();
         }
+        if (request("filament-optimize")) {
+            Artisan::call("filament:optimize", [], $output);
+            return $output->fetch();
+        }
     }
 }

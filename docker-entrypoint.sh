@@ -3,8 +3,14 @@ set -e
 
 # ONLY run migrations at runtime.
 # The --force flag is important for non-interactive environments.
-echo "Running database migrations..."
+# echo "Running database migrations..."
 php artisan migrate:fresh --seed --force
+
+php artisan package:discover --ansi
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan filament:optimize
 
 # --- THIS IS THE CRUCIAL FIX ---
 # Re-apply ownership to the www-data user after running commands as root.
