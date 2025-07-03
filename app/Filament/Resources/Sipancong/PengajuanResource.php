@@ -47,7 +47,7 @@ class PengajuanResource extends Resource
                 ActionGroup::make([
                     EditAction::make('edit_admin')
                         ->label('Edit (Admin)')
-                        ->form(PengajuanForms::fullForm())
+                        // ->form(PengajuanForms::fullForm()) // EditAction akan menggunakan form() utama secara default
                         ->hidden(fn(): bool => !auth()->user()->hasRole(['super_admin', 'Admin'])),
 
                     Action::make("linkfolder")
@@ -61,12 +61,22 @@ class PengajuanResource extends Resource
                     Action::make("Perbaiki Pengajuan")
                         ->icon("heroicon-o-pencil")
                         ->form(PengajuanForms::pengajuanPembayaran())
+                        // -- TAMBAHKAN BLOK INI --
+                        ->mountUsing(function (Form $form, Pengajuan $record) {
+                            $form->fill($record->toArray());
+                        })
+                        // ------------------------
                         ->action(fn(array $data, Pengajuan $record) => PengajuanServices::ubahPengajuan($data, $record))
                         ->hidden(fn(Pengajuan $record): bool => !PengajuanServices::canShowPengajuActions($record)),
 
                     Action::make("Tanggapan Pengaju")
                         ->icon("heroicon-o-chat-bubble-left-right")
                         ->form(PengajuanForms::tanggapanPengaju())
+                        // -- TAMBAHKAN BLOK INI --
+                        ->mountUsing(function (Form $form, Pengajuan $record) {
+                            $form->fill($record->toArray());
+                        })
+                        // ------------------------
                         ->action(fn(array $data, Pengajuan $record) => PengajuanServices::tanggapi($data, $record))
                         ->hidden(fn(Pengajuan $record): bool => !PengajuanServices::canShowPengajuActions($record)),
 
@@ -75,6 +85,11 @@ class PengajuanResource extends Resource
                         ->modalHeading('Pemeriksaan PPK')
                         ->icon("heroicon-o-check")
                         ->form(PengajuanForms::pemeriksaanPpk())
+                        // -- TAMBAHKAN BLOK INI --
+                        ->mountUsing(function (Form $form, Pengajuan $record) {
+                            $form->fill($record->toArray());
+                        })
+                        // ------------------------
                         ->action(fn(array $data, Pengajuan $record) => PengajuanServices::pemeriksaanPpk($data, $record))
                         ->hidden(fn(Pengajuan $record): bool => !PengajuanServices::canShowPpkActions($record)),
 
@@ -82,6 +97,11 @@ class PengajuanResource extends Resource
                         ->modalHeading('Pemeriksaan PPSPM')
                         ->icon("heroicon-o-check")
                         ->form(PengajuanForms::pemeriksaanPpspm())
+                        // -- TAMBAHKAN BLOK INI --
+                        ->mountUsing(function (Form $form, Pengajuan $record) {
+                            $form->fill($record->toArray());
+                        })
+                        // ------------------------
                         ->action(fn(array $data, Pengajuan $record) => PengajuanServices::pemeriksaanPpspm($data, $record))
                         ->hidden(fn(Pengajuan $record): bool => !PengajuanServices::canShowPpspmActions($record)),
 
@@ -91,6 +111,11 @@ class PengajuanResource extends Resource
                         ->modalHeading('Pemeriksaan/Verifikasi Bendahara')
                         ->icon("heroicon-o-check")
                         ->form(PengajuanForms::pemeriksaanBendahara())
+                        // -- TAMBAHKAN BLOK INI --
+                        ->mountUsing(function (Form $form, Pengajuan $record) {
+                            $form->fill($record->toArray());
+                        })
+                        // ------------------------
                         ->action(fn(array $data, Pengajuan $record) => PengajuanServices::pemeriksaanBendahara($data, $record))
                         ->hidden(fn(Pengajuan $record): bool => !PengajuanServices::canShowBendaharaVerificationAction($record)),
 
@@ -99,6 +124,11 @@ class PengajuanResource extends Resource
                         ->modalHeading('Pemrosesan Pembayaran')
                         ->icon("heroicon-o-credit-card")
                         ->form(PengajuanForms::pemrosesanBendahara())
+                        // -- TAMBAHKAN BLOK INI --
+                        ->mountUsing(function (Form $form, Pengajuan $record) {
+                            $form->fill($record->toArray());
+                        })
+                        // ------------------------
                         ->action(fn(array $data, Pengajuan $record) => PengajuanServices::pemrosesanBendahara($data, $record))
                         ->hidden(fn(Pengajuan $record): bool => !PengajuanServices::canShowBendaharaPaymentAction($record)),
 
@@ -108,6 +138,7 @@ class PengajuanResource extends Resource
                 ])->link()->label("Aksi"),
             ], position: ActionsPosition::BeforeColumns)
             ->columns([
+                // Kolom-kolom Anda tidak perlu diubah, sudah benar
                 TextColumn::make('posisiDokumen.nama')
                     ->label("Posisi Dokumen")
                     ->badge()
@@ -124,23 +155,19 @@ class PengajuanResource extends Resource
                     ->label("No")
                     ->sortable(query: fn($query, $direction) => $query->orderBy(DB::raw('CAST(nomor_pengajuan AS UNSIGNED)'), $direction))
                     ->searchable(),
-                TextColumn::make("uraian_pengajuan")->searchable()->label("Uraian"),
+                TextColumn::make("uraian_pengajuan")->searchable()->label("Uraian")->limit(30)->tooltip(fn($state) => $state),
                 TextColumn::make('penanggungJawab.panggilan')->label("Pj.")->sortable()->searchable(),
                 TextColumn::make('pengaju.panggilan')->label("Pengaju")->sortable()->searchable(),
                 TextColumn::make('statusPengajuanPpk.nama')->label("PPK")->badge()->sortable(),
                 TextColumn::make('statusPengajuanPpspm.nama')->label("PPSPM")->badge()->sortable(),
                 TextColumn::make('statusPengajuanBendahara.nama')->label("Bdh.")->badge()->sortable(),
                 TextColumn::make('statusPembayaran.nama')->label("Bayar")->badge()->sortable(),
-                TextColumn::make('nominal_pengajuan')->label("Nominal")->numeric()->sortable()->searchable(),
+                TextColumn::make('nominal_pengajuan')->label("Nominal")->numeric(locale: 'id_ID')->sortable()->searchable(),
                 TextColumn::make('updated_at')->label("Last Update")->since()->sortable(),
             ])
             ->recordUrl(null)
             ->filters([
-                // Filters from your original code are fine
-                // SelectFilter::make('nip_penanggung_jawab')->label("Penanggung Jawab")->relationship('penanggungJawab', 'nama')->searchable()->preload(),
-                // SelectFilter::make('nip_pengaju')->label("Pengaju")->relationship('pengaju', 'nama')->multiple()->searchable()->preload(),
-                // SelectFilter::make('sub_fungsi_id')->label("Sub Fungsi")->relationship('subfungsi', 'nama')->multiple()->preload(),
-                // SelectFilter::make('posisi_dokumen_id')->label("Posisi Dokumen")->relationship('posisiDokumen', 'nama')->multiple()->preload(),
+                // ... Filters
             ])
             ->bulkActions([]);
     }

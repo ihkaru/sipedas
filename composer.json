@@ -9,7 +9,6 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "asmit/resized-column": "^1.0",
         "barryvdh/laravel-dompdf": "^2.2",
         "bezhansalleh/filament-shield": "^3.2",
         "blade-ui-kit/blade-ui-kit": "^0.6.2",
@@ -28,10 +27,7 @@
         "malzariey/filament-daterangepicker-filter": "^2.6",
         "postare/blade-mdi": "^1.1",
         "revolution/laravel-google-sheets": "^7.0",
-        "riskihajar/terbilang": "^2.0"
-    },
-    "require-dev": {
-        "barryvdh/laravel-debugbar": "^3.13",
+        "riskihajar/terbilang": "^2.0",
         "fakerphp/faker": "^1.23",
         "laravel/pint": "^1.13",
         "laravel/sail": "^1.26",
@@ -40,6 +36,7 @@
         "phpunit/phpunit": "^11.0.1",
         "spatie/laravel-ignition": "^2.4"
     },
+    "require-dev": {},
     "autoload": {
         "psr-4": {
             "App\\": "app/",
@@ -54,15 +51,15 @@
     },
     "scripts": {
         "recache": [
-        "@php artisan view:clear",
-        "@php artisan route:clear",
-        "@php artisan config:clear",
-        "@php artisan cache:clear",
-        "@php artisan config:cache",
-        "@php artisan route:cache",
-        "@php artisan view:cache",
-        "@php artisan filament:cache-components"
-    ],
+            "@php artisan view:clear",
+            "@php artisan route:clear",
+            "@php artisan config:clear",
+            "@php artisan cache:clear",
+            "@php artisan config:cache",
+            "@php artisan route:cache",
+            "@php artisan view:cache",
+            "@php artisan filament:cache-components"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi",
