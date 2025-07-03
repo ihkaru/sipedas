@@ -103,5 +103,9 @@ class ArtisanController extends Controller
             Artisan::call("filament:optimize", [], $output);
             return $output->fetch();
         }
+        if (request("filament-cache-components")) {
+            Artisan::call("filament:cache-components", [], $output);
+            return $output->fetch();
+        }
     }
 }
