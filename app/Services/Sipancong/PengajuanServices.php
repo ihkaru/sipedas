@@ -44,6 +44,7 @@ class PengajuanServices
     private static function ajukanNotifier(Pengajuan $record)
     {
         $userPpk = User::getPpk()->first();
+        // $userPpk = User::getPpk()->first();
         if (!$userPpk) return;
 
         $namaPanggilanPpk = $userPpk->pegawai?->panggilan ?? 'Bapak/Ibu';
