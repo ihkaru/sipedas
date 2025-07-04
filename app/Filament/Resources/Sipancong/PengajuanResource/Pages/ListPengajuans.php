@@ -73,7 +73,7 @@ class ListPengajuans extends ListRecords
         $baseQuery = Pengajuan::query();
 
         // Filter untuk Pengaju, hanya tampilkan miliknya kecuali untuk Admin
-        $queryPengaju = ($user->hasRole(['Super Admin', 'Admin']))
+        $queryPengaju = ($user->hasRole(['Super Admin', 'super_admin', 'operator_umum']))
             ? PengajuanServices::rawPerluPerbaikanPengaju()
             : PengajuanServices::rawPerluPerbaikanPengaju() . " AND nip_pengaju = '{$user->pegawai?->nip}'";
 
