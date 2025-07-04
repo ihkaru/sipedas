@@ -155,7 +155,7 @@ class PengajuanResource extends Resource
                     ->label("No")
                     ->sortable(query: fn($query, $direction) => $query->orderBy(DB::raw('CAST(nomor_pengajuan AS UNSIGNED)'), $direction))
                     ->searchable(),
-                TextColumn::make("uraian_pengajuan")->searchable()->label("Uraian")->limit(30)->tooltip(fn($state) => $state),
+                TextColumn::make("uraian_pengajuan")->sortable()->searchable()->label("Uraian")->limit(30)->tooltip(fn($state) => $state),
                 TextColumn::make('penanggungJawab.panggilan')->label("Pj.")->sortable()->searchable(),
                 TextColumn::make('pengaju.panggilan')->label("Pengaju")->sortable()->searchable(),
                 TextColumn::make('statusPengajuanPpk.nama')->label("PPK")->badge()->sortable(),
@@ -164,6 +164,7 @@ class PengajuanResource extends Resource
                 TextColumn::make('statusPembayaran.nama')->label("Bayar")->badge()->sortable(),
                 TextColumn::make('nominal_pengajuan')->label("Nominal")->numeric(locale: 'id_ID')->sortable()->searchable(),
                 TextColumn::make('updated_at')->label("Last Update")->since()->sortable(),
+                TextColumn::make('created_at')->label("Diajukan Pada")->date()->sortable(),
             ])
             ->recordUrl(null)
             ->filters([
