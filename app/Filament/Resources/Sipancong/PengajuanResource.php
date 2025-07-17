@@ -157,7 +157,7 @@ class PengajuanResource extends Resource
                     ->searchable(),
                 TextColumn::make("uraian_pengajuan")->sortable()->searchable()->label("Uraian")->limit(30)->tooltip(fn($state) => $state),
                 TextColumn::make('penanggungJawab.panggilan')->label("Pj.")->sortable()->searchable(),
-                TextColumn::make('pengaju.panggilan')->label("Pengaju")->sortable()->searchable(),
+                TextColumn::make('pegawai.panggilan')->label("Pengaju")->sortable()->searchable(),
                 TextColumn::make('statusPengajuanPpk.nama')->label("PPK")->badge()->sortable(),
                 TextColumn::make('statusPengajuanPpspm.nama')->label("PPSPM")->badge()->sortable(),
                 TextColumn::make('statusPengajuanBendahara.nama')->label("Bdh.")->badge()->sortable(),
