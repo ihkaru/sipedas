@@ -346,7 +346,7 @@ class PenugasanResource extends Resource
                 })
                 ->disabledDates(function (Get $get) {
                     if ($get('jenis_surat_tugas') == Constants::NON_SPPD) {
-                        return null;
+                        return [];
                     }
                     return array_merge(Penugasan::getDisabledDates($get("nips")), TanggalMerah::getLiburDates());
                 })
