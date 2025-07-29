@@ -364,6 +364,9 @@ class PenugasanResource extends Resource
                     return now()->subMonth(2);
                 })
                 ->maxDate(function (Get $get) {
+                    if ($get('jenis_surat_tugas') == Constants::NON_SPPD) {
+                        return now()->addMonth(5);
+                    }
                     return Penugasan::getMinDate($get("tgl_mulai_tugas"), $get("nips")) ?? now()->addMonth(5);
                 })
                 ->disabledDates(function (Get $get) {
