@@ -364,7 +364,7 @@ class PenugasanResource extends Resource
                     return now()->subMonth(2);
                 })
                 ->maxDate(function (Get $get) {
-                    return Penugasan::getMinDate($get("tgl_mulai_tugas"), $get("nips")) ?? now()->addMonth(2);
+                    return Penugasan::getMinDate($get("tgl_mulai_tugas"), $get("nips")) ?? now()->addMonth(5);
                 })
                 ->disabledDates(function (Get $get) {
                     return Penugasan::getDisabledDates($get("nips"));
