@@ -51,6 +51,7 @@ class PengajuanForms
                         ->required(),
                     Grid::make(2)->schema([
                         TextInput::make("nomor_form_pembayaran")
+                            ->maxLength(50)
                             ->label("Nomor Form Pembayaran (FP)")
                             ->helperText("Pisahkan dengan koma jika lebih dari satu.")
                             ->required(),
