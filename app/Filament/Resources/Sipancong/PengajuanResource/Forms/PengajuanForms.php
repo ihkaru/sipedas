@@ -52,11 +52,35 @@ class PengajuanForms
                     Grid::make(2)->schema([
                         TextInput::make("nomor_form_pembayaran")
                             ->maxLength(50)
+                            ->rules([
+                                // regex Laravel untuk membatasi agar hanya [0-9], koma, dan spasi
+                                'regex:/^[0-9, ]+$/',
+                            ])
+                            ->extraInputAttributes([
+                                // pattern HTML5 agar browser menolak input lain saat submit
+                                'pattern' => '^[0-9, ]+$',
+                                // tooltip saat user hover memberikan petunjuk input
+                                'title'   => 'Hanya boleh angka, koma, dan spasi',
+                                // inputmode numeric mendorong keyboard angka di mobile app
+                                'inputmode' => 'numeric',
+                            ])
                             ->label("Nomor Form Pembayaran (FP)")
                             ->helperText("Pisahkan dengan koma jika lebih dari satu.")
                             ->required(),
                         TextInput::make("nomor_detail_fa")
                             ->maxLength(50)
+                            ->rules([
+                                // regex Laravel untuk membatasi agar hanya [0-9], koma, dan spasi
+                                'regex:/^[0-9, ]+$/',
+                            ])
+                            ->extraInputAttributes([
+                                // pattern HTML5 agar browser menolak input lain saat submit
+                                'pattern' => '^[0-9, ]+$',
+                                // tooltip saat user hover memberikan petunjuk input
+                                'title'   => 'Hanya boleh angka, koma, dan spasi',
+                                // inputmode numeric mendorong keyboard angka di mobile app
+                                'inputmode' => 'numeric',
+                            ])
                             ->label("Nomor Detail FA")
                             ->helperText("Pisahkan dengan koma jika lebih dari satu.")
                             ->required(),
