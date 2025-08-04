@@ -55,6 +55,7 @@ class PengajuanForms
                             ->helperText("Pisahkan dengan koma jika lebih dari satu.")
                             ->required(),
                         TextInput::make("nomor_detail_fa")
+                            ->maxLength(50)
                             ->label("Nomor Detail FA")
                             ->helperText("Pisahkan dengan koma jika lebih dari satu.")
                             ->required(),
