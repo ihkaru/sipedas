@@ -18,6 +18,8 @@ return new class extends Migration
             $table->timestamp('tgl_akhir_pelaksanaan')->nullable();
             $table->timestamp('tgl_mulai_penawaran')->nullable();
             $table->timestamp('tgl_akhir_penawaran')->nullable();
+            $table->enum('jenis_kegiatan', ['SENSUS', 'SURVEI'])->nullable()->default("SURVEI");
+            $table->enum('frekuensi_kegiatan', ['SUBROUND', 'TAHUNAN', 'TRIWULANAN', 'BULANAN'])->nullable();
             $table->timestamps();
         });
     }

@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\MitraResource\Pages;
 use App\Filament\Resources\MitraResource\RelationManagers;
+use App\Filament\Resources\MitraResource\RelationManagers\KemitraansRelationManager;
 use App\Models\Mitra;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -19,8 +20,11 @@ class MitraResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    public static function canViewAny (): bool {
-        return false;
+    protected static ?string $navigationGroup = 'Manajemen Mitra';
+
+    public static function canViewAny(): bool
+    {
+        return true;
     }
 
     public static function form(Form $form): Form
@@ -246,7 +250,7 @@ class MitraResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            KemitraansRelationManager::class,
         ];
     }
 
