@@ -102,4 +102,8 @@ class Honor extends Model
             'tanggal_akhir_kegiatan' => $data['tanggal_akhir_kegiatan'],
         ]);
     }
+    public function alokasiHonors()
+    {
+        return $this->hasMany(AlokasiHonor::class, 'honor_id');
+    }
 }

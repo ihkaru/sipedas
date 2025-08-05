@@ -10,6 +10,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -154,46 +155,53 @@ class MitraResource extends Resource
                 Tables\Columns\TextColumn::make('id_sobat')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nama_1')
+                    ->label('Nama')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('kabupaten_domisili')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('kecamatan_domisili')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('desa_domisili')
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('kemitraans_status')
+                    ->label('Status Kemitraan')
+                    ->html(),
+
+                Tables\Columns\TextColumn::make('kabupaten_name')
+                    ->label('Kabupaten Domisili'),
+
+                Tables\Columns\TextColumn::make('kecamatan_name')
+                    ->label('Kecamatan Domisili'),
+
+                Tables\Columns\TextColumn::make('desa_name')
+                    ->label('Desa/Kel Domisili'),
                 Tables\Columns\TextColumn::make('nik')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('nama_2')
+                Tables\Columns\TextColumn::make('nama_2')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('posisi')
+                Tables\Columns\TextColumn::make('posisi')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('status_seleksi_1_terpilih_2_tidak_terpilih')
+                Tables\Columns\TextColumn::make('status_seleksi_1_terpilih_2_tidak_terpilih')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('alamat_prov')
+                Tables\Columns\TextColumn::make('alamat_prov')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('alamat_kab')
+                Tables\Columns\TextColumn::make('alamat_kab')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('alamat_kec')
+                Tables\Columns\TextColumn::make('alamat_kec')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('alamat_desa')
+                Tables\Columns\TextColumn::make('alamat_desa')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('alamat_detail')
+                Tables\Columns\TextColumn::make('alamat_detail')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('domisili_sama')
+                Tables\Columns\TextColumn::make('domisili_sama')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('tanggal_lahir_dd_mm_yyyy')
+                Tables\Columns\TextColumn::make('tanggal_lahir_dd_mm_yyyy')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('npwp')
+                Tables\Columns\TextColumn::make('npwp')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('jenis_kelamin')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('agama')
+                Tables\Columns\TextColumn::make('agama')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('status_perkawinan')
+                Tables\Columns\TextColumn::make('status_perkawinan')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('pendidikan')
+                Tables\Columns\TextColumn::make('pendidikan')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('pekerjaan')
                     ->searchable(),
@@ -201,29 +209,29 @@ class MitraResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('no_telp')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('mengikuti_pendataan_bps')
+                Tables\Columns\TextColumn::make('mengikuti_pendataan_bps')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('sp')
+                Tables\Columns\TextColumn::make('sp')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('st')
+                Tables\Columns\TextColumn::make('st')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('se')
+                Tables\Columns\TextColumn::make('se')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('susenas')
+                Tables\Columns\TextColumn::make('susenas')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('sakernas')
+                Tables\Columns\TextColumn::make('sakernas')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('sbh')
+                Tables\Columns\TextColumn::make('sbh')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('catatan')
+                Tables\Columns\TextColumn::make('catatan')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('posisi_daftar')
+                Tables\Columns\TextColumn::make('posisi_daftar')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('username')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('sobat_id')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('id_desa')
+                Tables\Columns\TextColumn::make('id_desa')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -235,7 +243,83 @@ class MitraResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                // --- BLOK FILTER YANG DIPERBAIKI ---
+                SelectFilter::make('status') // Kita bisa sederhanakan namanya
+                    ->label('Status Kemitraan')
+
+                    // 1. HAPUS BARIS INI: ->relationship('kemitraans', 'status')
+
+                    // 2. GUNAKAN opsi statis yang bersih dan bebas duplikasi
+                    ->options([
+                        'AKTIF' => 'Aktif',
+                        'TIDAK_AKTIF' => 'Tidak Aktif',
+                        'BLACKLISTED' => 'Blacklisted',
+                    ])
+
+                    // 3. TAMBAHKAN logika query kustom ini
+                    ->query(function (Builder $query, array $data): Builder {
+                        // Jika tidak ada nilai yang dipilih, jangan lakukan apa-apa
+                        if (empty($data['value'])) {
+                            return $query;
+                        }
+
+                        // Jika ada nilai, terapkan filter 'whereHas' pada relasi kemitraans
+                        return $query->whereHas('kemitraans', function (Builder $q) use ($data) {
+                            $q->where('status', $data['value']);
+                        });
+                    }),
+                SelectFilter::make('kecamatan')
+                    ->label('Filter Kecamatan')
+                    ->searchable()
+                    ->options(
+                        // Ambil data unik dari master SLS
+                        fn() => \App\Models\MasterSls::query()
+                            ->distinct()
+                            ->pluck('kecamatan', 'kec_id')
+                            ->all()
+                    )
+                    ->query(function (Builder $query, array $data): Builder {
+                        if (empty($data['value'])) {
+                            return $query;
+                        }
+                        // 'value' berisi kec_id, contoh: "6104080"
+                        $kecId = $data['value'];
+                        $provId = substr($kecId, 0, 2); // "61"
+                        $kabId = substr($kecId, 2, 2); // "04"
+                        $kecOnlyId = substr($kecId, 4, 3); // "080"
+
+                        return $query
+                            ->where('alamat_prov', $provId)
+                            ->where('alamat_kab', $kabId)
+                            ->where('alamat_kec', $kecOnlyId);
+                    }),
+
+                SelectFilter::make('desa')
+                    ->label('Filter Desa/Kelurahan')
+                    ->searchable()
+                    ->options(
+                        fn() => \App\Models\MasterSls::query()
+                            ->distinct()
+                            ->pluck('desa_kel', 'desa_kel_id')
+                            ->all()
+                    )
+                    ->query(function (Builder $query, array $data): Builder {
+                        if (empty($data['value'])) {
+                            return $query;
+                        }
+                        // 'value' berisi desa_kel_id, contoh: "6104080001"
+                        $desaId = $data['value'];
+                        $provId = substr($desaId, 0, 2); // "61"
+                        $kabId = substr($desaId, 2, 2); // "04"
+                        $kecId = substr($desaId, 4, 3); // "080"
+                        $desaOnlyId = substr($desaId, 7, 3); // "001"
+
+                        return $query
+                            ->where('alamat_prov', $provId)
+                            ->where('alamat_kab', $kabId)
+                            ->where('alamat_kec', $kecId)
+                            ->where('alamat_desa', $desaOnlyId);
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -257,6 +341,7 @@ class MitraResource extends Resource
     public static function getPages(): array
     {
         return [
+            // Arahkan ke kelas ListMitras yang baru
             'index' => Pages\ListMitras::route('/'),
             'create' => Pages\CreateMitra::route('/create'),
             'edit' => Pages\EditMitra::route('/{record}/edit'),

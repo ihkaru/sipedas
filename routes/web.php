@@ -3,6 +3,7 @@
 use App\Http\Controllers\ArtisanController;
 use App\Http\Controllers\ExcelExportController;
 use App\Http\Controllers\HonorTemplateController;
+use App\Http\Controllers\MitraTemplateController;
 use App\Http\Controllers\PdfController;
 use App\Providers\Filament\APanelProvider;
 use Filament\Http\Middleware\Authenticate;
@@ -26,4 +27,6 @@ Route::middleware('auth')->group(function () {
         ->name('download.template.kegiatan-manmit');
     Route::get('/download/template/honor', [HonorTemplateController::class, 'download'])
         ->name('download.template.honor');
+    Route::get('/download/template/mitra', [MitraTemplateController::class, 'download'])
+        ->name('download.template.mitra');
 });

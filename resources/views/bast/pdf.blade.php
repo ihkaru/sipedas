@@ -1,18 +1,21 @@
+{{-- resource/views/bast/pdf.blade.php --}}
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ms" lang="ms">
   <head>
     @php
-            $c = now()->setLocale('id_ID');
-            $c = now()->settings(['formatFunction'=>'translatedFormat']);
-            $cons = App\Supports\Constants::class;
-            $number = \Illuminate\Support\Number::class;
-            $bil = \Terbilang::class;
-            if($id_honor){
-                $alokasiHonorBulan = $alokasiHonor->where('tahun_akhir_kegiatan',$tahun)->where('bulan_akhir_kegiatan',$bulan)->where('id_honor',$id_honor);
-            }else{
-                $alokasiHonorBulan = $alokasiHonor->where('tahun_akhir_kegiatan',$tahun)->where('bulan_akhir_kegiatan',$bulan);
-            }
-            $idSobat = $alokasiHonorBulan->pluck('id_sobat')->unique()->flatten();
+        $c = now()->setLocale('id_ID');
+        $c = now()->settings(['formatFunction'=>'translatedFormat']);
+        $cons = App\Supports\Constants::class;
+        $number = \Illuminate\Support\Number::class;
+        $bil = \Terbilang::class;
+
+        // Filter data di awal, bukan di dalam loop
+        $alokasiHonorBulan = $alokasiHonor;
+        if($id_honor){
+        $alokasiHonorBulan = $alokasiHonor->where('honor_id', $id_honor);
+        }
+        $idSobat = $alokasiHonorBulan->pluck('mitra.id_sobat')->unique()->flatten();
     @endphp
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>BAST_6104</title>
@@ -143,37 +146,22 @@
   </head>
   <body>
     @foreach ($idSobat as $s)
-        @php
-            $alokasiHonorBulanMitra = $alokasiHonorBulan->where('id_sobat',$s);
-            $idKegiatan = $alokasiHonorBulanMitra->pluck('id_kegiatan')->unique()->flatten();
-            $jabatan = $alokasiHonorBulanMitra->pluck('jabatan')->unique();
-            $jabatanSurat = "";
-            $istilahJabatan = [
-                    "PML"=>"petugas pemeriksa lapangan",
-                    "PPL"=>"petugas pendataan lapangan",
-                    "PETUGAS ENTRI"=>"petugas pengolahan"
-            ];
-            $istilahKodeJabatan = [
-                "PML"=>"PML",
-                "PPL"=>"PPL",
-                "PETUGAS ENTRI"=>"PETUGAS PENGOLAHAN",
-            ];
-            if(count($jabatan) == 1){
-                $jabatan = $jabatan->first();
-                if($jabatan == "PETUGAS ENTRI") $jabatanSurat = "petugas pengolahan";
-                else $jabatanSurat = $istilahJabatan[$jabatan];
-            }elseif(count($jabatan)>1){
-                $jabatanSurat = "petugas lapangan";
-            }
-        @endphp
-        @foreach ($idKegiatan as $k)
-            @php
-                $alokasiHonorBulanMitraKegiatan = $alokasiHonorBulanMitra->where('id_kegiatan',$k);
-                $tanggalSurat = $c::parse($alokasiHonorBulanMitraKegiatan->first()->suratBast->tanggal_nomor);
-                $jenisPekerjaan = "";
-                if($alokasiHonorBulanMitraKegiatan->first()->jabatan == "PPL" || $alokasiHonorBulanMitraKegiatan->first()->jabatan == "PML") $jenisPekerjaan = "pendataan";
-                if($alokasiHonorBulanMitraKegiatan->first()->jabatan == "PETUGAS ENTRI") $jenisPekerjaan = "pengolahan";
-            @endphp
+    @php
+    $alokasiHonorBulanMitra = $alokasiHonorBulan->where('mitra.id_sobat', $s);
+    $idKegiatan = $alokasiHonorBulanMitra->pluck('honor.kegiatan_manmit_id')->unique()->flatten();
+    @endphp
+    @foreach ($idKegiatan as $k)
+    @php
+    $alokasiHonorBulanMitraKegiatan = $alokasiHonorBulanMitra->where('honor.kegiatan_manmit_id', $k);
+    $firstAlokasi = $alokasiHonorBulanMitraKegiatan->first();
+    $tanggalSurat = $c::parse($firstAlokasi->bast->tanggal_nomor);
+
+    $istilahJabatan = [
+    "PML"=>"petugas pemeriksa lapangan",
+    "PPL"=>"petugas pendataan lapangan",
+    "PETUGAS ENTRI"=>"petugas pengolahan"
+    ];
+    @endphp
         <div class="pagebreak"></div>
         <div style="display: flex;">
             <div style="max-width: 600px; display: flex">
@@ -237,7 +225,7 @@
           <a name="bookmark0">BERITA ACARA SERAH TERIMA PEKERJAAN</a>
         </p>
         <h3 style="text-indent: 0pt; text-align: center">
-          Nomor : {{$alokasiHonorBulanMitraKegiatan->first()->suratBast->nomor_surat_bast}}
+          Nomor : {{$firstAlokasi->bast->nomor_surat_bast}}
         </h3>
         <p style="text-indent: 0pt; text-align: left"><br /></p>
         <p
@@ -282,24 +270,44 @@
         <br>
         <table style="padding-left: 50px;">
             <tr style="vertical-align:bottom;">
-                <td style="width: 30px;"><p>2.</p></td>
-                <td style="width: 100px;"><p>Nama/NIP</p></td>
-                <td style="width: 20px;"><p>:</p></td>
-                <td><p>{{$alokasiHonorBulanMitraKegiatan->first()->nama_petugas}}</p></td>
+                <td style="width: 30px;">
+                    <p>2.</p>
+                </td>
+                <td style="width: 100px;">
+                    <p>Nama/NIP</p>
+                </td>
+                <td style="width: 20px;">
+                    <p>:</p>
+                </td>
+                <td>
+                    <p>{{$firstAlokasi->mitra->nama_1}}</p>
+                </td>
             </tr>
             <tr style="vertical-align: bottom;">
                 <td></td>
-                <td style="vertical-align: top;"><p>Jabatan</p></td>
-                <td style="vertical-align: top;"><p>:</p></td>
-                <td><p>{{ucwords($istilahJabatan[$alokasiHonorBulanMitraKegiatan->first()->jabatan])}}</p></td>
+                <td style="vertical-align: top;">
+                    <p>Jabatan</p>
+                </td>
+                <td style="vertical-align: top;">
+                    <p>:</p>
+                </td>
+                <td>
+                    <p>{{ucwords($istilahJabatan[$firstAlokasi->honor->jabatan] ?? $firstAlokasi->honor->jabatan)}}</p>
+                </td>
             </tr>
             <tr style="vertical-align: bottom;">
                 <td></td>
-                <td style="vertical-align: top;"><p>Alamat</p></td>
-                <td style="vertical-align: top;"><p>:</p></td>
-                <td><p>Kecamatan
-                    {{ucwords(strtolower($alokasiHonorBulanMitra->first()->kecamatan_domisili))}},
-                    Desa/Kelurahan {{ucwords(strtolower($alokasiHonorBulanMitra->first()->desa_domisili))}}</p></td>
+                <td style="vertical-align: top;">
+                    <p>Alamat</p>
+                </td>
+                <td style="vertical-align: top;">
+                    <p>:</p>
+                </td>
+                <td>
+                    <p>Kecamatan
+                        {{ucwords(strtolower($firstAlokasi->mitra->kecamatan_domisili))}},
+                        Desa/Kelurahan {{ucwords(strtolower($firstAlokasi->mitra->desa_domisili))}}</p>
+                </td>
             </tr>
         </table>
         <br>
@@ -311,26 +319,17 @@
           <p style="padding-left: 5pt; text-indent: 0pt; text-align: left">
             Menyatakan bahwa :
           </p>
-          <h3
-            style="
-            padding-top: 6pt;
-            padding-left: 58pt;
-            text-indent: -18pt;
-            line-height: 150%;
-            text-align: left;
-            "
-        >
+          <h3 style="padding-top: 6pt; padding-left: 58pt; text-indent: -18pt; line-height: 150%; text-align: left;">
             <span class="p">a. </span>
             PIHAK KEDUA
             <span class="p">telah menyelesaikan pekerjaan
                 @foreach ($alokasiHonorBulanMitraKegiatan as $h)
-                    {{ucwords(strtolower($h->jenis_honor))}} {{$h->nama_kegiatan}} sebanyak
-                    {{$h->target_per_satuan_honor." ".$h->satuan_honor}}
-                    @if ($loop->index+1<$alokasiHonorBulanMitraKegiatan->count())
-                        dan
-                    @endif
+                {{ucwords(strtolower($h->honor->jenis_honor))}} {{$h->honor->kegiatanManmit->nama}} sebanyak
+                {{$h->target_per_satuan_honor." ".$h->honor->satuan_honor}}
+                @if (!$loop->last)
+                dan
+                @endif
                 @endforeach
-
             </span>
         </h3>
         <h3
@@ -393,7 +392,7 @@
                     text-align: center;
                     "
                 >
-                    <b>{{$alokasiHonorBulanMitra->first()->nama_petugas}}</b>
+                    <b>{{$firstAlokasi->mitra->nama_1}}</b>
                 </p>
                 </td>
                 <td style="width: 185pt;padding-top: 0pt;">

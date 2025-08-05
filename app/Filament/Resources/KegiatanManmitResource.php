@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\KegiatanManmitResource\Pages;
+use App\Filament\Resources\KegiatanManmitResource\RelationManagers\AlokasiHonorRelationManager;
 use App\Models\KegiatanManmit;
 use App\Supports\Constants;
 use Filament\Forms;
@@ -23,6 +24,9 @@ class KegiatanManmitResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     protected static ?string $slug = 'kegiatan-manmit';
+
+    protected static ?string $navigationGroup = "Honor Mitra";
+
 
     public static function form(Form $form): Form
     {
@@ -163,7 +167,7 @@ class KegiatanManmitResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            AlokasiHonorRelationManager::class
         ];
     }
 

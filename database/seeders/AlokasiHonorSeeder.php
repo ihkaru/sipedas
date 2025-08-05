@@ -15,7 +15,7 @@ class AlokasiHonorSeeder extends Seeder
      */
     public function run(): void
     {
-        if(env("MIGRATION_ENV","local")) $fileLocation = "./database/data/alokasi_honor.csv";
-        Excel::import(new AlokasiHonorImport,$fileLocation,readerType: ExcelExcel::CSV);
+        // if(env("MIGRATION_ENV","local")) $fileLocation = "./database/data/alokasi_honor.csv";
+        // Excel::import(new AlokasiHonorImport,$fileLocation,readerType: ExcelExcel::CSV);
     }
 }
