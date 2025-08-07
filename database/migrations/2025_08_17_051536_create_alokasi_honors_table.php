@@ -44,6 +44,8 @@ return new class extends Migration
             // Foreign key untuk surat (asumsi 'nomor_surats.id' adalah unsignedBigInteger)
             $table->foreign("surat_perjanjian_kerja_id")->references("id")->on("nomor_surats")->onDelete('set null');
             $table->foreign("surat_bast_id")->references("id")->on("nomor_surats")->onDelete('set null');
+
+            $table->date('tanggal_penanda_tanganan_spk_oleh_petugas')->nullable(); // <-- TAMBAHKAN INI
         });
     }
 

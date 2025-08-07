@@ -18,6 +18,7 @@ class AlokasiHonor extends Model
         'total_honor' => 'decimal:2',
         'tanggal_mulai_perjanjian' => 'date',
         'tanggal_akhir_perjanjian' => 'date',
+        'tanggal_penanda_tanganan_spk_oleh_petugas' => 'date',
     ];
 
     /**

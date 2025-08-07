@@ -164,108 +164,92 @@ class AlokasiHonorRelationManager extends RelationManager
                     ])
                     ->action(function (array $data, RelationManager $livewire) {
                         try {
-                            // Debug: Log data yang diterima
-                            Log::info('Form data received:', $data);
-
-                            // Validasi honor_id dengan logging
-                            if (!isset($data['honor_id'])) {
-                                Log::error('honor_id not set in form data');
-                                Notification::make()
-                                    ->title('Error')
-                                    ->body('Honor ID tidak ditemukan dalam form data.')
-                                    ->danger()
-                                    ->send();
-                                return;
-                            }
-
                             if (empty($data['honor_id'])) {
-                                Log::error('honor_id is empty', ['honor_id' => $data['honor_id']]);
-                                Notification::make()
-                                    ->title('Error')
-                                    ->body('Honor ID kosong. Silakan pilih honor terlebih dahulu.')
-                                    ->danger()
-                                    ->send();
-                                return;
+                                throw new \Exception("Honor ID tidak boleh kosong.");
                             }
-
-                            $honor = Honor::find($data['honor_id']);
+                            $honor = \App\Models\Honor::find($data['honor_id']);
                             if (!$honor) {
-                                Log::error('Honor not found', ['honor_id' => $data['honor_id']]);
-                                Notification::make()
-                                    ->title('Error')
-                                    ->body("Honor dengan ID {$data['honor_id']} tidak ditemukan.")
-                                    ->danger()
-                                    ->send();
-                                return;
+                                throw new \Exception("Honor dengan ID {$data['honor_id']} tidak ditemukan.");
                             }
-
-                            Log::info('Honor found successfully', ['honor_id' => $honor->id, 'jabatan' => $honor->jabatan]);
-
-                            // Validasi alokasi_data
-                            if (empty($data['alokasi_data']) || !is_array($data['alokasi_data'])) {
-                                Log::error('alokasi_data is empty or not array', ['alokasi_data' => $data['alokasi_data'] ?? 'null']);
-                                Notification::make()
-                                    ->title('Tidak Ada Data')
-                                    ->body('Anda belum memilih mitra untuk dialokasikan.')
-                                    ->warning()
-                                    ->send();
-                                return;
+                            if (empty($data['alokasi_data'])) {
+                                throw new \Exception("Tidak ada mitra yang dipilih.");
                             }
 
                             $createdCount = 0;
-                            foreach ($data['alokasi_data'] as $index => $alokasi) {
-                                Log::info("Processing alokasi item {$index}:", $alokasi);
+                            foreach ($data['alokasi_data'] as $alokasi) {
+                                if (!isset($alokasi['mitra_id'], $alokasi['target_per_satuan_honor'])) continue;
 
-                                // Validasi setiap item alokasi
-                                if (!isset($alokasi['mitra_id'])) {
-                                    Log::warning("Missing mitra_id in alokasi item {$index}");
-                                    continue;
+                                $mitraId = $alokasi['mitra_id'];
+                                $mitra = \App\Models\Mitra::find($mitraId);
+                                if (!$mitra) continue;
+
+                                // --- LOGIKA PEMBUATAN NOMOR SURAT DIMASUKKAN DI SINI ---
+
+                                // 1. Tentukan tanggal-tanggal penting
+                                $tanggalAkhirKegiatan = $honor->tanggal_akhir_kegiatan;
+
+                                // Asumsi tanggal pengajuan BAST adalah hari kerja sebelum/pada tanggal akhir kegiatan
+                                $tanggalPengajuanBast = \App\Supports\TanggalMerah::getNextWorkDay($tanggalAkhirKegiatan, -1);
+
+                                // Asumsi tanggal pengajuan SPK adalah hari kerja pertama di bulan yang sama dengan tanggal akhir kegiatan
+                                $tanggalPengajuanSpk = \App\Supports\TanggalMerah::getNextWorkDay($tanggalAkhirKegiatan->copy()->startOfMonth());
+
+                                // 2. Generate Nomor Surat Kontrak (SPK) - Satu per mitra per bulan
+                                $existingSpkId = \App\Models\AlokasiHonor::where('mitra_id', $mitraId)
+                                    ->whereHas('honor', function ($query) use ($tanggalAkhirKegiatan) {
+                                        $query->whereYear('tanggal_akhir_kegiatan', $tanggalAkhirKegiatan->year)
+                                            ->whereMonth('tanggal_akhir_kegiatan', $tanggalAkhirKegiatan->month);
+                                    })
+                                    ->whereNotNull('surat_perjanjian_kerja_id')
+                                    ->value('surat_perjanjian_kerja_id');
+
+                                if ($existingSpkId) {
+                                    $suratPerjanjianKerjaId = $existingSpkId;
+                                } else {
+                                    $nomorSuratSpk = \App\Models\NomorSurat::generateNomorSuratPerjanjianKerja($tanggalPengajuanSpk);
+                                    $suratPerjanjianKerjaId = $nomorSuratSpk->id;
                                 }
 
-                                if (!isset($alokasi['target_per_satuan_honor'])) {
-                                    Log::warning("Missing target_per_satuan_honor in alokasi item {$index}");
-                                    continue;
+                                // 3. Generate Nomor Surat BAST - Satu per mitra per kegiatan per bulan
+                                // (Dalam UI ini, honor sudah unik, jadi ini efektif per alokasi)
+                                // Logika sebelumnya mencari berdasarkan id_kegiatan, kita adaptasi
+                                $existingBastId = \App\Models\AlokasiHonor::where('mitra_id', $mitraId)
+                                    ->where('honor_id', $honor->id)
+                                    ->whereNotNull('surat_bast_id')
+                                    ->value('surat_bast_id');
+
+                                if ($existingBastId) {
+                                    $suratBastId = $existingBastId;
+                                } else {
+                                    $nomorSuratBast = \App\Models\NomorSurat::generateNomorSuratBast($tanggalPengajuanBast);
+                                    $suratBastId = $nomorSuratBast->id;
                                 }
 
-                                if (empty($alokasi['mitra_id']) || !is_numeric($alokasi['target_per_satuan_honor'])) {
-                                    Log::warning("Invalid data in alokasi item {$index}", [
-                                        'mitra_id' => $alokasi['mitra_id'] ?? 'null',
-                                        'target_per_satuan_honor' => $alokasi['target_per_satuan_honor'] ?? 'null'
-                                    ]);
-                                    continue;
-                                }
-
+                                // 4. Hitung total honor dan simpan
                                 $totalHonor = $honor->harga_per_satuan * $alokasi['target_per_satuan_honor'];
 
                                 $livewire->ownerRecord->alokasiHonors()->create([
                                     'honor_id' => $data['honor_id'],
-                                    'mitra_id' => $alokasi['mitra_id'],
+                                    'mitra_id' => $mitraId,
                                     'target_per_satuan_honor' => $alokasi['target_per_satuan_honor'],
-                                    'total_honor' => $totalHonor
+                                    'total_honor' => $totalHonor,
+                                    'surat_perjanjian_kerja_id' => $suratPerjanjianKerjaId,
+                                    'surat_bast_id' => $suratBastId,
+                                    'tanggal_penanda_tanganan_spk_oleh_petugas' => $tanggalPengajuanSpk, // Simpan tanggal ini
+                                    'tanggal_mulai_perjanjian' => $tanggalAkhirKegiatan->copy()->startOfMonth(),
+                                    'tanggal_akhir_perjanjian' => $tanggalAkhirKegiatan->copy()->endOfMonth(),
                                 ]);
 
                                 $createdCount++;
                             }
 
                             if ($createdCount > 0) {
-                                Notification::make()
-                                    ->title('Alokasi Berhasil')
-                                    ->body("Berhasil membuat {$createdCount} alokasi honor.")
-                                    ->success()
-                                    ->send();
+                                \Filament\Notifications\Notification::make()->title('Alokasi Berhasil')->body("Berhasil membuat {$createdCount} alokasi honor.")->success()->send();
                             } else {
-                                Notification::make()
-                                    ->title('Tidak Ada Data Valid')
-                                    ->body('Tidak ada alokasi yang berhasil dibuat.')
-                                    ->warning()
-                                    ->send();
+                                \Filament\Notifications\Notification::make()->title('Tidak Ada Data Valid')->body('Tidak ada alokasi yang berhasil dibuat.')->warning()->send();
                             }
                         } catch (\Exception $e) {
-                            Notification::make()
-                                ->title('Error')
-                                ->body('Terjadi kesalahan: ' . $e->getMessage())
-                                ->danger()
-                                ->send();
+                            \Filament\Notifications\Notification::make()->title('Error')->body('Terjadi kesalahan: ' . $e->getMessage())->danger()->send();
                         }
                     })
                     ->modalWidth('5xl'),
