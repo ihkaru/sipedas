@@ -27,6 +27,8 @@ class HonorResource extends Resource
     protected static ?string $model = Honor::class;
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
     protected static ?string $navigationGroup = "Honor Mitra";
+    protected static ?int $navigationSort = 2;
+
 
 
     public static function form(Form $form): Form
@@ -88,6 +90,7 @@ class HonorResource extends Resource
         return $table
             ->defaultSort('updated_at', 'desc')
             ->columns([
+                TextColumn::make('id')->searchable(),
                 TextColumn::make('kegiatanManmit.nama')->label('Nama Kegiatan')->searchable()->sortable()->wrap(),
                 TextColumn::make('jabatan')->searchable()->badge(),
                 TextColumn::make('id_batasan_honor')->label('ID Batasan'),

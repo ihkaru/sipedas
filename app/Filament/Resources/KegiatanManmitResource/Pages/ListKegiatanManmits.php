@@ -23,10 +23,14 @@ class ListKegiatanManmits extends ListRecords
     {
         return [
             // 1. Tombol standar untuk membuat record baru
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label("Tambah Kegiatan Manajemen Mitra"),
 
             // 2. Tombol untuk impor dari JSON (tetap ada sesuai permintaan)
             Actions\Action::make('importFromJson')
+                ->hidden(function () {
+                    return !auth()->user()->hasRole("super_admin");
+                })
                 ->label('Impor dari JSON')
                 ->color('warning')
                 ->icon('heroicon-o-code-bracket') // Ikon yang lebih sesuai untuk JSON
@@ -101,10 +105,14 @@ class ListKegiatanManmits extends ListRecords
                     ->url(route('download.template.kegiatan-manmit'))
                     ->openUrlInNewTab(),
             ])
+                ->hidden(function () {
+                    return !auth()->user()->hasRole("super_admin");
+                })
                 ->label('Aksi Excel')
                 ->icon('heroicon-m-table-cells')
                 ->color('success')
                 ->button(),
+
         ];
     }
 }

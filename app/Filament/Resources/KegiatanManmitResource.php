@@ -21,11 +21,13 @@ class KegiatanManmitResource extends Resource
 {
     protected static ?string $model = KegiatanManmit::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-calendar';
 
     protected static ?string $slug = 'kegiatan-manmit';
 
     protected static ?string $navigationGroup = "Honor Mitra";
+    protected static ?int $navigationSort = 1;
+
 
 
     public static function form(Form $form): Form
@@ -118,6 +120,7 @@ class KegiatanManmitResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort("updated_at", "desc")
             ->columns([
                 Tables\Columns\TextColumn::make('nama')
                     ->searchable()

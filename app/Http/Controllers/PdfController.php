@@ -85,37 +85,50 @@ class PdfController extends Controller
             'bulan' => $tanggalPengajuan->month,
             'ppk' => $ppk,
             'id_honor' => $id_honor_request,
+            'id_kegiatan_manmit' => request('id_kegiatan_manmit') ?? null
         ]);
     }
     public function cetakBast()
     {
         $tahun = request('tahun') ?? now()->year;
         $bulan = request('bulan') ?? now()->month;
-        $id_honor_request = request('id_honor') ?? null;
+        // Ambil ID Kegiatan dari request. Ini adalah kunci utamanya.
+        $id_kegiatan_manmit_request = request('id_kegiatan_manmit') ?? null;
         $bulan = str_pad($bulan, 2, "0", STR_PAD_LEFT);
 
-        // --- LOGIKA BARU ---
+        // --- AWAL LOGIKA BARU YANG DIPERBAIKI ---
         $alokasiHonorQuery = AlokasiHonor::with([
             'mitra',
             'honor.kegiatanManmit',
             'bast' => function ($q) {
                 // Pastikan hanya memuat BAST
-                return $q->where('jenis', Constants::JENIS_NOMOR_SURAT_BAST);
+                return $q->where('jenis', \App\Supports\Constants::JENIS_NOMOR_SURAT_BAST);
             }
         ])
-            ->whereHas('bast') // Hanya yang sudah punya nomor BAST
-            // Filter berdasarkan tanggal akhir kegiatan dari relasi honor
-            ->whereHas('honor', function ($q) use ($tahun, $bulan) {
-                $q->whereYear('tanggal_akhir_kegiatan', $tahun)
-                    ->whereMonth('tanggal_akhir_kegiatan', $bulan);
-            });
+            ->whereHas('bast'); // Hanya yang sudah punya nomor BAST
 
+        // **FILTER UTAMA**: Tambahkan kondisi ini untuk memfilter berdasarkan ID Kegiatan Manmit
+        if ($id_kegiatan_manmit_request) {
+            $alokasiHonorQuery->whereHas('honor', function ($query) use ($id_kegiatan_manmit_request) {
+                $query->where('kegiatan_manmit_id', $id_kegiatan_manmit_request);
+            });
+        } else {
+            // Jika ID kegiatan tidak ada, filter berdasarkan tanggal akhir seperti sebelumnya sebagai fallback
+            // Namun, alur dari tombol "Cetak BAST" seharusnya selalu menyertakan ID kegiatan.
+            $alokasiHonorQuery->whereHas('honor.kegiatanManmit', function ($q) use ($tahun, $bulan) {
+                $q->whereYear('tgl_akhir_pelaksanaan', $tahun)
+                    ->whereMonth('tgl_akhir_pelaksanaan', $bulan);
+            });
+        }
+
+        // Opsi id_honor tetap dipertahankan jika diperlukan
+        $id_honor_request = request('id_honor') ?? null;
         if ($id_honor_request) {
             $alokasiHonorQuery->where('honor_id', $id_honor_request);
         }
 
         $alokasiHonor = $alokasiHonorQuery->get();
-        // --- AKHIR LOGIKA BARU ---
+        // --- AKHIR LOGIKA BARU YANG DIPERBAIKI ---
 
         $tanggalPengajuan = Carbon::parse("$tahun-$bulan-01");
         $ppk = Pegawai::find(Pengaturan::key("NIP_PPK_SATER")->nilai);
@@ -126,6 +139,8 @@ class PdfController extends Controller
             'bulan' => $tanggalPengajuan->month,
             'id_honor' => $id_honor_request,
             'ppk' => $ppk,
+            // ID Kegiatan Manmit tetap dikirim ke view untuk referensi jika dibutuhkan
+            'id_kegiatan_manmit' => $id_kegiatan_manmit_request
         ]);
     }
 }

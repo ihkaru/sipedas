@@ -17,6 +17,8 @@ use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Notifications\Notification;
+use Filament\Tables\Actions\ActionGroup;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class AlokasiHonorRelationManager extends RelationManager
@@ -54,15 +56,18 @@ class AlokasiHonorRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('honor.jenis_honor')->label('Jenis Honor'),
                 Tables\Columns\TextColumn::make('target_per_satuan_honor')->label('Target'),
                 Tables\Columns\TextColumn::make('honor.satuan_honor')->label('Satuan'),
+                Tables\Columns\TextColumn::make('honor.harga_per_satuan')->money('IDR')->label('Harga per Satuan'),
                 Tables\Columns\TextColumn::make('total_honor')->money('IDR')->sortable(),
+                Tables\Columns\TextColumn::make('tanggal_akhir_perjanjian')->date()->sortable(),
+
             ])
             ->filters([
                 //
             ])
             ->headerActions([
                 Action::make('alokasi_terpilih')
-                    ->label('Buat Alokasi Baru')
-                    ->icon('heroicon-o-plus-circle')
+                    ->label('Alokasikan Honor')
+                    ->icon('heroicon-o-user-plus')
                     ->color('primary')
                     ->form([
                         Forms\Components\Grid::make(2)->schema([
@@ -70,50 +75,55 @@ class AlokasiHonorRelationManager extends RelationManager
                                 ->schema([
                                     Forms\Components\Select::make('honor_id')
                                         ->label('Pilih Honor untuk Dialokasikan')
-                                        ->options(function (RelationManager $livewire) {
-                                            $options = $this->getHonorOptions($livewire);
-                                            Log::info('Honor options loaded:', $options);
-                                            return $options;
-                                        })
+                                        ->options(fn(RelationManager $livewire): array => $this->getHonorOptions($livewire))
                                         ->required()
-                                        ->live()
-                                        ->afterStateUpdated(function ($state) {
-                                            Log::info('Honor selected:', ['honor_id' => $state]);
+                                        ->live() // **PENTING**: Membuat field ini reaktif
+                                        ->afterStateUpdated(function (Set $set) {
+                                            // **BARU**: Reset daftar mitra jika honor diubah
+                                            $set('mitra_to_add', null);
+                                            $set('alokasi_data', []);
                                         }),
 
                                     Forms\Components\Select::make('mitra_to_add')
                                         ->label('Cari & Tambah Mitra')
-                                        ->helperText('Pilih mitra dari daftar ini untuk menambahkannya ke daftar alokasi di sebelah kanan.')
-                                        ->options(function () {
-                                            return Mitra::query()
+                                        ->helperText('Hanya mitra dengan status kemitraan AKTIF pada tahun kegiatan yang akan muncul.') // Teks bantuan diperbarui
+                                        // **LOGIKA UTAMA**: Opsi mitra sekarang dinamis berdasarkan honor_id
+                                        ->options(function (Get $get) {
+                                            $honorId = $get('honor_id');
+                                            if (!$honorId) {
+                                                return []; // Jika belum ada honor, jangan tampilkan mitra
+                                            }
+
+                                            // 1. Dapatkan honor untuk menemukan tahun kegiatan
+                                            $honor = Honor::with('kegiatanManmit')->find($honorId);
+
+                                            // Pastikan relasi dan tanggal ada
+                                            if (!$honor || !$honor->kegiatanManmit?->tgl_mulai_pelaksanaan) {
+                                                return [];
+                                            }
+
+                                            // 2. Ekstrak tahun dari tanggal mulai kegiatan
+                                            $activityYear = Carbon::parse($honor->kegiatanManmit->tgl_mulai_pelaksanaan)->year;
+
+                                            // 3. Query mitra yang punya kemitraan aktif di tahun tersebut
+                                            return Mitra::whereHas('kemitraans', function ($query) use ($activityYear) {
+                                                $query->where('tahun', $activityYear)
+                                                    ->where('status', 'AKTIF');
+                                            })
                                                 ->get()
-                                                ->mapWithKeys(function ($mitra) {
-                                                    return [$mitra->id => "({$mitra->id_sobat}) {$mitra->nama_1}"];
-                                                })
+                                                ->mapWithKeys(fn($mitra) => [$mitra->id => "({$mitra->id_sobat}) {$mitra->nama_1}"])
                                                 ->toArray();
                                         })
                                         ->searchable()
                                         ->live()
                                         ->afterStateUpdated(function (Get $get, Set $set, $state) {
-                                            if (empty($state) || !is_numeric($state)) {
-                                                return;
-                                            }
+                                            if (empty($state) || !is_numeric($state)) return;
 
                                             $repeaterItems = $get('alokasi_data') ?? [];
+                                            if (!is_array($repeaterItems)) $repeaterItems = [];
 
-                                            // Pastikan $repeaterItems adalah array
-                                            if (!is_array($repeaterItems)) {
-                                                $repeaterItems = [];
-                                            }
-
-                                            // Cek apakah mitra sudah ada
-                                            $mitraExists = false;
-                                            foreach ($repeaterItems as $item) {
-                                                if (isset($item['mitra_id']) && $item['mitra_id'] == $state) {
-                                                    $mitraExists = true;
-                                                    break;
-                                                }
-                                            }
+                                            // Cek duplikasi sebelum menambahkan
+                                            $mitraExists = collect($repeaterItems)->contains('mitra_id', $state);
 
                                             if (!$mitraExists) {
                                                 $repeaterItems[] = [
@@ -123,6 +133,7 @@ class AlokasiHonorRelationManager extends RelationManager
                                                 $set('alokasi_data', $repeaterItems);
                                             }
 
+                                            // Reset dropdown setelah mitra ditambahkan
                                             $set('mitra_to_add', null);
                                         })
                                         ->dehydrated(false),
@@ -136,17 +147,10 @@ class AlokasiHonorRelationManager extends RelationManager
                                         ->schema([
                                             Forms\Components\Select::make('mitra_id')
                                                 ->label('Mitra')
-                                                ->options(function () {
-                                                    return Mitra::query()
-                                                        ->get()
-                                                        ->mapWithKeys(function ($mitra) {
-                                                            return [$mitra->id => "({$mitra->id_sobat}) {$mitra->nama_1}"];
-                                                        })
-                                                        ->toArray();
-                                                })
+                                                ->options(fn() => Mitra::pluck('nama_1', 'id')) // Opsi ini hanya untuk display
+                                                ->getOptionLabelFromRecordUsing(fn($record) => "({$record->id_sobat}) {$record->nama_1}")
                                                 ->disabled()
                                                 ->required()
-                                                // Pastikan data tetap terkirim meski disabled
                                                 ->dehydrated(true),
                                             Forms\Components\TextInput::make('target_per_satuan_honor')
                                                 ->label('Target')
@@ -163,6 +167,7 @@ class AlokasiHonorRelationManager extends RelationManager
                         ]),
                     ])
                     ->action(function (array $data, RelationManager $livewire) {
+                        // ... Logika action tidak berubah ...
                         try {
                             if (empty($data['honor_id'])) {
                                 throw new \Exception("Honor ID tidak boleh kosong.");
@@ -183,22 +188,16 @@ class AlokasiHonorRelationManager extends RelationManager
                                 $mitra = \App\Models\Mitra::find($mitraId);
                                 if (!$mitra) continue;
 
-                                // --- LOGIKA PEMBUATAN NOMOR SURAT DIMASUKKAN DI SINI ---
+                                $tanggalAkhirKegiatan = Carbon::parse($honor->kegiatanManmit->tgl_akhir_pelaksanaan);
+                                $tanggalMulaiKegiatan = Carbon::parse($honor->kegiatanManmit->tgl_mulai_pelaksanaan);
 
-                                // 1. Tentukan tanggal-tanggal penting
-                                $tanggalAkhirKegiatan = $honor->tanggal_akhir_kegiatan;
-
-                                // Asumsi tanggal pengajuan BAST adalah hari kerja sebelum/pada tanggal akhir kegiatan
                                 $tanggalPengajuanBast = \App\Supports\TanggalMerah::getNextWorkDay($tanggalAkhirKegiatan, -1);
+                                $tanggalPengajuanSpk = \App\Supports\TanggalMerah::getNextWorkDay($tanggalMulaiKegiatan);
 
-                                // Asumsi tanggal pengajuan SPK adalah hari kerja pertama di bulan yang sama dengan tanggal akhir kegiatan
-                                $tanggalPengajuanSpk = \App\Supports\TanggalMerah::getNextWorkDay($tanggalAkhirKegiatan->copy()->startOfMonth());
-
-                                // 2. Generate Nomor Surat Kontrak (SPK) - Satu per mitra per bulan
                                 $existingSpkId = \App\Models\AlokasiHonor::where('mitra_id', $mitraId)
-                                    ->whereHas('honor', function ($query) use ($tanggalAkhirKegiatan) {
-                                        $query->whereYear('tanggal_akhir_kegiatan', $tanggalAkhirKegiatan->year)
-                                            ->whereMonth('tanggal_akhir_kegiatan', $tanggalAkhirKegiatan->month);
+                                    ->whereHas('honor.kegiatanManmit', function ($query) use ($tanggalMulaiKegiatan) {
+                                        $query->whereYear('tgl_mulai_pelaksanaan', $tanggalMulaiKegiatan->year)
+                                            ->whereMonth('tgl_mulai_pelaksanaan', $tanggalMulaiKegiatan->month);
                                     })
                                     ->whereNotNull('surat_perjanjian_kerja_id')
                                     ->value('surat_perjanjian_kerja_id');
@@ -209,10 +208,6 @@ class AlokasiHonorRelationManager extends RelationManager
                                     $nomorSuratSpk = \App\Models\NomorSurat::generateNomorSuratPerjanjianKerja($tanggalPengajuanSpk);
                                     $suratPerjanjianKerjaId = $nomorSuratSpk->id;
                                 }
-
-                                // 3. Generate Nomor Surat BAST - Satu per mitra per kegiatan per bulan
-                                // (Dalam UI ini, honor sudah unik, jadi ini efektif per alokasi)
-                                // Logika sebelumnya mencari berdasarkan id_kegiatan, kita adaptasi
                                 $existingBastId = \App\Models\AlokasiHonor::where('mitra_id', $mitraId)
                                     ->where('honor_id', $honor->id)
                                     ->whereNotNull('surat_bast_id')
@@ -224,8 +219,6 @@ class AlokasiHonorRelationManager extends RelationManager
                                     $nomorSuratBast = \App\Models\NomorSurat::generateNomorSuratBast($tanggalPengajuanBast);
                                     $suratBastId = $nomorSuratBast->id;
                                 }
-
-                                // 4. Hitung total honor dan simpan
                                 $totalHonor = $honor->harga_per_satuan * $alokasi['target_per_satuan_honor'];
 
                                 $livewire->ownerRecord->alokasiHonors()->create([
@@ -235,24 +228,73 @@ class AlokasiHonorRelationManager extends RelationManager
                                     'total_honor' => $totalHonor,
                                     'surat_perjanjian_kerja_id' => $suratPerjanjianKerjaId,
                                     'surat_bast_id' => $suratBastId,
-                                    'tanggal_penanda_tanganan_spk_oleh_petugas' => $tanggalPengajuanSpk, // Simpan tanggal ini
-                                    'tanggal_mulai_perjanjian' => $tanggalAkhirKegiatan->copy()->startOfMonth(),
-                                    'tanggal_akhir_perjanjian' => $tanggalAkhirKegiatan->copy()->endOfMonth(),
+                                    'tanggal_penanda_tanganan_spk_oleh_petugas' => $tanggalPengajuanSpk,
+                                    'tanggal_mulai_perjanjian' => $tanggalMulaiKegiatan,
+                                    'tanggal_akhir_perjanjian' => $tanggalAkhirKegiatan,
                                 ]);
 
                                 $createdCount++;
                             }
 
                             if ($createdCount > 0) {
-                                \Filament\Notifications\Notification::make()->title('Alokasi Berhasil')->body("Berhasil membuat {$createdCount} alokasi honor.")->success()->send();
+                                Notification::make()->title('Alokasi Berhasil')->body("Berhasil membuat {$createdCount} alokasi honor.")->success()->send();
                             } else {
-                                \Filament\Notifications\Notification::make()->title('Tidak Ada Data Valid')->body('Tidak ada alokasi yang berhasil dibuat.')->warning()->send();
+                                Notification::make()->title('Tidak Ada Data Valid')->body('Tidak ada alokasi yang berhasil dibuat.')->warning()->send();
                             }
                         } catch (\Exception $e) {
-                            \Filament\Notifications\Notification::make()->title('Error')->body('Terjadi kesalahan: ' . $e->getMessage())->danger()->send();
+                            Notification::make()->title('Error')->body('Terjadi kesalahan: ' . $e->getMessage())->danger()->send();
                         }
                     })
                     ->modalWidth('5xl'),
+                Action::make('honor_baru')
+                    ->label("Buat Honor Baru")
+                    ->icon('heroicon-o-plus-circle')
+                    ->color('primary')
+                    ->url(route("filament.a.resources.honors.create")),
+                ActionGroup::make([
+                    // Tombol untuk Cetak Kontrak
+                    Action::make('cetakKontrak')
+                        ->label('Cetak Kontrak')
+                        ->icon('heroicon-o-document-text')
+                        ->color('info')
+                        ->url(function (RelationManager $livewire): string {
+                            $kegiatanManmit = $livewire->ownerRecord;
+                            $tanggalMulai = Carbon::parse($kegiatanManmit->tgl_mulai_pelaksanaan);
+                            $tahun = $tanggalMulai->year;
+                            $bulan = $tanggalMulai->month;
+
+                            // TAMBAHKAN 'id_kegiatan_manmit' ke parameter route
+                            return route('cetak.kontrak', [
+                                'tahun' => $tahun,
+                                'bulan' => $bulan,
+                                'id_kegiatan_manmit' => $kegiatanManmit->id
+                            ]);
+                        })
+                        ->openUrlInNewTab()
+                        ->visible(fn(RelationManager $livewire) => !is_null($livewire->ownerRecord->tgl_mulai_pelaksanaan)),
+
+                    // --- PERUBAHAN PADA TOMBOL CETAK BAST ---
+                    Action::make('cetakBast')
+                        ->label('Cetak BAST')
+                        ->icon('heroicon-o-document-check')
+                        ->color('success')
+                        ->url(function (RelationManager $livewire): string {
+                            $kegiatanManmit = $livewire->ownerRecord;
+                            $tanggalAkhir = Carbon::parse($kegiatanManmit->tgl_akhir_pelaksanaan);
+                            $tahun = $tanggalAkhir->year;
+                            $bulan = $tanggalAkhir->month;
+
+                            // TAMBAHKAN 'id_kegiatan_manmit' ke parameter route
+                            return route('cetak.bast', [
+                                'tahun' => $tahun,
+                                'bulan' => $bulan,
+                                'id_kegiatan_manmit' => $kegiatanManmit->id
+                            ]);
+                        })
+                        ->openUrlInNewTab()
+                        ->visible(fn(RelationManager $livewire) => !is_null($livewire->ownerRecord->tgl_akhir_pelaksanaan)),
+
+                ])->label('Cetak Dokumen')->button()->color('success'),
             ])
             ->actions([EditAction::make(), DeleteAction::make()])
             ->bulkActions([BulkActionGroup::make([DeleteBulkAction::make()])]);

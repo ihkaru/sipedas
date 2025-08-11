@@ -3,8 +3,10 @@
 namespace Database\Seeders;
 
 use App\Imports\AlokasiHonorImport;
+use App\Models\AlokasiHonor;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 use Maatwebsite\Excel\Excel as ExcelExcel;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -15,7 +17,20 @@ class AlokasiHonorSeeder extends Seeder
      */
     public function run(): void
     {
-        // if(env("MIGRATION_ENV","local")) $fileLocation = "./database/data/alokasi_honor.csv";
-        // Excel::import(new AlokasiHonorImport,$fileLocation,readerType: ExcelExcel::CSV);
+        $fileLocation = database_path('data/alokasi_honor.xlsx');
+
+        if (!file_exists($fileLocation)) {
+            $this->command->warn('File data alokasi_honor.xlsx tidak ditemukan. Seeder dilewati.');
+            return;
+        }
+
+        Schema::disableForeignKeyConstraints();
+        AlokasiHonor::truncate();
+        Schema::enableForeignKeyConstraints();
+
+        // Menggunakan kembali logika dari HonorImport
+        Excel::import(new AlokasiHonorImport(), $fileLocation, null, ExcelExcel::XLSX);
+
+        $this->command->info('Seeding Alokasi Honor dari file XLSX selesai.');
     }
 }

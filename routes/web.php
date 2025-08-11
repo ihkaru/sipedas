@@ -29,4 +29,6 @@ Route::middleware('auth')->group(function () {
         ->name('download.template.honor');
     Route::get('/download/template/mitra', [MitraTemplateController::class, 'download'])
         ->name('download.template.mitra');
+    Route::get('/download/template/alokasi-honor', [ExcelExportController::class, 'downloadAlokasiHonorTemplate'])
+        ->name('download.template.alokasi-honor');
 });

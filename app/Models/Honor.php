@@ -40,11 +40,18 @@ class Honor extends Model
     {
         parent::boot();
 
-        // Event ini akan berjalan setiap kali model akan dibuat atau diperbarui.
+        // Event untuk auto-generate ID saat creating
+        static::creating(function ($model) {
+            // Generate composite ID jika belum ada
+            if (empty($model->id)) {
+                $model->id = $model->kegiatan_manmit_id . '-' . $model->jabatan . '-' . $model->jenis_honor;
+            }
+        });
+
+        // Event untuk menghitung tanggal pembayaran maksimal
         static::saving(function ($model) {
             // Hitung tanggal pembayaran maksimal jika tanggal akhir kegiatan ada
             if ($model->tanggal_akhir_kegiatan) {
-                // Clone tanggal agar tidak mengubah objek aslinya, lalu tambahkan 20 hari
                 $model->tanggal_pembayaran_maksimal = $model->tanggal_akhir_kegiatan->clone()->addDays(20);
             }
         });

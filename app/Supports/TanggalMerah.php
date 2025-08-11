@@ -33,10 +33,13 @@ class TanggalMerah extends ATanggalMerah
         return $res;
     }
 
-    public static function getNextWorkDay(Carbon $date, int $step = 1)
+    public static function getNextWorkDay(Carbon|string $date, int $step = 1)
     {
+
         $tanggalMerahDates = collect(self::getLiburDates())->flatten();
-        $originalDate = Carbon::parse($date);
+        if (is_string($date)) {
+            $date = Carbon::parse($date);
+        }
         $tes = 0;
         while ($tanggalMerahDates->contains($date->toDateString())) {
             $tes += 1;

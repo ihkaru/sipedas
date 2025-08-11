@@ -19,7 +19,7 @@ class HonorSeeder extends Seeder
         $fileLocation = database_path('data/honor.xlsx');
 
         if (!file_exists($fileLocation)) {
-            $this->command->warn('File data honor.csv tidak ditemukan. Seeder dilewati.');
+            $this->command->warn('File data honor.xlsx tidak ditemukan. Seeder dilewati.');
             return;
         }
 
