@@ -8,9 +8,15 @@ use App\Http\Controllers\PdfController;
 use App\Providers\Filament\APanelProvider;
 use Filament\Http\Middleware\Authenticate;
 use Illuminate\Session\Middleware\AuthenticateSession;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 Route::get("/run", [ArtisanController::class, "run"]);
+Route::get('/clear-all-cache', function () {
+    Artisan::call('optimize:clear');
+    Artisan::call('filament:clear-cached-components');
+    return "All caches cleared!";
+});
 Route::get('/', function () {
     return view('welcome');
 });
