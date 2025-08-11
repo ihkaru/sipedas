@@ -15,7 +15,7 @@ Route::get("/run", [ArtisanController::class, "run"]);
 Route::get('/clear-all-cache', function () {
     Artisan::call('optimize:clear');
     Artisan::call('filament:clear-cached-components');
-    Artisan::call('filament:optimize');
+    // Artisan::call('filament:optimize');
     return "All caches cleared and then optimized!";
 });
 Route::get('/', function () {
