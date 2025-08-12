@@ -72,35 +72,49 @@ class AlokasiHonor extends Model
     }
 
     /**
-     * Metode terpusat untuk membuat AlokasiHonor.
-     * Tidak ada perubahan di sini, logika ini sudah benar.
+     * Metode terpusat untuk mempersiapkan instance AlokasiHonor.
+     * Metode ini menerima ID Sobat sebagai input, dan secara internal akan
+     * menerjemahkannya ke primary key `mitra.id`.
+     *
+     * @param string $idSobat ID Sobat dari mitra.
+     * @param string $honorId ID dari honor.
+     * @param float  $target  Target yang diberikan.
+     * @return self Instance AlokasiHonor yang siap disimpan.
+     * @throws \Exception
      */
-    public static function createWithRelations(string $mitraIdSobat, string $honorId, float $target): self
+    public static function createWithRelations(string $idSobat, string $honorId, float $target): self
     {
-        $mitra = Mitra::where('id_sobat', $mitraIdSobat)->first();
+        // --- AWAL BAGIAN TERJEMAHAN ---
+        // Cari mitra berdasarkan ID Sobat. Gagal jika tidak ditemukan.
+        $mitra = Mitra::where('id_sobat', $idSobat)->first();
         if (!$mitra) {
-            throw new \Exception("Mitra dengan ID Sobat {$mitraIdSobat} tidak ditemukan.");
+            throw new \Exception("Mitra dengan ID Sobat '{$idSobat}' tidak ditemukan.");
         }
+        // Ambil primary key-nya. Inilah yang akan disimpan di database.
+        $mitraPrimaryKey = $mitra->id;
+        // --- AKHIR BAGIAN TERJEMAHAN ---
+
 
         $honor = Honor::with('kegiatanManmit')->find($honorId);
-        if (!$honor || !$honor->kegiatanManmit?->tgl_mulai_pelaksanaan) {
-            throw new \Exception("Data Kegiatan/jadwal pada Honor ID {$honorId} tidak lengkap/tidak ditemukan.");
+        if (!$honor || !$honor->kegiatanManmit?->tgl_mulai_pelaksanaan || !$honor->kegiatanManmit?->tgl_akhir_pelaksanaan) {
+            throw new \Exception("Data Kegiatan/jadwal pada Honor ID {$honorId} tidak lengkap atau tidak ditemukan.");
         }
 
+        // Validasi Kemitraan Aktif
         $tahunKegiatan = Carbon::parse($honor->kegiatanManmit->tgl_mulai_pelaksanaan)->year;
         $isMitraAktif = $mitra->kemitraans()->where('tahun', $tahunKegiatan)->where('status', 'AKTIF')->exists();
         if (!$isMitraAktif) {
-            throw new \Exception("Mitra {$mitra->nama_1} (ID Sobat: {$mitraIdSobat}) tidak memiliki kemitraan AKTIF di tahun {$tahunKegiatan}.");
+            throw new \Exception("Mitra {$mitra->nama_1} (ID Sobat: {$idSobat}) tidak memiliki kemitraan AKTIF di tahun {$tahunKegiatan}.");
         }
 
-        $mitraIdPrimaryKey = $mitra->id;
-
-        $tanggalMulaiKegiatan = Carbon::parse($honor->kegiatanManmit->tgl_mulai_pelaksanaan);
-        $tanggalAkhirKegiatan = Carbon::parse($honor->kegiatanManmit->tgl_akhir_pelaksanaan);
-        $tanggalPengajuanSpk = TanggalMerah::getNextWorkDay($tanggalMulaiKegiatan);
+        // Logika selanjutnya menggunakan primary key yang sudah kita temukan ($mitraPrimaryKey)
+        $tanggalMulaiKegiatan = Carbon::parse($honor->tanggal_akhir_kegiatan)->startOfMonth();
+        $tanggalAkhirKegiatan = Carbon::parse($honor->tanggal_akhir_kegiatan);
+        $tanggalPengajuanSpk = TanggalMerah::getNextWorkDay($tanggalMulaiKegiatan, -1);
         $tanggalPengajuanBast = TanggalMerah::getNextWorkDay($tanggalAkhirKegiatan, -1);
 
-        $existingSpkId = self::where('mitra_id', $mitraIdPrimaryKey)
+        // Cek SPK menggunakan $mitraPrimaryKey
+        $existingSpkId = self::where('mitra_id', $mitraPrimaryKey)
             ->whereHas('honor.kegiatanManmit', function ($query) use ($tanggalMulaiKegiatan) {
                 $query->whereYear('tgl_mulai_pelaksanaan', $tanggalMulaiKegiatan->year)
                     ->whereMonth('tgl_mulai_pelaksanaan', $tanggalMulaiKegiatan->month);
@@ -108,38 +122,30 @@ class AlokasiHonor extends Model
             ->whereNotNull('surat_perjanjian_kerja_id')
             ->value('surat_perjanjian_kerja_id');
 
-        if ($existingSpkId) {
-            $suratPerjanjianKerjaId = $existingSpkId;
-        } else {
-            $nomorSuratSpk = NomorSurat::generateNomorSuratPerjanjianKerja($tanggalPengajuanSpk);
-            $suratPerjanjianKerjaId = $nomorSuratSpk->id;
-        }
+        $suratPerjanjianKerjaId = $existingSpkId ?: NomorSurat::generateNomorSuratPerjanjianKerja($tanggalPengajuanSpk)->id;
 
-        $existingBastId = self::where('mitra_id', $mitraIdPrimaryKey)->where('honor_id', $honor->id)->whereNotNull('surat_bast_id')->value('surat_bast_id');
-        if ($existingBastId) {
-            $suratBastId = $existingBastId;
-        } else {
-            $nomorSuratBast = NomorSurat::generateNomorSuratBast($tanggalPengajuanBast);
-            $suratBastId = $nomorSuratBast->id;
-        }
+        // Cek BAST menggunakan $mitraPrimaryKey
+        $existingBastId = self::where('mitra_id', $mitraPrimaryKey)
+            ->where('honor_id', $honor->id)
+            ->whereNotNull('surat_bast_id')
+            ->value('surat_bast_id');
+
+        $suratBastId = $existingBastId ?: NomorSurat::generateNomorSuratBast($tanggalPengajuanBast)->id;
 
         $totalHonor = $honor->harga_per_satuan * $target;
 
-        $alokasi = new self();
-        $alokasi->honor_id = $honorId;
-        $alokasi->mitra_id = $mitraIdPrimaryKey;
-        $alokasi->target_per_satuan_honor = $target;
-        $alokasi->total_honor = $totalHonor;
-        $alokasi->surat_perjanjian_kerja_id = $suratPerjanjianKerjaId; // Asumsikan variabel ini ada dari logika di atas
-        $alokasi->surat_bast_id = $suratBastId; // Asumsikan variabel ini ada dari logika di atas
-        $alokasi->tanggal_mulai_perjanjian = $tanggalMulaiKegiatan; // Asumsikan variabel ini ada dari logika di atas
-        $alokasi->tanggal_akhir_perjanjian = $tanggalAkhirKegiatan; // Asumsikan variabel ini ada dari logika di atas
-        $alokasi->tanggal_penanda_tanganan_spk_oleh_petugas = $tanggalPengajuanSpk; // Asumsikan variabel ini ada dari logika di atas
-
-        // Dengan cara ini, tidak ada kemungkinan kolom 'id' masuk ke dalam proses.
-        // Eloquent akan menghasilkan kueri INSERT tanpa kolom 'id',
-        // membiarkan database mengisinya dengan AUTO_INCREMENT.
-        // $alokasi->save();
+        // Saat membuat instance, kita simpan $mitraPrimaryKey ke kolom `mitra_id`
+        $alokasi = new self([
+            'honor_id' => $honorId,
+            'mitra_id' => $mitraPrimaryKey, // <-- DISIMPAN SEBAGAI PRIMARY KEY
+            'target_per_satuan_honor' => $target,
+            'total_honor' => $totalHonor,
+            'surat_perjanjian_kerja_id' => $suratPerjanjianKerjaId,
+            'surat_bast_id' => $suratBastId,
+            'tanggal_penanda_tanganan_spk_oleh_petugas' => $tanggalPengajuanSpk,
+            'tanggal_mulai_perjanjian' => $tanggalMulaiKegiatan,
+            'tanggal_akhir_perjanjian' => $tanggalAkhirKegiatan,
+        ]);
 
         return $alokasi;
     }

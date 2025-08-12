@@ -180,20 +180,7 @@
                 'PPL' => 'petugas pendataan lapangan',
                 'PETUGAS ENTRI' => 'petugas pengolahan',
             ];
-            $skipKontrak = null;
-            if ($id_kegiatan_manmit) {
-                $idKegiatanManmitExist = null;
-                foreach ($alokasiMitra as $amKey => $am) {
-                    if ($am?->honor?->kegiatan_manmit_id == $id_kegiatan_manmit && !$idKegiatanManmitExist) {
-                        $idKegiatanManmitExist = true;
-                    }
-                }
-                if ($idKegiatanManmitExist) {
-                    $skipKontrak = false;
-                } else {
-                    $skipKontrak = true;
-                }
-            }
+
             if ($jabatanUnik->count() == 1) {
                 $jabatanSurat = $istilahJabatan[$jabatanUnik->first()] ?? $jabatanUnik->first();
             } elseif ($jabatanUnik->count() > 1) {
@@ -202,9 +189,6 @@
             $tanggalPenandaTanganan = $c::parse($firstAlokasi->tanggal_penanda_tanganan_spk_oleh_petugas);
             $totalHonor = $alokasiMitra->sum('total_honor');
         @endphp
-        @if ($skipKontrak)
-            @continue
-        @endif
         <h1 style="padding-top: 3pt; text-align: center;">PERJANJIAN KERJA</h1>
         <h1 style="padding-top: 5pt; text-align: center;">{{ strtoupper($jabatanSurat) }} PADA BADAN PUSAT
             STATISTIK<br>KABUPATEN MEMPAWAH</h1>

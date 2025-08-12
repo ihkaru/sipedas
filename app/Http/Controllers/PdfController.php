@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AlokasiHonor;
+use App\Models\Mitra;
 use App\Models\Pegawai;
 use App\Models\Pengaturan;
 use App\Models\Penugasan;
@@ -49,43 +50,71 @@ class PdfController extends Controller
             "plhAktifSaatPerjalanan" => $plhAktifSaatPerjalanan,
         ])->toHtml();
     }
-    public function cetakKontrak()
+    public function cetakKontrak(Request $request)
     {
-        $tahun = request('tahun') ?? now()->year;
-        $bulan = request('bulan') ?? now()->month;
-        $id_honor_request = request('id_honor') ?? null;
+        // Ambil parameter dari request
+        $tahun = $request->input('tahun');
+        $bulan = $request->input('bulan');
+        $idKegiatanManmit = $request->input('id_kegiatan_manmit');
+        $id_honor_request = $request->input('id_honor') ?? null;
+
+        // Validasi parameter
+        if (!$tahun || !$bulan || !$idKegiatanManmit) {
+            abort(400, 'Parameter tahun, bulan, dan id_kegiatan_manmit diperlukan.');
+        }
+
         $bulan = str_pad($bulan, 2, "0", STR_PAD_LEFT);
 
-        // --- LOGIKA BARU ---
+        // --- AWAL LOGIKA BARU YANG DIPERBAIKI ---
+
+        // Langkah 1: Identifikasi ID Mitra yang relevan.
+        // Mitra dianggap relevan jika memiliki alokasi honor dari kegiatan ini DAN pada bulan ini.
+        // Patokannya adalah `tanggal_akhir_kegiatan` pada model Honor.
+        $targetMitraIds = AlokasiHonor::whereHas('honor', function ($query) use ($idKegiatanManmit, $tahun, $bulan) {
+            $query->where('kegiatan_manmit_id', $idKegiatanManmit)
+                ->whereYear('tanggal_akhir_kegiatan', $tahun)
+                ->whereMonth('tanggal_akhir_kegiatan', $bulan);
+        })->distinct()->pluck('mitra_id');
+
+        // Jika tidak ada mitra yang cocok, hentikan proses.
+        if ($targetMitraIds->isEmpty()) {
+            return "Tidak ada data kontrak untuk dicetak pada kegiatan dan periode yang dipilih.";
+        }
+
+        // Langkah 2: Ambil SEMUA alokasi honor untuk mitra-mitra tersebut di bulan yang sama.
+        // Di sini kita tidak lagi memfilter berdasarkan idKegiatanManmit, karena kita ingin
+        // menampilkan *semua* pekerjaan mitra di bulan itu dalam satu kontrak.
         $alokasiHonorQuery = AlokasiHonor::with([
             'mitra',
             'honor.kegiatanManmit',
             'kontrak' => function ($q) {
-                // Pastikan hanya memuat kontrak, bukan BAST
                 return $q->where('jenis', Constants::JENIS_NOMOR_SURAT_PERJANJIAN_KERJA);
             }
         ])
-            ->whereHas('kontrak') // Hanya yang sudah punya nomor kontrak
-            ->whereYear('tanggal_mulai_perjanjian', $tahun) // Gunakan kolom tanggal yang relevan
-            ->whereMonth('tanggal_mulai_perjanjian', $bulan);
+            ->whereIn('mitra_id', $targetMitraIds) // Hanya untuk mitra yang relevan
+            ->whereHas('honor', function ($query) use ($tahun, $bulan) {
+                // Filter berdasarkan bulan kontrak yang benar (dari tanggal_akhir_kegiatan)
+                $query->whereYear('tanggal_akhir_kegiatan', $tahun)
+                    ->whereMonth('tanggal_akhir_kegiatan', $bulan);
+            })
+            ->whereHas('kontrak'); // Pastikan sudah punya nomor kontrak
 
         if ($id_honor_request) {
             $alokasiHonorQuery->where('honor_id', $id_honor_request);
         }
 
         $alokasiHonor = $alokasiHonorQuery->get();
-        // --- AKHIR LOGIKA BARU ---
+        // --- AKHIR LOGIKA BARU YANG DIPERBAIKI ---
 
         $tanggalPengajuan = Carbon::parse("$tahun-$bulan-01");
         $ppk = Pegawai::find(Pengaturan::key("NIP_PPK_SATER")->nilai);
-
         return view('kontrak.pdf', [
             'alokasiHonor' => $alokasiHonor,
             'tahun' => $tanggalPengajuan->year,
             'bulan' => $tanggalPengajuan->month,
             'ppk' => $ppk,
             'id_honor' => $id_honor_request,
-            'id_kegiatan_manmit' => request('id_kegiatan_manmit') ?? null
+            'id_kegiatan_manmit' => $idKegiatanManmit // Tetap dikirim untuk referensi jika dibutuhkan
         ]);
     }
     public function cetakBast()
