@@ -250,12 +250,12 @@
         <p style="text-indent: 0pt; text-align: left;"><br /></p>
         <h1 style="text-indent: 0pt; text-align: center;">Pasal 3</h1>
         <p class="pasal-single-ayat">Jangka Waktu Perjanjian terhitung sejak tanggal
-            {{ $c::parse($firstAlokasi->tanggal_mulai_perjanjian)->day }}
-            {{ $c::parse($firstAlokasi->tanggal_mulai_perjanjian)->monthName }}
-            {{ $c::parse($firstAlokasi->tanggal_mulai_perjanjian)->year }} sampai dengan tanggal
-            {{ $c::parse($firstAlokasi->tanggal_akhir_perjanjian)->day }}
-            {{ $c::parse($firstAlokasi->tanggal_akhir_perjanjian)->monthName }}
-            {{ $c::parse($firstAlokasi->tanggal_akhir_perjanjian)->year }}.</p>
+            {{ $c::parse($firstAlokasi->tanggal_mulai_perjanjian)->startOfMonth()->day }}
+            {{ $c::parse($firstAlokasi->tanggal_mulai_perjanjian)->startOfMonth()->monthName }}
+            {{ $c::parse($firstAlokasi->tanggal_mulai_perjanjian)->startOfMonth()->year }} sampai dengan tanggal
+            {{ $c::parse($firstAlokasi->tanggal_akhir_perjanjian)->endOfMonth()->day }}
+            {{ $c::parse($firstAlokasi->tanggal_akhir_perjanjian)->endOfMonth()->monthName }}
+            {{ $c::parse($firstAlokasi->tanggal_akhir_perjanjian)->endOfMonth()->year }}.</p>
 
         <p style="text-indent: 0pt; text-align: left"><br /></p>
         <h1 style="text-indent: 0pt; text-align: center">Pasal 4</h1>
