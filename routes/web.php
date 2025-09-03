@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\ArtisanController;
 use App\Http\Controllers\ExcelExportController;
 use App\Http\Controllers\HonorTemplateController;
@@ -28,6 +29,8 @@ Route::get('/cetak/penugasan/{id}', [PdfController::class, 'cetakPenugasan'])->n
 Route::get('/cetak/penugasan-bersama/{id}', [PdfController::class, 'cetakPenugasanBersama'])->name("cetak.penugasan-bersama");
 Route::get('/cetak/kontrak', [PdfController::class, 'cetakKontrak'])->name("cetak.kontrak");
 Route::get('/cetak/bast', [PdfController::class, 'cetakBast'])->name("cetak.bast");
+Route::get('/approve/{token}', [ApprovalController::class, 'handleApproval'])->name('one-click.approve');
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/download/template-kegiatan-manmit', [ExcelExportController::class, 'downloadKegiatanTemplate'])

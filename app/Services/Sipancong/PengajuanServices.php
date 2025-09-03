@@ -6,6 +6,8 @@ use App\Models\Sipancong\Pengajuan;
 use App\Models\User;
 use App\Models\Setting;
 use App\Services\WhatsappNotifier;
+use App\Models\ActionToken;
+use Illuminate\Support\Str;
 use App\Supports\SipancongConstants as Constants; // Ganti nama alias jika perlu
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
@@ -14,6 +16,29 @@ use Throwable;
 
 class PengajuanServices
 {
+
+    private static function generateApprovalLink(Pengajuan $record, string $action): ?string
+    {
+        try {
+            // Hapus token lama yang belum terpakai untuk aksi dan pengajuan yang sama
+            ActionToken::where('pengajuan_id', $record->id)
+                ->where('action', $action)
+                ->whereNull('used_at')
+                ->delete();
+
+            $token = ActionToken::create([
+                'pengajuan_id' => $record->id,
+                'token' => Str::random(40),
+                'action' => $action,
+                'expires_at' => now()->addDays(3), // Link berlaku 3 hari
+            ]);
+
+            return route('one-click.approve', ['token' => $token->token]);
+        } catch (\Throwable $th) {
+            Log::error('Gagal membuat approval token', ['error' => $th->getMessage()]);
+            return null;
+        }
+    }
     // =========================================================================
     // HELPER UNTUK MODE TESTING WHATSAPP
     // =========================================================================
@@ -101,9 +126,12 @@ class PengajuanServices
         $namaPengaju = $record->pengaju?->panggilan ?? 'Pengaju';
         $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=PPK";
 
-        $message = "*Pengajuan Baru | DOKTER-V* \n \nHalo, $namaPanggilanPpk \nAda pengajuan pembayaran baru dari *$namaPengaju* nih! \n\nUraian: {$record->uraian_pengajuan} \nNominal: " . self::toRupiah($record->nominal_pengajuan) . " \n\nBuka link ini untuk memeriksa dan melakukan *Aksi PPK* ya:\n\n$linkKeAksi\n\nSemangat!!";
+        // BUAT LINK PERSETUJUAN CEPAT
+        $linkCepat = self::generateApprovalLink($record, 'ppk_approve');
+        $pesanLinkCepat = $linkCepat ? "\n\n*PILIHAN CEPAT:*\nKlik link ini untuk *menyetujui tanpa catatan*:\n$linkCepat" : "";
 
-        // MODIFIKASI: Gunakan helper untuk menentukan target WA
+        $message = "*Pengajuan Baru | DOKTER-V* \n \nHalo, $namaPanggilanPpk \nAda pengajuan pembayaran baru dari *$namaPengaju* nih! \n\nUraian: {$record->uraian_pengajuan} \nNominal: " . self::toRupiah($record->nominal_pengajuan) . " \n\nBuka link ini untuk memeriksa dan melakukan *Aksi PPK* ya:\n$linkKeAksi" . $pesanLinkCepat . "\n\nSemangat!!";
+
         $targetWa = self::getWhatsappTargetNumber($userPpk->pegawai?->nomor_wa);
         if ($targetWa) {
             WhatsappNotifier::send($targetWa, $message);
@@ -251,13 +279,25 @@ class PengajuanServices
                 $namaPenerima = $userPenerima?->pegawai?->panggilan ?? 'PPSPM';
                 $originalTargetWa = $userPenerima?->pegawai?->nomor_wa;
                 $link = config("app.url") . "/a/sipancong/pengajuans?activeTab=PPSPM";
-                $message = "*Pengajuan Baru | DOKTER-V* \n\nHalo, $namaPenerima,\nAda pengajuan dari *$pengaju* yang sudah disetujui PPK.\n\nUraian: $uraian\nNominal: $nominal" . $catatanTambahan . "\n\nSilakan lanjutkan proses dengan *Aksi PPSPM*:\n\n$link\n\nSemangat!";
+
+                // BUAT LINK PERSETUJUAN CEPAT UNTUK PPSPM
+                $linkCepat = self::generateApprovalLink($record, 'ppspm_approve');
+                $pesanLinkCepat = $linkCepat ? "\n\n*PILIHAN CEPAT:*\nKlik link ini untuk *menyetujui tanpa catatan*:\n$linkCepat" : "";
+
+                $message = "*Pengajuan Baru | DOKTER-V* \n\nHalo, $namaPenerima,\nAda pengajuan dari *$pengaju* yang sudah disetujui PPK.\n\nUraian: $uraian\nNominal: $nominal" . $catatanTambahan . "\n\nSilakan lanjutkan proses dengan *Aksi PPSPM*:\n$link" . $pesanLinkCepat . "\n\nSemangat!";
             } elseif ($role == 'ppspm') {
                 $userPenerima = User::getBendahara()->first();
                 $namaPenerima = $userPenerima?->pegawai?->panggilan ?? 'Bendahara';
                 $originalTargetWa = $userPenerima?->pegawai?->nomor_wa;
                 $link = config("app.url") . "/a/sipancong/pengajuans?activeTab=Bendahara";
-                $message = "*Pengajuan Baru | DOKTER-V* \n\nHalo, $namaPenerima,\nAda pengajuan dari *$pengaju* yang sudah disetujui PPSPM.\n\nUraian: $uraian\nNominal: $nominal" . $catatanTambahan . "\n\nSilakan lanjutkan proses dengan *Aksi Bendahara*:\n\n$link\n\nSemangat!";
+
+                // --- PERBAIKAN DIMULAI ---
+                // BUAT LINK PERSETUJUAN CEPAT UNTUK BENDAHARA
+                $linkCepat = self::generateApprovalLink($record, 'bendahara_approve');
+                $pesanLinkCepat = $linkCepat ? "\n\n*PILIHAN CEPAT:*\nKlik link ini untuk *menyetujui tanpa catatan*:\n$linkCepat" : "";
+                // --- PERBAIKAN SELESAI ---
+
+                $message = "*Pengajuan Baru | DOKTER-V* \n\nHalo, $namaPenerima,\nAda pengajuan dari *$pengaju* yang sudah disetujui PPSPM.\n\nUraian: $uraian\nNominal: $nominal" . $catatanTambahan . "\n\nSilakan lanjutkan proses dengan *Aksi Bendahara*:\n$link" . $pesanLinkCepat . "\n\nSemangat!";
             } elseif ($role == 'bendahara') {
                 $originalTargetWa = $record->pengaju?->nomor_wa;
                 $pesanFinalCatatan = "";
@@ -272,7 +312,6 @@ class PengajuanServices
             }
         }
 
-        // MODIFIKASI: Gunakan helper untuk menentukan target WA
         $targetWa = self::getWhatsappTargetNumber($originalTargetWa);
         if ($targetWa && $message) {
             WhatsappNotifier::send($targetWa, $message);
