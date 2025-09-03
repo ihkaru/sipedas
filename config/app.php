@@ -123,4 +123,7 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'whatsapp_test_mode' => env('WHATSAPP_TEST_MODE', false),
+    'whatsapp_test_user_id' => env('WHATSAPP_TEST_USER_ID', null),
+
 ];

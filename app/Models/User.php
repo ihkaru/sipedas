@@ -84,4 +84,14 @@ class User extends Authenticatable
         if ($withPegawai) return self::where("email", "ihzakarunia@bps.go.id")->with('pegawai')->get();
         return self::where("email", "ihzakarunia@bps.go.id")->get();
     }
+    public static function getTestUser(): ?User
+    {
+        if (config('app.whatsapp_test_mode')) {
+            $testUserId = config('app.whatsapp_test_user_id');
+            if ($testUserId) {
+                return self::find($testUserId);
+            }
+        }
+        return null;
+    }
 }
