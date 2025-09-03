@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         $this->call([PengaturanSeeder::class]);
+        $this->call(SettingsTableSeeder::class);
         // $this->call([AlokasiHonorSeeder::class]);
         // $this->call([MitraSeeder::class]);
         $this->call([MasterSlsSeeder::class]);

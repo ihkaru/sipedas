@@ -8,17 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('table_settings', function (Blueprint $table) {
+        Schema::create('settings', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('user_id');
-            $table->string('resource');
-            $table->json('styles')->nullable();
+            $table->string('key')->unique(); // Kunci pengaturan, misal: 'ppk_auto_approve_days'
+            $table->text('value')->nullable(); // Nilai pengaturan, misal: '5'
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('table_settings');
+        Schema::dropIfExists('settings');
     }
 };

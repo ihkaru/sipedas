@@ -4,10 +4,13 @@ namespace App\Services\Sipancong;
 
 use App\Models\Sipancong\Pengajuan;
 use App\Models\User;
+use App\Models\Setting;
 use App\Services\WhatsappNotifier;
 use App\Supports\SipancongConstants as Constants; // Ganti nama alias jika perlu
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Log;
 use Throwable;
+
 
 class PengajuanServices
 {
@@ -57,12 +60,31 @@ class PengajuanServices
                 ->orderBy('tanggal_pengajuan', "desc")->first();
 
             $data["nomor_pengajuan"] = ($last_pengajuan) ? $last_pengajuan->nomor_pengajuan + 1 : 1;
-            $data["posisi_dokumen_id"] = Constants::POSISI_PPK; // Langsung ke PPK
+            $data["posisi_dokumen_id"] = Constants::POSISI_PPK;
             $data["nip_pengaju"] = auth()->user()->pegawai->nip;
             $pengajuan = Pengajuan::create($data);
 
-            // Kirim Notifikasi
+            // Kirim notifikasi pertama ke PPK
             self::ajukanNotifier($pengajuan);
+
+            // ==========================================================
+            // LOGIKA BARU: Cek Auto-Terima Instan
+            // ==========================================================
+            $instantApproveSetting = Setting::where('key', 'ppk_instant_auto_approve')->first();
+
+            // Cek jika setting ada dan nilainya '1' (dari toggle)
+            if ($instantApproveSetting && $instantApproveSetting->value) {
+                Log::info("Pengajuan #{$pengajuan->id} diproses dengan auto-approve instan.");
+
+                $dataForApproval = [
+                    'status_pengajuan_ppk_id' => Constants::STATUS_DISETUJUI_TANPA_CATATAN,
+                    'catatan_ppk' => 'Disetujui otomatis oleh sistem (mode auto-terima instan aktif).',
+                ];
+
+                // Panggil fungsi pemeriksaan PPK yang sudah ada secara langsung
+                self::pemeriksaanPpk($dataForApproval, $pengajuan);
+                // Notifikasi dari `pemeriksaanPpk` akan otomatis terkirim ke PPSPM
+            }
 
             Notification::make()->success()->title("Pengajuan berhasil dikirim")->send();
         } catch (Throwable $th) {
