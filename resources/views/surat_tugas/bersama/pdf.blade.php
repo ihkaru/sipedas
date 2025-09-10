@@ -1692,7 +1692,7 @@
                 text-align: left;
                 "
             >
-            {{$cons::JENIS_TRANSPORTASI_OPTIONS[($penugasan->transportasi)]}}
+            {{($penugasan->transportasi)? $cons::JENIS_TRANSPORTASI_OPTIONS[($penugasan->transportasi)] : ""}}
             </p>
             </td>
         </tr>
