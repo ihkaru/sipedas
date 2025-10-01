@@ -174,7 +174,7 @@
 
             $mitra = $firstAlokasi->mitra;
             $bast = $firstAlokasi->bast; // Ambil model NomorSurat BAST
-            $tanggalSurat = $c::parse($bast->tanggal_nomor);
+            $tanggalSurat = $c::parse($firstAlokasi->honor->tanggal_akhir_kegiatan);
 
             $istilahJabatan = [
                 'PML' => 'petugas pemeriksa lapangan',
