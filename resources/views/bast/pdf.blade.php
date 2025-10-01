@@ -8,7 +8,7 @@
         $cons = App\Supports\Constants::class;
         $number = \Illuminate\Support\Number::class;
         $bil = \Terbilang::class;
-        $tanggalMerah = App\Supports\TanggalMerah;
+        $tanggalMerah = App\Supports\TanggalMerah::class;
 
         // --- INILAH PERBAIKAN UTAMA ---
         // Kelompokkan alokasi berdasarkan `surat_bast_id`.
