@@ -8,6 +8,7 @@
         $cons = App\Supports\Constants::class;
         $number = \Illuminate\Support\Number::class;
         $bil = \Terbilang::class;
+        $tanggalMerah = App\Supports\TanggalMerah;
 
         // --- INILAH PERBAIKAN UTAMA ---
         // Kelompokkan alokasi berdasarkan `surat_bast_id`.
@@ -174,7 +175,8 @@
 
             $mitra = $firstAlokasi->mitra;
             $bast = $firstAlokasi->bast; // Ambil model NomorSurat BAST
-            $tanggalSurat = $c::parse($firstAlokasi->honor->tanggal_akhir_kegiatan);
+            $tanggalSurat = $tanggalMerah::getNextWorkDay($firstAlokasi->honor->tanggal_akhir_kegiatan, -1);
+            // $tanggalSurat = $c::parse($firstAlokasi->honor->tanggal_akhir_kegiatan);
 
             $istilahJabatan = [
                 'PML' => 'petugas pemeriksa lapangan',
