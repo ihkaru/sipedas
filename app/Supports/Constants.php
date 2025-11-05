@@ -2,8 +2,7 @@
 
 namespace App\Supports;
 
-class Constants
-{
+class Constants {
     const NON_SPPD = "NON_SPPD";
     const PERJALAN_DINAS_DALAM_KOTA = "PERJALAN_DINAS_DALAM_KOTA";
     const PERJALANAN_DINAS_LUAR_KOTA = "PERJALANAN_DINAS_LUAR_KOTA";
@@ -306,20 +305,16 @@ class Constants
         'tanggal_akhir_kegiatan'
     ];
 
-    public static function getJenisTransportasiOptions()
-    {
+    public static function getJenisTransportasiOptions() {
         return self::JENIS_TRANSPORTASI_OPTIONS;
     }
-    public static function getJenisSuratTugasOptions()
-    {
+    public static function getJenisSuratTugasOptions() {
         return self::JENIS_SURAT_TUGAS_OPTIONS;
     }
-    public static function flatJenisSuratTugasOptions()
-    {
+    public static function flatJenisSuratTugasOptions() {
         return collect(self::getJenisSuratTugasOptions())->keys()->toArray();
     }
-    public static function flatJenisTransportasiOptions()
-    {
+    public static function flatJenisTransportasiOptions() {
         return collect(self::getJenisTransportasiOptions())->keys()->toArray();
     }
     /**
@@ -328,8 +323,7 @@ class Constants
      * @param string $input String yang mungkin berisi teks dalam tanda kurung.
      * @return string Teks yang diekstrak, atau string kosong jika tidak ditemukan.
      */
-    public static function getTextInParentheses(string $input): string
-    {
+    public static function getTextInParentheses(string $input): string {
         // Pola regex ini aman dan efisien untuk kasus ini.
         // Tidak rentan terhadap ReDoS karena kesederhanaannya dan penggunaan non-greedy quantifier.
         $pattern = '/\((.*?)\)/';
