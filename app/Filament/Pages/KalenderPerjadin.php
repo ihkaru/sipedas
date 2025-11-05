@@ -25,7 +25,7 @@ class KalenderPerjadin extends Page implements HasForms
     public ?string $monthName = null;
 
     public ?string $selectedPegawai = null;
-    public ?string $selectedKegiatan = null;
+    public ?array $selectedKegiatans = [];
 
     public array $pegawaiOptions = [];
     public array $kegiatanOptions = [];
@@ -50,9 +50,10 @@ class KalenderPerjadin extends Page implements HasForms
                 ->options($this->pegawaiOptions)
                 ->live()
                 ->searchable(),
-            Select::make('selectedKegiatan')
+            Select::make('selectedKegiatans')
                 ->label('Pilih Kegiatan')
                 ->options($this->kegiatanOptions)
+                ->multiple()
                 ->live()
                 ->searchable(),
         ];
@@ -63,7 +64,7 @@ class KalenderPerjadin extends Page implements HasForms
         $this->fetchCalendarData();
     }
 
-    public function updatedSelectedKegiatan(): void
+    public function updatedSelectedKegiatans(): void
     {
         $this->fetchCalendarData();
     }
@@ -94,8 +95,8 @@ class KalenderPerjadin extends Page implements HasForms
             ->when($this->selectedPegawai, function ($query) {
                 return $query->where('nip', $this->selectedPegawai);
             })
-            ->when($this->selectedKegiatan, function ($query) {
-                return $query->where('kegiatan_id', $this->selectedKegiatan);
+            ->when($this->selectedKegiatans, function ($query) {
+                return $query->whereIn('kegiatan_id', $this->selectedKegiatans);
             })
             ->where(function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('tgl_mulai_tugas', [$startDate, $endDate])
@@ -130,10 +131,10 @@ class KalenderPerjadin extends Page implements HasForms
                     if (!$penugasan->pegawai) {
                         continue;
                     }
-                    $calendarData[$date->day][] = [
-                        'pegawai' => $penugasan->pegawai->nama,
-                        'kegiatan' => $penugasan->kegiatan->nama,
-                    ];
+                    // Add only the employee name, ensuring no duplicates per day
+                    if (!in_array($penugasan->pegawai->nama, $calendarData[$date->day])) {
+                        $calendarData[$date->day][] = $penugasan->pegawai->nama;
+                    }
                 }
             }
         }

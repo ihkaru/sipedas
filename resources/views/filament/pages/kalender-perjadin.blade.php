@@ -11,20 +11,24 @@
         <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200">{{ $monthName }} {{ $year }}</h2>
         <div class="flex items-center">
             <span class="relative z-0 inline-flex shadow-sm rounded-md">
-                <button wire:click="previousMonth"
-                    type="button"
+                <button wire:click="previousMonth" type="button"
                     class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-primary-600 bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 focus:z-10 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500">
                     <span class="sr-only">Previous month</span>
-                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                        aria-hidden="true">
+                        <path fill-rule="evenodd"
+                            d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                            clip-rule="evenodd" />
                     </svg>
                 </button>
-                <button wire:click="nextMonth"
-                    type="button"
+                <button wire:click="nextMonth" type="button"
                     class="-ml-px relative inline-flex items-center px-2 py-2 rounded-r-md border border-primary-600 bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 focus:z-10 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500">
                     <span class="sr-only">Next month</span>
-                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                        aria-hidden="true">
+                        <path fill-rule="evenodd"
+                            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                            clip-rule="evenodd" />
                     </svg>
                 </button>
             </span>
@@ -71,11 +75,12 @@
                     </div>
                     <ul class="mt-2 text-xs space-y-1 overflow-y-auto">
                         @if (isset($calendarData[$day]))
-                            @foreach ($calendarData[$day] as $entry)
+                            @foreach ($calendarData[$day] as $nama)
                                 <li class="mb-1">
                                     <span
-                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300">
-                                        {{ $entry['pegawai'] }}: {{ $entry['kegiatan'] }}
+                                        class="inline-block w-full truncate px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300"
+                                        title="{{ $nama }}">
+                                        {{ $nama }}
                                     </span>
                                 </li>
                             @endforeach
