@@ -84,7 +84,7 @@ class KalenderPerjadin extends Page {
             for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
                 if ($date->year == $this->year && $date->month == $this->month) {
                     if (!$penugasan->pegawai) {
-                        dd($penugasan);
+                        continue;
                     }
                     $calendarData[$date->day][] = $penugasan->pegawai?->nama;
                 }
