@@ -2,56 +2,100 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\Kegiatan;
 use App\Models\Pegawai;
 use App\Models\Penugasan;
+use App\Supports\Constants;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
 use Illuminate\Support\Carbon;
 
-class KalenderPerjadin extends Page {
-    protected static ?string $navigationIcon = 'heroicon-o-calendar';
+class KalenderPerjadin extends Page implements HasForms
+{
+    use InteractsWithForms;
 
+    protected static ?string $navigationIcon = 'heroicon-o-calendar';
     protected static string $view = 'filament.pages.kalender-perjadin';
 
-    public $year;
-    public $month;
-    public $calendarData;
-    public $monthName;
-    public $selectedPegawai = null;
-    public $pegawaiOptions = [];
+    public ?int $year = null;
+    public ?int $month = null;
+    public array $calendarData = [];
+    public ?string $monthName = null;
 
-    public function mount() {
+    public ?string $selectedPegawai = null;
+    public ?string $selectedKegiatan = null;
+
+    public array $pegawaiOptions = [];
+    public array $kegiatanOptions = [];
+
+    public function mount(): void
+    {
         $this->year = now()->year;
         $this->month = now()->month;
+
         $this->pegawaiOptions = Pegawai::pluck('nama', 'nip')->toArray();
+        $this->kegiatanOptions = Kegiatan::orderBy('updated_at', 'desc')->pluck('nama', 'id')->toArray();
+
+        $this->form->fill();
         $this->fetchCalendarData();
     }
 
-    public function updatedSelectedPegawai() {
+    protected function getFormSchema(): array
+    {
+        return [
+            Select::make('selectedPegawai')
+                ->label('Pilih Pegawai')
+                ->options($this->pegawaiOptions)
+                ->live()
+                ->searchable(),
+            Select::make('selectedKegiatan')
+                ->label('Pilih Kegiatan')
+                ->options($this->kegiatanOptions)
+                ->live()
+                ->searchable(),
+        ];
+    }
+
+    public function updatedSelectedPegawai(): void
+    {
         $this->fetchCalendarData();
     }
 
-    public function nextMonth() {
+    public function updatedSelectedKegiatan(): void
+    {
+        $this->fetchCalendarData();
+    }
+
+    public function nextMonth(): void
+    {
         $date = Carbon::create($this->year, $this->month, 1)->addMonth();
         $this->year = $date->year;
         $this->month = $date->month;
         $this->fetchCalendarData();
     }
 
-    public function previousMonth() {
+    public function previousMonth(): void
+    {
         $date = Carbon::create($this->year, $this->month, 1)->subMonth();
         $this->year = $date->year;
         $this->month = $date->month;
         $this->fetchCalendarData();
     }
 
-    public function fetchCalendarData() {
+    public function fetchCalendarData(): void
+    {
         $this->monthName = Carbon::create($this->year, $this->month, 1)->format('F');
         $startDate = Carbon::create($this->year, $this->month, 1)->startOfMonth();
         $endDate = Carbon::create($this->year, $this->month, 1)->endOfMonth();
 
-        $penugasans = Penugasan::with('pegawai')
+        $penugasans = Penugasan::with(['pegawai', 'kegiatan'])
             ->when($this->selectedPegawai, function ($query) {
                 return $query->where('nip', $this->selectedPegawai);
+            })
+            ->when($this->selectedKegiatan, function ($query) {
+                return $query->where('kegiatan_id', $this->selectedKegiatan);
             })
             ->where(function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('tgl_mulai_tugas', [$startDate, $endDate])
@@ -61,13 +105,13 @@ class KalenderPerjadin extends Page {
                             ->where('tgl_akhir_tugas', '>=', $endDate);
                     });
             })
-            ->whereIn('jenis_surat_tugas', ['PERJALAN_DINAS_DALAM_KOTA', 'PERJALANAN_DINAS_LUAR_KOTA'])
+            ->whereIn('jenis_surat_tugas', [Constants::PERJALAN_DINAS_DALAM_KOTA, Constants::PERJALANAN_DINAS_LUAR_KOTA])
             ->whereHas('riwayatPengajuan', function ($query) {
                 $query->whereIn('status', [
-                    'STATUS_PENGAJUAN_DICETAK',
-                    'STATUS_PENGAJUAN_DICAIRKAN',
-                    'STATUS_PENGAJUAN_DISETUJUI',
-                    'STATUS_PENGAJUAN_DIKUMPULKAN'
+                    Constants::STATUS_PENGAJUAN_DISETUJUI,
+                    Constants::STATUS_PENGAJUAN_DICETAK,
+                    Constants::STATUS_PENGAJUAN_DIKUMPULKAN,
+                    Constants::STATUS_PENGAJUAN_DICAIRKAN,
                 ]);
             })
             ->get();
@@ -86,7 +130,10 @@ class KalenderPerjadin extends Page {
                     if (!$penugasan->pegawai) {
                         continue;
                     }
-                    $calendarData[$date->day][] = $penugasan->pegawai?->nama;
+                    $calendarData[$date->day][] = [
+                        'pegawai' => $penugasan->pegawai->nama,
+                        'kegiatan' => $penugasan->kegiatan->nama,
+                    ];
                 }
             }
         }
@@ -94,3 +141,4 @@ class KalenderPerjadin extends Page {
         $this->calendarData = $calendarData;
     }
 }
+

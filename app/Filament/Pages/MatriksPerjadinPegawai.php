@@ -22,33 +22,53 @@ class MatriksPerjadinPegawai extends Page implements HasForms {
 
     public ?array $selectedKegiatans = [];
         public ?string $selectedPegawai = null;
-        public ?array $selectedStatuses = [];
-    
-        public array $kegiatanOptions = [];
-        public array $pegawaiOptions = [];
-        public array $statusOptions = [];
-    
-        public array $tableData = [];
-        public array $dateColumns = [];
-        public array $summaryTableData = [];
-        public array $kegiatanColumns = [];
-    
-        public function mount(): void
-        {
-            $this->kegiatanOptions = Kegiatan::orderBy('updated_at', 'desc')->pluck('nama', 'id')->toArray();
-            $this->pegawaiOptions = Pegawai::pluck('nama', 'nip')->toArray();
-            $this->statusOptions = Constants::STATUS_PENGAJUAN_OPTIONS;
-            $this->selectedStatuses = [
-                Constants::STATUS_PENGAJUAN_DISETUJUI,
-                Constants::STATUS_PENGAJUAN_DICETAK,
-                Constants::STATUS_PENGAJUAN_DIKUMPULKAN,
-                Constants::STATUS_PENGAJUAN_DICAIRKAN,
-            ];
-            $this->form->fill([
-                'selectedStatuses' => $this->selectedStatuses,
-            ]);
-        }
-
+            public ?array $selectedStatuses = [];
+            public string $activeMatrix = 'realisasi';
+        
+            public array $kegiatanOptions = [];
+            public array $pegawaiOptions = [];
+            public array $statusOptions = [];
+        
+            public array $tableData = [];
+            public array $dateColumns = [];
+                public array $summaryTableData = [];
+                public array $kegiatanColumns = [];
+                public array $tableTotals = [];
+                public array $summaryTotals = [];
+            
+                public function mount(): void
+                {
+                    $this->kegiatanOptions = Kegiatan::orderBy('updated_at', 'desc')->pluck('nama', 'id')->toArray();                $this->pegawaiOptions = Pegawai::pluck('nama', 'nip')->toArray();
+                $this->statusOptions = Constants::STATUS_PENGAJUAN_OPTIONS;
+                $this->setFilterToRealisasi(); // Set default to Realisasi
+            }
+        
+            public function setFilterToPengajuan(): void
+            {
+                $this->activeMatrix = 'pengajuan';
+                $this->selectedStatuses = [
+                    Constants::STATUS_PENGAJUAN_DISETUJUI,
+                    Constants::STATUS_PENGAJUAN_DICETAK,
+                    Constants::STATUS_PENGAJUAN_DIKUMPULKAN,
+                    Constants::STATUS_PENGAJUAN_DICAIRKAN,
+                    Constants::STATUS_PENGAJUAN_DIKIRIM,
+                ];
+                $this->form->fill(['selectedStatuses' => $this->selectedStatuses]);
+                $this->fetchTableData();
+            }
+        
+            public function setFilterToRealisasi(): void
+            {
+                $this->activeMatrix = 'realisasi';
+                $this->selectedStatuses = [
+                    Constants::STATUS_PENGAJUAN_DISETUJUI,
+                    Constants::STATUS_PENGAJUAN_DICETAK,
+                    Constants::STATUS_PENGAJUAN_DIKUMPULKAN,
+                    Constants::STATUS_PENGAJUAN_DICAIRKAN,
+                ];
+                $this->form->fill(['selectedStatuses' => $this->selectedStatuses]);
+                $this->fetchTableData();
+            }
 
 
     protected function getFormSchema(): array {
@@ -163,15 +183,23 @@ class MatriksPerjadinPegawai extends Page implements HasForms {
 
 
 
-                $this->summaryTableData = [];
+                            $this->summaryTableData = [];
 
 
 
-                $this->kegiatanColumns = [];
+                            $this->kegiatanColumns = [];
 
 
 
-                return;
+                            $this->tableTotals = [];
+
+
+
+                            $this->summaryTotals = [];
+
+
+
+                            return;
 
 
 
@@ -328,8 +356,28 @@ class MatriksPerjadinPegawai extends Page implements HasForms {
             }
         }
 
-        $this->dateColumns = $allDates->unique()->sort()->values()->toArray();
-        $this->tableData = array_values($tableData);
-        $this->summaryTableData = array_values($summaryData);
-    }
-}
+                    $this->dateColumns = $allDates->unique()->sort()->values()->toArray();
+                    $this->tableData = array_values($tableData);
+                    $this->summaryTableData = array_values($summaryData);
+        
+                    // Calculate totals for the first table
+                    $this->tableTotals['total_perjadin'] = array_sum(array_column($this->tableData, 'total_perjadin'));
+                    $this->tableTotals['dates'] = [];
+                    foreach ($this->dateColumns as $date) {
+                        $this->tableTotals['dates'][$date] = 0;
+                        foreach ($this->tableData as $rowData) {
+                            if (!empty($rowData['dates'][$date])) {
+                                $this->tableTotals['dates'][$date]++;
+                            }
+                        }
+                    }
+        
+                    // Calculate totals for the summary table
+                    $this->summaryTotals['total_perjadin'] = array_sum(array_column($this->summaryTableData, 'total_perjadin'));
+                    $this->summaryTotals['kegiatan_counts'] = array_fill_keys(array_keys($this->kegiatanColumns), 0);
+                    foreach ($this->summaryTableData as $summaryRow) {
+                        foreach ($summaryRow['kegiatan_counts'] as $kegiatanId => $count) {
+                            $this->summaryTotals['kegiatan_counts'][$kegiatanId] += $count;
+                        }
+                    }
+                }}
