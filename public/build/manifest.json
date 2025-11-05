@@ -5,6 +5,11 @@
     "src": "resources/css/app.css",
     "isEntry": true
   },
+  "resources/css/filament/admin/theme.css": {
+    "file": "assets/theme-6CBGq5oj.css",
+    "src": "resources/css/filament/admin/theme.css",
+    "isEntry": true
+  },
   "resources/js/app.js": {
     "file": "assets/app-DkDdL2UM.js",
     "name": "app",
