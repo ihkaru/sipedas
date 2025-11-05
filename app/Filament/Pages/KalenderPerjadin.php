@@ -7,8 +7,7 @@ use App\Models\Penugasan;
 use Filament\Pages\Page;
 use Illuminate\Support\Carbon;
 
-class KalenderPerjadin extends Page
-{
+class KalenderPerjadin extends Page {
     protected static ?string $navigationIcon = 'heroicon-o-calendar';
 
     protected static string $view = 'filament.pages.kalender-perjadin';
@@ -20,37 +19,32 @@ class KalenderPerjadin extends Page
     public $selectedPegawai = null;
     public $pegawaiOptions = [];
 
-    public function mount()
-    {
+    public function mount() {
         $this->year = now()->year;
         $this->month = now()->month;
         $this->pegawaiOptions = Pegawai::pluck('nama', 'nip')->toArray();
         $this->fetchCalendarData();
     }
 
-    public function updatedSelectedPegawai()
-    {
+    public function updatedSelectedPegawai() {
         $this->fetchCalendarData();
     }
 
-    public function nextMonth()
-    {
+    public function nextMonth() {
         $date = Carbon::create($this->year, $this->month, 1)->addMonth();
         $this->year = $date->year;
         $this->month = $date->month;
         $this->fetchCalendarData();
     }
 
-    public function previousMonth()
-    {
+    public function previousMonth() {
         $date = Carbon::create($this->year, $this->month, 1)->subMonth();
         $this->year = $date->year;
         $this->month = $date->month;
         $this->fetchCalendarData();
     }
 
-    public function fetchCalendarData()
-    {
+    public function fetchCalendarData() {
         $this->monthName = Carbon::create($this->year, $this->month, 1)->format('F');
         $startDate = Carbon::create($this->year, $this->month, 1)->startOfMonth();
         $endDate = Carbon::create($this->year, $this->month, 1)->endOfMonth();
@@ -89,7 +83,10 @@ class KalenderPerjadin extends Page
 
             for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
                 if ($date->year == $this->year && $date->month == $this->month) {
-                    $calendarData[$date->day][] = $penugasan->pegawai->nama;
+                    if (!$penugasan->pegawai) {
+                        dd($penugasan);
+                    }
+                    $calendarData[$date->day][] = $penugasan->pegawai?->nama;
                 }
             }
         }
