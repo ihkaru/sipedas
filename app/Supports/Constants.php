@@ -90,7 +90,8 @@ class Constants {
         'II' => "Pengatur",
         'III' => "Penata",
         'IV' => "Pembina",
-        'V' => "Operator"
+        'V' => "Operator",
+        '-' => "-",
     ];
 
     const GOLONGAN_A = "a";
@@ -103,6 +104,7 @@ class Constants {
         'b' => 'Muda Tk I',
         'c' => '',
         'd' => 'Tk I',
+        'V' => 'Operator'
     ];
     const GOLONGAN_IV_OPTIONS = [
         'a' => '',
