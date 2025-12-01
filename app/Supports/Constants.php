@@ -312,6 +312,7 @@ class Constants {
     public static function getJenisSuratTugasOptions() {
         return self::JENIS_SURAT_TUGAS_OPTIONS;
     }
+
     public static function flatJenisSuratTugasOptions() {
         return collect(self::getJenisSuratTugasOptions())->keys()->toArray();
     }
