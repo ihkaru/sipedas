@@ -34,7 +34,7 @@ class Pegawai extends Model {
             get: function (mixed $value, array $attributes) {
                 // Jika Pegawai Golongan V maka langsung tampilkan nama jabatan saja.
                 if ($attributes['golongan'] == 'V') {
-                    return Constants::PANGKAT_OPTIONS[$attributes['jabatan']];
+                    return Constants::PANGKAT_OPTIONS[$attributes['golongan']];
                 }
                 $golongan = $attributes['pangkat'] == Constants::PANGKAT_IV ? Constants::GOLONGAN_IV_OPTIONS[$attributes['golongan']] : Constants::GOLONGAN_I_III_OPTIONS[$attributes['golongan']];
                 $res = Constants::PANGKAT_OPTIONS[$attributes['pangkat']] . ' ' . ($golongan ? '' . $golongan . ' ' : '') . "(" . strtoupper($attributes['pangkat']) . "/" . $attributes['golongan'] . ")";
