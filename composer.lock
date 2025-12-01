@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a5ec4da983d13c03b79054d466c6712e",
+    "content-hash": "85726aa16c0d6747904246f08a5ce308",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -2639,63 +2639,6 @@
                 "source": "https://github.com/guangrei/phptanggalmerah/tree/v2.1.0"
             },
             "time": "2023-07-27T20:14:03+00:00"
-        },
-        {
-            "name": "guava/filament-icon-picker",
-            "version": "2.3.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/lukas-frey/filament-icon-picker.git",
-                "reference": "123543b4d62653180fed47c11fce7caa0f00a5e9"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/lukas-frey/filament-icon-picker/zipball/123543b4d62653180fed47c11fce7caa0f00a5e9",
-                "reference": "123543b4d62653180fed47c11fce7caa0f00a5e9",
-                "shasum": ""
-            },
-            "require": {
-                "filament/filament": "^3.0@stable",
-                "php": "^8.0"
-            },
-            "require-dev": {
-                "orchestra/testbench": "^7.0|^8.0|^9.0"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Guava\\FilamentIconPicker\\FilamentIconPickerServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Guava\\FilamentIconPicker\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Lukas Frey",
-                    "email": "mail@lukasfrey.cz"
-                }
-            ],
-            "description": "A filament plugin that adds an icon picker field.",
-            "support": {
-                "issues": "https://github.com/lukas-frey/filament-icon-picker/issues",
-                "source": "https://github.com/lukas-frey/filament-icon-picker/tree/2.3.0"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/LukasFreyCZ",
-                    "type": "github"
-                }
-            ],
-            "time": "2025-02-25T19:08:20+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -6905,77 +6848,6 @@
                 }
             ],
             "time": "2025-07-11T04:10:06+00:00"
-        },
-        {
-            "name": "postare/blade-mdi",
-            "version": "v1.1.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/postare/blade-mdi.git",
-                "reference": "4c6c8d0538476d47a47511ae189acd3c8e5969c3"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/postare/blade-mdi/zipball/4c6c8d0538476d47a47511ae189acd3c8e5969c3",
-                "reference": "4c6c8d0538476d47a47511ae189acd3c8e5969c3",
-                "shasum": ""
-            },
-            "require": {
-                "blade-ui-kit/blade-icons": "^1.5",
-                "illuminate/support": "^8.0|^9.0|^10.0|^11.0|^12.0",
-                "php": "^8.1"
-            },
-            "require-dev": {
-                "orchestra/testbench": "^7.0|^8.0",
-                "phpunit/phpunit": "^9.0"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Postare\\BladeMdi\\BladeMdiServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Postare\\BladeMdi\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "inerba",
-                    "homepage": "https://github.com/inerba",
-                    "role": "Developer"
-                }
-            ],
-            "description": "Material Design Icons for Laravel Blade views.",
-            "homepage": "https://github.com/renoki-co/blade-mdi",
-            "keywords": [
-                "blade",
-                "design",
-                "icons",
-                "kit",
-                "laravel",
-                "material",
-                "mdi",
-                "php",
-                "ui"
-            ],
-            "support": {
-                "source": "https://github.com/postare/blade-mdi/tree/v1.1.2"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/renoki-co",
-                    "type": "github"
-                }
-            ],
-            "time": "2025-04-02T08:15:46+00:00"
         },
         {
             "name": "psr/cache",

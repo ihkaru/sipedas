@@ -83,13 +83,14 @@ class Constants {
 
     const PANGKAT_I = "I";
     const PANGKAT_II = "II";
-    const PANGKAT_III = "II";
+    const PANGKAT_III = "III";
     const PANGKAT_IV = "IV";
     const PANGKAT_OPTIONS = [
         'I' => "Juru",
         'II' => "Pengatur",
         'III' => "Penata",
         'IV' => "Pembina",
+        'V' => "Operator"
     ];
 
     const GOLONGAN_A = "a";
