@@ -84,8 +84,8 @@ class KegiatanManmitResource extends Resource
                     ->schema([
                         Forms\Components\Hidden::make('period_key'),
                         Forms\Components\TextInput::make('period_name')
-                            ->label('Periode')
-                            ->disabled(),
+                            ->label('Nama Periode')
+                            ->required(),
                         Forms\Components\DatePicker::make('tgl_mulai')
                             ->date()
                             ->label('Tanggal Mulai')
