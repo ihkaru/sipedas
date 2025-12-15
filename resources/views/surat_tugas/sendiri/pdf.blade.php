@@ -2129,7 +2129,7 @@
         @if($peng::key('ID_PLH_DEFAULT')->nilai != $plhAktifSaatPerjalanan->nip)
             @if($peng::key('ID_PLH_DEFAULT')->nilai != $plhAktifSaatPerjalanan->nip)
                 @if($plhAktifSaatPerjalanan->jabatan == $cons::JABATAN_KASUBBAG)
-                    An. Kepala Badan Pusat Statistik <br /> {{ucwords(strtolower($namaSatker))}}
+                    Badan Pusat Statistik <br /> {{ucwords(strtolower($namaSatker))}}
                     <br>
                     {{$cons::JABATAN_KASUBBAG}}
                 @else
