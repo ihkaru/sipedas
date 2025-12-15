@@ -256,7 +256,7 @@
       }
     </style>
   </head>
-  <body>
+  <body contenteditable="true">
     <p style=" text-indent: 0pt; text-align: center">
       <span
         ><img
