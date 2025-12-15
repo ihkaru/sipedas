@@ -16,5 +16,6 @@ jobs:
           server: ${{ secrets.FTP_SERVER_DVLP }}
           username: ${{ secrets.FTP_USERNAME_ADMIN }}
           password: ${{ secrets.FTP_PASSWORD_ADMIN }}
-          protocol: sftp
-          port: 22
+          protocol: ftp
+          port: 21
+
