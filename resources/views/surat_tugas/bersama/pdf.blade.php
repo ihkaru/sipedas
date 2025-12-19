@@ -46,7 +46,7 @@
 
         h1 {
             color: black;
-            font-family: Calibri, sans-serif;
+            font-family: Arial, sans-serif;
             font-style: italic;
             font-weight: bold;
             text-decoration: none;
@@ -334,11 +334,11 @@
         BADAN PUSAT STATISTIK <br />{{ $namaSatker }}
     </h1>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
-    <p class="s1" style="text-indent: 0pt; text-align: center">
+    <p class="s1" style="text-indent: 0pt; text-align: center font-weight: normal">
         SURAT TUGAS
     </p>
     <p style="text-indent: 0pt; text-align: center">
-        Nomor: {{ $penugasans->first()->suratTugas->nomor_surat_tugas }}
+        NOMOR: {{ $penugasans->first()->suratTugas->nomor_surat_tugas }}
     </p>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <table style="border-collapse: collapse; margin-left: 35.324pt" cellspacing="0">
@@ -403,6 +403,102 @@
                 </table>
             </td>
         </tr>
+        <tr style="vertical-align: top;">
+            <td style="width: 68pt;">
+                <p class="s2"
+                    style="
+                  margin: 0; 
+                  padding-top: 0; 
+                  padding-left: 2pt; 
+                  text-align: left;
+              ">
+                    Mengingat
+                </p>
+            </td>
+
+            <td style="width: 17pt;">
+                <p class="s2"
+                    style="
+                    margin: 0; 
+                    padding-top: 0; 
+                    padding-right: 5pt; 
+                    text-align: right;
+                ">
+                    :
+                </p>
+            </td>
+
+            <td style="width: 365pt; padding: 0;">
+
+                <table style="width: 100%; border-collapse: collapse; margin: 0; padding: 0;">
+
+                    <tr style="vertical-align: top;">
+                        <td style="width: 20pt; padding: 0; padding-bottom: 3pt;">
+                            <p class="s2" style="margin: 0;">1.</p>
+                        </td>
+                        <td style="padding: 0; padding-bottom: 3pt;">
+                            <p class="s2" style="margin: 0; text-align: justify; line-height: 1.3;">
+                                Undang-Undang No.16 Tahun 1997 tentang Statistik;
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr style="vertical-align: top;">
+                        <td style="width: 20pt; padding: 0; padding-bottom: 3pt;">
+                            <p class="s2" style="margin: 0;">2.</p>
+                        </td>
+                        <td style="padding: 0; padding-bottom: 3pt;">
+                            <p class="s2" style="margin: 0; text-align: justify; line-height: 1.3;">
+                                Peraturan Pemerintah Nomor 51 Tahun 1999 tentang Penyelenggaraan Statistik;
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr style="vertical-align: top;">
+                        <td style="width: 20pt; padding: 0; padding-bottom: 3pt;">
+                            <p class="s2" style="margin: 0;">3.</p>
+                        </td>
+                        <td style="padding: 0; padding-bottom: 3pt;">
+                            <p class="s2" style="margin: 0; text-align: justify; line-height: 1.3;">
+                                Peraturan Pemerintah Nomor 45 Tahun 2013 tentang Tata Cara Pelaksanaan Anggaran
+                                Pendapatan dan Belanja Negara sebagaimana telah diubah dengan Peraturan Pemerintah 50
+                                Tahun 2018;
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr style="vertical-align: top;">
+                        <td style="width: 20pt; padding: 0; padding-bottom: 3pt;">
+                            <p class="s2" style="margin: 0;">4.</p>
+                        </td>
+                        <td style="padding: 0; padding-bottom: 3pt;">
+                            <p class="s2" style="margin: 0; text-align: justify; line-height: 1.3;">
+                                Peraturan Presiden Republik Indonesia Nomor 86 Tahun 2007 tentang Badan Pusat Statistik
+                                (Lembaran Negara Republik Indonesia Tahun 2007 Nomor 139), sebagaimana telah diubah
+                                dengan Peraturan Presiden Nomor 1 Tahun 2025 (Lembaran Negara Republik Indonesia Tahun
+                                2025 Nomor 4);
+                            </p>
+                        </td>
+                    </tr>
+
+                    <tr style="vertical-align: top;">
+                        <td style="width: 20pt; padding: 0; padding-bottom: 0;">
+                            <p class="s2" style="margin: 0;">5.</p>
+                        </td>
+                        <td style="padding: 0; padding-bottom: 0;">
+                            <p class="s2" style="margin: 0; text-align: justify; line-height: 1.3;">
+                                Peraturan BPS Nomor 5 Tahun 2023 tentang Organisasi dan Tata Kerja BPS Provinsi dan
+                                BPS Kabupaten/Kota (Berita Negara Republik Indonesia Tahun 2023 Nomor 429), sebagaimana
+                                telah diubah dengan Peraturan BPS Nomor 3 Tahun 2025 tentang Perubahan atas Peraturan
+                                BPS Nomor 5 Tahun 2023 tentang Organisasi dan Tata Kerja Badan Pusat Statistik Provinsi
+                                dan BPS Kabupaten/Kota (Berita Negara Republik Indonesia Tahun 2025 Nomor 683);
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
     </table>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <h2
@@ -411,8 +507,9 @@
         padding-left: 0;
         text-indent: 0pt;
         text-align: center;
+        font-weight: normal;
       ">
-        Memberi Perintah:
+        Memberi Tugas:
     </h2>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <table style="border-collapse: collapse; margin-left: 29.924pt" cellspacing="0">

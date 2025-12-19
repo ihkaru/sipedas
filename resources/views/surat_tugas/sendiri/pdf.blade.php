@@ -30,7 +30,7 @@
 
         h1 {
             color: black;
-            font-family: Calibri, sans-serif;
+            font-family: Arial, sans-serif;
             font-style: italic;
             font-weight: bold;
             text-decoration: none;
@@ -41,8 +41,6 @@
             color: black;
             font-family: "Bookman Old Style", serif;
             font-style: normal;
-            font-weight: bold;
-            text-decoration: underline;
             font-size: 10pt;
         }
 
@@ -318,11 +316,11 @@
         BADAN PUSAT STATISTIK <br />{{ $namaSatker }}
     </h1>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
-    <p class="s1" style="text-indent: 0pt; text-align: center">
+    <p class="s1" style="text-indent: 0pt; text-align: center; font-weight: normal">
         SURAT TUGAS
     </p>
     <p style="text-indent: 0pt; text-align: center">
-        Nomor: {{ $penugasan->suratTugas->nomor_surat_tugas }}
+        NOMOR: {{ $penugasan->suratTugas->nomor_surat_tugas }}
     </p>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <table style="border-collapse: collapse; margin-left: 35.324pt" cellspacing="0">
@@ -391,11 +389,11 @@
             <td style="width: 68pt;">
                 <p class="s2"
                     style="
-            margin: 0; 
-            padding-top: 0; 
-            padding-left: 2pt; 
-            text-align: left;
-        ">
+                  margin: 0; 
+                  padding-top: 0; 
+                  padding-left: 2pt; 
+                  text-align: left;
+              ">
                     Mengingat
                 </p>
             </td>
@@ -403,11 +401,11 @@
             <td style="width: 17pt;">
                 <p class="s2"
                     style="
-            margin: 0; 
-            padding-top: 0; 
-            padding-right: 5pt; 
-            text-align: right;
-        ">
+                    margin: 0; 
+                    padding-top: 0; 
+                    padding-right: 5pt; 
+                    text-align: right;
+                ">
                     :
                 </p>
             </td>
@@ -433,7 +431,7 @@
                         </td>
                         <td style="padding: 0; padding-bottom: 3pt;">
                             <p class="s2" style="margin: 0; text-align: justify; line-height: 1.3;">
-                                Peraturan Pemerintah No.51 Tahun 1999 tentang Penyelenggaraan Statistik;
+                                Peraturan Pemerintah Nomor 51 Tahun 1999 tentang Penyelenggaraan Statistik;
                             </p>
                         </td>
                     </tr>
@@ -444,7 +442,9 @@
                         </td>
                         <td style="padding: 0; padding-bottom: 3pt;">
                             <p class="s2" style="margin: 0; text-align: justify; line-height: 1.3;">
-                                Peraturan Presiden Nomor 86 Tahun 2007 tentang Badan Pusat Statistik;
+                                Peraturan Pemerintah Nomor 45 Tahun 2013 tentang Tata Cara Pelaksanaan Anggaran
+                                Pendapatan dan Belanja Negara sebagaimana telah diubah dengan Peraturan Pemerintah 50
+                                Tahun 2018;
                             </p>
                         </td>
                     </tr>
@@ -455,8 +455,10 @@
                         </td>
                         <td style="padding: 0; padding-bottom: 3pt;">
                             <p class="s2" style="margin: 0; text-align: justify; line-height: 1.3;">
-                                Peraturan Badan Pusat Statistik Nomor 5 Tahun 2019 tentang Tata Naskah Dinas di
-                                Lingkungan Badan Pusat Statistik;
+                                Peraturan Presiden Republik Indonesia Nomor 86 Tahun 2007 tentang Badan Pusat Statistik
+                                (Lembaran Negara Republik Indonesia Tahun 2007 Nomor 139), sebagaimana telah diubah
+                                dengan Peraturan Presiden Nomor 1 Tahun 2025 (Lembaran Negara Republik Indonesia Tahun
+                                2025 Nomor 4);
                             </p>
                         </td>
                     </tr>
@@ -467,8 +469,11 @@
                         </td>
                         <td style="padding: 0; padding-bottom: 0;">
                             <p class="s2" style="margin: 0; text-align: justify; line-height: 1.3;">
-                                Peraturan Badan Pusat Statistik Nomor 5 Tahun 2023 tentang Organisasi dan Tata Kerja
-                                Badan Pusat Statistik Provinsi dan Badan Pusat Statistik Kabupaten/Kota;
+                                Peraturan BPS Nomor 5 Tahun 2023 tentang Organisasi dan Tata Kerja BPS Provinsi dan
+                                BPS Kabupaten/Kota (Berita Negara Republik Indonesia Tahun 2023 Nomor 429), sebagaimana
+                                telah diubah dengan Peraturan BPS Nomor 3 Tahun 2025 tentang Perubahan atas Peraturan
+                                BPS Nomor 5 Tahun 2023 tentang Organisasi dan Tata Kerja Badan Pusat Statistik Provinsi
+                                dan BPS Kabupaten/Kota (Berita Negara Republik Indonesia Tahun 2025 Nomor 683);
                             </p>
                         </td>
                     </tr>
@@ -484,8 +489,9 @@
         padding-left: 0;
         text-indent: 0pt;
         text-align: center;
+        font-weight: normal;
       ">
-        Memberi Perintah:
+        Memberi Tugas:
     </h2>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
     <table style="border-collapse: collapse; margin-left: 29.924pt" cellspacing="0">
