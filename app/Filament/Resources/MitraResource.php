@@ -6,30 +6,32 @@ use App\Filament\Resources\MitraResource\Pages;
 use App\Filament\Resources\MitraResource\RelationManagers;
 use App\Filament\Resources\MitraResource\RelationManagers\KemitraansRelationManager;
 use App\Models\Mitra;
+use App\Exports\MitraExport;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkAction;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Database\Eloquent\Collection;
+use Maatwebsite\Excel\Facades\Excel;
 
-class MitraResource extends Resource
-{
+class MitraResource extends Resource {
     protected static ?string $model = Mitra::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
     protected static ?string $navigationGroup = 'Manajemen Mitra';
 
-    public static function canViewAny(): bool
-    {
+    public static function canViewAny(): bool {
         return true;
     }
 
-    public static function form(Form $form): Form
-    {
+    public static function form(Form $form): Form {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('id_sobat')
@@ -148,8 +150,7 @@ class MitraResource extends Resource
             ]);
     }
 
-    public static function table(Table $table): Table
-    {
+    public static function table(Table $table): Table {
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id_sobat')
@@ -321,25 +322,40 @@ class MitraResource extends Resource
                             ->where('alamat_desa', $desaOnlyId);
                     }),
             ])
+            ->headerActions([
+                Action::make('export_excel')
+                    ->label('Export Excel')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->action(function () {
+                        return Excel::download(new MitraExport(), 'Data_Mitra_' . date('Y-m-d') . '.xlsx');
+                    }),
+            ])
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    BulkAction::make('export_selected')
+                        ->label('Export Terpilih')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->action(function (Collection $records) {
+                            return Excel::download(new MitraExport($records), 'Data_Mitra_Terpilih_' . date('Y-m-d') . '.xlsx');
+                        })
+                        ->deselectRecordsAfterCompletion(),
                 ]),
             ]);
     }
 
-    public static function getRelations(): array
-    {
+    public static function getRelations(): array {
         return [
             KemitraansRelationManager::class,
         ];
     }
 
-    public static function getPages(): array
-    {
+    public static function getPages(): array {
         return [
             // Arahkan ke kelas ListMitras yang baru
             'index' => Pages\ListMitras::route('/'),

@@ -5,16 +5,20 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PegawaiResource\Pages;
 use App\Filament\Resources\PegawaiResource\RelationManagers;
 use App\Models\Pegawai;
+use App\Exports\PegawaiExport;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkAction;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Database\Eloquent\Collection;
+use Maatwebsite\Excel\Facades\Excel;
 
-class PegawaiResource extends Resource
-{
+class PegawaiResource extends Resource {
     protected static ?string $model = Pegawai::class;
 
     protected static ?string $label = "Pegawai";
@@ -23,8 +27,7 @@ class PegawaiResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
 
-    public static function form(Form $form): Form
-    {
+    public static function form(Form $form): Form {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('nama')
@@ -66,8 +69,7 @@ class PegawaiResource extends Resource
             ]);
     }
 
-    public static function table(Table $table): Table
-    {
+    public static function table(Table $table): Table {
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('nama')
@@ -100,6 +102,15 @@ class PegawaiResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->headerActions([
+                Action::make('export_excel')
+                    ->label('Export Excel')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->action(function () {
+                        return Excel::download(new PegawaiExport(), 'Data_Pegawai_' . date('Y-m-d') . '.xlsx');
+                    }),
+            ])
             ->filters([
                 //
             ])
@@ -109,19 +120,25 @@ class PegawaiResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    BulkAction::make('export_selected')
+                        ->label('Export Terpilih')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->action(function (Collection $records) {
+                            return Excel::download(new PegawaiExport($records), 'Data_Pegawai_Terpilih_' . date('Y-m-d') . '.xlsx');
+                        })
+                        ->deselectRecordsAfterCompletion(),
                 ]),
             ]);
     }
 
-    public static function getRelations(): array
-    {
+    public static function getRelations(): array {
         return [
             //
         ];
     }
 
-    public static function getPages(): array
-    {
+    public static function getPages(): array {
         return [
             'index' => Pages\ListPegawais::route('/'),
             'create' => Pages\CreatePegawai::route('/create'),

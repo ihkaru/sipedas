@@ -58,7 +58,6 @@
             font-family: "Bookman Old Style", serif;
             font-style: normal;
             font-weight: bold;
-            text-decoration: underline;
             font-size: 10pt;
         }
 
@@ -334,7 +333,7 @@
         BADAN PUSAT STATISTIK <br />{{ $namaSatker }}
     </h1>
     <p style="text-indent: 0pt; text-align: left"><br /></p>
-    <p class="s1" style="text-indent: 0pt; text-align: center font-weight: normal">
+    <p class="s1" style="text-indent: 0pt; text-align: center; font-weight: normal; font-style: normal">
         SURAT TUGAS
     </p>
     <p style="text-indent: 0pt; text-align: center">

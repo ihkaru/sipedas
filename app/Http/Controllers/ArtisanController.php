@@ -7,10 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Composer;
 use Illuminate\Support\Facades\Artisan;
 
-class ArtisanController extends Controller
-{
-    public function run()
-    {
+class ArtisanController extends Controller {
+    public function run() {
         if (!request("secret")) {
             abort(401, "Unauthorized Access");
         }
@@ -23,8 +21,7 @@ class ArtisanController extends Controller
         return $this->responsejson(200, ["exitCode" => $exitCode]);
     }
 
-    public function migration()
-    {
+    public function migration() {
         $migration = collect([]);
         $output = new \Symfony\Component\Console\Output\BufferedOutput;
 
