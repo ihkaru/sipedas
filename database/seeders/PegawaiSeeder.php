@@ -6,13 +6,11 @@ use App\Models\Pegawai;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class PegawaiSeeder extends Seeder
-{
+class PegawaiSeeder extends Seeder {
     /**
      * Run the database seeds.
      */
-    public function run(): void
-    {
+    public function run(): void {
         Pegawai::create([
             "nama" => "Munawir, SE.,MM",
             "nip" => "196908031992111001",
@@ -97,7 +95,7 @@ class PegawaiSeeder extends Seeder
             "panggilan" => "Bg Arief",
             "nip9" => "340057298",
             "pangkat" => "III",
-            "golongan" => "c",
+            "golongan" => "d",
             "jabatan" => "Pranata Komputer Ahli Muda",
             "email" => "arief.yuandi@bps.go.id",
             "nomor_wa" => "6285787387758",

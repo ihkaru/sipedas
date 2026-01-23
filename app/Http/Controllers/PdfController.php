@@ -12,10 +12,8 @@ use App\Supports\Constants;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 
-class PdfController extends Controller
-{
-    public function cetakPenugasan($id)
-    {
+class PdfController extends Controller {
+    public function cetakPenugasan($id) {
         // if(auth()->user()) abort(403);
         $penugasans = Penugasan::with(['satuSurat', 'suratTugas', 'suratPerjadin', 'kegiatan', 'pegawai', 'plh'])->find($id);
         // dd($penugasans);
@@ -31,8 +29,7 @@ class PdfController extends Controller
             'plhAktifSaatPerjalanan' => $plhAktifSaatPerjalanan,
         ])->toHtml();
     }
-    public function cetakPenugasanBersama($id)
-    {
+    public function cetakPenugasanBersama($id) {
         // if(auth()->user()) abort(403);
         $penugasan = Penugasan::find($id);
         $penugasans = $penugasan->suratTugasBersamaDisetujui(['satuSurat', 'suratTugas', 'suratPerjadin', 'kegiatan', 'pegawai', 'plh']);
@@ -50,8 +47,7 @@ class PdfController extends Controller
             "plhAktifSaatPerjalanan" => $plhAktifSaatPerjalanan,
         ])->toHtml();
     }
-    public function cetakKontrak(Request $request)
-    {
+    public function cetakKontrak(Request $request) {
         // Ambil parameter dari request
         $tahun = $request->input('tahun');
         $bulan = $request->input('bulan');
@@ -117,8 +113,7 @@ class PdfController extends Controller
             'id_kegiatan_manmit' => $idKegiatanManmit // Tetap dikirim untuk referensi jika dibutuhkan
         ]);
     }
-    public function cetakBast()
-    {
+    public function cetakBast() {
         $tahun = request('tahun') ?? now()->year;
         $bulan = request('bulan') ?? now()->month;
         // Ambil ID Kegiatan dari request. Ini adalah kunci utamanya.

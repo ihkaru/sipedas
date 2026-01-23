@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Sipancong\PengajuanResource\Pages;
 
+use App\Exports\PengajuanExport;
 use App\Filament\Resources\Sipancong\PengajuanResource;
 use App\Filament\Resources\Sipancong\PengajuanResource\Forms\PengajuanForms;
 use App\Filament\Resources\Sipancong\PenugasanResource\Widgets\StatsProsesPembayaran;
@@ -14,17 +15,16 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
+use Maatwebsite\Excel\Facades\Excel;
 
-class ListPengajuans extends ListRecords
-{
+class ListPengajuans extends ListRecords {
     // trait HasResizableColumn tidak ada di core Filament,
     // pastikan kamu sudah menginstall package-nya dengan benar.
     // use HasResizableColumn;
 
     protected static string $resource = PengajuanResource::class;
 
-    protected function getHeaderActions(): array
-    {
+    protected function getHeaderActions(): array {
         return [
             Action::make("ajukan")
                 ->label("Ajukan Pembayaran")
@@ -34,6 +34,29 @@ class ListPengajuans extends ListRecords
                 ->action(function (array $data) {
                     PengajuanServices::ajukan($data);
                 }),
+
+            Action::make("export")
+                ->label("Export Excel")
+                ->icon("heroicon-o-arrow-down-tray")
+                ->color("success")
+                ->action(function () {
+                    // Ambil query dengan semua filter/tab yang sudah diterapkan
+                    $query = $this->getFilteredTableQuery();
+
+                    $filename = 'pengajuan_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+
+                    Notification::make()
+                        ->success()
+                        ->title("Export Berhasil")
+                        ->body("File {$filename} sedang diunduh...")
+                        ->send();
+
+                    return Excel::download(
+                        new PengajuanExport($query),
+                        $filename
+                    );
+                }),
+
             Action::make("fix")
                 ->requiresConfirmation()
                 ->label("Perbaiki Konsistensi")
@@ -58,15 +81,13 @@ class ListPengajuans extends ListRecords
         ];
     }
 
-    protected function getHeaderWidgets(): array
-    {
+    protected function getHeaderWidgets(): array {
         return [
             StatsProsesPembayaran::class
         ];
     }
 
-    public function getTabs(): array
-    {
+    public function getTabs(): array {
         $user = auth()->user();
 
         // Buat query dasar langsung dari Model. Ini aman dari masalah lifecycle.
