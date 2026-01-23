@@ -21,11 +21,14 @@ class PengajuanServices {
 
     /**
      * Bulk approve semua pengajuan yang menunggu aksi PPK.
-     * Menggunakan single query update untuk efisiensi.
+     * Hanya yang posisinya ada di PPK (pengajuan baru atau revisi yang SUDAH disubmit ulang).
+     * @param int|null $year Tahun pengajuan (opsional, default tahun sekarang)
      * @return int Jumlah record yang di-update
      */
-    public static function bulkApprovePpk(): int {
-        return Pengajuan::where('posisi_dokumen_id', Constants::POSISI_PPK)
+    public static function bulkApprovePpk(?int $year = null): int {
+        $year = $year ?? now()->year;
+        return Pengajuan::whereYear('created_at', $year)
+            ->where('posisi_dokumen_id', Constants::POSISI_PPK)
             ->update([
                 'status_pengajuan_ppk_id' => Constants::STATUS_DISETUJUI_TANPA_CATATAN,
                 'catatan_ppk' => 'Disetujui massal oleh sistem.',
@@ -35,11 +38,41 @@ class PengajuanServices {
     }
 
     /**
-     * Bulk approve semua pengajuan yang menunggu aksi PPSPM.
+     * Bulk approve khusus pengajuan yang masih berstatus 'Perlu Perbaikan' (Ditolak PPK).
+     * Ini akan 'menarik paksa' dokumen dari meja Pengaju dan langsung menyetujuinya.
+     * @param int|null $year Tahun pengajuan
      * @return int Jumlah record yang di-update
      */
-    public static function bulkApprovePpspm(): int {
+    public static function bulkApproveRevisiPpk(?int $year = null): int {
+        $year = $year ?? now()->year;
+        return Pengajuan::whereYear('created_at', $year)
+            ->where('posisi_dokumen_id', Constants::POSISI_PENGAJU)
+            ->where('status_pengajuan_ppk_id', Constants::STATUS_DITOLAK)
+            ->update([
+                'status_pengajuan_ppk_id' => Constants::STATUS_DISETUJUI_TANPA_CATATAN,
+                'catatan_ppk' => 'Disetujui massal oleh sistem (Bypass Revisi).',
+                'posisi_dokumen_id' => Constants::POSISI_PPSPM,
+                'updated_at' => now(),
+            ]);
+    }
+
+    public static function countPendingRevisiPpk(?int $year = null): int {
+        $year = $year ?? now()->year;
+        return Pengajuan::whereYear('created_at', $year)
+            ->where('posisi_dokumen_id', Constants::POSISI_PENGAJU)
+            ->where('status_pengajuan_ppk_id', Constants::STATUS_DITOLAK)
+            ->count();
+    }
+
+    /**
+     * Bulk approve semua pengajuan yang menunggu aksi PPSPM.
+     * @param int|null $year Tahun pengajuan
+     * @return int Jumlah record yang di-update
+     */
+    public static function bulkApprovePpspm(?int $year = null): int {
+        $year = $year ?? now()->year;
         return Pengajuan::where('posisi_dokumen_id', Constants::POSISI_PPSPM)
+            ->whereYear('created_at', $year)
             ->update([
                 'status_pengajuan_ppspm_id' => Constants::STATUS_DISETUJUI_TANPA_CATATAN,
                 'catatan_ppspm' => 'Disetujui massal oleh sistem.',
@@ -49,12 +82,41 @@ class PengajuanServices {
     }
 
     /**
-     * Bulk approve semua pengajuan yang menunggu verifikasi Bendahara.
-     * Hanya yang belum disetujui bendahara (masih perlu verifikasi, bukan proses bayar).
+     * Bulk approve khusus pengajuan yang masih berstatus 'Perlu Perbaikan' (Ditolak PPSPM).
+     * @param int|null $year Tahun pengajuan
      * @return int Jumlah record yang di-update
      */
-    public static function bulkApproveBendahara(): int {
+    public static function bulkApproveRevisiPpspm(?int $year = null): int {
+        $year = $year ?? now()->year;
+        return Pengajuan::whereYear('created_at', $year)
+            ->where('posisi_dokumen_id', Constants::POSISI_PENGAJU)
+            ->where('status_pengajuan_ppspm_id', Constants::STATUS_DITOLAK)
+            ->update([
+                'status_pengajuan_ppspm_id' => Constants::STATUS_DISETUJUI_TANPA_CATATAN,
+                'catatan_ppspm' => 'Disetujui massal oleh sistem (Bypass Revisi).',
+                'posisi_dokumen_id' => Constants::POSISI_BENDAHARA,
+                'updated_at' => now(),
+            ]);
+    }
+
+    public static function countPendingRevisiPpspm(?int $year = null): int {
+        $year = $year ?? now()->year;
+        return Pengajuan::whereYear('created_at', $year)
+            ->where('posisi_dokumen_id', Constants::POSISI_PENGAJU)
+            ->where('status_pengajuan_ppspm_id', Constants::STATUS_DITOLAK)
+            ->count();
+    }
+
+    /**
+     * Bulk approve semua pengajuan yang menunggu verifikasi Bendahara.
+     * Hanya yang belum disetujui bendahara (masih perlu verifikasi, bukan proses bayar).
+     * @param int|null $year Tahun pengajuan
+     * @return int Jumlah record yang di-update
+     */
+    public static function bulkApproveBendahara(?int $year = null): int {
+        $year = $year ?? now()->year;
         return Pengajuan::where('posisi_dokumen_id', Constants::POSISI_BENDAHARA)
+            ->whereYear('created_at', $year)
             ->where(function ($query) {
                 $query->whereNull('status_pengajuan_bendahara_id')
                     ->orWhereNotIn('status_pengajuan_bendahara_id', [
@@ -70,13 +132,42 @@ class PengajuanServices {
     }
 
     /**
-     * Hitung jumlah pengajuan yang menunggu aksi untuk role tertentu.
+     * Bulk approve khusus pengajuan yang masih berstatus 'Perlu Perbaikan' (Ditolak Bendahara).
+     * @param int|null $year Tahun pengajuan
+     * @return int Jumlah record yang di-update
+     */
+    public static function bulkApproveRevisiBendahara(?int $year = null): int {
+        $year = $year ?? now()->year;
+        return Pengajuan::whereYear('created_at', $year)
+            ->where('posisi_dokumen_id', Constants::POSISI_PENGAJU)
+            ->where('status_pengajuan_bendahara_id', Constants::STATUS_DITOLAK)
+            ->update([
+                'status_pengajuan_bendahara_id' => Constants::STATUS_DISETUJUI_TANPA_CATATAN,
+                'catatan_bendahara' => 'Disetujui massal oleh sistem (Bypass Revisi).',
+                'updated_at' => now(),
+                // Tetap di bendahara (tapi status verified), siap bayar. 
+                // Namun karena ini bypass, kita anggap dia sudah balik ke meja bendahara (Posisi 4)
+                'posisi_dokumen_id' => Constants::POSISI_BENDAHARA,
+            ]);
+    }
+
+    public static function countPendingRevisiBendahara(?int $year = null): int {
+        $year = $year ?? now()->year;
+        return Pengajuan::whereYear('created_at', $year)
+            ->where('posisi_dokumen_id', Constants::POSISI_PENGAJU)
+            ->where('status_pengajuan_bendahara_id', Constants::STATUS_DITOLAK)
+            ->count();
+    }
+
+    /**
+     * Hitung jumlah pengajuan yang menunggu aksi untuk role tertentu dan tahun tertentu.
      * Digunakan untuk menampilkan konfirmasi sebelum bulk approve.
      */
-    public static function countPendingForRole(string $role): int {
-        return match ($role) {
-            'ppk' => Pengajuan::where('posisi_dokumen_id', Constants::POSISI_PPK)->count(),
-            'ppspm' => Pengajuan::where('posisi_dokumen_id', Constants::POSISI_PPSPM)->count(),
+    public static function countPendingForRole(string $role, ?int $year = null): int {
+        $year = $year ?? now()->year;
+        $query = match ($role) {
+            'ppk' => Pengajuan::where('posisi_dokumen_id', Constants::POSISI_PPK),
+            'ppspm' => Pengajuan::where('posisi_dokumen_id', Constants::POSISI_PPSPM),
             'bendahara' => Pengajuan::where('posisi_dokumen_id', Constants::POSISI_BENDAHARA)
                 ->where(function ($query) {
                     $query->whereNull('status_pengajuan_bendahara_id')
@@ -84,9 +175,11 @@ class PengajuanServices {
                             Constants::STATUS_DISETUJUI_TANPA_CATATAN,
                             Constants::STATUS_DISETUJUI_DENGAN_CATATAN,
                         ]);
-                })->count(),
-            default => 0,
+                }),
+            default => null,
         };
+
+        return $query ? $query->whereYear('created_at', $year)->count() : 0;
     }
 
 

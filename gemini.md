@@ -27,11 +27,12 @@
 ### Bulk Approve Feature
 - Menambahkan Header Action Dropdown "Terima Massal" di `ListPengajuans.php`
 - Opsi: Terima Semua PPK, Terima Semua PPSPM, Terima Semua Bendahara
-- Fitur:
-    - **Efisien**: Menggunakan single query update (tanpa loop, tanpa event model per item)
-    - **No Spam**: Tidak mengirim notifikasi WhatsApp
-    - **Konfirmasi**: Menampilkan jumlah data yang akan diapprove sebelum eksekusi
-    - **Role-based**: Tombol hanya muncul untuk role yang berwenang
+- Fitur Baru:
+    - **Filter Tahun**: User bisa memilih tahun pengajuan (default tahun berjalan) untuk memproses data lintas tahun.
+    - **Separate Revision Buttons**: Menambahkan tombol khusus "Terima Semua Revisi" untuk PPK, PPSPM, dan Bendahara untuk menarik paksa dokumen status Ditolak yang masih di meja Pengaju (Bypass).
+    - **Efisien**: Menggunakan single query update.
+    - **No Spam**: Tidak mengirim notifikasi WhatsApp.
+    - **Safe**: Menghapus fitur "Perbaiki Konsistensi" yang berisiko merusak data.
 
 **File yang dimodifikasi/dibuat:**
 - `app/Filament/Resources/Sipancong/PengajuanResource/Pages/ListPengajuans.php`
