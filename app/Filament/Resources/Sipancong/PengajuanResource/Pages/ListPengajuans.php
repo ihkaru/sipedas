@@ -42,7 +42,7 @@ class ListPengajuans extends ListRecords {
                 ->icon("heroicon-o-arrow-down-tray")
                 ->color("success")
                 ->action(function () {
-                    // Ambil query dengan semua filter/tab yang sudah diterapkan
+                    // Ambil query dengan filter/tab yang sudah diterapkan
                     $query = $this->getFilteredTableQuery();
 
                     $filename = 'pengajuan_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
@@ -64,7 +64,7 @@ class ListPengajuans extends ListRecords {
             // Dropdown untuk Terima Massal
             ActionGroup::make([
                 Action::make("bulk_approve_ppk")
-                    ->label(fn() => "Terima Semua PPK (" . PengajuanServices::countPendingForRole('ppk') . ")")
+                    ->label(fn() => "PPK (" . PengajuanServices::countPendingForRole('ppk') . ")")
                     ->icon("heroicon-o-check-circle")
                     ->color("warning")
                     ->form([
@@ -77,7 +77,7 @@ class ListPengajuans extends ListRecords {
                             ->default(now()->year)
                             ->required(),
                     ])
-                    ->modalHeading("Terima Semua Pengajuan PPK")
+                    ->modalHeading("Pengajuan PPK")
                     ->modalDescription(fn() => "Anda akan menyetujui " . PengajuanServices::countPendingForRole('ppk') . " pengajuan (Total Pending) yang menunggu aksi PPK. Pilih tahun untuk memfilter data yang akan diproses.")
                     ->modalSubmitActionLabel("Ya, Terima Semua")
                     ->hidden(fn(): bool => !auth()->user()->hasAnyRole(["super_admin", "Admin", "ppk"]))
@@ -86,12 +86,12 @@ class ListPengajuans extends ListRecords {
                         Notification::make()
                             ->success()
                             ->title("Berhasil Menyetujui {$count} Pengajuan")
-                            ->body("Semua pengajuan tahun {$data['tahun']} telah dipindahkan ke PPSPM.")
+                            ->body("pengajuan tahun {$data['tahun']} telah dipindahkan ke PPSPM.")
                             ->send();
                     }),
 
                 Action::make("bulk_approve_revisi_ppk")
-                    ->label(fn() => "Terima Semua Revisi PPK (" . PengajuanServices::countPendingRevisiPpk() . ")")
+                    ->label(fn() => "Revisi PPK (" . PengajuanServices::countPendingRevisiPpk() . ")")
                     ->icon("heroicon-o-arrow-path")
                     ->color("danger") // Warna merah/danger untuk membedakan
                     ->form([
@@ -104,7 +104,7 @@ class ListPengajuans extends ListRecords {
                             ->default(now()->year)
                             ->required(),
                     ])
-                    ->modalHeading("Terima Semua Revisi PPK (Bypass)")
+                    ->modalHeading("Revisi PPK (Bypass)")
                     ->modalDescription(fn() => "Anda akan menarik paksa " . PengajuanServices::countPendingRevisiPpk() . " pengajuan yang statusnya 'Perlu Perbaikan' (Ditolak) dari meja Pengaju. Pengajuan akan langsung disetujui tanpa menunggu pengaju mengirim ulang. Lanjutkan?")
                     ->modalSubmitActionLabel("Ya, Terima Paksa")
                     ->hidden(fn(): bool => !auth()->user()->hasAnyRole(["super_admin", "Admin", "ppk"]))
@@ -113,12 +113,12 @@ class ListPengajuans extends ListRecords {
                         Notification::make()
                             ->success()
                             ->title("Berhasil Menyetujui {$count} Pengajuan Revisi")
-                            ->body("Semua pengajuan revisi tahun {$data['tahun']} telah ditarik dan dipindahkan ke PPSPM.")
+                            ->body("pengajuan revisi tahun {$data['tahun']} telah ditarik dan dipindahkan ke PPSPM.")
                             ->send();
                     }),
 
                 Action::make("bulk_approve_ppspm")
-                    ->label(fn() => "Terima Semua PPSPM (" . PengajuanServices::countPendingForRole('ppspm') . ")")
+                    ->label(fn() => "PPSPM (" . PengajuanServices::countPendingForRole('ppspm') . ")")
                     ->icon("heroicon-o-check-circle")
                     ->color("info")
                     ->form([
@@ -131,7 +131,7 @@ class ListPengajuans extends ListRecords {
                             ->default(now()->year)
                             ->required(),
                     ])
-                    ->modalHeading("Terima Semua Pengajuan PPSPM")
+                    ->modalHeading("Terima Pengajuan PPSPM")
                     ->modalDescription(fn() => "Anda akan menyetujui " . PengajuanServices::countPendingForRole('ppspm') . " pengajuan (Total Pending) yang menunggu aksi PPSPM. Pilih tahun untuk memfilter data yang akan diproses.")
                     ->modalSubmitActionLabel("Ya, Terima Semua")
                     ->hidden(fn(): bool => !auth()->user()->hasAnyRole(["super_admin", "Admin", "ppspm"]))
@@ -140,12 +140,12 @@ class ListPengajuans extends ListRecords {
                         Notification::make()
                             ->success()
                             ->title("Berhasil Menyetujui {$count} Pengajuan")
-                            ->body("Semua pengajuan tahun {$data['tahun']} telah dipindahkan ke Bendahara.")
+                            ->body("pengajuan tahun {$data['tahun']} telah dipindahkan ke Bendahara.")
                             ->send();
                     }),
 
                 Action::make("bulk_approve_revisi_ppspm")
-                    ->label(fn() => "Terima Semua Revisi PPSPM (" . PengajuanServices::countPendingRevisiPpspm() . ")")
+                    ->label(fn() => "Revisi PPSPM (" . PengajuanServices::countPendingRevisiPpspm() . ")")
                     ->icon("heroicon-o-arrow-path")
                     ->color("danger") // Warna merah
                     ->form([
@@ -158,7 +158,7 @@ class ListPengajuans extends ListRecords {
                             ->default(now()->year)
                             ->required(),
                     ])
-                    ->modalHeading("Terima Semua Revisi PPSPM (Bypass)")
+                    ->modalHeading("Revisi PPSPM (Bypass)")
                     ->modalDescription(fn() => "Anda akan menarik paksa " . PengajuanServices::countPendingRevisiPpspm() . " pengajuan yang statusnya 'Perlu Perbaikan' (Ditolak) dari meja Pengaju. Pengajuan akan langsung disetujui tanpa menunggu pengaju mengirim ulang. Lanjutkan?")
                     ->modalSubmitActionLabel("Ya, Terima Paksa")
                     ->hidden(fn(): bool => !auth()->user()->hasAnyRole(["super_admin", "Admin", "ppspm"]))
@@ -167,12 +167,12 @@ class ListPengajuans extends ListRecords {
                         Notification::make()
                             ->success()
                             ->title("Berhasil Menyetujui {$count} Pengajuan Revisi")
-                            ->body("Semua pengajuan revisi tahun {$data['tahun']} telah ditarik dan dipindahkan ke Bendahara.")
+                            ->body("pengajuan revisi tahun {$data['tahun']} telah ditarik dan dipindahkan ke Bendahara.")
                             ->send();
                     }),
 
                 Action::make("bulk_approve_bendahara")
-                    ->label(fn() => "Terima Semua Bendahara (" . PengajuanServices::countPendingForRole('bendahara') . ")")
+                    ->label(fn() => "Bendahara (" . PengajuanServices::countPendingForRole('bendahara') . ")")
                     ->icon("heroicon-o-check-circle")
                     ->color("primary")
                     ->form([
@@ -185,7 +185,7 @@ class ListPengajuans extends ListRecords {
                             ->default(now()->year)
                             ->required(),
                     ])
-                    ->modalHeading("Terima Semua Verifikasi Bendahara")
+                    ->modalHeading("Verifikasi Bendahara")
                     ->modalDescription(fn() => "Anda akan menyetujui " . PengajuanServices::countPendingForRole('bendahara') . " pengajuan (Total Pending) yang menunggu verifikasi Bendahara. Pilih tahun untuk memfilter data yang akan diproses.")
                     ->modalSubmitActionLabel("Ya, Terima Semua")
                     ->hidden(fn(): bool => !auth()->user()->hasAnyRole(["super_admin", "Admin", "bendahara"]))
@@ -194,12 +194,12 @@ class ListPengajuans extends ListRecords {
                         Notification::make()
                             ->success()
                             ->title("Berhasil Menyetujui {$count} Pengajuan")
-                            ->body("Semua pengajuan tahun {$data['tahun']} telah diverifikasi Bendahara.")
+                            ->body("pengajuan tahun {$data['tahun']} telah diverifikasi Bendahara.")
                             ->send();
                     }),
 
                 Action::make("bulk_approve_revisi_bendahara")
-                    ->label(fn() => "Terima Semua Revisi Bendahara (" . PengajuanServices::countPendingRevisiBendahara() . ")")
+                    ->label(fn() => "Revisi Bendahara (" . PengajuanServices::countPendingRevisiBendahara() . ")")
                     ->icon("heroicon-o-arrow-path")
                     ->color("danger") // Warna merah
                     ->form([
@@ -212,7 +212,7 @@ class ListPengajuans extends ListRecords {
                             ->default(now()->year)
                             ->required(),
                     ])
-                    ->modalHeading("Terima Semua Revisi Bendahara (Bypass)")
+                    ->modalHeading("Revisi Bendahara (Bypass)")
                     ->modalDescription(fn() => "Anda akan menarik paksa " . PengajuanServices::countPendingRevisiBendahara() . " pengajuan yang statusnya 'Perlu Perbaikan' (Ditolak Bendahara) dari meja Pengaju. Pengajuan akan langsung disetujui (verifikasi ok) tanpa menunggu pengaju mengirim ulang. Lanjutkan?")
                     ->modalSubmitActionLabel("Ya, Terima Paksa")
                     ->hidden(fn(): bool => !auth()->user()->hasAnyRole(["super_admin", "Admin", "bendahara"]))
@@ -221,7 +221,7 @@ class ListPengajuans extends ListRecords {
                         Notification::make()
                             ->success()
                             ->title("Berhasil Menyetujui {$count} Pengajuan Revisi")
-                            ->body("Semua pengajuan revisi tahun {$data['tahun']} telah ditarik dan diverifikasi oleh Bendahara.")
+                            ->body("pengajuan revisi tahun {$data['tahun']} telah ditarik dan diverifikasi oleh Bendahara.")
                             ->send();
                     }),
             ])
