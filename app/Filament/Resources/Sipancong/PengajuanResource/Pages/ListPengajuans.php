@@ -11,6 +11,7 @@ use App\Services\Sipancong\PengajuanFixer;
 use App\Services\Sipancong\PengajuanServices;
 use App\Supports\SipancongConstants as Constants;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Notifications\Notification;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
@@ -77,7 +78,68 @@ class ListPengajuans extends ListRecords {
                             ->body("Class PengajuanFixer tidak ditemukan.")
                             ->send();
                     }
-                })
+                }),
+
+            // Dropdown untuk Terima Massal
+            ActionGroup::make([
+                Action::make("bulk_approve_ppk")
+                    ->label(fn() => "Terima Semua PPK (" . PengajuanServices::countPendingForRole('ppk') . ")")
+                    ->icon("heroicon-o-check-circle")
+                    ->color("warning")
+                    ->requiresConfirmation()
+                    ->modalHeading("Terima Semua Pengajuan PPK")
+                    ->modalDescription(fn() => "Anda akan menyetujui " . PengajuanServices::countPendingForRole('ppk') . " pengajuan yang menunggu aksi PPK. Semua akan disetujui tanpa catatan. Lanjutkan?")
+                    ->modalSubmitActionLabel("Ya, Terima Semua")
+                    ->hidden(fn(): bool => !auth()->user()->hasAnyRole(["super_admin", "Admin", "ppk"]))
+                    ->action(function () {
+                        $count = PengajuanServices::bulkApprovePpk();
+                        Notification::make()
+                            ->success()
+                            ->title("Berhasil Menyetujui {$count} Pengajuan")
+                            ->body("Semua pengajuan telah dipindahkan ke PPSPM.")
+                            ->send();
+                    }),
+
+                Action::make("bulk_approve_ppspm")
+                    ->label(fn() => "Terima Semua PPSPM (" . PengajuanServices::countPendingForRole('ppspm') . ")")
+                    ->icon("heroicon-o-check-circle")
+                    ->color("info")
+                    ->requiresConfirmation()
+                    ->modalHeading("Terima Semua Pengajuan PPSPM")
+                    ->modalDescription(fn() => "Anda akan menyetujui " . PengajuanServices::countPendingForRole('ppspm') . " pengajuan yang menunggu aksi PPSPM. Semua akan disetujui tanpa catatan. Lanjutkan?")
+                    ->modalSubmitActionLabel("Ya, Terima Semua")
+                    ->hidden(fn(): bool => !auth()->user()->hasAnyRole(["super_admin", "Admin", "ppspm"]))
+                    ->action(function () {
+                        $count = PengajuanServices::bulkApprovePpspm();
+                        Notification::make()
+                            ->success()
+                            ->title("Berhasil Menyetujui {$count} Pengajuan")
+                            ->body("Semua pengajuan telah dipindahkan ke Bendahara.")
+                            ->send();
+                    }),
+
+                Action::make("bulk_approve_bendahara")
+                    ->label(fn() => "Terima Semua Bendahara (" . PengajuanServices::countPendingForRole('bendahara') . ")")
+                    ->icon("heroicon-o-check-circle")
+                    ->color("primary")
+                    ->requiresConfirmation()
+                    ->modalHeading("Terima Semua Verifikasi Bendahara")
+                    ->modalDescription(fn() => "Anda akan menyetujui " . PengajuanServices::countPendingForRole('bendahara') . " pengajuan yang menunggu verifikasi Bendahara. Semua akan disetujui tanpa catatan. Lanjutkan?")
+                    ->modalSubmitActionLabel("Ya, Terima Semua")
+                    ->hidden(fn(): bool => !auth()->user()->hasAnyRole(["super_admin", "Admin", "bendahara"]))
+                    ->action(function () {
+                        $count = PengajuanServices::bulkApproveBendahara();
+                        Notification::make()
+                            ->success()
+                            ->title("Berhasil Menyetujui {$count} Pengajuan")
+                            ->body("Semua pengajuan telah diverifikasi Bendahara.")
+                            ->send();
+                    }),
+            ])
+                ->label("Terima Massal")
+                ->icon("heroicon-o-check-badge")
+                ->color("warning")
+                ->button()
         ];
     }
 

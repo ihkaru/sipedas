@@ -14,11 +14,83 @@ use Illuminate\Support\Facades\Log;
 use Throwable;
 
 
-class PengajuanServices
-{
+class PengajuanServices {
+    // =========================================================================
+    // BULK APPROVE METHODS (Tanpa Notifikasi WhatsApp)
+    // =========================================================================
 
-    private static function generateApprovalLink(Pengajuan $record, string $action): ?string
-    {
+    /**
+     * Bulk approve semua pengajuan yang menunggu aksi PPK.
+     * Menggunakan single query update untuk efisiensi.
+     * @return int Jumlah record yang di-update
+     */
+    public static function bulkApprovePpk(): int {
+        return Pengajuan::where('posisi_dokumen_id', Constants::POSISI_PPK)
+            ->update([
+                'status_pengajuan_ppk_id' => Constants::STATUS_DISETUJUI_TANPA_CATATAN,
+                'catatan_ppk' => 'Disetujui massal oleh sistem.',
+                'posisi_dokumen_id' => Constants::POSISI_PPSPM,
+                'updated_at' => now(),
+            ]);
+    }
+
+    /**
+     * Bulk approve semua pengajuan yang menunggu aksi PPSPM.
+     * @return int Jumlah record yang di-update
+     */
+    public static function bulkApprovePpspm(): int {
+        return Pengajuan::where('posisi_dokumen_id', Constants::POSISI_PPSPM)
+            ->update([
+                'status_pengajuan_ppspm_id' => Constants::STATUS_DISETUJUI_TANPA_CATATAN,
+                'catatan_ppspm' => 'Disetujui massal oleh sistem.',
+                'posisi_dokumen_id' => Constants::POSISI_BENDAHARA,
+                'updated_at' => now(),
+            ]);
+    }
+
+    /**
+     * Bulk approve semua pengajuan yang menunggu verifikasi Bendahara.
+     * Hanya yang belum disetujui bendahara (masih perlu verifikasi, bukan proses bayar).
+     * @return int Jumlah record yang di-update
+     */
+    public static function bulkApproveBendahara(): int {
+        return Pengajuan::where('posisi_dokumen_id', Constants::POSISI_BENDAHARA)
+            ->where(function ($query) {
+                $query->whereNull('status_pengajuan_bendahara_id')
+                    ->orWhereNotIn('status_pengajuan_bendahara_id', [
+                        Constants::STATUS_DISETUJUI_TANPA_CATATAN,
+                        Constants::STATUS_DISETUJUI_DENGAN_CATATAN,
+                    ]);
+            })
+            ->update([
+                'status_pengajuan_bendahara_id' => Constants::STATUS_DISETUJUI_TANPA_CATATAN,
+                'catatan_bendahara' => 'Disetujui massal oleh sistem.',
+                'updated_at' => now(),
+            ]);
+    }
+
+    /**
+     * Hitung jumlah pengajuan yang menunggu aksi untuk role tertentu.
+     * Digunakan untuk menampilkan konfirmasi sebelum bulk approve.
+     */
+    public static function countPendingForRole(string $role): int {
+        return match ($role) {
+            'ppk' => Pengajuan::where('posisi_dokumen_id', Constants::POSISI_PPK)->count(),
+            'ppspm' => Pengajuan::where('posisi_dokumen_id', Constants::POSISI_PPSPM)->count(),
+            'bendahara' => Pengajuan::where('posisi_dokumen_id', Constants::POSISI_BENDAHARA)
+                ->where(function ($query) {
+                    $query->whereNull('status_pengajuan_bendahara_id')
+                        ->orWhereNotIn('status_pengajuan_bendahara_id', [
+                            Constants::STATUS_DISETUJUI_TANPA_CATATAN,
+                            Constants::STATUS_DISETUJUI_DENGAN_CATATAN,
+                        ]);
+                })->count(),
+            default => 0,
+        };
+    }
+
+
+    private static function generateApprovalLink(Pengajuan $record, string $action): ?string {
         try {
             // Hapus token lama yang belum terpakai untuk aksi dan pengajuan yang sama
             ActionToken::where('pengajuan_id', $record->id)
@@ -51,8 +123,7 @@ class PengajuanServices
      * @param string|null $originalTargetWa Nomor WA asli tujuan.
      * @return string|null Nomor WA final yang akan dikirimi pesan.
      */
-    private static function getWhatsappTargetNumber(?string $originalTargetWa): ?string
-    {
+    private static function getWhatsappTargetNumber(?string $originalTargetWa): ?string {
         // Cek toggle dari config yang membaca file .env.
         if (config('app.whatsapp_test_mode')) {
             $testUser = User::getTestUser(); // Menggunakan metode baru di model User
@@ -69,8 +140,7 @@ class PengajuanServices
     }
 
 
-    public static function toRupiah($angka)
-    {
+    public static function toRupiah($angka) {
         return "Rp " . number_format($angka, 0, ',', '.');
     }
 
@@ -78,8 +148,7 @@ class PengajuanServices
     // PROSES PENGAJUAN AWAL
     // =========================================================================
 
-    public static function ajukan(array $data)
-    {
+    public static function ajukan(array $data) {
         try {
             $last_pengajuan = Pengajuan::whereBetween("tanggal_pengajuan", [now()->startOfYear(), now()->endOfYear()])
                 ->orderBy('tanggal_pengajuan', "desc")->first();
@@ -117,8 +186,7 @@ class PengajuanServices
         }
     }
 
-    private static function ajukanNotifier(Pengajuan $record)
-    {
+    private static function ajukanNotifier(Pengajuan $record) {
         $userPpk = User::getPpk()->first();
         if (!$userPpk) return;
 
@@ -142,8 +210,7 @@ class PengajuanServices
     // PROSES TANGGAPAN DARI PENGAJU (SETELAH DITOLAK)
     // =========================================================================
 
-    public static function tanggapi(array $data, Pengajuan $record)
-    {
+    public static function tanggapi(array $data, Pengajuan $record) {
         try {
             // Tentukan siapa yang menolak sebelumnya untuk dikembalikan kesana
             if ($record->status_pengajuan_ppk_id == Constants::STATUS_DITOLAK) {
@@ -163,8 +230,7 @@ class PengajuanServices
         }
     }
 
-    private static function tanggapiNotifier(Pengajuan $record, array $data)
-    {
+    private static function tanggapiNotifier(Pengajuan $record, array $data) {
         $pengaju = $record->pengaju?->panggilan ?? 'Pengaju';
         $message = "";
         $originalTargetWa = null;
@@ -212,8 +278,7 @@ class PengajuanServices
     // PROSES PEMERIKSAAN (PPK, PPSPM, BENDAHARA)
     // =========================================================================
 
-    private static function handlePemeriksaan(string $role, array $data, Pengajuan $record)
-    {
+    private static function handlePemeriksaan(string $role, array $data, Pengajuan $record) {
         try {
             $statusField = "status_pengajuan_{$role}_id";
             $statusId = $data[$statusField] ?? null;
@@ -234,23 +299,19 @@ class PengajuanServices
         }
     }
 
-    public static function pemeriksaanPpk(array $data, Pengajuan $record)
-    {
+    public static function pemeriksaanPpk(array $data, Pengajuan $record) {
         self::handlePemeriksaan('ppk', $data, $record);
     }
 
-    public static function pemeriksaanPpspm(array $data, Pengajuan $record)
-    {
+    public static function pemeriksaanPpspm(array $data, Pengajuan $record) {
         self::handlePemeriksaan('ppspm', $data, $record);
     }
 
-    public static function pemeriksaanBendahara(array $data, Pengajuan $record)
-    {
+    public static function pemeriksaanBendahara(array $data, Pengajuan $record) {
         self::handlePemeriksaan('bendahara', $data, $record);
     }
 
-    private static function pemeriksaanNotifier(string $role, Pengajuan $record)
-    {
+    private static function pemeriksaanNotifier(string $role, Pengajuan $record) {
         $statusField = "status_pengajuan_{$role}_id";
         $catatanField = "catatan_{$role}";
         $statusId = $record->$statusField;
@@ -322,8 +383,7 @@ class PengajuanServices
     // PROSES PEMBAYARAN OLEH BENDAHARA
     // =========================================================================
 
-    public static function pemrosesanBendahara(array $data, Pengajuan $record)
-    {
+    public static function pemrosesanBendahara(array $data, Pengajuan $record) {
         try {
             $statusPembayaranId = $data['status_pembayaran_id'] ?? null;
             if (Constants::isSelesaiDibayar($statusPembayaranId)) {
@@ -344,8 +404,7 @@ class PengajuanServices
         }
     }
 
-    private static function pemrosesanBendaharaNotifier(Pengajuan $record)
-    {
+    private static function pemrosesanBendaharaNotifier(Pengajuan $record) {
         $namaPengaju = $record->pengaju?->panggilan ?? 'Pengaju';
         $originalTargetWa = $record->pengaju?->nomor_wa;
         $uraian = $record->uraian_pengajuan;
@@ -364,8 +423,7 @@ class PengajuanServices
     // =========================================================================
 
     // ... (Sisa kode dari ubahPengajuan sampai akhir tidak perlu diubah) ...
-    public static function ubahPengajuan(array $data, Pengajuan $record)
-    {
+    public static function ubahPengajuan(array $data, Pengajuan $record) {
         try {
             $record->update($data);
             Notification::make()->success()->title("Berhasil menyimpan perubahan")->send();
@@ -374,103 +432,85 @@ class PengajuanServices
         }
     }
 
-    public static function canShowPengajuActions(Pengajuan $record): bool
-    {
+    public static function canShowPengajuActions(Pengajuan $record): bool {
         $user = auth()->user();
         return ($user->pegawai?->nip == $record->nip_pengaju) && $record->posisi_dokumen_id == Constants::POSISI_PENGAJU;
     }
 
-    public static function canShowPpkActions(Pengajuan $record): bool
-    {
+    public static function canShowPpkActions(Pengajuan $record): bool {
         return $record->posisi_dokumen_id == Constants::POSISI_PPK;
     }
 
-    public static function canShowPpspmActions(Pengajuan $record): bool
-    {
+    public static function canShowPpspmActions(Pengajuan $record): bool {
         return $record->posisi_dokumen_id == Constants::POSISI_PPSPM;
     }
 
-    private static function areAllVerificationsApproved(Pengajuan $record): bool
-    {
+    private static function areAllVerificationsApproved(Pengajuan $record): bool {
         return Constants::isDisetujui($record->status_pengajuan_ppk_id) &&
             Constants::isDisetujui($record->status_pengajuan_ppspm_id) &&
             Constants::isDisetujui($record->status_pengajuan_bendahara_id);
     }
 
-    public static function canShowBendaharaVerificationAction(Pengajuan $record): bool
-    {
+    public static function canShowBendaharaVerificationAction(Pengajuan $record): bool {
         return
             $record->posisi_dokumen_id == Constants::POSISI_BENDAHARA &&
             !self::areAllVerificationsApproved($record);
     }
 
-    public static function canShowBendaharaPaymentAction(Pengajuan $record): bool
-    {
+    public static function canShowBendaharaPaymentAction(Pengajuan $record): bool {
         return
             $record->posisi_dokumen_id == Constants::POSISI_BENDAHARA &&
             self::areAllVerificationsApproved($record);
     }
 
-    public static function jumlahPerluPerbaikanPengaju()
-    {
+    public static function jumlahPerluPerbaikanPengaju() {
         return Pengajuan::where('posisi_dokumen_id', Constants::POSISI_PENGAJU)->count();
     }
-    public static function jumlahPerluPemeriksaanPpk()
-    {
+    public static function jumlahPerluPemeriksaanPpk() {
         return Pengajuan::where('posisi_dokumen_id', Constants::POSISI_PPK)->count();
     }
-    public static function jumlahPerluPemeriksaanPpspm()
-    {
+    public static function jumlahPerluPemeriksaanPpspm() {
         return Pengajuan::where('posisi_dokumen_id', Constants::POSISI_PPSPM)->count();
     }
-    public static function jumlahPerluPemeriksaanAtauProsesBendahara()
-    {
+    public static function jumlahPerluPemeriksaanAtauProsesBendahara() {
         return Pengajuan::where('posisi_dokumen_id', Constants::POSISI_BENDAHARA)->count();
     }
 
-    public static function rawPerluPerbaikanPengaju(): string
-    {
+    public static function rawPerluPerbaikanPengaju(): string {
         return "posisi_dokumen_id = " . Constants::POSISI_PENGAJU;
     }
 
-    public static function rawPerluPemeriksaanPpk(): string
-    {
+    public static function rawPerluPemeriksaanPpk(): string {
         return "posisi_dokumen_id = " . Constants::POSISI_PPK;
     }
 
-    public static function rawPerluPemeriksaanPpspm(): string
-    {
+    public static function rawPerluPemeriksaanPpspm(): string {
         return "posisi_dokumen_id = " . Constants::POSISI_PPSPM;
     }
 
-    public static function rawPerluAksiBendahara(): string
-    {
+    public static function rawPerluAksiBendahara(): string {
         return "posisi_dokumen_id = " . Constants::POSISI_BENDAHARA;
     }
 
-    public static function rawPerluPemeriksaanBendahara(): string
-    {
+    public static function rawPerluPemeriksaanBendahara(): string {
         return "posisi_dokumen_id = " . Constants::POSISI_BENDAHARA . " AND ( " .
             "status_pengajuan_ppk_id NOT IN (" . Constants::STATUS_DISETUJUI_DENGAN_CATATAN . "," . Constants::STATUS_DISETUJUI_TANPA_CATATAN . ") OR " .
             "status_pengajuan_ppspm_id NOT IN (" . Constants::STATUS_DISETUJUI_DENGAN_CATATAN . "," . Constants::STATUS_DISETUJUI_TANPA_CATATAN . ") OR " .
             "status_pengajuan_bendahara_id NOT IN (" . Constants::STATUS_DISETUJUI_DENGAN_CATATAN . "," . Constants::STATUS_DISETUJUI_TANPA_CATATAN . ") )";
     }
 
-    public static function rawPerluProsesBendahara(): string
-    {
+    public static function rawPerluProsesBendahara(): string {
         return "posisi_dokumen_id = " . Constants::POSISI_BENDAHARA . " AND " .
             "status_pengajuan_ppk_id IN (" . Constants::STATUS_DISETUJUI_DENGAN_CATATAN . "," . Constants::STATUS_DISETUJUI_TANPA_CATATAN . ") AND " .
             "status_pengajuan_ppspm_id IN (" . Constants::STATUS_DISETUJUI_DENGAN_CATATAN . "," . Constants::STATUS_DISETUJUI_TANPA_CATATAN . ") AND " .
             "status_pengajuan_bendahara_id IN (" . Constants::STATUS_DISETUJUI_DENGAN_CATATAN . "," . Constants::STATUS_DISETUJUI_TANPA_CATATAN . ")";
     }
 
-    public static function rawSelesai(): string
-    {
+    public static function rawSelesai(): string {
         return "posisi_dokumen_id = " . Constants::POSISI_SELESAI;
     }
 
-    public static function jumlahPerluPemeriksaanBendahara(): int
-    {
+    public static function jumlahPerluPemeriksaanBendahara(): int {
         return Pengajuan::where('posisi_dokumen_id', Constants::POSISI_BENDAHARA)
             ->where(function ($query) {
                 $query->where('status_pengajuan_ppk_id', '!=', Constants::STATUS_DISETUJUI_TANPA_CATATAN)
@@ -482,8 +522,7 @@ class PengajuanServices
             ->count();
     }
 
-    public static function jumlahPerluProsesBendahara(): int
-    {
+    public static function jumlahPerluProsesBendahara(): int {
         return Pengajuan::where('posisi_dokumen_id', Constants::POSISI_BENDAHARA)
             ->whereIn('status_pengajuan_ppk_id', [Constants::STATUS_DISETUJUI_TANPA_CATATAN, Constants::STATUS_DISETUJUI_DENGAN_CATATAN])
             ->whereIn('status_pengajuan_ppspm_id', [Constants::STATUS_DISETUJUI_TANPA_CATATAN, Constants::STATUS_DISETUJUI_DENGAN_CATATAN])
@@ -491,8 +530,7 @@ class PengajuanServices
             ->count();
     }
 
-    public static function jumlahSelesaiSubfungsi(string $namaSubfungsi): int
-    {
+    public static function jumlahSelesaiSubfungsi(string $namaSubfungsi): int {
         $query = Pengajuan::whereHas("subfungsi", function ($q) use ($namaSubfungsi) {
             $q->where("nama", $namaSubfungsi);
         });
