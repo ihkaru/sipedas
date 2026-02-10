@@ -14,53 +14,45 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Collection;
 use PHPUnit\TextUI\Configuration\Constant;
 
-class Penugasan extends Model
-{
+class Penugasan extends Model {
     use HasFactory;
     protected $guarded = [];
     public static Collection $masterSls;
     protected ?Pegawai $pegawaiPlh = null;
     protected ?Pegawai $plhSaatMulaiPerjalanan = null;
 
-    protected function casts(): array
-    {
+    protected function casts(): array {
         return [
             'plh_id' => 'string',
         ];
     }
 
-    protected function pemberiPerintah(): Attribute
-    {
+    protected function pemberiPerintah(): Attribute {
         return Attribute::make(
             get: fn(mixed $value, array $attributes) => Plh::getApprover([$attributes['nip']], $attributes['tgl_pengajuan_tugas'], true),
         );
     }
-    protected function penandaTanganHariPertama(): Attribute
-    {
+    protected function penandaTanganHariPertama(): Attribute {
         return $this->pemberiPerintah();
     }
 
-    protected function isMitra(): Attribute
-    {
+    protected function isMitra(): Attribute {
         return Attribute::make(
             get: fn(mixed $value, array $attributes) => (bool) $attributes['id_sobat'],
         );
     }
 
-    protected function jenisSurat(): Attribute
-    {
+    protected function jenisSurat(): Attribute {
         return Attribute::make(
             get: fn(mixed $value, array $attributes) => Constants::JENIS_SURAT_TUGAS_OPTIONS[$attributes["jenis_surat_tugas"]],
         );
     }
-    protected function jenisTransportasi(): Attribute
-    {
+    protected function jenisTransportasi(): Attribute {
         return Attribute::make(
             get: fn(mixed $value, array $attributes) => Constants::JENIS_TRANSPORTASI_OPTIONS[$attributes["transportasi"]],
         );
     }
-    protected function lamaPerjadin(): Attribute
-    {
+    protected function lamaPerjadin(): Attribute {
 
         return Attribute::make(
             get: function (mixed $value, array $attributes) {
@@ -68,8 +60,7 @@ class Penugasan extends Model
             },
         );
     }
-    protected function jenisPerjadin(): Attribute
-    {
+    protected function jenisPerjadin(): Attribute {
         return Attribute::make(
             get: function (mixed $value, array $attributes) {
                 if (!$attributes['jenis_surat_tugas']) return null;
@@ -77,8 +68,7 @@ class Penugasan extends Model
             },
         );
     }
-    protected function tujuanPenugasan(): Attribute
-    {
+    protected function tujuanPenugasan(): Attribute {
         $masterSls = self::$masterSls ??= MasterSls::get();
         $tujuanSuratTugas = $this->tujuanSuratTugas;
         return Attribute::make(get: function (mixed $value, array $attributes) use ($masterSls, $tujuanSuratTugas) {
@@ -86,22 +76,19 @@ class Penugasan extends Model
             return TujuanSuratTugas::combinerTujuan($tujuanSuratTugas, $masterSls);
         });
     }
-    protected function tertugas(): Attribute
-    {
+    protected function tertugas(): Attribute {
         $tertugas = $this->pegawai?->nama ?? $this->mitra?->nama_1;
         return Attribute::make(get: function (mixed $value, array $attributes) use ($tertugas) {
             return $tertugas;
         });
     }
-    protected function jenisPetugas(): Attribute
-    {
+    protected function jenisPetugas(): Attribute {
         $jenisPetugas = $this->isMitra ? Constants::JABATAN_MITRA : Constants::JABATAN_PEGAWAI;
         return Attribute::make(get: function (mixed $value, array $attributes) use ($jenisPetugas) {
             return $jenisPetugas;
         });
     }
-    protected function tglPerjadin(): Attribute
-    {
+    protected function tglPerjadin(): Attribute {
 
         return Attribute::make(
             get: function (mixed $value, array $attributes) {
@@ -112,61 +99,48 @@ class Penugasan extends Model
         );
     }
 
-    public function suratTugas()
-    {
+    public function suratTugas() {
         return $this->belongsTo(NomorSurat::class, "surat_tugas_id", "id");
     }
-    public function suratPerjadin()
-    {
+    public function suratPerjadin() {
         return $this->belongsTo(NomorSurat::class, "surat_perjadin_id", "id");
     }
-    public function pegawai()
-    {
+    public function pegawai() {
         return $this->belongsTo(Pegawai::class, "nip", "nip");
     }
-    public function pengaju()
-    {
+    public function pengaju() {
         return $this->belongsTo(Pegawai::class, "nip_pengaju", "nip");
     }
-    public function mitra()
-    {
+    public function mitra() {
         return $this->belongsTo(Mitra::class, "id_sobat", "id_sobat");
     }
-    public function plhSesuai()
-    {
+    public function plhSesuai() {
         if ($this->pegawaiPlh) return $this->pegawaiPlh;
         $this->pegawaiPlh = Plh::getPlhAktif(Carbon::parse($this->tgl_pengajuan_tugas), returnPegawai: true);
         return $this->pegawaiPlh;
     }
-    public function plhSaatMulaiPerjalanan()
-    {
+    public function plhSaatMulaiPerjalanan() {
         if ($this->plhSaatMulaiPerjalanan) return $this->plhSaatMulaiPerjalanan;
         $this->plhSaatMulaiPerjalanan = Plh::getPlhAktif(Carbon::parse($this->tgl_mulai_tugas), returnPegawai: true);
         return $this->plhSaatMulaiPerjalanan;
     }
-    public function plh()
-    {
+    public function plh() {
         return $this->belongsTo(Pegawai::class, "plh_id", "nip");
     }
-    public function riwayatPengajuan()
-    {
+    public function riwayatPengajuan() {
         return $this->hasOne(RiwayatPengajuan::class, "penugasan_id", "id");
     }
-    public function kegiatan()
-    {
+    public function kegiatan() {
         return $this->belongsTo(Kegiatan::class, "kegiatan_id", "id");
     }
-    public function satuSurat()
-    {
+    public function satuSurat() {
         return $this->hasMany(Penugasan::class, "surat_tugas_id", "surat_tugas_id");
     }
-    public function tujuanSuratTugas()
-    {
+    public function tujuanSuratTugas() {
         return $this->hasMany(TujuanSuratTugas::class);
     }
 
-    public function suratTugasBersamaDisetujui(array $with = null)
-    {
+    public function suratTugasBersamaDisetujui(array $with = null) {
         $query = self::query();
         $surat_tugas_id = $this->surat_tugas_id;
         if (!$surat_tugas_id) return collect([]);
@@ -180,19 +154,16 @@ class Penugasan extends Model
             });
         })->get();
     }
-    public function isSuratTugasBersama()
-    {
+    public function isSuratTugasBersama() {
         $query = self::query();
         $surat_tugas_id = $this->surat_tugas_id;
         if (!$surat_tugas_id) return collect([]);
         return $query->where("surat_tugas_id", $surat_tugas_id)->count() > 1;
     }
-    public function satuGrupPengajuan()
-    {
+    public function satuGrupPengajuan() {
         return $this->hasMany(Penugasan::class, "grup_id", "grup_id");
     }
-    public static function ajukan(array $data)
-    {
+    public static function ajukan(array $data) {
         $now = now()->toDateTimeString();
         $res = 0;
         $pegawaiPlh = Plh::getApprover($data["nips"] ?? null, Carbon::parse($data["tgl_mulai_tugas"])->toDateTimeString(), true);
@@ -252,8 +223,7 @@ class Penugasan extends Model
         return null;
     }
 
-    public static function perluPerbaikan($data, bool $checkRole = false)
-    {
+    public static function perluPerbaikan($data, bool $checkRole = false) {
         $res = 0;
         $pengajuan = self::with("riwayatPengajuan")->find($data['id']);
         if (!$pengajuan->canPerluPerbaikan($checkRole)) return 0;
@@ -262,8 +232,7 @@ class Penugasan extends Model
         return $res != 0;
     }
 
-    public static function ajukanRevisi($data)
-    {
+    public static function ajukanRevisi($data) {
         $res = 0;
         $pengajuan = self::with("riwayatPengajuan")->find($data['id']);
         if (!$pengajuan->canAjukanRevisi()) return 0;
@@ -272,8 +241,7 @@ class Penugasan extends Model
         return $res != 0;
     }
 
-    public function canSetujui(bool $checkRole = true)
-    {
+    public function canSetujui(bool $checkRole = true) {
         if ($checkRole == false) return true;
         return
             $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM && (
@@ -281,18 +249,15 @@ class Penugasan extends Model
                 $this->plh_id == auth()->user()->pegawai?->nip
             );
     }
-    public function canRevisi(bool $checkRole = true)
-    {
+    public function canRevisi(bool $checkRole = true) {
         if ($checkRole == false) return true;
         return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM;
     }
-    public function canAjukanRevisi(bool $checkRole = true)
-    {
+    public function canAjukanRevisi(bool $checkRole = true) {
         if ($checkRole == false) return true;
         return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_PERLU_REVISI;
     }
-    public function canTolak(bool $checkRole = true)
-    {
+    public function canTolak(bool $checkRole = true) {
         if ($checkRole == false) return true;
         return
             $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM && (
@@ -300,8 +265,7 @@ class Penugasan extends Model
                 auth()->user()->hasRole("kepala_satker")
             );
     }
-    public function canBatalkan(bool $checkRole = true)
-    {
+    public function canBatalkan(bool $checkRole = true) {
         if ($checkRole == false) return true;
         return (
             $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM ||
@@ -312,12 +276,11 @@ class Penugasan extends Model
             (
                 auth()->user()->pegawai?->nip == $this->nip ||
                 auth()->user()->pegawai?->nip == $this->nip_pengaju ||
-                auth()->user()->pegawai?->nip == $this->kegiatan->pj_kegiatan_id ||
+                auth()->user()->pegawai?->nip == $this->kegiatan?->pj_kegiatan_id ||
                 auth()->user()->hasRole("operator_umum")
             );
     }
-    public function canCetak(bool $checkRole = true)
-    {
+    public function canCetak(bool $checkRole = true) {
         if ($checkRole == false) return true;
         return
             $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DISETUJUI &&
@@ -326,21 +289,19 @@ class Penugasan extends Model
                 auth()->user()->hasRole('operator_umum')
             );
     }
-    public function canKumpulkan(bool $checkRole = true)
-    {
+    public function canKumpulkan(bool $checkRole = true) {
         if ($checkRole == false) return true;
         return
             $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DICETAK &&
             $this->jenis_surat_tugas != Constants::NON_SPPD &&
             (
                 auth()->user()->hasRole('operator_umum') ||
-                auth()->user()->email == $this->pegawai->email ||
+                auth()->user()->email == $this->pegawai?->email ||
                 auth()->user()->pegawai?->nip == $this->nip_pengaju ||
-                auth()->user()->pegawai?->nip == $this->kegiatan->pj_kegiatan_id
+                auth()->user()->pegawai?->nip == $this->kegiatan?->pj_kegiatan_id
             );
     }
-    public function canBatalkanPengumpulan(bool $checkRole = true)
-    {
+    public function canBatalkanPengumpulan(bool $checkRole = true) {
         if ($checkRole == false) return true;
         return
             $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKUMPULKAN &&
@@ -349,11 +310,10 @@ class Penugasan extends Model
                 auth()->user()->hasRole('operator_umum') ||
                 auth()->user()->email == $this->nip ||
                 auth()->user()->nip == $this->nip_pengaju ||
-                auth()->user()->nip == $this->kegiatan->pj_kegiatan_id
+                auth()->user()->nip == $this->kegiatan?->pj_kegiatan_id
             );
     }
-    public function canCairkan(bool $checkRole = true)
-    {
+    public function canCairkan(bool $checkRole = true) {
         if ($checkRole == false) return true;
         return
             $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKUMPULKAN &&
@@ -362,8 +322,7 @@ class Penugasan extends Model
                 auth()->user()->hasRole('operator_umum')
             );
     }
-    public function canPerluPerbaikan(bool $checkRole = true)
-    {
+    public function canPerluPerbaikan(bool $checkRole = true) {
         if ($checkRole == false) return true;
         return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM &&
             (
@@ -372,8 +331,7 @@ class Penugasan extends Model
             );
     }
 
-    public function assignNomorSuratTugas($mode_langsung = false, $data = null)
-    {
+    public function assignNomorSuratTugas($mode_langsung = false, $data = null) {
         $p = Penugasan::where('grup_id', $this->grup_id)
             ->whereNotNull('surat_tugas_id')
             ->first();
@@ -395,8 +353,7 @@ class Penugasan extends Model
         $this->surat_tugas_id = NomorSurat::generateNomorSuratTugas(Carbon::parse($this->tgl_pengajuan_tugas))->id;
         return $this->save();
     }
-    public function assignNomorSuratPerjadin()
-    {
+    public function assignNomorSuratPerjadin() {
         $p = Penugasan::where('grup_id', $this->grup_id)
             ->whereNotNull('surat_perjadin_id')
             ->first();
@@ -408,15 +365,13 @@ class Penugasan extends Model
         return $this->save();
     }
 
-    public function setujui(bool $checkRole = true, $mode_langsung = false, $data = null)
-    {
+    public function setujui(bool $checkRole = true, $mode_langsung = false, $data = null) {
         if (!$this->canSetujui($checkRole)) return 0;
         if (!$this->surat_tugas_id) $this->assignNomorSuratTugas($mode_langsung, $data);
         if ($this->jenis_surat_tugas != Constants::NON_SPPD) $this->assignNomorSuratPerjadin();
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DISETUJUI, "tgl_diterima", now());
     }
-    public function tolak(bool $checkRole = true)
-    {
+    public function tolak(bool $checkRole = true) {
         if (!$this->canTolak($checkRole)) return 0;
         $suratTugas = $this->suratTugas;
         $suratPerjadin = $this->suratPerjadin;
@@ -425,8 +380,7 @@ class Penugasan extends Model
         $this->save();
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DITOLAK, "tgl_ditolak", now());
     }
-    public function batalkan(bool $checkRole = true)
-    {
+    public function batalkan(bool $checkRole = true) {
         if (!$this->canBatalkan($checkRole)) return 0;
         $suratTugasId = $this->suratTugas;
         $suratPerjadinId = $this->suratPerjadin;
@@ -435,28 +389,23 @@ class Penugasan extends Model
         $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DIBATALKAN, "tgl_dibatalkan", now());
         return $this->delete();
     }
-    public function cetak(bool $checkRole = true)
-    {
+    public function cetak(bool $checkRole = true) {
         if (!$this->canCetak($checkRole)) return 0;
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DICETAK, "tgl_dibuat", now());
     }
-    public function kumpulkan(bool $checkRole = true)
-    {
+    public function kumpulkan(bool $checkRole = true) {
         if (!$this->canKumpulkan($checkRole)) return 0;
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DIKUMPULKAN, "tgl_dikumpulkan", now());
     }
-    public function batalkanPengumpulan(bool $checkRole = true)
-    {
+    public function batalkanPengumpulan(bool $checkRole = true) {
         if (!$this->canBatalkanPengumpulan($checkRole)) return 0;
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DICETAK, "tgl_dibuat", now());
     }
-    public function cairkan(bool $checkRole = true)
-    {
+    public function cairkan(bool $checkRole = true) {
         if (!$this->canCairkan($checkRole)) return 0;
         return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DICAIRKAN, "tgl_pencairan", now());
     }
-    public static function sedangPerjadin($nip, $date)
-    {
+    public static function sedangPerjadin($nip, $date) {
         $res = self::whereNotIn('jenis_surat_tugas', [
             Constants::NON_SPPD
         ])
@@ -476,13 +425,11 @@ class Penugasan extends Model
 
 
 
-    public static function getGrupId(): string
-    {
+    public static function getGrupId(): string {
         $id = Str::orderedUuid();
         return $id;
     }
-    public static function getDisabledDates(array $nips): array
-    {
+    public static function getDisabledDates(array $nips): array {
         $penugasans = Penugasan::whereIn("nip", $nips)
             ->whereNotNull("surat_perjadin_id")
             ->whereHas('riwayatPengajuan', function (Builder $query) {
@@ -507,8 +454,7 @@ class Penugasan extends Model
         }
         return collect($res)->unique()->flatten()->toArray();
     }
-    public static function generateDateRange(Carbon $start_date, Carbon $end_date)
-    {
+    public static function generateDateRange(Carbon $start_date, Carbon $end_date) {
         $dates = [];
 
         for ($date = $start_date->copy(); $date->lte($end_date); $date->addDay()) {
@@ -517,30 +463,26 @@ class Penugasan extends Model
 
         return $dates;
     }
-    public static function getMinDate(string $date, array $nips)
-    {
+    public static function getMinDate(string $date, array $nips) {
         $date = Carbon::parse($date);
         // dd( collect(self::getDisabledDates($nips)));
         $res = collect(self::getDisabledDates($nips))->filter(fn($v) => Carbon::parse($v) > $date)->sort()->flatten()->toArray();
         return $res ? $res[0] : null;
     }
 
-    public static function getNearestPemberiTugasDate(string $tanggalPengajuan, string $tanggalMulaiTugas, array $nips)
-    {
+    public static function getNearestPemberiTugasDate(string $tanggalPengajuan, string $tanggalMulaiTugas, array $nips) {
         $dateRange = self::generateDateRange(Carbon::parse($tanggalPengajuan), Carbon::parse($tanggalMulaiTugas));
         $disabledDate = self::getDisabledDates($nips);
         $tanggalMerah = TanggalMerah::getLiburDates();
         return collect(array_diff($dateRange, $disabledDate, $tanggalMerah))->unique()->sort()->flatten()->toArray()[0] ?? $tanggalMulaiTugas;
     }
-    public static function dataToArray($data, $key)
-    {
+    public static function dataToArray($data, $key) {
         if (!isset($data[$key])) return null;
         if (!is_array($data[$key])) return [$data[$key]];
         return $data[$key];
     }
 
-    public static function importSuratTugas($data)
-    {
+    public static function importSuratTugas($data) {
         $now = $data['tanggal_mulai'];
         if ($data["jenis_petugas"] == "MITRA") {
             $data["mitras"] = [$data["nip"]];
