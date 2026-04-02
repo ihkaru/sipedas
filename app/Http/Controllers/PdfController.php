@@ -16,8 +16,7 @@ class PdfController extends Controller {
     public function cetakPenugasan($id) {
         // if(auth()->user()) abort(403);
         $penugasans = Penugasan::with(['satuSurat', 'suratTugas', 'suratPerjadin', 'kegiatan', 'pegawai', 'plh'])->find($id);
-        // dd($penugasans);
-        $ppk = Pegawai::getPpkByDate($penugasans->tgl_mulai_tugas);
+        $ppk = Pegawai::getPpkByDate($penugasans->tgl_pengajuan_tugas);
         $plhAktifSaatPengajuan = Plh::getPlhAktif($penugasans->tgl_pengajuan_tugas, true);
         $plhAktifSaatPerjalanan = Plh::getPlhAktif($penugasans->tgl_mulai_tugas, true);
         return view('surat_tugas.sendiri.pdf', [
@@ -34,7 +33,7 @@ class PdfController extends Controller {
         $penugasan = Penugasan::find($id);
         $penugasans = $penugasan->suratTugasBersamaDisetujui(['satuSurat', 'suratTugas', 'suratPerjadin', 'kegiatan', 'pegawai', 'plh']);
         // dd($penugasans);
-        $ppk = Pegawai::getPpkByDate($penugasans->tgl_mulai_tugas);
+        $ppk = Pegawai::getPpkByDate($penugasans->first()->tgl_pengajuan_tugas);
         $plhAktifSaatPengajuan = Plh::getPlhAktif($penugasans->first()->tgl_pengajuan_tugas, true);
         $plhAktifSaatPerjalanan = Plh::getPlhAktif($penugasans->first()->tgl_mulai_tugas, true);
         // dd($plhAktifSaatPengajuan,$plhAktifSaatPerjalanan);

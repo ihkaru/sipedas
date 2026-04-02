@@ -281,7 +281,7 @@ class PengajuanServices {
     }
 
     private static function ajukanNotifier(Pengajuan $record) {
-        $ppk = Pegawai::getPpkByDate($record->created_at);
+        $ppk = Pegawai::getPpkByDate($record->tanggal_pengajuan ?? $record->created_at);
         $userPpk = $ppk?->user;
         if (!$userPpk) return;
 
@@ -336,7 +336,7 @@ class PengajuanServices {
         $tanggapanPengaju = "";
 
         if ($record->posisi_dokumen_id == Constants::POSISI_PPK) {
-            $ppk = Pegawai::getPpkByDate($record->created_at);
+            $ppk = Pegawai::getPpkByDate($record->tanggal_pengajuan ?? $record->created_at);
             $userPemeriksa = $ppk?->user;
             $pemeriksa = $userPemeriksa?->pegawai?->panggilan ?? 'PPK';
             $jabatan = "PPK";
@@ -418,7 +418,7 @@ class PengajuanServices {
         $originalTargetWa = null;
         $message = "";
 
-        $pemeriksaUser = ($role == 'ppk') ? (Pegawai::getPpkByDate($record->created_at)?->user) : (($role == 'ppspm') ? User::getPpspm()->first() : User::getBendahara()->first());
+        $pemeriksaUser = ($role == 'ppk') ? (Pegawai::getPpkByDate($record->tanggal_pengajuan ?? $record->created_at)?->user) : (($role == 'ppspm') ? User::getPpspm()->first() : User::getBendahara()->first());
         $namaPemeriksa = $pemeriksaUser?->pegawai?->panggilan ?? strtoupper($role);
 
         if ($statusId == Constants::STATUS_DITOLAK) {
