@@ -18,7 +18,7 @@
         -   [3.1.2 Partner and Employee Management](#312-partner-and-employee-management)
         -   [3.1.3 Activity and Assignment Management](#313-activity-and-assignment-management)
         -   [3.1.4 Document Generation](#314-document-generation)
-        -   [3.1.5 SIPANCONG - Document Submission and Tracking](#315-sipancong---document-submission-and-tracking)
+        -   [3.1.5 Monitoring Pembayaran - Document Submission and Tracking](#315-monitoring-pembayaran---document-submission-and-tracking)
         -   [3.1.6 Microsite Management](#316-microsite-management)
         -   [3.1.7 Reporting and Analytics](#317-reporting-and-analytics)
     -   [3.2 Non-Functional Requirements](#32-non-functional-requirements)
@@ -44,7 +44,7 @@ The Sikendis application is a web-based information system designed to manage ad
 
 -   **SRS**: System Requirements Specification
 -   **Sikendis**: The name of the application.
--   **SIPANCONG**: A specialized module for managing document submissions and payments.
+-   **Monitoring Pembayaran**: A specialized module for managing document submissions and payments.
 -   **UI**: User Interface
 -   **DomPDF**: A PHP library for generating PDF documents.
 -   **Filament**: A PHP framework for building admin panels.
@@ -75,7 +75,7 @@ The main functions of the Sikendis application include:
 -   **User and Partner Management**: Securely manage user accounts, roles, and permissions, as well as information about partners and employees.
 -   **Activity and Assignment Management**: Create, track, and manage activities and assignments for employees and partners.
 -   **Document Generation**: Automatically generate official documents, such as assignment letters and contracts, in PDF format.
--   **Document Submission and Tracking (SIPANCONG)**: A specialized module for managing the submission, tracking, and payment status of official documents.
+-   **Document Submission and Tracking (Monitoring Pembayaran)**: A specialized module for managing the submission, tracking, and payment status of official documents.
 -   **System Configuration**: Configure application settings, such as email notifications and document templates.
 -   **Reporting and Analytics**: Generate reports and view key metrics on the system's activities and performance.
 -   **Microsite Management**: Create and manage simple, one-page websites for specific events or purposes.
@@ -127,7 +127,7 @@ The system is designed for two main types of users:
 -   **FR4.2**: The system shall use pre-defined templates for all generated documents to ensure consistency and accuracy.
 -   **FR4.3**: The system shall allow administrators to customize document templates as needed.
 
-#### 3.1.5 SIPANCONG - Document Submission and Tracking
+#### 3.1.5 Monitoring Pembayaran - Document Submission and Tracking
 
 -   **FR5.1**: The system shall provide a user-friendly interface for submitting official documents.
 -   **FR5.2**: The system shall allow users to track the status of their submitted documents, from submission to approval and payment.

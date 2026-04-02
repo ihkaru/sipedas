@@ -4,6 +4,7 @@ namespace App\Services\Sipancong;
 
 use App\Models\Sipancong\Pengajuan;
 use App\Models\User;
+use App\Models\Pegawai;
 use App\Models\Setting;
 use App\Services\WhatsappNotifier;
 use App\Models\ActionToken;
@@ -280,7 +281,8 @@ class PengajuanServices {
     }
 
     private static function ajukanNotifier(Pengajuan $record) {
-        $userPpk = User::getPpk()->first();
+        $ppk = Pegawai::getPpkByDate($record->created_at);
+        $userPpk = $ppk?->user;
         if (!$userPpk) return;
 
         $namaPanggilanPpk = $userPpk->pegawai?->panggilan ?? 'Bapak/Ibu';
@@ -334,7 +336,8 @@ class PengajuanServices {
         $tanggapanPengaju = "";
 
         if ($record->posisi_dokumen_id == Constants::POSISI_PPK) {
-            $userPemeriksa = User::getPpk()->first();
+            $ppk = Pegawai::getPpkByDate($record->created_at);
+            $userPemeriksa = $ppk?->user;
             $pemeriksa = $userPemeriksa?->pegawai?->panggilan ?? 'PPK';
             $jabatan = "PPK";
             $originalTargetWa = $userPemeriksa?->pegawai?->nomor_wa;
@@ -415,7 +418,7 @@ class PengajuanServices {
         $originalTargetWa = null;
         $message = "";
 
-        $pemeriksaUser = ($role == 'ppk') ? User::getPpk()->first() : (($role == 'ppspm') ? User::getPpspm()->first() : User::getBendahara()->first());
+        $pemeriksaUser = ($role == 'ppk') ? (Pegawai::getPpkByDate($record->created_at)?->user) : (($role == 'ppspm') ? User::getPpspm()->first() : User::getBendahara()->first());
         $namaPemeriksa = $pemeriksaUser?->pegawai?->panggilan ?? strtoupper($role);
 
         if ($statusId == Constants::STATUS_DITOLAK) {
