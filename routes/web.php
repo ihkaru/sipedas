@@ -42,3 +42,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/download/template/alokasi-honor', [ExcelExportController::class, 'downloadAlokasiHonorTemplate'])
         ->name('download.template.alokasi-honor');
 });
+
+Route::get('/p/{slug}', [\App\Http\Controllers\CustomPageController::class, 'show'])->name('custom-page.show');

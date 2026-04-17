@@ -33,7 +33,7 @@ class APanelProvider extends PanelProvider {
             ->path('a')
             ->login()
             // ->font('Inter', provider: SpatieGoogleFontProvider::class)
-            ->favicon(env('APP_URL') . "/favicon.ico")
+            ->favicon(asset('favicon.ico'))
             // ->brandLogo(env('APP_URL')."/logo.svg")
             ->brandName('DOKTER-V')
             ->colors([
