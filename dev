@@ -47,22 +47,22 @@ case "$1" in
             BUILD_FLAG="--build"
         fi
         
-        docker-compose up $BUILD_FLAG -d
+        docker-compose -f docker-compose.dev.yml up $BUILD_FLAG -d
         get_hash > .build_hash
         echo -e "${GREEN}SIKENDIS is up at http://localhost:$APP_PORT${NC}"
         echo -e "${GREEN}phpMyAdmin is at http://localhost:$PMA_PORT${NC}"
         ;;
     
     down)
-        docker-compose down
+        docker-compose -f docker-compose.dev.yml down
         ;;
 
     logs)
-        docker-compose logs -f app
+        docker-compose -f docker-compose.dev.yml logs -f app
         ;;
 
     shell)
-        docker-compose exec app sh
+        docker-compose -f docker-compose.dev.yml exec app sh
         ;;
 
     reset)
@@ -70,14 +70,14 @@ case "$1" in
         read -n 1 -r
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
-            docker-compose exec app php artisan migrate:fresh --seed
+            docker-compose -f docker-compose.dev.yml exec app php artisan migrate:fresh --seed
         fi
         ;;
 
     fix)
         echo "Fixing permissions and clearing caches..."
-        docker-compose exec app chown -R www-data:www-data storage bootstrap/cache
-        docker-compose exec app php artisan optimize:clear
+        docker-compose -f docker-compose.dev.yml exec app chown -R www-data:www-data storage bootstrap/cache
+        docker-compose -f docker-compose.dev.yml exec app php artisan optimize:clear
         ;;
 
     *)
