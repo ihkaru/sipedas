@@ -19,3 +19,8 @@ yarn-error.log
 /.idea
 /.vscode
 vendor.zip
+frankenphp
+.build_hash
+*.zip
+database/data/backup/
+public/vendor/

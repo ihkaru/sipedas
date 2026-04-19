@@ -1,0 +1,87 @@
+#!/bin/bash
+
+# SIKENDIS Smart Dev Wrapper v1.0
+# Designed for seamless development in busy environments.
+
+PROJECT_NAME="sikendis"
+APP_PORT=8200
+DB_PORT=3309
+PMA_PORT=8281
+
+# Color coding
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+function check_ports() {
+    local ports=($APP_PORT $DB_PORT $PMA_PORT)
+    for port in "${ports[@]}"; do
+        if netstat -tuln | grep -q ":$port "; then
+            # Check if it's OUR container
+            if ! docker ps --format '{{.Ports}}' | grep -q ":$port->"; then
+                echo -e "${RED}Error: Port $port is occupied by another process!${NC}"
+                exit 1
+            fi
+        fi
+    done
+}
+
+function get_hash() {
+    cat composer.json package.json dockerfile docker/caddy/Caddyfile 2>/dev/null | md5sum | cut -d' ' -f1
+}
+
+function build_needed() {
+    if [ ! -f .build_hash ]; then return 0; fi
+    local old_hash=$(cat .build_hash)
+    local new_hash=$(get_hash)
+    if [ "$old_hash" != "$new_hash" ]; then return 0; fi
+    return 1
+}
+
+case "$1" in
+    up)
+        check_ports
+        BUILD_FLAG=""
+        if build_needed; then
+            echo -e "${GREEN}Detected changes in dependencies or Dockerfile. Triggering build...${NC}"
+            BUILD_FLAG="--build"
+        fi
+        
+        docker-compose up $BUILD_FLAG -d
+        get_hash > .build_hash
+        echo -e "${GREEN}SIKENDIS is up at http://localhost:$APP_PORT${NC}"
+        echo -e "${GREEN}phpMyAdmin is at http://localhost:$PMA_PORT${NC}"
+        ;;
+    
+    down)
+        docker-compose down
+        ;;
+
+    logs)
+        docker-compose logs -f app
+        ;;
+
+    shell)
+        docker-compose exec app sh
+        ;;
+
+    reset)
+        echo -e "${RED}WARNING: This will wipe your database! Continue? (y/n)${NC}"
+        read -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            docker-compose exec app php artisan migrate:fresh --seed
+        fi
+        ;;
+
+    fix)
+        echo "Fixing permissions and clearing caches..."
+        docker-compose exec app chown -R www-data:www-data storage bootstrap/cache
+        docker-compose exec app php artisan optimize:clear
+        ;;
+
+    *)
+        echo "Usage: ./dev {up|down|logs|shell|reset|fix}"
+        exit 1
+        ;;
+esac

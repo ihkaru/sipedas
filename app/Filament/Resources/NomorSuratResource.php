@@ -24,8 +24,28 @@ class NomorSuratResource extends Resource
     protected static ?string $navigationIcon = 'fluentui-number-symbol-20';
     protected static ?string $navigationGroup = "Surat Tugas";
 
-    public static function canViewAny(): bool{
-        return auth()->user()->hasRole('operator_umum');
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('super_admin') ||
+            auth()->user()->hasRole('operator_umum');
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasRole('super_admin') ||
+            auth()->user()->hasRole('operator_umum');
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->user()->hasRole('super_admin') ||
+            auth()->user()->hasRole('operator_umum');
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->user()->hasRole('super_admin') ||
+            auth()->user()->hasRole('operator_umum');
     }
 
     public static function form(Form $form): Form

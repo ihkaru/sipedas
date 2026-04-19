@@ -113,8 +113,8 @@ class CustomPageResource extends Resource
                     ->label('Copy')
                     ->icon('heroicon-o-clipboard-document')
                     ->color('info')
-                    ->extraAttributes([
-                        'onclick' => fn ($record) => "
+                    ->extraAttributes(fn ($record) => [
+                        'onclick' => "
                             const link = '" . route('custom-page.show', $record->slug) . "';
                             if (navigator.clipboard) {
                                 navigator.clipboard.writeText(link).then(() => {

@@ -32,7 +32,27 @@ class PlhResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasRole('kepala_satker') || auth()->user()->hasRole('operator_umum');
+        return auth()->user()->hasRole('super_admin') ||
+            auth()->user()->hasRole('kepala_satker') ||
+            auth()->user()->hasRole('operator_umum');
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasRole('super_admin') ||
+            auth()->user()->hasRole('operator_umum');
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->user()->hasRole('super_admin') ||
+            auth()->user()->hasRole('operator_umum');
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->user()->hasRole('super_admin') ||
+            auth()->user()->hasRole('operator_umum');
     }
     public static function form(Form $form): Form
     {

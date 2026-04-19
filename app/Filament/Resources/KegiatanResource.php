@@ -34,10 +34,33 @@ class KegiatanResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasRole('kepala_satker') ||
+        return auth()->user()->hasRole('super_admin') ||
+            auth()->user()->hasRole('kepala_satker') ||
             auth()->user()->hasRole('operator_umum') ||
             auth()->user()->hasRole('pegawai');
     }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasRole('super_admin') ||
+            auth()->user()->hasRole('operator_umum') ||
+            auth()->user()->hasRole('pegawai');
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->user()->hasRole('super_admin') ||
+            auth()->user()->hasRole('operator_umum') ||
+            auth()->user()->hasRole('pegawai');
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->user()->hasRole('super_admin') ||
+            auth()->user()->hasRole('operator_umum') ||
+            auth()->user()->hasRole('pegawai');
+    }
+
     public static function form(Form $form): Form
     {
         return $form

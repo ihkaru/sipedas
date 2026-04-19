@@ -32,6 +32,7 @@
         "phpunit/phpunit": "^11.0.1",
         "revolution/laravel-google-sheets": "^7.0",
         "riskihajar/terbilang": "^2.0",
+        "laravel/octane": "^2.3",
         "spatie/laravel-ignition": "^2.4"
     },
     "autoload": {
@@ -48,14 +49,14 @@
     },
     "scripts": {
         "recache": [
-            "@php artisan view:clear",
-            "@php artisan route:clear",
-            "@php artisan config:clear",
-            "@php artisan cache:clear",
-            "@php artisan config:cache",
-            "@php artisan route:cache",
-            "@php artisan view:cache",
-            "@php artisan filament:cache-components"
+            "@php artisan optimize",
+            "@php artisan filament:optimize",
+            "@php artisan icons:cache"
+        ],
+        "recache-clear": [
+            "@php artisan optimize:clear",
+            "@php artisan filament:optimize-clear",
+            "@php artisan icons:clear"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

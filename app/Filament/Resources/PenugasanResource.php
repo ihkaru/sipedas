@@ -43,7 +43,9 @@ class PenugasanResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->hasRole('kepala_satker') || auth()->user()->hasRole('operator_umum');
+        return auth()->user()->hasRole('super_admin') ||
+            auth()->user()->hasRole('kepala_satker') ||
+            auth()->user()->hasRole('operator_umum');
     }
     public static function getWidgets(): array
     {
