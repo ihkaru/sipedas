@@ -14,7 +14,7 @@ COPY --from=composer-builder /app/vendor ./vendor
 RUN npm run build
 
 # Stage 3: PHP Base Runtime (Lean & High Performance)
-FROM dunglas/frankenphp:latest-alpine AS base
+FROM dunglas/frankenphp:php8.4-alpine AS base
 WORKDIR /app
 
 # Core FrankenPHP tuning (April 2026 Best Practices)
