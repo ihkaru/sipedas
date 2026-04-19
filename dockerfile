@@ -85,10 +85,11 @@ COPY . .
 COPY --from=node-builder /app/public/build ./public/build
 
 # Recache/Optimize for Production
-RUN composer dump-autoload --optimize --classmap-authoritative && \
-    php artisan optimize && \
-    php artisan filament:optimize && \
-    php artisan icons:cache
+# We move these to entrypoint to ensure connectivity to the database is available
+RUN composer dump-autoload --optimize --classmap-authoritative
+#    php artisan optimize && \
+#    php artisan filament:optimize && \
+#    php artisan icons:cache
 
 # Set permissions
 RUN chown -R www-data:www-data storage bootstrap/cache && \
