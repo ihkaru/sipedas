@@ -18,7 +18,7 @@ FROM dunglas/frankenphp:php8.4-alpine AS base
 WORKDIR /app
 
 # Core FrankenPHP tuning (April 2026 Best Practices)
-ENV GOMEMLIMIT 850MiB
+ENV GOMEMLIMIT=850MiB
 
 # Binary PHP Extension Installer
 ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
