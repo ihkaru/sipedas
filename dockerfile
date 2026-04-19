@@ -26,6 +26,9 @@ ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/relea
 # Install essential runtime tools only (curl for healthcheck)
 RUN apk add --no-cache curl
 
+# Copy Composer binary from stage 1 for universal use
+COPY --from=composer-builder /usr/bin/composer /usr/bin/composer
+
 # Fast Binary Extension Installation (Adding cache bust)
 # [CACHE_BUST_2026_01]
 RUN install-php-extensions \
