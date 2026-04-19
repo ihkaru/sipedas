@@ -7,22 +7,23 @@ services:
             target: prod
         image: sikendis-app:latest
         restart: unless-stopped
-        # Coolify handles domain mapping and SSL via Traefik. 
-        # We only expose port 80 internally within the docker network.
-        expose:
-            - 80
+        # Traefik & Coolify Labels (Best practice 2026)
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=coolify"
+            - "traefik.http.routers.dokterv.rule=Host(`admin.dvlpid.my.id`)"
+            - "traefik.http.routers.dokterv.entrypoints=http"
+            - "traefik.http.services.dokterv.loadbalancer.server.port=80"
+            - "coolify.managed=true"
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost/up"]
             interval: 30s
             timeout: 10s
             retries: 3
-        # In production, we don't need volumes for code, but we might need for persistent storage
-        # volumes:
-        #    - sikendis_storage:/app/storage
         networks:
             - coolify
 
 networks:
-    # Use the shared coolify network to connect to standalone databases
+    # Use the shared coolify network to connect to standalone databases and Traefik
     coolify:
         external: true
