@@ -7,13 +7,15 @@ services:
             target: prod
         image: sikendis-app:latest
         restart: unless-stopped
-        # Traefik & Coolify Labels (Best practice 2026)
+        # Production Traefik & SSL Labels (Exact match from server recommendation)
         labels:
             - "traefik.enable=true"
             - "traefik.docker.network=coolify"
-            - "traefik.http.routers.dokterv.rule=Host(`admin.dvlpid.my.id`)"
-            - "traefik.http.routers.dokterv.entrypoints=http"
-            - "traefik.http.services.dokterv.loadbalancer.server.port=80"
+            - "traefik.http.routers.dokterv-router.rule=Host(`admin.dvlpid.my.id`)"
+            - "traefik.http.routers.dokterv-router.entrypoints=http,https"
+            - "traefik.http.routers.dokterv-router.tls=true"
+            - "traefik.http.routers.dokterv-router.tls.certresolver=letsencrypt"
+            - "traefik.http.services.dokterv-service.loadbalancer.server.port=80"
             - "coolify.managed=true"
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost/up"]

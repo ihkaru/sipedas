@@ -18,7 +18,7 @@ php artisan migrate --force
 # This ensures that even if files are missing from the image root,
 # the app has its internal maps ready.
 echo "Optimizing application for Production (April 2026)..."
-php artisan optimize || echo "Standard optimization failed, continuing..."
+php artisan optimize || echo "Optimization failed, ignoring..."
 php artisan filament:optimize || echo "Filament optimization skipped"
 php artisan icons:cache || echo "Icons cache skipped"
 
