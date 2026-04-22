@@ -104,6 +104,7 @@ class ArtisanController extends Controller {
             Artisan::call("filament:cache-components", [], $output);
             return $output->fetch();
         }
+    }
     public function clearAllCache() {
         if (!request("secret")) {
             abort(401, "Unauthorized Access");

@@ -70,6 +70,7 @@ class AlokasiHonorRelationManager extends RelationManager
                     ->label('Alokasikan Honor')
                     ->icon('heroicon-o-user-plus')
                     ->color('primary')
+                    ->visible(fn() => auth()->user()->can('create_alokasi::honor'))
                     ->form([
                         Forms\Components\Grid::make(2)->schema([
                             Forms\Components\Section::make('Detail Honor')
@@ -226,7 +227,8 @@ class AlokasiHonorRelationManager extends RelationManager
                     ->label("Buat Honor Baru")
                     ->icon('heroicon-o-plus-circle')
                     ->color('primary')
-                    ->url(route("filament.a.resources.honors.create")),
+                    ->url(route("filament.a.resources.honors.create"))
+                    ->visible(fn() => auth()->user()->can('create_honor')),
 
                 // FIXED: Create ActionGroup with dynamic actions for contract printing
                 ...collect($this->getDynamicPrintActions())
