@@ -377,7 +377,7 @@
                         <td style="padding: 0; padding-bottom: 3pt;">
                             <p class="s2" style="margin: 0; text-align: justify; line-height: 1.3;">
                                 bahwa sehubungan dengan
-                                {{ $penugasans->first()->kegiatan->kegiatanManmit?->nama ?? $penugasans->first()->kegiatan->nama }}
+                                {{ $penugasans->first()->kegiatan->nama }}
                                 BPS {{ ucwords(strtolower($namaSatker)) }} tahun
                                 {{ $c::parse($penugasans->first()->kegiatan->tgl_akhir_perjadin)->year }}, maka
                                 dipandang perlu
