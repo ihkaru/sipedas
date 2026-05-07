@@ -15,7 +15,7 @@ class CustomPagePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_custom::page');
+        return $user->hasRole('pegawai') || $user->can('view_any_custom::page');
     }
 
     /**
@@ -23,7 +23,7 @@ class CustomPagePolicy
      */
     public function view(User $user, CustomPage $customPage): bool
     {
-        return $user->can('view_custom::page');
+        return $user->hasRole('pegawai') || $user->can('view_custom::page');
     }
 
     /**
@@ -31,7 +31,7 @@ class CustomPagePolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_custom::page');
+        return $user->hasRole('pegawai') || $user->can('create_custom::page');
     }
 
     /**
@@ -39,7 +39,7 @@ class CustomPagePolicy
      */
     public function update(User $user, CustomPage $customPage): bool
     {
-        return $user->can('update_custom::page');
+        return $user->hasRole('pegawai') || $user->can('update_custom::page');
     }
 
     /**

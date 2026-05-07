@@ -15,7 +15,7 @@ class MicrositePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_microsite');
+        return $user->hasRole('pegawai') || $user->can('view_any_microsite');
     }
 
     /**
@@ -23,7 +23,7 @@ class MicrositePolicy
      */
     public function view(User $user, Microsite $microsite): bool
     {
-        return $user->can('view_microsite');
+        return $user->hasRole('pegawai') || $user->can('view_microsite');
     }
 
     /**
@@ -31,7 +31,7 @@ class MicrositePolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_microsite');
+        return $user->hasRole('pegawai') || $user->can('create_microsite');
     }
 
     /**
@@ -39,7 +39,7 @@ class MicrositePolicy
      */
     public function update(User $user, Microsite $microsite): bool
     {
-        return $user->can('update_microsite');
+        return $user->hasRole('pegawai') || $user->can('update_microsite');
     }
 
     /**

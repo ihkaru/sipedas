@@ -46,6 +46,7 @@ class APanelProvider extends PanelProvider {
                 \App\Filament\Pages\RekapPerjadin::class,
                 \App\Filament\Pages\KalenderPerjadin::class,
                 \App\Filament\Pages\MatriksPerjadinPegawai::class,
+                \App\Filament\Pages\MonitorHonorMitra::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
@@ -55,7 +56,6 @@ class APanelProvider extends PanelProvider {
                 PenugasanDisetujuiTable::class,
                 PenugasanTable::class,
                 // Widgets\AccountWidget::class,
-
             ])
             ->middleware([
                 EncryptCookies::class,

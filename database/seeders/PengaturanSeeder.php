@@ -54,5 +54,6 @@ class PengaturanSeeder extends Seeder
             "key"=>"NIP_PPK_SATER",
             "deskripsi"=>"NIP dari PPK Satker"
         ]);
+
     }
 }

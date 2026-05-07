@@ -31,6 +31,8 @@ class Pengaturan extends Page implements HasForms
         $this->form->fill([
             'ppk_instant_auto_approve' => $settings['ppk_instant_auto_approve'] ?? false,
             'ppk_auto_approve_days' => $settings['ppk_auto_approve_days'] ?? 0,
+            'STANDAR_BIAYA_MASUKAN_LAINNYA_NON_PNS_OB_PETUGAS_PENDATAAN_LAPANGAN_SENSUS' => $settings['STANDAR_BIAYA_MASUKAN_LAINNYA_NON_PNS_OB_PETUGAS_PENDATAAN_LAPANGAN_SENSUS'] ?? 4694000,
+            'STANDAR_BIAYA_MASUKAN_LAINNYA_NON_PNS_OB_PETUGAS_PENDATAAN_LAPANGAN_SURVEI' => $settings['STANDAR_BIAYA_MASUKAN_LAINNYA_NON_PNS_OB_PETUGAS_PENDATAAN_LAPANGAN_SURVEI'] ?? 3353000,
         ]);
     }
 
@@ -52,6 +54,22 @@ class Pengaturan extends Page implements HasForms
                             ->minValue(0)
                             ->helperText('Jika pengajuan berada di PPK melebihi jumlah hari ini, sistem akan menyetujuinya secara otomatis. Isi 0 untuk menonaktifkan.')
                             ->live(debounce: 500), // <-- REAKTIFKAN TEXT INPUT DENGAN DEBOUNCE
+                    ]),
+                Section::make('Batas Honor Mitra')
+                    ->description('Pengaturan standar biaya untuk honor mitra. Perubahan akan langsung disimpan.')
+                    ->schema([
+                        TextInput::make('STANDAR_BIAYA_MASUKAN_LAINNYA_NON_PNS_OB_PETUGAS_PENDATAAN_LAPANGAN_SENSUS')
+                            ->label('Standar Biaya Masukan Lainnya (Sensus)')
+                            ->numeric()
+                            ->minValue(0)
+                            ->prefix('Rp')
+                            ->live(debounce: 500),
+                        TextInput::make('STANDAR_BIAYA_MASUKAN_LAINNYA_NON_PNS_OB_PETUGAS_PENDATAAN_LAPANGAN_SURVEI')
+                            ->label('Standar Biaya Masukan Lainnya (Survei / Non-Sensus)')
+                            ->numeric()
+                            ->minValue(0)
+                            ->prefix('Rp')
+                            ->live(debounce: 500),
                     ])
             ])
             ->statePath('data');

@@ -46,7 +46,7 @@ class CustomPageResource extends Resource
                             ->readOnly()
                             ->dehydrated(false)
                             ->visible(fn ($record) => $record !== null)
-                            ->formatStateUsing(fn ($record) => route('custom-page.show', $record->slug))
+                            ->formatStateUsing(fn ($state, $record) => $record instanceof \App\Models\CustomPage ? route('custom-page.show', $record->slug) : null)
                             ->suffixAction(
                                 Forms\Components\Actions\Action::make('copy')
                                     ->icon('heroicon-m-clipboard-document')
@@ -115,7 +115,7 @@ class CustomPageResource extends Resource
                     ->color('info')
                     ->extraAttributes(fn ($record) => [
                         'onclick' => "
-                            const link = '" . route('custom-page.show', $record->slug) . "';
+                            const link = '" . ($record ? route('custom-page.show', $record->slug) : '') . "';
                             if (navigator.clipboard) {
                                 navigator.clipboard.writeText(link).then(() => {
                                      new FilamentNotification().title('Link copied').success().send();
@@ -134,7 +134,7 @@ class CustomPageResource extends Resource
                 Tables\Actions\Action::make('view_page')
                     ->label('View')
                     ->icon('heroicon-o-arrow-top-right-on-square')
-                    ->url(fn ($record) => route('custom-page.show', $record->slug))
+                    ->url(fn ($record) => $record ? route('custom-page.show', $record->slug) : null)
                     ->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
