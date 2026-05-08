@@ -79,18 +79,33 @@ class MonitorHonorMitra extends Page implements HasTable
                     )
                 ";
 
+                $proportionSql = "
+                    FLOOR(alokasi_honors.total_honor * 
+                        (DATEDIFF(LEAST(alokasi_honors.tanggal_akhir_perjanjian, '$targetEndStr'), GREATEST(alokasi_honors.tanggal_mulai_perjanjian, '$targetStartStr')) + 1) 
+                        / 
+                        (DATEDIFF(alokasi_honors.tanggal_akhir_perjanjian, alokasi_honors.tanggal_mulai_perjanjian) + 1)
+                    )
+                ";
+
                 return Mitra::query()
                     ->select('mitras.*')
-                    ->leftJoin('alokasi_honors', function ($join) use ($targetStart, $targetEnd) {
-                        $join->on('mitras.id', '=', 'alokasi_honors.mitra_id')
-                             ->where('alokasi_honors.tanggal_mulai_perjanjian', '<=', $targetEnd)
-                             ->where('alokasi_honors.tanggal_akhir_perjanjian', '>=', $targetStart);
-                    })
-                    ->leftJoin('honors', 'alokasi_honors.honor_id', '=', 'honors.id')
-                    ->leftJoin('kegiatan_manmits', 'honors.kegiatan_manmit_id', '=', 'kegiatan_manmits.id')
-                    ->selectRaw("COALESCE(SUM(CASE WHEN kegiatan_manmits.jenis_kegiatan = 'SENSUS' THEN $proportionSql ELSE 0 END), 0) as total_honor_sensus")
-                    ->selectRaw("COALESCE(SUM(CASE WHEN kegiatan_manmits.jenis_kegiatan != 'SENSUS' OR kegiatan_manmits.jenis_kegiatan IS NULL THEN $proportionSql ELSE 0 END), 0) as total_honor_survei")
-                    ->groupBy('mitras.id', 'mitras.id_sobat', 'mitras.nama_1', 'mitras.alamat_kec', 'mitras.alamat_desa', 'mitras.alamat_prov', 'mitras.alamat_kab');
+                    ->addSelect([
+                        'total_honor_sensus' => \App\Models\AlokasiHonor::query()
+                            ->selectRaw("COALESCE(SUM(CASE WHEN kegiatan_manmits.jenis_kegiatan = 'SENSUS' THEN $proportionSql ELSE 0 END), 0)")
+                            ->join('honors', 'alokasi_honors.honor_id', '=', 'honors.id')
+                            ->join('kegiatan_manmits', 'honors.kegiatan_manmit_id', '=', 'kegiatan_manmits.id')
+                            ->whereColumn('alokasi_honors.mitra_id', 'mitras.id')
+                            ->where('alokasi_honors.tanggal_mulai_perjanjian', '<=', $targetEnd)
+                            ->where('alokasi_honors.tanggal_akhir_perjanjian', '>=', $targetStart),
+                        
+                        'total_honor_survei' => \App\Models\AlokasiHonor::query()
+                            ->selectRaw("COALESCE(SUM(CASE WHEN kegiatan_manmits.jenis_kegiatan != 'SENSUS' OR kegiatan_manmits.jenis_kegiatan IS NULL THEN $proportionSql ELSE 0 END), 0)")
+                            ->leftJoin('honors', 'alokasi_honors.honor_id', '=', 'honors.id')
+                            ->leftJoin('kegiatan_manmits', 'honors.kegiatan_manmit_id', '=', 'kegiatan_manmits.id')
+                            ->whereColumn('alokasi_honors.mitra_id', 'mitras.id')
+                            ->where('alokasi_honors.tanggal_mulai_perjanjian', '<=', $targetEnd)
+                            ->where('alokasi_honors.tanggal_akhir_perjanjian', '>=', $targetStart),
+                    ]);
             })
             ->defaultSort('total_honor_survei', 'desc')
             ->columns([
