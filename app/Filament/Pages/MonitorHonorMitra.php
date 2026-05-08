@@ -79,14 +79,6 @@ class MonitorHonorMitra extends Page implements HasTable
                     )
                 ";
 
-                $proportionSql = "
-                    FLOOR(alokasi_honors.total_honor * 
-                        (DATEDIFF(LEAST(alokasi_honors.tanggal_akhir_perjanjian, '$targetEndStr'), GREATEST(alokasi_honors.tanggal_mulai_perjanjian, '$targetStartStr')) + 1) 
-                        / 
-                        (DATEDIFF(alokasi_honors.tanggal_akhir_perjanjian, alokasi_honors.tanggal_mulai_perjanjian) + 1)
-                    )
-                ";
-
                 return Mitra::query()
                     ->select('mitras.*')
                     ->addSelect([
