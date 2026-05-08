@@ -90,7 +90,7 @@ class MonitorHonorMitra extends Page implements HasTable
                     ->leftJoin('kegiatan_manmits', 'honors.kegiatan_manmit_id', '=', 'kegiatan_manmits.id')
                     ->selectRaw("COALESCE(SUM(CASE WHEN kegiatan_manmits.jenis_kegiatan = 'SENSUS' THEN $proportionSql ELSE 0 END), 0) as total_honor_sensus")
                     ->selectRaw("COALESCE(SUM(CASE WHEN kegiatan_manmits.jenis_kegiatan != 'SENSUS' OR kegiatan_manmits.jenis_kegiatan IS NULL THEN $proportionSql ELSE 0 END), 0) as total_honor_survei")
-                    ->groupBy('mitras.id');
+                    ->groupBy('mitras.id', 'mitras.id_sobat', 'mitras.nama_1', 'mitras.alamat_kec', 'mitras.alamat_desa', 'mitras.alamat_prov', 'mitras.alamat_kab');
             })
             ->defaultSort('total_honor_survei', 'desc')
             ->columns([
