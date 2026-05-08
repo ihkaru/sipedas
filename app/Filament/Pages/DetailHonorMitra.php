@@ -49,33 +49,99 @@ class DetailHonorMitra extends Page implements HasTable
 
     public function getSensusTotal()
     {
-        $month = $this->tableFilters['periode']['month'] ?? $this->month;
-        $year  = $this->tableFilters['periode']['year']  ?? $this->year;
+        $month = (int) ($this->tableFilters['periode']['month'] ?? $this->month);
+        $year  = (int) ($this->tableFilters['periode']['year']  ?? $this->year);
 
-        return AlokasiHonor::query()
+        $alokasis = AlokasiHonor::query()
             ->where('mitra_id', $this->mitraId)
-            ->whereMonth('tanggal_mulai_perjanjian', $month)
-            ->whereYear('tanggal_mulai_perjanjian', $year)
+            ->where(function($q) use ($month, $year) {
+                $targetStart = \Illuminate\Support\Carbon::create($year, $month, 1)->startOfMonth();
+                $targetEnd = \Illuminate\Support\Carbon::create($year, $month, 1)->endOfMonth();
+                $q->where('tanggal_mulai_perjanjian', '<=', $targetEnd)
+                  ->where('tanggal_akhir_perjanjian', '>=', $targetStart);
+            })
             ->whereHas('honor.kegiatanManmit', fn($q) => $q->where('jenis_kegiatan', 'SENSUS'))
-            ->sum('total_honor');
+            ->get();
+
+        $total = 0;
+        foreach ($alokasis as $alokasi) {
+            $total += \App\Services\HonorService::calculateMonthlyProportion(
+                $alokasi->total_honor,
+                $alokasi->tanggal_mulai_perjanjian,
+                $alokasi->tanggal_akhir_perjanjian,
+                $month,
+                $year
+            );
+        }
+        return $total;
     }
 
     public function getSurveiTotal()
     {
-        $month = $this->tableFilters['periode']['month'] ?? $this->month;
-        $year  = $this->tableFilters['periode']['year']  ?? $this->year;
+        $month = (int) ($this->tableFilters['periode']['month'] ?? $this->month);
+        $year  = (int) ($this->tableFilters['periode']['year']  ?? $this->year);
 
-        return AlokasiHonor::query()
+        $alokasis = AlokasiHonor::query()
             ->where('mitra_id', $this->mitraId)
-            ->whereMonth('tanggal_mulai_perjanjian', $month)
-            ->whereYear('tanggal_mulai_perjanjian', $year)
+            ->where(function($q) use ($month, $year) {
+                $targetStart = \Illuminate\Support\Carbon::create($year, $month, 1)->startOfMonth();
+                $targetEnd = \Illuminate\Support\Carbon::create($year, $month, 1)->endOfMonth();
+                $q->where('tanggal_mulai_perjanjian', '<=', $targetEnd)
+                  ->where('tanggal_akhir_perjanjian', '>=', $targetStart);
+            })
             ->whereHas('honor.kegiatanManmit', fn($q) => $q->where('jenis_kegiatan', '!=', 'SENSUS'))
-            ->sum('total_honor');
+            ->get();
+
+        $total = 0;
+        foreach ($alokasis as $alokasi) {
+            $total += \App\Services\HonorService::calculateMonthlyProportion(
+                $alokasi->total_honor,
+                $alokasi->tanggal_mulai_perjanjian,
+                $alokasi->tanggal_akhir_perjanjian,
+                $month,
+                $year
+            );
+        }
+        return $total;
+    }
+
+    public function getSensusRemaining()
+    {
+        $limitSensus = (float) (\App\Models\Setting::where('key', 'STANDAR_BIAYA_MASUKAN_LAINNYA_NON_PNS_OB_PETUGAS_PENDATAAN_LAPANGAN_SENSUS')->value('value') ?? 4694000);
+        return max(0, $limitSensus - $this->getSensusTotal());
+    }
+
+    public function getSurveiRemaining()
+    {
+        $limitSurvei = (float) (\App\Models\Setting::where('key', 'STANDAR_BIAYA_MASUKAN_LAINNYA_NON_PNS_OB_PETUGAS_PENDATAAN_LAPANGAN_SURVEI')->value('value') ?? 3353000);
+        return max(0, $limitSurvei - $this->getSurveiTotal());
     }
 
     protected function getHeaderActions(): array
     {
         return [
+            \Filament\Actions\Action::make('cetak_kontrak')
+                ->label('Cetak Semua Kontrak')
+                ->icon('heroicon-o-printer')
+                ->color('info')
+                ->url(fn () => route('cetak.kontrak', [
+                    'mitra_id' => $this->mitraId,
+                    'bulan' => $this->tableFilters['periode']['month'] ?? $this->month,
+                    'tahun' => $this->tableFilters['periode']['year'] ?? $this->year,
+                ]))
+                ->openUrlInNewTab(),
+
+            \Filament\Actions\Action::make('cetak_bast')
+                ->label('Cetak Semua BAST')
+                ->icon('heroicon-o-document-check')
+                ->color('success')
+                ->url(fn () => route('cetak.bast', [
+                    'mitra_id' => $this->mitraId,
+                    'bulan' => $this->tableFilters['periode']['month'] ?? $this->month,
+                    'tahun' => $this->tableFilters['periode']['year'] ?? $this->year,
+                ]))
+                ->openUrlInNewTab(),
+
             \Filament\Actions\Action::make('back')
                 ->label('Kembali')
                 ->url(fn() => MonitorHonorMitra::getUrl())
@@ -88,13 +154,16 @@ class DetailHonorMitra extends Page implements HasTable
     {
         return $table
             ->query(function () {
-                $month = $this->tableFilters['periode']['month'] ?? $this->month;
-                $year  = $this->tableFilters['periode']['year']  ?? $this->year;
+                $month = (int) ($this->tableFilters['periode']['month'] ?? $this->month);
+                $year  = (int) ($this->tableFilters['periode']['year']  ?? $this->year);
+
+                $targetStart = \Illuminate\Support\Carbon::create($year, $month, 1)->startOfMonth();
+                $targetEnd = \Illuminate\Support\Carbon::create($year, $month, 1)->endOfMonth();
 
                 return AlokasiHonor::query()
                     ->where('mitra_id', $this->mitraId)
-                    ->whereMonth('tanggal_mulai_perjanjian', $month)
-                    ->whereYear('tanggal_mulai_perjanjian', $year);
+                    ->where('tanggal_mulai_perjanjian', '<=', $targetEnd)
+                    ->where('tanggal_akhir_perjanjian', '>=', $targetStart);
             })
             ->columns([
                 TextColumn::make('honor.kegiatanManmit.nama')

@@ -72,81 +72,84 @@ class AlokasiHonor extends Model
     }
 
     /**
+     * Boot method untuk mendaftarkan model event.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($model) {
+            // Validasi kelayakan mitra sebelum disimpan
+            $isSensus = $model->honor?->kegiatanManmit?->jenis_kegiatan === 'SENSUS';
+            
+            $validation = \App\Services\HonorService::validateMitraEligibility(
+                $model->mitra_id,
+                $model->tanggal_mulai_perjanjian,
+                $model->tanggal_akhir_perjanjian,
+                $model->total_honor,
+                $isSensus,
+                $model->id // Exclude self if updating
+            );
+
+            if (!$validation['eligible']) {
+                throw new \Exception($validation['message']);
+            }
+        });
+    }
+
+    /**
      * Metode terpusat untuk mempersiapkan instance AlokasiHonor.
-     * Metode ini menerima ID Sobat sebagai input, dan secara internal akan
-     * menerjemahkannya ke primary key `mitra.id`.
-     *
-     * @param string $idSobat ID Sobat dari mitra.
-     * @param string $honorId ID dari honor.
-     * @param float  $target  Target yang diberikan.
-     * @return self Instance AlokasiHonor yang siap disimpan.
-     * @throws \Exception
      */
     public static function createWithRelations(string $idSobat, string $honorId, float $target): self
     {
-        // --- AWAL BAGIAN TERJEMAHAN ---
-        // Cari mitra berdasarkan ID Sobat. Gagal jika tidak ditemukan.
         $mitra = Mitra::where('id_sobat', $idSobat)->first();
         if (!$mitra) {
             throw new \Exception("Mitra dengan ID Sobat '{$idSobat}' tidak ditemukan.");
         }
-        // Ambil primary key-nya. Inilah yang akan disimpan di database.
-        $mitraPrimaryKey = $mitra->id;
-        // --- AKHIR BAGIAN TERJEMAHAN ---
-
 
         $honor = Honor::with('kegiatanManmit')->find($honorId);
         if (!$honor || !$honor->kegiatanManmit?->tgl_mulai_pelaksanaan || !$honor->kegiatanManmit?->tgl_akhir_pelaksanaan) {
             throw new \Exception("Data Kegiatan/jadwal pada Honor ID {$honorId} tidak lengkap atau tidak ditemukan.");
         }
 
-        // Validasi Kemitraan Aktif
-        $tahunKegiatan = Carbon::parse($honor->kegiatanManmit->tgl_mulai_pelaksanaan)->year;
-        $isMitraAktif = $mitra->kemitraans()->where('tahun', $tahunKegiatan)->where('status', 'AKTIF')->exists();
-        if (!$isMitraAktif) {
-            throw new \Exception("Mitra {$mitra->nama_1} (ID Sobat: {$idSobat}) tidak memiliki kemitraan AKTIF di tahun {$tahunKegiatan}.");
-        }
+        // --- PENTING: Gunakan rentang tanggal ASLI dari Kegiatan ---
+        $tanggalMulaiKontrak = Carbon::parse($honor->kegiatanManmit->tgl_mulai_pelaksanaan);
+        $tanggalAkhirKontrak = Carbon::parse($honor->kegiatanManmit->tgl_akhir_pelaksanaan);
 
-        // Logika selanjutnya menggunakan primary key yang sudah kita temukan ($mitraPrimaryKey)
-        $tanggalMulaiKegiatan = Carbon::parse($honor->tanggal_akhir_kegiatan)->startOfMonth();
-        $tanggalAkhirKegiatan = Carbon::parse($honor->tanggal_akhir_kegiatan);
-        $tanggalPengajuanSpk = TanggalMerah::getNextWorkDay($tanggalMulaiKegiatan, -1);
-        $tanggalPengajuanBast = TanggalMerah::getNextWorkDay($tanggalAkhirKegiatan, -1);
+        // Tanggal administrasi SPK/BAST
+        $tanggalPengajuanSpk = TanggalMerah::getNextWorkDay($tanggalMulaiKontrak, -1);
+        $tanggalPengajuanBast = TanggalMerah::getNextWorkDay($tanggalAkhirKontrak, -1);
 
-        // Cek SPK menggunakan $mitraPrimaryKey
-        $existingSpkId = self::where('mitra_id', $mitraPrimaryKey)
-            ->whereHas('honor.kegiatanManmit', function ($query) use ($tanggalMulaiKegiatan) {
-                $query->whereYear('tgl_mulai_pelaksanaan', $tanggalMulaiKegiatan->year)
-                    ->whereMonth('tgl_mulai_pelaksanaan', $tanggalMulaiKegiatan->month);
+        $totalHonor = $honor->harga_per_satuan * $target;
+
+        // Cek apakah SPK sudah ada untuk mitra di bulan yang sama (untuk nomor surat yang sama)
+        $existingSpkId = self::where('mitra_id', $mitra->id)
+            ->where(function($q) use ($tanggalMulaiKontrak) {
+                $q->whereYear('tanggal_mulai_perjanjian', $tanggalMulaiKontrak->year)
+                  ->whereMonth('tanggal_mulai_perjanjian', $tanggalMulaiKontrak->month);
             })
             ->whereNotNull('surat_perjanjian_kerja_id')
             ->value('surat_perjanjian_kerja_id');
 
         $suratPerjanjianKerjaId = $existingSpkId ?: NomorSurat::generateNomorSuratPerjanjianKerja($tanggalPengajuanSpk)->id;
 
-        // Cek BAST menggunakan $mitraPrimaryKey
-        $existingBastId = self::where('mitra_id', $mitraPrimaryKey)
+        $existingBastId = self::where('mitra_id', $mitra->id)
             ->where('honor_id', $honor->id)
             ->whereNotNull('surat_bast_id')
             ->value('surat_bast_id');
 
         $suratBastId = $existingBastId ?: NomorSurat::generateNomorSuratBast($tanggalPengajuanBast)->id;
 
-        $totalHonor = $honor->harga_per_satuan * $target;
-
-        // Saat membuat instance, kita simpan $mitraPrimaryKey ke kolom `mitra_id`
-        $alokasi = new self([
+        return new self([
             'honor_id' => $honorId,
-            'mitra_id' => $mitraPrimaryKey, // <-- DISIMPAN SEBAGAI PRIMARY KEY
+            'mitra_id' => $mitra->id,
             'target_per_satuan_honor' => $target,
             'total_honor' => $totalHonor,
             'surat_perjanjian_kerja_id' => $suratPerjanjianKerjaId,
             'surat_bast_id' => $suratBastId,
             'tanggal_penanda_tanganan_spk_oleh_petugas' => $tanggalPengajuanSpk,
-            'tanggal_mulai_perjanjian' => $tanggalMulaiKegiatan,
-            'tanggal_akhir_perjanjian' => $tanggalAkhirKegiatan,
+            'tanggal_mulai_perjanjian' => $tanggalMulaiKontrak,
+            'tanggal_akhir_perjanjian' => $tanggalAkhirKontrak,
         ]);
-
-        return $alokasi;
     }
 }

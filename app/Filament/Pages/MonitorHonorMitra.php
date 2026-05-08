@@ -63,17 +63,33 @@ class MonitorHonorMitra extends Page implements HasTable
                 $month = $this->tableFilters['periode']['month'] ?? now()->month;
                 $year  = $this->tableFilters['periode']['year']  ?? now()->year;
 
+                $targetStart = \Illuminate\Support\Carbon::create($year, $month, 1)->startOfMonth()->toDateString();
+                $targetEnd = \Illuminate\Support\Carbon::create($year, $month, 1)->endOfMonth()->toDateString();
+
+                // Rumus Proporsi SQL: 
+                // floor(total_honor * (hari_irisan) / (total_hari_kontrak))
+                // hari_irisan = DATEDIFF(LEAST(akhir_kontrak, target_akhir), GREATEST(mulai_kontrak, target_awal)) + 1
+                // total_hari_kontrak = DATEDIFF(akhir_kontrak, mulai_kontrak) + 1
+                
+                $proportionSql = "
+                    FLOOR(alokasi_honors.total_honor * 
+                        (DATEDIFF(LEAST(alokasi_honors.tanggal_akhir_perjanjian, '$targetEnd'), GREATEST(alokasi_honors.tanggal_mulai_perjanjian, '$targetStart')) + 1) 
+                        / 
+                        (DATEDIFF(alokasi_honors.tanggal_akhir_perjanjian, alokasi_honors.tanggal_mulai_perjanjian) + 1)
+                    )
+                ";
+
                 return Mitra::query()
                     ->select('mitras.*')
-                    ->leftJoin('alokasi_honors', function ($join) use ($year, $month) {
+                    ->leftJoin('alokasi_honors', function ($join) use ($targetStart, $targetEnd) {
                         $join->on('mitras.id', '=', 'alokasi_honors.mitra_id')
-                             ->whereYear('alokasi_honors.tanggal_mulai_perjanjian', $year)
-                             ->whereMonth('alokasi_honors.tanggal_mulai_perjanjian', $month);
+                             ->where('alokasi_honors.tanggal_mulai_perjanjian', '<=', $targetEnd)
+                             ->where('alokasi_honors.tanggal_akhir_perjanjian', '>=', $targetStart);
                     })
                     ->leftJoin('honors', 'alokasi_honors.honor_id', '=', 'honors.id')
                     ->leftJoin('kegiatan_manmits', 'honors.kegiatan_manmit_id', '=', 'kegiatan_manmits.id')
-                    ->selectRaw("COALESCE(SUM(CASE WHEN kegiatan_manmits.jenis_kegiatan = 'SENSUS' THEN alokasi_honors.total_honor ELSE 0 END), 0) as total_honor_sensus")
-                    ->selectRaw("COALESCE(SUM(CASE WHEN kegiatan_manmits.jenis_kegiatan != 'SENSUS' OR kegiatan_manmits.jenis_kegiatan IS NULL THEN alokasi_honors.total_honor ELSE 0 END), 0) as total_honor_survei")
+                    ->selectRaw("COALESCE(SUM(CASE WHEN kegiatan_manmits.jenis_kegiatan = 'SENSUS' THEN $proportionSql ELSE 0 END), 0) as total_honor_sensus")
+                    ->selectRaw("COALESCE(SUM(CASE WHEN kegiatan_manmits.jenis_kegiatan != 'SENSUS' OR kegiatan_manmits.jenis_kegiatan IS NULL THEN $proportionSql ELSE 0 END), 0) as total_honor_survei")
                     ->groupBy('mitras.id');
             })
             ->defaultSort('total_honor_survei', 'desc')
@@ -114,9 +130,8 @@ class MonitorHonorMitra extends Page implements HasTable
                         default                => 'success',
                     })
                     ->description(function ($record) use ($limitSensus) {
-                        if ($limitSensus <= 0) return null;
-                        $persen = round(($record->total_honor_sensus / $limitSensus) * 100, 1);
-                        return "{$persen}% dari batas";
+                        $sisa = $limitSensus - (float) $record->total_honor_sensus;
+                        return "Sisa: Rp " . number_format(max(0, $sisa), 0, ',', '.');
                     }),
 
                 TextColumn::make('total_honor_survei')
@@ -130,9 +145,8 @@ class MonitorHonorMitra extends Page implements HasTable
                         default                => 'success',
                     })
                     ->description(function ($record) use ($limitSurvei) {
-                        if ($limitSurvei <= 0) return null;
-                        $persen = round(($record->total_honor_survei / $limitSurvei) * 100, 1);
-                        return "{$persen}% dari batas";
+                        $sisa = $limitSurvei - (float) $record->total_honor_survei;
+                        return "Sisa: Rp " . number_format(max(0, $sisa), 0, ',', '.');
                     }),
 
                 IconColumn::make('status_limit')

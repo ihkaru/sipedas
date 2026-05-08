@@ -321,6 +321,17 @@ class Constants {
     public static function flatJenisTransportasiOptions() {
         return collect(self::getJenisTransportasiOptions())->keys()->toArray();
     }
+    const PLACEHOLDER_NAMA_MITRA = '[NAMA_MITRA]';
+    const PLACEHOLDER_NIK_MITRA = '[NIK_MITRA]';
+    const PLACEHOLDER_ALAMAT_MITRA = '[ALAMAT_MITRA]';
+    const PLACEHOLDER_NAMA_PPK = '[NAMA_PPK]';
+    const PLACEHOLDER_NIP_PPK = '[NIP_PPK]';
+    const PLACEHOLDER_NAMA_KEGIATAN = '[NAMA_KEGIATAN]';
+    const PLACEHOLDER_TOTAL_HONOR = '[TOTAL_HONOR]';
+    const PLACEHOLDER_TANGGAL_MULAI = '[TANGGAL_MULAI]';
+    const PLACEHOLDER_TANGGAL_SELESAI = '[TANGGAL_SELESAI]';
+    const PLACEHOLDER_NOMOR_SURAT = '[NOMOR_SURAT]';
+
     /**
      * Mengekstrak teks di dalam tanda kurung pertama dari sebuah string.
      *

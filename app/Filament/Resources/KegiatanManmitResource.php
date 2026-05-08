@@ -43,6 +43,15 @@ class KegiatanManmitResource extends Resource
                             ->live(onBlur: true)
                             ->helperText('Contoh: (VHTS25) Survei Hotel Bulanan 2025'),
 
+                        Forms\Components\Select::make('jenis_kegiatan')
+                            ->options([
+                                'SENSUS' => 'SENSUS',
+                                'SURVEI' => 'SURVEI',
+                            ])
+                            ->required()
+                            ->live()
+                            ->default('SURVEI'),
+
                         Forms\Components\Select::make('frekuensi_kegiatan')
                             ->options(Constants::FREKUENSI_KEGIATAN_OPTIONS)
                             ->required()
@@ -76,6 +85,54 @@ class KegiatanManmitResource extends Resource
                                 }
                                 $set('periods', $items);
                             }),
+                    ]),
+
+                Forms\Components\Section::make('Template Kontrak Sensus')
+                    ->description('Isi bagian ini jika kegiatan adalah SENSUS dan membutuhkan pasal-pasal khusus.')
+                    ->visible(fn(Get $get) => $get('jenis_kegiatan') === 'SENSUS')
+                    ->schema([
+                        Forms\Components\Placeholder::make('helper_placeholders')
+                            ->label('Panduan Kustomisasi Kontrak')
+                            ->content(new \Illuminate\Support\HtmlString('
+                                <div class="space-y-4">
+                                    <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800 text-sm">
+                                        <b>Info Layout:</b> 
+                                        <ul class="list-disc ml-4 mt-1 space-y-1">
+                                            <li>Editor ini hanya mengganti bagian <u>Pasal-Pasal Kontrak</u>.</li>
+                                            <li>Halaman pertama setiap bagian (Kontrak/Lampiran) <b>tidak memiliki nomor halaman</b>.</li>
+                                            <li>Nomor halaman otomatis muncul di <b>Tengah Atas</b> mulai halaman ke-2.</li>
+                                            <li>Sistem secara otomatis mendeteksi lebar kertas (Tegak/Mendatar) untuk memastikan posisi nomor halaman tetap presisi di tengah.</li>
+                                            <li><b>Lampiran 1</b> (Daftar Kegiatan & Honor) akan otomatis ditambahkan oleh sistem di lembar terpisah dengan format <b>Landscape</b> dan nomor halaman yang di-reset.</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm border p-3 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 font-mono">
+                                        <div><span class="text-primary-600 font-bold">[NAMA_MITRA]</span>: Nama Lengkap</div>
+                                        <div><span class="text-primary-600 font-bold">[NIK_MITRA]</span>: NIK Mitra</div>
+                                        <div><span class="text-primary-600 font-bold">[ALAMAT_MITRA]</span>: Alamat Detail</div>
+                                        <div><span class="text-primary-600 font-bold">[NAMA_PPK]</span>: Nama PPK</div>
+                                        <div><span class="text-primary-600 font-bold">[NIP_PPK]</span>: NIP PPK</div>
+                                        <div><span class="text-primary-600 font-bold">[NAMA_KEGIATAN]</span>: Nama Kegiatan</div>
+                                        <div><span class="text-primary-600 font-bold">[TOTAL_HONOR]</span>: Total Rp. Honor</div>
+                                        <div><span class="text-primary-600 font-bold">[TANGGAL_MULAI]</span>: Tgl Mulai</div>
+                                        <div><span class="text-primary-600 font-bold">[TANGGAL_SELESAI]</span>: Tgl Selesai</div>
+                                        <div><span class="text-primary-600 font-bold">[NOMOR_SURAT]</span>: Nomor SPK</div>
+                                    </div>
+
+                                    <div class="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-800 text-sm">
+                                        <b>Tips Pindah Halaman & Orientasi:</b> Jika ingin pindah halaman atau mengubah arah kertas manual, klik tombol <b>"Source Code" (&lt;&gt;)</b> di editor dan masukkan: <br>
+                                        <ul class="list-disc ml-4 mt-1 font-mono text-xs space-y-1">
+                                            <li><code class="bg-white dark:bg-gray-900 px-1 py-0.5 rounded border">&lt;div class="page-break"&gt;&lt;/div&gt;</code> (Pindah Halaman Saja)</li>
+                                            <li><code class="bg-white dark:bg-gray-900 px-1 py-0.5 rounded border">&lt;div class="lanskap"&gt;&lt;/div&gt;</code> (Pindah Halaman + Jadi Lanskap)</li>
+                                            <li><code class="bg-white dark:bg-gray-900 px-1 py-0.5 rounded border">&lt;div class="potret"&gt;&lt;/div&gt;</code> (Pindah Halaman + Jadi Potret)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            ')),
+                        Forms\Components\RichEditor::make('template_kontrak')
+                            ->label('Isi Pasal-Pasal Kontrak')
+                            ->helperText('Gunakan editor ini untuk menentukan isi Pasal 1, Pasal 2, dst secara spesifik. Jika kosong, akan menggunakan template default.')
+                            ->columnSpanFull(),
                     ]),
 
                 // --- REPEATER DINAMIS YANG SUDAH DIPERBAIKI ---

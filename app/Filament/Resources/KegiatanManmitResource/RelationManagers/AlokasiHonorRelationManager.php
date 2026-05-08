@@ -86,37 +86,80 @@ class AlokasiHonorRelationManager extends RelationManager
                                             $set('alokasi_data', []);
                                         }),
 
-                                    Forms\Components\Select::make('mitra_to_add')
+                                     Forms\Components\Select::make('mitra_to_add')
                                         ->label('Cari & Tambah Mitra')
-                                        ->helperText('Hanya mitra dengan status kemitraan AKTIF pada tahun kegiatan yang akan muncul.') // Teks bantuan diperbarui
-                                        // **LOGIKA UTAMA**: Opsi mitra sekarang dinamis berdasarkan honor_id
-                                        ->options(function (Get $get) {
+                                        ->helperText('Mitra yang tidak layak (bentrok jadwal atau melebihi limit SBML) akan dinonaktifkan beserta alasannya.')
+                                        ->searchable()
+                                        ->getSearchResultsUsing(function (string $search, Get $get) {
                                             $honorId = $get('honor_id');
-                                            if (!$honorId) {
-                                                return []; // Jika belum ada honor, jangan tampilkan mitra
-                                            }
+                                            if (!$honorId) return [];
 
-                                            // 1. Dapatkan honor untuk menemukan tahun kegiatan
-                                            $honor = Honor::with('kegiatanManmit')->find($honorId);
+                                            $honor = \App\Models\Honor::with('kegiatanManmit')->find($honorId);
+                                            if (!$honor || !$honor->kegiatanManmit) return [];
 
-                                            // Pastikan relasi dan tanggal ada
-                                            if (!$honor || !$honor->kegiatanManmit?->tgl_mulai_pelaksanaan) {
-                                                return [];
-                                            }
+                                            $year = \Illuminate\Support\Carbon::parse($honor->kegiatanManmit->tgl_mulai_pelaksanaan)->year;
+                                            $isSensus = $honor->kegiatanManmit->jenis_kegiatan === 'SENSUS';
+                                            $selectedMitraIds = collect($get('alokasi_data'))->pluck('mitra_id')->toArray();
 
-                                            // 2. Ekstrak tahun dari tanggal mulai kegiatan
-                                            $activityYear = Carbon::parse($honor->kegiatanManmit->tgl_mulai_pelaksanaan)->year;
-
-                                            // 3. Query mitra yang punya kemitraan aktif di tahun tersebut
-                                            return Mitra::whereHas('kemitraans', function ($query) use ($activityYear) {
-                                                $query->where('tahun', $activityYear)
-                                                    ->where('status', 'AKTIF');
-                                            })
+                                            return \App\Models\Mitra::query()
+                                                ->whereHas('kemitraans', function ($query) use ($year) {
+                                                    $query->where('tahun', $year)
+                                                        ->where('status', 'AKTIF');
+                                                })
+                                                ->whereNotIn('id', $selectedMitraIds)
+                                                ->where(function($q) use ($search) {
+                                                    $q->where('nama_1', 'like', "%{$search}%")
+                                                      ->orWhere('id_sobat', 'like', "%{$search}%");
+                                                })
+                                                ->limit(50)
                                                 ->get()
-                                                ->mapWithKeys(fn($mitra) => [$mitra->id => "({$mitra->id_sobat}) {$mitra->nama_1}"])
+                                                ->mapWithKeys(function ($mitra) use ($honor, $isSensus) {
+                                                    $res = \App\Services\HonorService::validateMitraEligibility(
+                                                        $mitra->id,
+                                                        $honor->kegiatanManmit->tgl_mulai_pelaksanaan,
+                                                        $honor->kegiatanManmit->tgl_akhir_pelaksanaan,
+                                                        0, 
+                                                        $isSensus
+                                                    );
+                                                    
+                                                    $rem = \App\Services\HonorService::getMitraRemainingBudget(
+                                                        $mitra->id,
+                                                        $honor->kegiatanManmit->tgl_mulai_pelaksanaan,
+                                                        $honor->kegiatanManmit->tgl_akhir_pelaksanaan
+                                                    );
+                                                    
+                                                    $sensusText = number_format($rem['sensus'] / 1000, 0) . 'rb';
+                                                    $surveiText = number_format($rem['survei'] / 1000, 0) . 'rb';
+                                                    
+                                                    $label = "({$mitra->id_sobat}) {$mitra->nama_1} [Sisa S: Rp {$sensusText} | V: Rp {$surveiText}]";
+                                                    
+                                                    if (!$res['eligible']) {
+                                                        $label .= " [❌ TIDAK LAYAK: {$res['message']}]";
+                                                    }
+                                                    
+                                                    return [$mitra->id => $label];
+                                                })
                                                 ->toArray();
                                         })
-                                        ->searchable()
+                                        ->getOptionLabelUsing(fn ($value): ?string => \App\Models\Mitra::find($value)?->nama_1)
+                                        ->disableOptionWhen(function ($value, Get $get) {
+                                            $honorId = $get('honor_id');
+                                            if (!$honorId) return true;
+
+                                            $honor = \App\Models\Honor::with('kegiatanManmit')->find($honorId);
+                                            if (!$honor || !$honor->kegiatanManmit) return true;
+
+                                            $isSensus = $honor->kegiatanManmit->jenis_kegiatan === 'SENSUS';
+                                            
+                                            $res = \App\Services\HonorService::validateMitraEligibility(
+                                                $value,
+                                                $honor->kegiatanManmit->tgl_mulai_pelaksanaan,
+                                                $honor->kegiatanManmit->tgl_akhir_pelaksanaan,
+                                                0,
+                                                $isSensus
+                                            );
+                                            return !$res['eligible'];
+                                        })
                                         ->live()
                                         ->afterStateUpdated(function (Get $get, Set $set, $state) {
                                             if (empty($state) || !is_numeric($state)) return;
@@ -154,12 +197,38 @@ class AlokasiHonorRelationManager extends RelationManager
                                                 ->disabled()
                                                 ->required()
                                                 ->dehydrated(true),
-                                            Forms\Components\TextInput::make('target_per_satuan_honor')
+                                             Forms\Components\TextInput::make('target_per_satuan_honor')
                                                 ->label('Target')
                                                 ->numeric()
                                                 ->required()
                                                 ->default(0)
-                                                ->minValue(0),
+                                                ->minValue(0)
+                                                ->live()
+                                                ->rules([
+                                                    fn (Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
+                                                        $honorId = $get('../../honor_id'); 
+                                                        if (!$honorId) return;
+                                                        
+                                                        $honor = \App\Models\Honor::with('kegiatanManmit')->find($honorId);
+                                                        if (!$honor || !$honor->kegiatanManmit) return;
+                                                        
+                                                        $mitraId = $get('mitra_id');
+                                                        $totalHonor = $honor->harga_per_satuan * $value;
+                                                        $isSensus = $honor->kegiatanManmit->jenis_kegiatan === 'SENSUS';
+                                                        
+                                                        $res = \App\Services\HonorService::validateMitraEligibility(
+                                                            $mitraId,
+                                                            $honor->kegiatanManmit->tgl_mulai_pelaksanaan,
+                                                            $honor->kegiatanManmit->tgl_akhir_pelaksanaan,
+                                                            $totalHonor,
+                                                            $isSensus
+                                                        );
+                                                        
+                                                        if (!$res['eligible']) {
+                                                            $fail($res['message']);
+                                                        }
+                                                    },
+                                                ]),
                                         ])
                                         ->columns(2)
                                         ->reorderable()
@@ -276,15 +345,34 @@ class AlokasiHonorRelationManager extends RelationManager
         if ($uniqueMonths->isNotEmpty()) {
             $contractActions = [];
 
+            // Tambahkan tombol Kontrak Sensus Full jika jenisnya Sensus
+            if ($kegiatanManmit->jenis_kegiatan === 'SENSUS') {
+                $contractActions[] = Action::make('cetak_kontrak_full')
+                    ->label('Kontrak Sensus (Seluruh Periode)')
+                    ->icon('heroicon-o-document-duplicate')
+                    ->color('warning')
+                    ->url(route('cetak.kontrak', [
+                        'id_kegiatan_manmit' => $kegiatanManmit->id,
+                        'full' => 1,
+                    ]))
+                    ->openUrlInNewTab();
+            }
+
             foreach ($uniqueMonths as $item) {
-                $date = \Illuminate\Support\Carbon::createFromDate($item->year, $item->month, 1);
-                $label = 'Kontrak ' . $date->translatedFormat('F Y');
+                $date = \Illuminate\Support\Carbon::create($item->year, $item->month, 1);
+                
+                // Bedakan label, icon, dan warna untuk Sensus
+                $isSensus = $kegiatanManmit->jenis_kegiatan === 'SENSUS';
+                $label = ($isSensus ? 'Kontrak Sensus ' : 'Kontrak ') . $date->translatedFormat('F Y');
+                $icon = $isSensus ? 'heroicon-o-document-duplicate' : 'heroicon-o-document-text';
+                $color = $isSensus ? 'warning' : 'info';
+                
                 $actionName = 'cetak_kontrak_' . $item->year . '_' . $item->month;
 
                 $contractActions[] = Action::make($actionName)
                     ->label($label)
-                    ->icon('heroicon-o-document-text')
-                    ->color('info')
+                    ->icon($icon)
+                    ->color($color)
                     ->url(route('cetak.kontrak', [
                         'tahun' => $item->year,
                         'bulan' => $item->month,

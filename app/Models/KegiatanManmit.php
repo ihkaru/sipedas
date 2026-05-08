@@ -27,6 +27,7 @@ class KegiatanManmit extends Model
         'tgl_akhir_penawaran',    // Ini yang akan kita gunakan
         'jenis_kegiatan',
         'frekuensi_kegiatan',
+        'template_kontrak',
     ];
 
 

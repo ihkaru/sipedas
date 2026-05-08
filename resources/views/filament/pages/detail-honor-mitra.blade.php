@@ -5,12 +5,18 @@
              <div class="text-2xl font-bold text-primary-600 dark:text-primary-400">
                 Rp {{ number_format($this->getSensusTotal(), 0, ',', '.') }}
              </div>
+             <div class="mt-1 text-xs text-gray-500">
+                Sisa: Rp {{ number_format($this->getSensusRemaining(), 0, ',', '.') }}
+             </div>
         </x-filament::section>
         
         <x-filament::section>
              <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Honor Survei</div>
              <div class="text-2xl font-bold text-primary-600 dark:text-primary-400">
                 Rp {{ number_format($this->getSurveiTotal(), 0, ',', '.') }}
+             </div>
+             <div class="mt-1 text-xs text-gray-500">
+                Sisa: Rp {{ number_format($this->getSurveiRemaining(), 0, ',', '.') }}
              </div>
         </x-filament::section>
     </div>
