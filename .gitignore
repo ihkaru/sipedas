@@ -24,3 +24,5 @@ frankenphp
 *.zip
 database/data/backup/
 public/vendor/
+/appDataDir
+

@@ -33,6 +33,7 @@ class Pengaturan extends Page implements HasForms
             'ppk_auto_approve_days' => $settings['ppk_auto_approve_days'] ?? 0,
             'STANDAR_BIAYA_MASUKAN_LAINNYA_NON_PNS_OB_PETUGAS_PENDATAAN_LAPANGAN_SENSUS' => $settings['STANDAR_BIAYA_MASUKAN_LAINNYA_NON_PNS_OB_PETUGAS_PENDATAAN_LAPANGAN_SENSUS'] ?? 4694000,
             'STANDAR_BIAYA_MASUKAN_LAINNYA_NON_PNS_OB_PETUGAS_PENDATAAN_LAPANGAN_SURVEI' => $settings['STANDAR_BIAYA_MASUKAN_LAINNYA_NON_PNS_OB_PETUGAS_PENDATAAN_LAPANGAN_SURVEI'] ?? 3353000,
+            'allow_weekend_travel' => (bool) ($settings['allow_weekend_travel'] ?? false),
         ]);
     }
 
@@ -70,6 +71,14 @@ class Pengaturan extends Page implements HasForms
                             ->minValue(0)
                             ->prefix('Rp')
                             ->live(debounce: 500),
+                    ]),
+                Section::make('Perjalanan Dinas')
+                    ->description('Pengaturan terkait perjalanan dinas. Perubahan akan langsung disimpan.')
+                    ->schema([
+                        Toggle::make('allow_weekend_travel')
+                            ->label('Izinkan Perjalanan Dinas di Hari Sabtu & Minggu')
+                            ->helperText('Jika aktif, tanggal pada hari Sabtu dan Minggu dapat dipilih saat mengajukan perjalanan dinas.')
+                            ->live(),
                     ])
             ])
             ->statePath('data');

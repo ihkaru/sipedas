@@ -9,6 +9,8 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Placeholder;
+use Illuminate\Support\HtmlString;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Maatwebsite\Excel\Facades\Excel;
@@ -41,6 +43,19 @@ class ListMitras extends ListRecords
                     ->label('Impor Mitra')
                     ->icon('heroicon-o-arrow-up-tray')
                     ->form([
+                        Placeholder::make('panduan_import')
+                            ->label('Panduan Pengambilan Data')
+                            ->content(new HtmlString('
+                                <div class="text-sm text-gray-600 dark:text-gray-400 space-y-2">
+                                    <p>Sistem ini sekarang mendukung impor berkas langsung hasil ekspor dari aplikasi pusat <strong>Manajemen Mitra BPS (KEPKA)</strong>.</p>
+                                    <ol class="list-decimal pl-4 space-y-1">
+                                        <li>Buka halaman: <a href="https://manajemen-mitra.bps.go.id/mitra/kepka" target="_blank" class="text-primary-600 dark:text-primary-400 underline font-semibold">https://manajemen-mitra.bps.go.id/mitra/kepka</a></li>
+                                        <li>Filter <strong>Tahun</strong>, <strong>Provinsi</strong>, dan <strong>Kab/Kota</strong> sesuai kebutuhan.</li>
+                                        <li>Klik tombol <strong>Download</strong> di atas tabel (di sebelah kiri tombol Atur Kolom) untuk mengunduh data mitra.</li>
+                                        <li>Unggah langsung berkas hasil unduhan tersebut pada field <strong>File Excel</strong> di bawah ini tanpa perlu memindahkan datanya ke template manual lagi.</li>
+                                    </ol>
+                                </div>
+                            ')),
                         // Tambahkan form input untuk Tahun dan Status
                         TextInput::make('tahun')
                             ->label('Tahun Kemitraan')
@@ -59,8 +74,43 @@ class ListMitras extends ListRecords
                             ->default('AKTIF'),
                         FileUpload::make('attachment')
                             ->label('File Excel (.xlsx)')
-                            ->required()->disk('local')
-                            ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']),
+                            ->required()
+                            ->disk('local')
+                            ->rules([
+                                fn (): \Closure => function (string $attribute, mixed $value, \Closure $fail) {
+                                    // If value is a string, it represents the already uploaded temporary file path on disk (e.g. livewire-tmp/*.tmp).
+                                    // We skip extension validation here because it was already validated as an UploadedFile/TemporaryUploadedFile object during upload.
+                                    if (is_string($value)) {
+                                        return;
+                                    }
+
+                                    $extension = null;
+                                    $clientOriginalName = null;
+                                    
+                                    if (is_object($value)) {
+                                        if (method_exists($value, 'getClientOriginalExtension')) {
+                                            $extension = $value->getClientOriginalExtension();
+                                        }
+                                        if (method_exists($value, 'getClientOriginalName')) {
+                                            $clientOriginalName = $value->getClientOriginalName();
+                                        }
+                                    }
+
+                                    // Fallback to parsing the client original name if extension is empty
+                                    if (empty($extension) && !empty($clientOriginalName)) {
+                                        $extension = pathinfo($clientOriginalName, PATHINFO_EXTENSION);
+                                    }
+
+                                    if ($extension) {
+                                        $ext = strtolower($extension);
+                                        if (!in_array($ext, ['xlsx', 'xls'])) {
+                                            $fail('Jenis berkas tidak valid. Mengharapkan .xlsx atau .xls');
+                                        }
+                                    } else {
+                                        $fail('Gagal memverifikasi format berkas. Pastikan Anda mengunggah berkas Excel (.xlsx atau .xls).');
+                                    }
+                                }
+                            ]),
                     ])
                     ->action(function (array $data) {
                         try {

@@ -8,14 +8,28 @@ class TanggalMerah extends ATanggalMerah
 {
     public static ATanggalMerah $t;
     public static ?array $tanggalMerahDates = null;
-    public static function getLiburDates(int $year = null)
+    public static function getLiburDates(?int $year = null)
     {
         if (self::$tanggalMerahDates) return self::$tanggalMerahDates;
         self::$t ??= new ATanggalMerah();
         $res = collect(self::$t->getData())->keys()->flatten()->toArray();
         unset($res[count($res) - 1]);
-        $sabtu = self::getDatesByDayName(Carbon::parse("2024-01-01"), now()->addYear(1), Carbon::SATURDAY);
-        $ahad = self::getDatesByDayName(Carbon::parse("2024-01-01"), now()->addYear(1), Carbon::SUNDAY);
+
+        $allowWeekend = false;
+        try {
+            $allowWeekend = (bool) \App\Models\Setting::where('key', 'allow_weekend_travel')->value('value');
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        if ($allowWeekend) {
+            $sabtu = [];
+            $ahad = [];
+        } else {
+            $sabtu = self::getDatesByDayName(Carbon::parse("2024-01-01"), now()->addYear(1), Carbon::SATURDAY);
+            $ahad = self::getDatesByDayName(Carbon::parse("2024-01-01"), now()->addYear(1), Carbon::SUNDAY);
+        }
+
         self::$tanggalMerahDates = collect(array_merge($res, $sabtu, $ahad))
             ->sort()->unique()->flatten()->toArray();
         // if(!collect(self::$tanggalMerahDates)->flatten()->contains("2024-04-21")) dd($sabtu,$ahad);

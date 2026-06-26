@@ -1,0 +1,245 @@
+[
+    {
+        "id": 1,
+        "nip_lama": "340019770",
+        "username": "abdul.karim",
+        "password": "",
+        "email": "abdul.karim@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 2,
+        "nip_lama": "340013391",
+        "username": "munawir",
+        "password": "",
+        "email": "munawir@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 3,
+        "nip_lama": "340063627",
+        "username": "iskandar-pppk",
+        "password": "",
+        "email": "iskandar-pppk@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 4,
+        "nip_lama": "340055305",
+        "username": "yulfi.ramanda",
+        "password": "",
+        "email": "yulfi.ramanda@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 5,
+        "nip_lama": "340017573",
+        "username": "muh.adwin",
+        "password": "",
+        "email": "muh.adwin@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 6,
+        "nip_lama": "340055280",
+        "username": "firmansyah2",
+        "password": "",
+        "email": "firmansyah2@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 7,
+        "nip_lama": "340017570",
+        "username": "sy.apriani",
+        "password": "",
+        "email": "sy.apriani@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 8,
+        "nip_lama": "340055291",
+        "username": "alhaq",
+        "password": "",
+        "email": "alhaq@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 9,
+        "nip_lama": "340051340 ",
+        "username": "supandi",
+        "password": "",
+        "email": "supandi@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 10,
+        "nip_lama": "340065507",
+        "username": "rizakurniawan-pppk",
+        "password": "",
+        "email": "rizakurniawan-pppk@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 11,
+        "nip_lama": "340059242",
+        "username": "wantri.mukti",
+        "password": "",
+        "email": "wantri.mukti@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 12,
+        "nip_lama": "340057298",
+        "username": "arief.yuandi",
+        "password": "",
+        "email": "arief.yuandi@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 13,
+        "nip_lama": "340058975",
+        "username": "sarah.pratiwi",
+        "password": "",
+        "email": "sarah.pratiwi@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 14,
+        "nip_lama": "340058620",
+        "username": "arinif",
+        "password": "",
+        "email": "arinif@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 15,
+        "nip_lama": "340059760 ",
+        "username": "safira.nurrosyid",
+        "password": "",
+        "email": "safira.nurrosyid@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 16,
+        "nip_lama": "340058814",
+        "username": "listiojati",
+        "password": "",
+        "email": "listiojati@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 17,
+        "nip_lama": "340062135",
+        "username": "arsita.indah",
+        "password": "",
+        "email": "arsita.indah@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 18,
+        "nip_lama": "340060383",
+        "username": "vaya.difa",
+        "password": "",
+        "email": "vaya.difa@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 19,
+        "nip_lama": "340064654",
+        "username": "haddadsaputra-pppk",
+        "password": "",
+        "email": "haddadsaputra-pppk@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 20,
+        "nip_lama": "340061823",
+        "username": "ihzakarunia",
+        "password": "",
+        "email": "ihzakarunia@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 21,
+        "nip_lama": "340061717",
+        "username": "allersilaban",
+        "password": "",
+        "email": "allersilaban@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 22,
+        "nip_lama": "340060805",
+        "username": "najia.helmiah",
+        "password": "",
+        "email": "najia.helmiah@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 23,
+        "nip_lama": "340066087",
+        "username": "akmabatrisyia",
+        "password": "",
+        "email": "akmabatrisyia@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 24,
+        "nip_lama": "340062981",
+        "username": "ahmad.aulia",
+        "password": "",
+        "email": "ahmad.aulia@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 25,
+        "nip_lama": "340062230",
+        "username": "mullahrifky",
+        "password": "",
+        "email": "mullahrifky@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 26,
+        "nip_lama": "340063547",
+        "username": "sukma.andini",
+        "password": "",
+        "email": "sukma.andini@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    },
+    {
+        "id": 27,
+        "nip_lama": "340063573",
+        "username": "vaniya.dewi",
+        "password": "",
+        "email": "vaniya.dewi@bps.go.id",
+        "id_role": "3",
+        "tim_id": null
+    }
+]

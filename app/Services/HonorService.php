@@ -124,14 +124,21 @@ class HonorService
                 $q->where('tanggal_mulai_perjanjian', '<=', $newEnd)
                   ->where('tanggal_akhir_perjanjian', '>=', $newStart);
             })
+            ->with('honor.kegiatanManmit')
             ->first();
 
         if ($overlap) {
-            $kegiatan = $overlap->honor?->kegiatanManmit?->nama ?? 'Kegiatan lain';
-            return [
-                'eligible' => false,
-                'message' => "Jadwal bentrok dengan kegiatan '{$kegiatan}' ({$overlap->tanggal_mulai_perjanjian->format('d M')} - {$overlap->tanggal_akhir_perjanjian->format('d M')})."
-            ];
+            $otherIsSensus = $overlap->honor?->kegiatanManmit?->jenis_kegiatan === 'SENSUS';
+            
+            // Aturan: Bentrok hanya berlaku jika salah satu atau kedua kegiatan adalah SENSUS.
+            // Jika keduanya adalah SURVEI, diperbolehkan overlap (lanjut ke cek limit SBML).
+            if ($isSensus || $otherIsSensus) {
+                $kegiatan = $overlap->honor?->kegiatanManmit?->nama ?? 'Kegiatan lain';
+                return [
+                    'eligible' => false,
+                    'message' => "Jadwal bentrok dengan kegiatan '{$kegiatan}' ({$overlap->tanggal_mulai_perjanjian->format('d M')} - {$overlap->tanggal_akhir_perjanjian->format('d M')})."
+                ];
+            }
         }
 
         // 2. Cek Limit SBML Proportional untuk SETIAP bulan yang terkena dampak
