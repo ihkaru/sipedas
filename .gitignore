@@ -22,7 +22,15 @@ vendor.zip
 frankenphp
 .build_hash
 *.zip
+
+# ==============================================================
+# DATA SENSITIF - BY NAME BY ADDRESS (JANGAN PERNAH KE GITHUB)
+# ==============================================================
+database/data/*.csv
+database/data/*.xlsx
+database/data/*.xls
+database/data/MenuMitraKepka/
+database/data/MenuSeleksiMitra/
 database/data/backup/
 public/vendor/
 /appDataDir
-
