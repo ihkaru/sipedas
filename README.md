@@ -16,4 +16,12 @@ DOKTER-V adalah aplikasi yang dikembangkan oleh Kepala Sub Bagian Umum bersama P
 
 Dengan DOKTER-V, proses pembuatan surat tugas dan pengajuan pembayaran menjadi lebih efisien, terorganisir, dan mudah dimonitor. Aplikasi ini memastikan setiap langkah dalam proses administrasi berjalan lancar dan sesuai prosedur.
 
+## Dokumentasi
+
+| Dokumen | Deskripsi |
+|---|---|
+| [Business Rules — Kontrak & Dokumen](docs/BUSINESS_RULES.md) | Aturan bisnis untuk SPK, BAST, PPK, dan perhitungan tanggal |
+| [SRS](srs.md) | System Requirements Specification |
+| [Production Guide](PRODUCTION_GUIDE.md) | Panduan deployment ke production |
+
 &copy; 2024 DOKTER-V - BPS Kabupaten Mempawah. All rights reserved.
