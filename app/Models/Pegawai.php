@@ -6,7 +6,6 @@ use App\Supports\Constants;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 class Pegawai extends Model {
     use HasFactory;
@@ -44,19 +43,10 @@ class Pegawai extends Model {
         );
     }
 
-    public static function getPpkByDate($date = null) {
-        if (!$date) {
-            $date = now();
-        }
-
-        // Transition date: 2026-04-01
-        // New PPK starting April 2026: Budiman Aller Silaban (NIP: 200001062023021001)
-        if (Carbon::parse($date)->greaterThanOrEqualTo('2026-04-01')) {
-            return self::find("200001062023021001");
-        }
-
-        // Before transition, use the setting
-        $nipDefault = Pengaturan::key("NIP_PPK_SATER")->nilai ?? '199306062016021001';
-        return self::find($nipDefault);
+    public static function getPpkByDate($date = null): ?self
+    {
+        // Delegasi ke RiwayatPpk — tidak ada lagi tanggal/NIP hardcoded di sini.
+        // Untuk mengganti PPK, cukup tambah baris baru di menu Sistem > Riwayat PPK.
+        return RiwayatPpk::getPpkPadaTanggal($date);
     }
 }

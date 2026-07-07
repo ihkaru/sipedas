@@ -66,16 +66,24 @@ class KegiatanResource extends Resource
         return $form
             ->schema([
                 TextInput::make('id')
+                    ->label('Slug (ID)')
                     ->disabled()
                     ->dehydrated(true)
                     ->live()
-                    ->unique(ignoreRecord: true),
+                    ->unique(ignoreRecord: true)
+                    ->helperText(fn (string $operation) => $operation === 'edit'
+                        ? '⚠️ Slug dikunci setelah kegiatan dibuat untuk mencegah kerusakan data penugasan.'
+                        : 'Otomatis diisi dari nama kegiatan.'),
                 TextInput::make('nama')
                     ->lazy()
                     ->required()
                     ->maxLength(255)
-                    ->afterStateUpdated(function (Get $get, Set $set) {
-                        $set('id', Str::slug($get("nama")));
+                    ->afterStateUpdated(function (Get $get, Set $set, string $operation) {
+                        // Hanya generate slug saat CREATE, bukan saat EDIT
+                        // Mengubah slug saat edit bisa merusak relasi penugasan
+                        if ($operation === 'create') {
+                            $set('id', Str::slug($get("nama")));
+                        }
                     }),
                 Select::make("kegiatan_manmit_id")
                     ->label("Rangkaian")

@@ -59,7 +59,7 @@ class AlokasiHonorRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('honor.satuan_honor')->label('Satuan'),
                 Tables\Columns\TextColumn::make('honor.harga_per_satuan')->money('IDR')->label('Harga per Satuan'),
                 Tables\Columns\TextColumn::make('total_honor')->money('IDR')->sortable(),
-                Tables\Columns\TextColumn::make('tanggal_akhir_perjanjian')->date()->sortable(),
+                Tables\Columns\TextColumn::make('honor.tanggal_akhir_kegiatan')->date()->label('Tanggal akhir kegiatan')->sortable(),
 
             ])
             ->filters([
