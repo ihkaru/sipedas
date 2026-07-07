@@ -120,8 +120,11 @@ class AlokasiHonor extends Model
         $tanggalAkhirKontrak = Carbon::parse($honor->tanggal_akhir_kegiatan)->endOfMonth();
 
         // Tanggal administrasi SPK/BAST
-        $tanggalPengajuanSpk = TanggalMerah::getNextWorkDay($tanggalMulaiKontrak, -1);
-        $tanggalPengajuanBast = TanggalMerah::getNextWorkDay($tanggalAkhirKontrak, -1);
+        $tanggalPengajuanSpk  = TanggalMerah::getNextWorkDay($tanggalMulaiKontrak->copy(), -1);
+        // BAST: tanggal_nomor maksimal = tanggal_akhir_kegiatan (jika hari kerja),
+        // atau hari kerja sebelumnya jika jatuh di hari libur/weekend.
+        $tanggalAkhirKegiatan = Carbon::parse($honor->tanggal_akhir_kegiatan);
+        $tanggalPengajuanBast = TanggalMerah::getNextWorkDay($tanggalAkhirKegiatan->copy(), -1);
 
         $totalHonor = $honor->harga_per_satuan * $target;
 
