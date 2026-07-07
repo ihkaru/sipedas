@@ -70,27 +70,124 @@ class HonorResource extends Resource
                             ->native(false)
                             ->displayFormat('d M Y')
                             ->live()
-                            ->helperText(function (?Honor $record) {
+                            ->rules([
+                                function (Forms\Get $get) {
+                                    return function (string $attribute, $value, \Closure $fail) use ($get) {
+                                        $kegiatanId = $get('kegiatan_manmit_id');
+                                        if (!$kegiatanId || !$value) return;
+
+                                        $kegiatan = \App\Models\KegiatanManmit::find($kegiatanId);
+                                        if (!$kegiatan || !$kegiatan->tgl_mulai_pelaksanaan || !$kegiatan->tgl_akhir_pelaksanaan) return;
+
+                                        $start = \Carbon\Carbon::parse($kegiatan->tgl_mulai_pelaksanaan);
+                                        $end = \Carbon\Carbon::parse($kegiatan->tgl_akhir_pelaksanaan);
+                                        $chosen = \Carbon\Carbon::parse($value);
+
+                                        if ($chosen->lt($start) || $chosen->gt($end)) {
+                                            $tglMulai = $start->format('d M Y');
+                                            $tglAkhir = $end->format('d M Y');
+                                            $fail("Tanggal akhir kegiatan harus berada dalam rentang pelaksanaan kegiatan utama ({$tglMulai} s/d {$tglAkhir})!");
+                                        }
+                                    };
+                                }
+                            ])
+                            ->helperText(function (Forms\Get $get, ?Honor $record) {
+                                $kegiatanId = $get('kegiatan_manmit_id');
+                                $parentRangeText = '';
+                                
+                                if ($kegiatanId) {
+                                    $kegiatan = \App\Models\KegiatanManmit::find($kegiatanId);
+                                    if ($kegiatan && $kegiatan->tgl_mulai_pelaksanaan && $kegiatan->tgl_akhir_pelaksanaan) {
+                                        $tglMulai = \Carbon\Carbon::parse($kegiatan->tgl_mulai_pelaksanaan)->format('d M Y');
+                                        $tglAkhir = \Carbon\Carbon::parse($kegiatan->tgl_akhir_pelaksanaan)->format('d M Y');
+                                        $val = $get('tanggal_akhir_kegiatan');
+                                        
+                                        if ($val) {
+                                            $chosenDate = \Carbon\Carbon::parse($val);
+                                            $start = \Carbon\Carbon::parse($kegiatan->tgl_mulai_pelaksanaan);
+                                            $end = \Carbon\Carbon::parse($kegiatan->tgl_akhir_pelaksanaan);
+                                            
+                                            if ($chosenDate->lt($start) || $chosenDate->gt($end)) {
+                                                $parentRangeText = "<div class='text-amber-600 dark:text-amber-400 font-semibold mt-2'>⚠️ Peringatan: Tanggal yang dipilih berada di luar rentang pelaksanaan kegiatan ({$tglMulai} s/d {$tglAkhir}). Harap sesuaikan!</div>";
+                                            } else {
+                                                $parentRangeText = "<div class='text-green-600 dark:text-green-400 mt-2'>✓ Tanggal berada dalam rentang pelaksanaan kegiatan ({$tglMulai} s/d {$tglAkhir}).</div>";
+                                            }
+                                        } else {
+                                            $parentRangeText = "<div class='text-gray-500 mt-2'>Rentang pelaksanaan kegiatan: {$tglMulai} s/d {$tglAkhir}.</div>";
+                                        }
+                                    }
+                                }
+
+                                $baseText = '';
                                 if (!$record) {
-                                    return 'Tanggal ini menentukan bulan kontrak SPK, PPK penandatangan, dan tanggal BAST.';
+                                    $baseText = 'Tanggal ini menentukan bulan kontrak SPK, PPK penandatangan, dan tanggal BAST.';
+                                } else {
+                                    $jumlah = $record->alokasiHonors()->count();
+                                    if ($jumlah === 0) {
+                                        $baseText = 'Belum ada alokasi honor — aman untuk diubah.';
+                                    } else {
+                                        $baseText = "⚠️ Ada {$jumlah} alokasi honor aktif. Jika diubah, sistem akan otomatis memperbarui tanggal kontrak, penanda tanganan SPK, dan nomor BAST seluruh mitra terdampak.";
+                                    }
                                 }
-                                $jumlah = $record->alokasiHonors()->count();
-                                if ($jumlah === 0) {
-                                    return 'Belum ada alokasi honor — aman untuk diubah.';
+
+                                return new \Illuminate\Support\HtmlString($baseText . $parentRangeText);
+                             })
+                            ->hintColor(function (Forms\Get $get, ?Honor $record) {
+                                $kegiatanId = $get('kegiatan_manmit_id');
+                                if ($kegiatanId) {
+                                    $kegiatan = \App\Models\KegiatanManmit::find($kegiatanId);
+                                    if ($kegiatan && $kegiatan->tgl_mulai_pelaksanaan && $kegiatan->tgl_akhir_pelaksanaan) {
+                                        $val = $get('tanggal_akhir_kegiatan');
+                                        if ($val) {
+                                            $chosenDate = \Carbon\Carbon::parse($val);
+                                            $start = \Carbon\Carbon::parse($kegiatan->tgl_mulai_pelaksanaan);
+                                            $end = \Carbon\Carbon::parse($kegiatan->tgl_akhir_pelaksanaan);
+                                            if ($chosenDate->lt($start) || $chosenDate->gt($end)) {
+                                                return 'danger';
+                                            }
+                                        }
+                                    }
                                 }
-                                return "⚠️ Ada {$jumlah} alokasi honor aktif. Jika diubah, sistem akan otomatis memperbarui tanggal kontrak, penanda tanganan SPK, dan nomor BAST seluruh mitra terdampak.";
-                            })
-                            ->hintColor(function (?Honor $record) {
                                 if (!$record) return 'primary';
                                 return $record->alokasiHonors()->count() > 0 ? 'warning' : 'success';
                             })
-                            ->hintIcon(function (?Honor $record) {
+                            ->hintIcon(function (Forms\Get $get, ?Honor $record) {
+                                $kegiatanId = $get('kegiatan_manmit_id');
+                                if ($kegiatanId) {
+                                    $kegiatan = \App\Models\KegiatanManmit::find($kegiatanId);
+                                    if ($kegiatan && $kegiatan->tgl_mulai_pelaksanaan && $kegiatan->tgl_akhir_pelaksanaan) {
+                                        $val = $get('tanggal_akhir_kegiatan');
+                                        if ($val) {
+                                            $chosenDate = \Carbon\Carbon::parse($val);
+                                            $start = \Carbon\Carbon::parse($kegiatan->tgl_mulai_pelaksanaan);
+                                            $end = \Carbon\Carbon::parse($kegiatan->tgl_akhir_pelaksanaan);
+                                            if ($chosenDate->lt($start) || $chosenDate->gt($end)) {
+                                                return 'heroicon-o-x-circle';
+                                            }
+                                        }
+                                    }
+                                }
                                 if (!$record) return null;
                                 return $record->alokasiHonors()->count() > 0
                                     ? 'heroicon-o-exclamation-triangle'
                                     : 'heroicon-o-check-circle';
                             })
-                            ->hint(function (?Honor $record) {
+                            ->hint(function (Forms\Get $get, ?Honor $record) {
+                                $kegiatanId = $get('kegiatan_manmit_id');
+                                if ($kegiatanId) {
+                                    $kegiatan = \App\Models\KegiatanManmit::find($kegiatanId);
+                                    if ($kegiatan && $kegiatan->tgl_mulai_pelaksanaan && $kegiatan->tgl_akhir_pelaksanaan) {
+                                        $val = $get('tanggal_akhir_kegiatan');
+                                        if ($val) {
+                                            $chosenDate = \Carbon\Carbon::parse($val);
+                                            $start = \Carbon\Carbon::parse($kegiatan->tgl_mulai_pelaksanaan);
+                                            $end = \Carbon\Carbon::parse($kegiatan->tgl_akhir_pelaksanaan);
+                                            if ($chosenDate->lt($start) || $chosenDate->gt($end)) {
+                                                return 'Di luar rentang pelaksanaan!';
+                                            }
+                                        }
+                                    }
+                                }
                                 if (!$record) return null;
                                 $jumlah = $record->alokasiHonors()->count();
                                 return $jumlah > 0 ? "{$jumlah} alokasi akan ikut terupdate" : 'Aman diubah';

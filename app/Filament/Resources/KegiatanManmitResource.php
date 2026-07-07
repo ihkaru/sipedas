@@ -156,21 +156,97 @@ class KegiatanManmitResource extends Resource
                     ->addable(false)
                     ->deletable(true)
                     ->reorderable(false)
-                    ->visible(fn(Get $get) => !in_array($get('frekuensi_kegiatan'), Constants::SINGLE_OCCURRENCE_FREQUENCIES))
+                    ->visible(fn(Get $get, string $operation) => $operation === 'create' && !in_array($get('frekuensi_kegiatan'), Constants::SINGLE_OCCURRENCE_FREQUENCIES))
                     ->default([]), // Start with empty array
 
-                // --- BAGIAN UNTUK FREKUENSI TUNGGAL ---
-                Forms\Components\Section::make('Jadwal Kegiatan')
+                // --- BAGIAN UNTUK FREKUENSI TUNGGAL / EDIT MODE ---
+                Forms\Components\Section::make('Jadwal Pelaksanaan Kegiatan')
+                    ->description('Rentang ini harus mencakup SELURUH fase kegiatan — dari hari pertama lapangan hingga hari terakhir entri/pengolahan selesai.')
                     ->schema([
+                        Forms\Components\Placeholder::make('jadwal_info')
+                            ->label('')
+                            ->content(new \Illuminate\Support\HtmlString('
+                                <div class="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-700 p-3 text-sm text-amber-800 dark:text-amber-200">
+                                    <div class="flex items-start gap-2">
+                                        <svg class="mt-0.5 h-4 w-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
+                                        <div>
+                                            <b>Panduan Pengisian Jadwal:</b>
+                                            <ul class="mt-1 ml-4 list-disc space-y-1">
+                                                <li><b>Tanggal Mulai</b> = hari pertama fase paling awal (biasanya mulai lapangan)</li>
+                                                <li><b>Tanggal Selesai</b> = hari terakhir fase paling akhir (biasanya selesai entri data)</li>
+                                                <li>Pastikan <b>semua</b> <code>Tanggal Akhir Kegiatan</code> dari Honor di bawah berada dalam rentang ini</li>
+                                                <li>Rentang ini <b>tidak mempengaruhi</b> tanggal kontrak SPK atau BAST — hanya sebagai referensi dan validasi</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            '))
+                            ->columnSpanFull(),
                         Forms\Components\DatePicker::make('tgl_mulai_pelaksanaan')
-                            ->date()
-                            ->required(),
+                            ->label('Tanggal Mulai Pelaksanaan')
+                            ->native(false)
+                            ->displayFormat('d M Y')
+                            ->required()
+                            ->helperText('Hari pertama kegiatan dimulai (mis. mulai lapangan)')
+                            ->rules([
+                                function (Forms\Get $get, ?KegiatanManmit $record) {
+                                    return function (string $attribute, $value, \Closure $fail) use ($get, $record) {
+                                        if (!$record) return;
+
+                                        $tglAkhirVal = $get('tgl_akhir_pelaksanaan');
+                                        if (!$tglAkhirVal || !$value) return;
+
+                                        $start = \Carbon\Carbon::parse($value);
+                                        $end = \Carbon\Carbon::parse($tglAkhirVal);
+
+                                        $outOfRangeHonors = $record->honors()
+                                            ->where(function ($query) use ($start, $end) {
+                                                $query->where('tanggal_akhir_kegiatan', '<', $start)
+                                                      ->orWhere('tanggal_akhir_kegiatan', '>', $end);
+                                            })
+                                            ->get();
+
+                                        if ($outOfRangeHonors->isNotEmpty()) {
+                                            $roles = $outOfRangeHonors->map(fn($h) => "{$h->jabatan} (" . \Carbon\Carbon::parse($h->tanggal_akhir_kegiatan)->format('d M Y') . ")")->implode(', ');
+                                            $fail("Rentang pelaksanaan tidak mencakup tanggal akhir kegiatan dari honor berikut: {$roles}. Harap sesuaikan rentang agar mencakup seluruh tanggal tersebut.");
+                                        }
+                                    };
+                                }
+                            ]),
                         Forms\Components\DatePicker::make('tgl_akhir_pelaksanaan')
-                            ->date()
-                            ->required(),
+                            ->label('Tanggal Selesai Pelaksanaan')
+                            ->native(false)
+                            ->displayFormat('d M Y')
+                            ->required()
+                            ->helperText('Hari terakhir kegiatan selesai (mis. selesai entri data)')
+                            ->rules([
+                                function (Forms\Get $get, ?KegiatanManmit $record) {
+                                    return function (string $attribute, $value, \Closure $fail) use ($get, $record) {
+                                        if (!$record) return;
+
+                                        $tglMulaiVal = $get('tgl_mulai_pelaksanaan');
+                                        if (!$tglMulaiVal || !$value) return;
+
+                                        $start = \Carbon\Carbon::parse($tglMulaiVal);
+                                        $end = \Carbon\Carbon::parse($value);
+
+                                        $outOfRangeHonors = $record->honors()
+                                            ->where(function ($query) use ($start, $end) {
+                                                $query->where('tanggal_akhir_kegiatan', '<', $start)
+                                                      ->orWhere('tanggal_akhir_kegiatan', '>', $end);
+                                            })
+                                            ->get();
+
+                                        if ($outOfRangeHonors->isNotEmpty()) {
+                                            $roles = $outOfRangeHonors->map(fn($h) => "{$h->jabatan} (" . \Carbon\Carbon::parse($h->tanggal_akhir_kegiatan)->format('d M Y') . ")")->implode(', ');
+                                            $fail("Rentang pelaksanaan tidak mencakup tanggal akhir kegiatan dari honor berikut: {$roles}. Harap sesuaikan rentang agar mencakup seluruh tanggal tersebut.");
+                                        }
+                                    };
+                                }
+                            ]),
                     ])
                     ->columns(2)
-                    ->visible(fn(Get $get) => in_array($get('frekuensi_kegiatan'), Constants::SINGLE_OCCURRENCE_FREQUENCIES)),
+                    ->visible(fn(Get $get, string $operation) => $operation === 'edit' || in_array($get('frekuensi_kegiatan'), Constants::SINGLE_OCCURRENCE_FREQUENCIES)),
             ]);
     }
 
