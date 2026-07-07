@@ -66,7 +66,35 @@ class HonorResource extends Resource
                             ->prefix('Rp'),
 
                         DatePicker::make('tanggal_akhir_kegiatan')
-                            ->required(),
+                            ->required()
+                            ->native(false)
+                            ->displayFormat('d M Y')
+                            ->live()
+                            ->helperText(function (?Honor $record) {
+                                if (!$record) {
+                                    return 'Tanggal ini menentukan bulan kontrak SPK, PPK penandatangan, dan tanggal BAST.';
+                                }
+                                $jumlah = $record->alokasiHonors()->count();
+                                if ($jumlah === 0) {
+                                    return 'Belum ada alokasi honor — aman untuk diubah.';
+                                }
+                                return "⚠️ Ada {$jumlah} alokasi honor aktif. Jika diubah, sistem akan otomatis memperbarui tanggal kontrak, penanda tanganan SPK, dan nomor BAST seluruh mitra terdampak.";
+                            })
+                            ->hintColor(function (?Honor $record) {
+                                if (!$record) return 'primary';
+                                return $record->alokasiHonors()->count() > 0 ? 'warning' : 'success';
+                            })
+                            ->hintIcon(function (?Honor $record) {
+                                if (!$record) return null;
+                                return $record->alokasiHonors()->count() > 0
+                                    ? 'heroicon-o-exclamation-triangle'
+                                    : 'heroicon-o-check-circle';
+                            })
+                            ->hint(function (?Honor $record) {
+                                if (!$record) return null;
+                                $jumlah = $record->alokasiHonors()->count();
+                                return $jumlah > 0 ? "{$jumlah} alokasi akan ikut terupdate" : 'Aman diubah';
+                            }),
 
                         // Menampilkan ID Batasan Honor sebagai informasi (tidak bisa di-edit)
                         Placeholder::make('id_batasan_honor')

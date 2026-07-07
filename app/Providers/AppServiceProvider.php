@@ -30,5 +30,8 @@ class AppServiceProvider extends ServiceProvider
         FilamentAsset::register([
             Js::make('chart-js-plugins', Vite::asset('resources/js/filament-chart-js-plugins.js'))->module(),
         ]);
+
+        // Observer: propagasi perubahan tanggal_akhir_kegiatan ke alokasi & nomor surat
+        \App\Models\Honor::observe(\App\Observers\HonorObserver::class);
     }
 }
