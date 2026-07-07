@@ -108,7 +108,9 @@ class HonorResource extends Resource
                                             $end = \Carbon\Carbon::parse($kegiatan->tgl_akhir_pelaksanaan);
                                             
                                             if ($chosenDate->lt($start) || $chosenDate->gt($end)) {
-                                                $parentRangeText = "<div class='text-amber-600 dark:text-amber-400 font-semibold mt-2'>⚠️ Peringatan: Tanggal yang dipilih berada di luar rentang pelaksanaan kegiatan ({$tglMulai} s/d {$tglAkhir}). Harap sesuaikan!</div>";
+                                                $editUrl = route('filament.a.resources.kegiatan-manmit.edit', ['record' => $kegiatanId]);
+                                                $parentRangeText = "<div class='text-danger-600 dark:text-danger-400 font-semibold mt-2'>❌ Error: Tanggal yang dipilih berada di luar rentang pelaksanaan kegiatan ({$tglMulai} s/d {$tglAkhir}).</div>";
+                                                $parentRangeText .= "<div class='mt-2'><a href='{$editUrl}' target='_blank' class='inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-danger-600 hover:bg-danger-500 rounded-lg shadow-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danger-600'>Ubah Rentang Tanggal Pelaksanaan &rarr;</a></div>";
                                             } else {
                                                 $parentRangeText = "<div class='text-green-600 dark:text-green-400 mt-2'>✓ Tanggal berada dalam rentang pelaksanaan kegiatan ({$tglMulai} s/d {$tglAkhir}).</div>";
                                             }

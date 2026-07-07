@@ -187,7 +187,7 @@ honor.tanggal_akhir_kegiatan berubah
     └── nomor_surats.tanggal_nomor (BAST)           <- diperbarui
 ```
 
-UI menampilkan **peringatan kuning** di form edit Honor jika sudah ada alokasi honor aktif.
+UI menampilkan **pesan error merah (strict validation)** dan menyediakan **tombol pintas** ke halaman edit Kegiatan Manmit utama jika tanggal akhir kegiatan dipilih di luar rentang pelaksanaan kegiatan utama. Jika sudah ada alokasi honor aktif, UI juga menampilkan **peringatan kuning** mengenai dampak alokasi.
 
 ### Bulk Fix untuk Data Historis
 
