@@ -190,8 +190,13 @@ class PdfController extends Controller {
         $alokasiHonor = $alokasiHonorQuery->get();
         // --- AKHIR LOGIKA BARU YANG DIPERBAIKI ---
 
-        $tanggalPengajuan = Carbon::parse("$tahun-$bulan-01");
-        $ppk = Pegawai::getPpkByDate($tanggalPengajuan);
+        // Tentukan PPK dari tanggal_nomor BAST aktual (bukan dari URL param tahun-bulan).
+        // Ini memastikan PPK selalu benar sesuai tanggal dokumen, apapun URL yang dikirim.
+        $tanggalBastAktual = $alokasiHonor->first()?->bast?->tanggal_nomor;
+        $tanggalUntukPpk = $tanggalBastAktual
+            ? Carbon::parse($tanggalBastAktual)
+            : Carbon::parse("$tahun-$bulan-01");
+        $ppk = Pegawai::getPpkByDate($tanggalUntukPpk);
 
         return view('bast.pdf', [
             'alokasiHonor' => $alokasiHonor,

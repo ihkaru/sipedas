@@ -388,25 +388,30 @@ class AlokasiHonorRelationManager extends RelationManager
                 ->button();
         }
 
-        // Add BAST printing action
-        if (!is_null($kegiatanManmit->tgl_akhir_pelaksanaan)) {
-            $actions[] = Action::make('cetakBast')
-                ->label('Cetak BAST')
-                ->icon('heroicon-o-document-check')
-                ->color('success')
-                ->url(function () use ($kegiatanManmit): string {
-                    $tanggalAkhir = Carbon::parse($kegiatanManmit->tgl_akhir_pelaksanaan);
-                    $tahun = $tanggalAkhir->year;
-                    $bulan = $tanggalAkhir->month;
+        // Add BAST printing action — bulan diambil dari honor.tanggal_akhir_kegiatan (bukan tgl_akhir_pelaksanaan)
+        $actions[] = Action::make('cetakBast')
+            ->label('Cetak BAST')
+            ->icon('heroicon-o-document-check')
+            ->color('success')
+            ->url(function () use ($kegiatanManmit): string {
+                // Ambil tanggal_akhir_kegiatan terbesar dari honor kegiatan ini
+                // sebagai referensi bulan untuk filter dan PPK
+                $tanggalAkhir = \App\Models\Honor::where('kegiatan_manmit_id', $kegiatanManmit->id)
+                    ->max('tanggal_akhir_kegiatan');
 
-                    return route('cetak.bast', [
-                        'tahun' => $tahun,
-                        'bulan' => $bulan,
-                        'id_kegiatan_manmit' => $kegiatanManmit->id
-                    ]);
-                })
-                ->openUrlInNewTab();
-        }
+                if ($tanggalAkhir) {
+                    $tgl = Carbon::parse($tanggalAkhir);
+                } else {
+                    $tgl = Carbon::parse($kegiatanManmit->tgl_akhir_pelaksanaan ?? now());
+                }
+
+                return route('cetak.bast', [
+                    'tahun'              => $tgl->year,
+                    'bulan'              => $tgl->month,
+                    'id_kegiatan_manmit' => $kegiatanManmit->id,
+                ]);
+            })
+            ->openUrlInNewTab();
 
         return $actions;
     }
