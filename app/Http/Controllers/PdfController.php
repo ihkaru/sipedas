@@ -158,18 +158,21 @@ class PdfController extends Controller {
         ])
             ->whereHas('bast'); // Hanya yang sudah punya nomor BAST
 
-        // **FILTER UTAMA**: Tambahkan kondisi ini untuk memfilter berdasarkan ID Kegiatan Manmit
+        // **FILTER UTAMA**: filter berdasarkan ID Kegiatan Manmit + bulan dari tanggal_akhir_kegiatan
         $mitraIdRequest = request('mitra_id');
-        
+
         if ($id_kegiatan_manmit_request) {
-            $alokasiHonorQuery->whereHas('honor', function ($query) use ($id_kegiatan_manmit_request) {
-                $query->where('kegiatan_manmit_id', $id_kegiatan_manmit_request);
+            $alokasiHonorQuery->whereHas('honor', function ($query) use ($id_kegiatan_manmit_request, $tahun, $bulan) {
+                $query->where('kegiatan_manmit_id', $id_kegiatan_manmit_request)
+                      // Filter bulan dari honor.tanggal_akhir_kegiatan (sumber kebenaran bulan kontrak)
+                      ->whereYear('tanggal_akhir_kegiatan', $tahun)
+                      ->whereMonth('tanggal_akhir_kegiatan', $bulan);
             });
         } else if (!$mitraIdRequest) {
-            // Jika ID kegiatan tidak ada DAN mitra_id tidak ada, filter berdasarkan tanggal akhir sebagai fallback
-            $alokasiHonorQuery->whereHas('honor.kegiatanManmit', function ($q) use ($tahun, $bulan) {
-                $q->whereYear('tgl_akhir_pelaksanaan', $tahun)
-                    ->whereMonth('tgl_akhir_pelaksanaan', $bulan);
+            // Fallback jika tidak ada id_kegiatan_manmit dan mitra_id
+            $alokasiHonorQuery->whereHas('honor', function ($q) use ($tahun, $bulan) {
+                $q->whereYear('tanggal_akhir_kegiatan', $tahun)
+                  ->whereMonth('tanggal_akhir_kegiatan', $bulan);
             });
         }
 
