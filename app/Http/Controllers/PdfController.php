@@ -192,20 +192,20 @@ class PdfController extends Controller {
 
         // Tentukan PPK dari tanggal_nomor BAST aktual (bukan dari URL param tahun-bulan).
         // Ini memastikan PPK selalu benar sesuai tanggal dokumen, apapun URL yang dikirim.
+        // Fallback ke tahun-bulan dari URL jika tidak ada record BAST yang dimuat.
         $tanggalBastAktual = $alokasiHonor->first()?->bast?->tanggal_nomor;
-        $tanggalUntukPpk = $tanggalBastAktual
+        $tanggalUntukPpk   = $tanggalBastAktual
             ? Carbon::parse($tanggalBastAktual)
             : Carbon::parse("$tahun-$bulan-01");
         $ppk = Pegawai::getPpkByDate($tanggalUntukPpk);
 
         return view('bast.pdf', [
-            'alokasiHonor' => $alokasiHonor,
-            'tahun' => $tanggalPengajuan->year,
-            'bulan' => $tanggalPengajuan->month,
-            'id_honor' => $id_honor_request,
-            'ppk' => $ppk,
-            // ID Kegiatan Manmit tetap dikirim ke view untuk referensi jika dibutuhkan
-            'id_kegiatan_manmit' => $id_kegiatan_manmit_request
+            'alokasiHonor'       => $alokasiHonor,
+            'tahun'              => (int) $tahun,
+            'bulan'              => (int) $bulan,
+            'id_honor'           => $id_honor_request,
+            'ppk'                => $ppk,
+            'id_kegiatan_manmit' => $id_kegiatan_manmit_request,
         ]);
     }
 }
