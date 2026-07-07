@@ -108,13 +108,16 @@ class AlokasiHonor extends Model
         }
 
         $honor = Honor::with('kegiatanManmit')->find($honorId);
-        if (!$honor || !$honor->kegiatanManmit?->tgl_mulai_pelaksanaan || !$honor->kegiatanManmit?->tgl_akhir_pelaksanaan) {
-            throw new \Exception("Data Kegiatan/jadwal pada Honor ID {$honorId} tidak lengkap atau tidak ditemukan.");
+        if (!$honor || !$honor->tanggal_akhir_kegiatan) {
+            throw new \Exception("Data tanggal_akhir_kegiatan pada Honor ID {$honorId} tidak lengkap atau tidak ditemukan.");
         }
 
-        // --- PENTING: Gunakan rentang tanggal ASLI dari Kegiatan ---
-        $tanggalMulaiKontrak = Carbon::parse($honor->kegiatanManmit->tgl_mulai_pelaksanaan);
-        $tanggalAkhirKontrak = Carbon::parse($honor->kegiatanManmit->tgl_akhir_pelaksanaan);
+        // --- SUMBER KEBENARAN: honor.tanggal_akhir_kegiatan ---
+        // Kontrak selalu mencakup satu bulan penuh sesuai bulan dari tanggal_akhir_kegiatan.
+        // Ini konsisten dengan logika blade template SPK (Pasal 3: startOfMonth s/d endOfMonth).
+        // tgl_mulai/akhir_pelaksanaan dari kegiatan_manmits TIDAK digunakan untuk kontrak.
+        $tanggalMulaiKontrak = Carbon::parse($honor->tanggal_akhir_kegiatan)->startOfMonth();
+        $tanggalAkhirKontrak = Carbon::parse($honor->tanggal_akhir_kegiatan)->endOfMonth();
 
         // Tanggal administrasi SPK/BAST
         $tanggalPengajuanSpk = TanggalMerah::getNextWorkDay($tanggalMulaiKontrak, -1);
