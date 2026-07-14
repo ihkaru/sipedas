@@ -41,7 +41,17 @@ class KegiatanManmitResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->helperText('Contoh: (VHTS25) Survei Hotel Bulanan 2025'),
+                            ->helperText('Contoh: (VHTS25) Survei Hotel Bulanan 2025')
+                            ->rules([
+                                function () {
+                                    return function (string $attribute, $value, \Closure $fail) {
+                                        $code = \App\Supports\Constants::getTextInParentheses($value ?? '');
+                                        if (empty(trim($code))) {
+                                            $fail('Nama kegiatan harus menyertakan kode identitas unik di dalam tanda kurung. Contoh: (VHTS25) Nama Kegiatan.');
+                                        }
+                                    };
+                                }
+                            ]),
 
                         Forms\Components\Select::make('jenis_kegiatan')
                             ->options([

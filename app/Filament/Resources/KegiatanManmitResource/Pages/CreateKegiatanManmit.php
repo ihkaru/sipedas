@@ -16,6 +16,9 @@ class CreateKegiatanManmit extends CreateRecord
     protected function handleRecordCreation(array $data): Model
     {
         $baseId = Constants::getTextInParentheses($data['nama'] ?? '');
+        if (empty(trim($baseId))) {
+            $baseId = Str::slug($data['nama'] ?? '');
+        }
         $baseName = $data['nama'];
         $frekuensi = $data['frekuensi_kegiatan'];
         $createdOrUpdatedModels = [];

@@ -18,10 +18,12 @@ php artisan migrate --force --no-interaction || {
 # Recache everything for maximum performance in Worker Mode
 # This ensures that even if files are missing from the image root,
 # the app has its internal maps ready.
-echo "Optimizing application for Production (April 2026)..."
-php artisan optimize || echo "Optimization failed, ignoring..."
-php artisan filament:optimize || echo "Filament optimization skipped"
-php artisan icons:cache || echo "Icons cache skipped"
+if [ "$APP_ENV" != "local" ]; then
+  echo "Optimizing application for non-local environment..."
+  php artisan optimize || echo "Optimization failed, ignoring..."
+  php artisan filament:optimize || echo "Filament optimization skipped"
+  php artisan icons:cache || echo "Icons cache skipped"
+fi
 
 # Ensure storage link exists
 php artisan storage:link --force
