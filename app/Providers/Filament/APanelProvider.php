@@ -47,6 +47,7 @@ class APanelProvider extends PanelProvider {
                 \App\Filament\Pages\KalenderPerjadin::class,
                 \App\Filament\Pages\MatriksPerjadinPegawai::class,
                 \App\Filament\Pages\MonitorHonorMitra::class,
+                \App\Filament\Pages\JadwalTerpadu::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
