@@ -124,6 +124,7 @@ class DetailHonorMitra extends Page implements HasTable
                 ->label('Cetak Semua Kontrak')
                 ->icon('heroicon-o-printer')
                 ->color('info')
+                ->tooltip('Kegiatan SURVEI otomatis digabung dalam 1 SPK, sedangkan SENSUS dicetak terpisah per kegiatan.')
                 ->url(fn () => route('cetak.kontrak', [
                     'mitra_id' => $this->mitraId,
                     'bulan' => $this->tableFilters['periode']['month'] ?? $this->month,
@@ -135,6 +136,7 @@ class DetailHonorMitra extends Page implements HasTable
                 ->label('Cetak Semua BAST')
                 ->icon('heroicon-o-document-check')
                 ->color('success')
+                ->tooltip('BAST dicetak terpisah per masing-masing kegiatan.')
                 ->url(fn () => route('cetak.bast', [
                     'mitra_id' => $this->mitraId,
                     'bulan' => $this->tableFilters['periode']['month'] ?? $this->month,
@@ -171,7 +173,16 @@ class DetailHonorMitra extends Page implements HasTable
                     ->wrap(),
                 
                 TextColumn::make('honor.kegiatanManmit.jenis_kegiatan')
-                    ->label('Jenis Honor'),
+                    ->label('Jenis & Sifat SPK')
+                    ->badge()
+                    ->color(fn (?string $state): string => match ($state) {
+                        'SENSUS' => 'warning',
+                        default => 'success',
+                    })
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'SENSUS' => 'SENSUS (SPK Mandiri)',
+                        default => 'SURVEI (SPK Gabungan)',
+                    }),
                 
                 TextColumn::make('tanggal_mulai_perjanjian')
                     ->label('Mulai')

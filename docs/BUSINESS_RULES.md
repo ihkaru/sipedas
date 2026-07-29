@@ -67,14 +67,14 @@ Artinya: **hari kerja terakhir sebelum kontrak mulai** (hari kerja terakhir bula
 
 **Contoh:** Kontrak mulai 1 Mei 2026 -> TTD SPK = **30 April 2026** (Kamis, hari kerja)
 
-### 2.3 Satu Honor, Satu Kontrak Per Bulan
+### 2.3 Aturan Pengelompokan SPK Mitra Per Bulan
 
-Satu mitra hanya boleh memiliki **satu nomor SPK per bulan**.
-Jika mitra memiliki dua kegiatan di bulan yang sama, mereka berbagi nomor SPK yang sama.
+- **Kegiatan SURVEI (`jenis_kegiatan !== 'SENSUS'`):** Seluruh kegiatan Survei seorang mitra pada bulan yang sama **otomatis digabungkan ke dalam 1 dokumen SPK gabungan** (menggunakan template `kontrak.pdf`). Jika mencetak SPK dari satu kegiatan survei tertentu, sistem tetap menyertakan seluruh kegiatan survei mitra tersebut di bulan yang sama dalam daftar Lampiran 1.
+- **Kegiatan SENSUS (`jenis_kegiatan === 'SENSUS'`):** Setiap kegiatan Sensus memiliki **1 dokumen SPK terpisah (mandiri)** per kegiatan (menggunakan template khusus `kontrak.pdf_sensus`).
 
 ---
 
-## 3. Aturan Tanggal BAST
+## 3. Aturan Tanggal & Pencetakan BAST
 
 ### 3.1 Tanggal Nomor Surat BAST
 
@@ -97,10 +97,10 @@ tanggal_nomor (BAST) = getNextWorkDay(tanggal_akhir_kegiatan, mundur)
 - Idealnya 1 hari kerja sebelum `tanggal_akhir_kegiatan`
 - `tanggal_nomor` surat boleh sama dengan tanggal penandatanganan
 
-### 3.3 Filter BAST per Bulan
+### 3.3 Pencetakan BAST Per-Kegiatan
 
-BAST difilter berdasarkan **bulan dari `honor.tanggal_akhir_kegiatan`**, bukan dari parameter lain.
-Untuk kegiatan lintas bulan, UI menampilkan satu tombol BAST per bulan.
+Berbeda dengan SPK Kontrak yang menggabungkan kegiatan Survei, **BAST selalu dicetak terpisah per masing-masing `kegiatan_manmit`** (per serah terima pekerjaan).
+BAST difilter berdasarkan ID Kegiatan Manmit dan bulan dari `honor.tanggal_akhir_kegiatan`.
 
 ---
 

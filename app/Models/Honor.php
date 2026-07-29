@@ -42,14 +42,21 @@ class Honor extends Model
 
         // Event untuk auto-generate ID saat creating
         static::creating(function ($model) {
+            if ($model->jenis_honor) {
+                $model->jenis_honor = Str::upper($model->jenis_honor);
+            }
             // Generate composite ID jika belum ada
             if (empty($model->id)) {
-                $model->id = $model->kegiatan_manmit_id . '-' . $model->jabatan . '-' . $model->jenis_honor;
+                $model->id = Str::upper($model->kegiatan_manmit_id . '-' . $model->jabatan . '-' . $model->jenis_honor);
             }
         });
 
-        // Event untuk menghitung tanggal pembayaran maksimal
+        // Event untuk menghitung tanggal pembayaran maksimal dan standardisasi jenis_honor
         static::saving(function ($model) {
+            if ($model->jenis_honor) {
+                $model->jenis_honor = Str::upper($model->jenis_honor);
+            }
+
             // Hitung tanggal pembayaran maksimal jika tanggal akhir kegiatan ada
             if ($model->tanggal_akhir_kegiatan) {
                 $model->tanggal_pembayaran_maksimal = $model->tanggal_akhir_kegiatan->clone()->addDays(20);

@@ -66,11 +66,12 @@ class PdfController extends Controller {
 
         $bulan = $bulan ? str_pad($bulan, 2, "0", STR_PAD_LEFT) : null;
 
-        // --- AWAL LOGIKA BARU YANG DIPERBAIKI ---
+        // Cek jika kegiatan yang diminta adalah SENSUS atau SURVEI
+        $kegiatanRequested = $idKegiatanManmit ? \App\Models\KegiatanManmit::find($idKegiatanManmit) : null;
+        $isSensusOnly = ($kegiatanRequested?->jenis_kegiatan === 'SENSUS');
 
         // Langkah 1: Identifikasi ID Mitra yang relevan.
-        // $mitraIdRequest didefinisikan di atas
-        
+        // Jika idKegiatanManmit diberikan, hanya ambil mitra yang teralokasi pada kegiatan ini.
         $targetMitraIds = AlokasiHonor::whereHas('honor', function ($query) use ($idKegiatanManmit, $tahun, $bulan, $full) {
             if ($idKegiatanManmit) {
                 $query->where('kegiatan_manmit_id', $idKegiatanManmit);
@@ -98,13 +99,17 @@ class PdfController extends Controller {
             }
         ])
             ->whereIn('mitra_id', $targetMitraIds)
-            ->whereHas('honor', function ($query) use ($idKegiatanManmit, $tahun, $bulan, $full) {
-                if ($idKegiatanManmit) {
+            ->whereHas('honor', function ($query) use ($idKegiatanManmit, $isSensusOnly, $tahun, $bulan, $full) {
+                if ($idKegiatanManmit && $isSensusOnly) {
+                    // SENSUS: khusus kegiatan sensus ini
                     $query->where('kegiatan_manmit_id', $idKegiatanManmit);
+                } elseif ($idKegiatanManmit && !$isSensusOnly) {
+                    // SURVEI: gabungkan seluruh kegiatan SURVEI mitra di bulan tersebut
+                    $query->whereHas('kegiatanManmit', function($q) {
+                        $q->where('jenis_kegiatan', '!=', 'SENSUS');
+                    });
                 }
-                if ($full) {
-                    // No additional date filter
-                } else {
+                if (!$full) {
                     $query->whereYear('tanggal_akhir_kegiatan', $tahun)
                         ->whereMonth('tanggal_akhir_kegiatan', $bulan);
                 }
@@ -115,30 +120,55 @@ class PdfController extends Controller {
             $alokasiHonorQuery->where('honor_id', $id_honor_request);
         }
 
-        $alokasiHonor = $alokasiHonorQuery->get();
-        // --- AKHIR LOGIKA BARU YANG DIPERBAIKI ---
+        $allAlokasiHonor = $alokasiHonorQuery->get();
+
+        if ($allAlokasiHonor->isEmpty()) {
+            return "Tidak ada data alokasi honor yang memiliki nomor kontrak pada periode yang dipilih.";
+        }
 
         $tanggalPengajuan = Carbon::parse("$tahun-$bulan-01");
         $ppk = Pegawai::getPpkByDate($tanggalPengajuan);
 
-        // Pilih template berdasarkan jenis kegiatan
-        $kegiatan = \App\Models\KegiatanManmit::find($idKegiatanManmit);
-        $template = ($kegiatan?->jenis_kegiatan === 'SENSUS') ? 'kontrak.pdf_sensus' : 'kontrak.pdf';
+        // Pisahkan alokasi honor menjadi 2 kelompok: SURVEI (gabungan) dan SENSUS (mandiri per kegiatan)
+        $surveiAlokasi = $allAlokasiHonor->filter(fn($a) => $a->honor?->kegiatanManmit?->jenis_kegiatan !== 'SENSUS');
+        $sensusAlokasiGroups = $allAlokasiHonor
+            ->filter(fn($a) => $a->honor?->kegiatanManmit?->jenis_kegiatan === 'SENSUS')
+            ->groupBy('honor.kegiatan_manmit_id');
 
-        // Pastikan template sensus ada, jika tidak fallback ke pdf biasa
-        if ($kegiatan?->jenis_kegiatan === 'SENSUS' && !view()->exists($template)) {
-            $template = 'kontrak.pdf';
+        $renderedHtml = '';
+
+        // 1. Render SURVEI (Gabungan seluruh kegiatan survei)
+        if ($surveiAlokasi->isNotEmpty()) {
+            $renderedHtml .= view('kontrak.pdf', [
+                'alokasiHonor' => $surveiAlokasi,
+                'tahun' => $tanggalPengajuan->year,
+                'bulan' => $tanggalPengajuan->month,
+                'ppk' => $ppk,
+                'id_honor' => $id_honor_request,
+                'id_kegiatan_manmit' => $idKegiatanManmit,
+                'kegiatan' => $kegiatanRequested && !$isSensusOnly ? $kegiatanRequested : null,
+            ])->render();
         }
 
-        return view($template, [
-            'alokasiHonor' => $alokasiHonor,
-            'tahun' => $tanggalPengajuan->year,
-            'bulan' => $tanggalPengajuan->month,
-            'ppk' => $ppk,
-            'id_honor' => $id_honor_request,
-            'id_kegiatan_manmit' => $idKegiatanManmit,
-            'kegiatan' => $kegiatan,
-        ]);
+        // 2. Render SENSUS (Terpisah per kegiatan sensus)
+        foreach ($sensusAlokasiGroups as $kegManmitId => $sensusGroup) {
+            $kegiatanSensus = \App\Models\KegiatanManmit::find($kegManmitId);
+            $template = ($kegiatanSensus?->jenis_kegiatan === 'SENSUS' && view()->exists('kontrak.pdf_sensus'))
+                ? 'kontrak.pdf_sensus'
+                : 'kontrak.pdf';
+
+            $renderedHtml .= view($template, [
+                'alokasiHonor' => $sensusGroup,
+                'tahun' => $tanggalPengajuan->year,
+                'bulan' => $tanggalPengajuan->month,
+                'ppk' => $ppk,
+                'id_honor' => $id_honor_request,
+                'id_kegiatan_manmit' => $kegManmitId,
+                'kegiatan' => $kegiatanSensus,
+            ])->render();
+        }
+
+        return response($renderedHtml);
     }
     public function cetakBast() {
         $tahun = request('tahun') ?? now()->year;

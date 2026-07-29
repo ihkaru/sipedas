@@ -20,16 +20,16 @@ class HonorService
     public static function calculateMonthlyProportion($totalHonor, $startDate, $endDate, $targetMonth, $targetYear): int
     {
         $start = Carbon::parse($startDate)->startOfDay();
-        $end = Carbon::parse($endDate)->endOfDay();
+        $end = Carbon::parse($endDate)->startOfDay();
         
         // 1. Hitung total hari kalender dalam kontrak
-        $totalDays = $start->diffInDays($end) + 1;
+        $totalDays = (int) $start->diffInDays($end) + 1;
         
         if ($totalDays <= 0) return 0;
 
         // 2. Tentukan rentang bulan target
         $targetStart = Carbon::create($targetYear, $targetMonth, 1)->startOfMonth()->startOfDay();
-        $targetEnd = Carbon::create($targetYear, $targetMonth, 1)->endOfMonth()->endOfDay();
+        $targetEnd = Carbon::create($targetYear, $targetMonth, 1)->endOfMonth()->startOfDay();
 
         // 3. Cari irisan hari (kapan kontrak aktif di bulan target)
         $overlapStart = $start->greaterThan($targetStart) ? $start : $targetStart;
@@ -39,7 +39,7 @@ class HonorService
             return 0; // Tidak ada irisan di bulan ini
         }
 
-        $activeDaysInMonth = $overlapStart->diffInDays($overlapEnd) + 1;
+        $activeDaysInMonth = (int) $overlapStart->diffInDays($overlapEnd) + 1;
 
         // 4. Hitung proporsi dan bulatkan ke bawah
         return (int) floor(($totalHonor * $activeDaysInMonth) / $totalDays);

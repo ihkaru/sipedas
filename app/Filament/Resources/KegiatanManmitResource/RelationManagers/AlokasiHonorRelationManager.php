@@ -114,18 +114,21 @@ class AlokasiHonorRelationManager extends RelationManager
                                                 ->limit(50)
                                                 ->get()
                                                 ->mapWithKeys(function ($mitra) use ($honor, $isSensus) {
+                                                    $startOfMonth = \Carbon\Carbon::parse($honor->tanggal_akhir_kegiatan)->startOfMonth();
+                                                    $endOfMonth = \Carbon\Carbon::parse($honor->tanggal_akhir_kegiatan)->endOfMonth();
+
                                                     $res = \App\Services\HonorService::validateMitraEligibility(
                                                         $mitra->id,
-                                                        $honor->kegiatanManmit->tgl_mulai_pelaksanaan,
-                                                        $honor->kegiatanManmit->tgl_akhir_pelaksanaan,
+                                                        $startOfMonth,
+                                                        $endOfMonth,
                                                         0, 
                                                         $isSensus
                                                     );
                                                     
                                                     $rem = \App\Services\HonorService::getMitraRemainingBudget(
                                                         $mitra->id,
-                                                        $honor->kegiatanManmit->tgl_mulai_pelaksanaan,
-                                                        $honor->kegiatanManmit->tgl_akhir_pelaksanaan
+                                                        $startOfMonth,
+                                                        $endOfMonth
                                                     );
                                                     
                                                     $sensusText = number_format($rem['sensus'] / 1000, 0) . 'rb';
@@ -150,11 +153,13 @@ class AlokasiHonorRelationManager extends RelationManager
                                             if (!$honor || !$honor->kegiatanManmit) return true;
 
                                             $isSensus = $honor->kegiatanManmit->jenis_kegiatan === 'SENSUS';
-                                            
+                                            $startOfMonth = \Carbon\Carbon::parse($honor->tanggal_akhir_kegiatan)->startOfMonth();
+                                            $endOfMonth = \Carbon\Carbon::parse($honor->tanggal_akhir_kegiatan)->endOfMonth();
+                                             
                                             $res = \App\Services\HonorService::validateMitraEligibility(
                                                 $value,
-                                                $honor->kegiatanManmit->tgl_mulai_pelaksanaan,
-                                                $honor->kegiatanManmit->tgl_akhir_pelaksanaan,
+                                                $startOfMonth,
+                                                $endOfMonth,
                                                 0,
                                                 $isSensus
                                             );
@@ -215,14 +220,16 @@ class AlokasiHonorRelationManager extends RelationManager
                                                         $mitraId = $get('mitra_id');
                                                         $totalHonor = $honor->harga_per_satuan * $value;
                                                         $isSensus = $honor->kegiatanManmit->jenis_kegiatan === 'SENSUS';
-                                                        
-                                                        $res = \App\Services\HonorService::validateMitraEligibility(
-                                                            $mitraId,
-                                                            $honor->kegiatanManmit->tgl_mulai_pelaksanaan,
-                                                            $honor->kegiatanManmit->tgl_akhir_pelaksanaan,
-                                                            $totalHonor,
-                                                            $isSensus
-                                                        );
+                                                        $startOfMonth = \Carbon\Carbon::parse($honor->tanggal_akhir_kegiatan)->startOfMonth();
+                                                        $endOfMonth = \Carbon\Carbon::parse($honor->tanggal_akhir_kegiatan)->endOfMonth();
+                                                         
+                                                         $res = \App\Services\HonorService::validateMitraEligibility(
+                                                             $mitraId,
+                                                             $startOfMonth,
+                                                             $endOfMonth,
+                                                             $totalHonor,
+                                                             $isSensus
+                                                         );
                                                         
                                                         if (!$res['eligible']) {
                                                             $fail($res['message']);
@@ -363,9 +370,12 @@ class AlokasiHonorRelationManager extends RelationManager
                 
                 // Bedakan label, icon, dan warna untuk Sensus
                 $isSensus = $kegiatanManmit->jenis_kegiatan === 'SENSUS';
-                $label = ($isSensus ? 'Kontrak Sensus ' : 'Kontrak ') . $date->translatedFormat('F Y');
+                $label = ($isSensus ? 'Kontrak Sensus ' : 'Kontrak SPK ') . $date->translatedFormat('F Y');
                 $icon = $isSensus ? 'heroicon-o-document-duplicate' : 'heroicon-o-document-text';
                 $color = $isSensus ? 'warning' : 'info';
+                $tooltip = $isSensus
+                    ? 'Cetak SPK khusus untuk kegiatan Sensus ini'
+                    : 'Cetak SPK gabungan seluruh kegiatan Survei mitra di bulan ' . $date->translatedFormat('F Y');
                 
                 $actionName = 'cetak_kontrak_' . $item->year . '_' . $item->month;
 
@@ -373,6 +383,7 @@ class AlokasiHonorRelationManager extends RelationManager
                     ->label($label)
                     ->icon($icon)
                     ->color($color)
+                    ->tooltip($tooltip)
                     ->url(route('cetak.kontrak', [
                         'tahun' => $item->year,
                         'bulan' => $item->month,
@@ -401,6 +412,7 @@ class AlokasiHonorRelationManager extends RelationManager
                     ->label('BAST ' . $date->translatedFormat('F Y'))
                     ->icon('heroicon-o-document-check')
                     ->color('success')
+                    ->tooltip('Cetak BAST khusus kegiatan ini pada bulan ' . $date->translatedFormat('F Y'))
                     ->url(route('cetak.bast', [
                         'tahun'              => $item->year,
                         'bulan'              => $item->month,

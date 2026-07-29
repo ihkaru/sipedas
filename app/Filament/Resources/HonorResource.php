@@ -51,8 +51,8 @@ class HonorResource extends Resource
                             ->live() // Agar ID Batasan Honor terupdate
                             ->required(),
 
-                        Select::make('jenis_honor')
-                            ->options(Constants::JENIS_HONOR_OPTIONS)
+                        TextInput::make('jenis_honor')
+                            ->datalist(Constants::JENIS_HONOR_OPTIONS)
                             ->required(),
 
                         Select::make('satuan_honor')
