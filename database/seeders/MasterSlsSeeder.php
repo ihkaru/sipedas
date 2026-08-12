@@ -17,6 +17,10 @@ class MasterSlsSeeder extends Seeder
     {
         if(env("MIGRATION_ENV","local")) $fileLocation = "./database/data/master_sls.csv";
         // if(env("MIGRATION_ENV","production")) $fileLocation = "./../database/data/master_sls.csv";
+        if (!file_exists($fileLocation)) {
+            $this->command->warn("File $fileLocation does not exist, skipping MasterSls seeding.");
+            return;
+        }
         Excel::import(new MasterSlsImport,$fileLocation,readerType: ExcelExcel::CSV);
     }
 }

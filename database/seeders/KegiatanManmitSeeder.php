@@ -18,7 +18,11 @@ class KegiatanManmitSeeder extends Seeder
     public function run(): void
     {
         if (env("MIGRATION_ENV", "local")) $fileLocation = "./database/data/import_kegiatanmanmit.csv";
-        Excel::import(new KegiatanManmitImport, $fileLocation, readerType: ExcelExcel::CSV);
+        if (file_exists($fileLocation)) {
+            Excel::import(new KegiatanManmitImport, $fileLocation, readerType: ExcelExcel::CSV);
+        } else {
+            $this->command->warn("File $fileLocation does not exist, skipping CSV import.");
+        }
         // Path ke file data Anda. Ganti nama file jika perlu.
         $fileLocation = database_path('data/kegiatan_manmit.xlsx');
 

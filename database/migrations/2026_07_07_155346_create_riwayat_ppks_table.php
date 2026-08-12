@@ -20,6 +20,7 @@ return new class extends Migration
         });
 
         // Seed data historis dari logika hardcoded sebelumnya
+        Schema::disableForeignKeyConstraints();
         DB::table('riwayat_ppks')->insert([
             [
                 'nip_ppk'     => '199306062016021001', // Arief Yuandi
@@ -38,6 +39,7 @@ return new class extends Migration
                 'updated_at'  => now(),
             ],
         ]);
+        Schema::enableForeignKeyConstraints();
     }
 
     public function down(): void

@@ -16,6 +16,10 @@ class PengajuanSeeder extends Seeder
     public function run(): void
     {
         if (env("MIGRATION_ENV", "local")) $fileLocation = "./database/data/pengajuan.csv";
+        if (!file_exists($fileLocation)) {
+            $this->command->warn("File $fileLocation does not exist, skipping Pengajuan seeding.");
+            return;
+        }
         Excel::import(new PengajuanPembayaranImport, $fileLocation, readerType: ExcelExcel::CSV);
     }
 }

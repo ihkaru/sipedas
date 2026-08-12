@@ -18,6 +18,10 @@ class KegiatanSeeder extends Seeder
         $fileLocation = "";
         if(env("MIGRATION_ENV","local")) $fileLocation = "./database/data/kegiatan.csv";
         // if(env("MIGRATION_ENV","production")) $fileLocation = "./../database/data/kegiatan.csv";
+        if (!file_exists($fileLocation)) {
+            $this->command->warn("File $fileLocation does not exist, skipping Kegiatan seeding.");
+            return;
+        }
         Excel::import(new KegiatanImport,$fileLocation,readerType: ExcelExcel::CSV);
     }
 }

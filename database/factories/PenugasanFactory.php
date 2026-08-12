@@ -38,18 +38,21 @@ class PenugasanFactory extends Factory
         $grupId = Penugasan::getGrupId();
         $res = [
             "nip"=>$pegawaiIds[rand(0,count($pegawaiIds)-1)],
+            "nip_pengaju"=>$pegawaiIds[rand(0,count($pegawaiIds)-1)],
             "kegiatan_id"=>$kegiatanIds[rand(0,count($kegiatanIds)-1)],
             "tgl_mulai_tugas"=>$date,
             "level_tujuan_penugasan"=>Constants::LEVEL_PENUGASAN_DESA_KELURAHAN,
             "nama_tempat_tujuan"=>null,
+            "jenis_peserta"=>Constants::JENIS_PESERTA_SURAT_TUGAS_PEGAWAI,
             "tgl_akhir_tugas"=>$date->addDays(rand(0,3)),
             'tgl_pengajuan_tugas'=>$tanggalPengajuan,
             "tbh_hari_jalan_awal"=>rand(0,1),
             "tbh_hari_jalan_akhir"=>rand(0,1),
             "prov_id"=>"61",
-            "kabkot_id"=>"6104",
+            "prov_ids"=>"61",
+            "kabkot_ids"=>"6104",
             "grup_id"=>$grupId,
-            "desa_kel_id"=>$desKelIds[rand(0,count($desKelIds)-1)],
+            "desa_kel_ids"=>$desKelIds[rand(0,count($desKelIds)-1)],
             "jenis_surat_tugas"=>Constants::flatJenisSuratTugasOptions()[rand(1,count(Constants::flatJenisSuratTugasOptions())-1)],
             "surat_tugas_id"=>NomorSurat::generateNomorSuratTugas($tanggalPengajuan)->id,
             "transportasi"=>Constants::flatJenisTransportasiOptions()[rand(1,count(Constants::flatJenisTransportasiOptions())-1)],
@@ -57,10 +60,10 @@ class PenugasanFactory extends Factory
         $plh = static::$plh ??= Plh::getApprover([$res["nip"]],$date,returnPegawai:true)->nip;
         $res["plh_id"] = $plh;
         if(rand(0,1)){
-            $res["desa_kel_id"] = $desKelIds[rand(0,count($desKelIds)-1)];
-            $res["kecamatan_id"] = substr($res["desa_kel_id"] ,0,7) ;
+            $res["desa_kel_ids"] = $desKelIds[rand(0,count($desKelIds)-1)];
+            $res["kecamatan_ids"] = substr($res["desa_kel_ids"] ,0,7) ;
         }else{
-            $res["kecamatan_id"] = $kecIds[rand(0,count($kecIds)-1)];
+            $res["kecamatan_ids"] = $kecIds[rand(0,count($kecIds)-1)];
         }
 
         return $res;

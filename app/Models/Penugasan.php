@@ -130,6 +130,9 @@ class Penugasan extends Model {
     public function riwayatPengajuan() {
         return $this->hasOne(RiwayatPengajuan::class, "penugasan_id", "id");
     }
+    public function laporanPerjadin() {
+        return $this->hasOne(LaporanPerjadin::class, "penugasan_id", "id");
+    }
     public function kegiatan() {
         return $this->belongsTo(Kegiatan::class, "kegiatan_id", "id");
     }

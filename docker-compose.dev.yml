@@ -1,20 +1,22 @@
+# Project name eksplisit — mencegah Docker Compose menggunakan hash path Windows
+name: sikendis
+
 services:
-    # Laravel App with FrankenPHP
+    # Laravel App with FrankenPHP + Octane (--watch --poll)
     app:
         build:
             context: .
             target: dev
-        container_name: sikendis-app
+        container_name: sikendis-app-run
         restart: unless-stopped
         ports:
-            - "8200:80"
+            - "8200:8000"
         volumes:
             - ./:/app:cached
-            - /app/vendor
-            - /app/node_modules
-            - /app/storage
-        # Command uses watch mode in dev. In prod, target prod will use the Dockerfile CMD.
-        # We rely on the Dockerfile's CMD to handle startup (including admin-port fix)
+            # Mount dev OPcache config (validate_timestamps=1) agar perubahan PHP langsung terdeteksi
+            - ./docker/php/conf.d/opcache.dev.ini:/usr/local/etc/php/conf.d/zz-opcache.ini:ro
+            - ./docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh:ro
+        command: ["frankenphp", "php-server", "--listen", ":8000", "--root", "public/", "index.php"]
         depends_on:
             db:
                 condition: service_healthy
@@ -23,13 +25,33 @@ services:
         env_file:
             - .env.docker
         environment:
-            # Override for dev context
             XDG_CONFIG_HOME: /app/.config
         healthcheck:
-            test: ["CMD", "curl", "-f", "http://localhost/up"]
+            test: ["CMD", "curl", "-f", "http://localhost:8000/up"]
             interval: 30s
             timeout: 10s
             retries: 3
+        networks:
+            - sikendis_network
+
+    # Vite HMR Dev Server — sepenuhnya di dalam Docker
+    # Menggunakan named volume untuk node_modules agar binary Linux-native
+    # tidak bentrok dengan node_modules Windows di host.
+    vite:
+        image: node:20-alpine
+        container_name: sikendis-vite
+        working_dir: /app
+        restart: unless-stopped
+        ports:
+            - "5173:5173"
+        volumes:
+            - ./:/app:cached
+            # Named volume untuk node_modules — terisolasi dari host Windows.
+            # npm install dijalankan otomatis di entrypoint agar binary selalu Linux.
+            - vite_node_modules:/app/node_modules
+        # Install dependencies lalu jalankan Vite dev server.
+        # npm install hanya lambat pada pertama kali; selanjutnya cache volume dipakai.
+        command: sh -c "npm install --prefer-offline && npm run dev"
         networks:
             - sikendis_network
 
@@ -42,7 +64,6 @@ services:
             - "3309:3306"
         volumes:
             - mysql_data:/var/lib/mysql
-        # This healthcheck is what the app container waits for
         healthcheck:
             test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root"]
             interval: 10s
@@ -60,7 +81,6 @@ services:
         restart: unless-stopped
         volumes:
             - redis_data:/data
-        # We add a healthcheck to redis as well for good measure
         healthcheck:
             test: ["CMD", "redis-cli", "ping"]
             interval: 10s
@@ -86,13 +106,12 @@ services:
             - db
         networks:
             - sikendis_network
-        # phpMyAdmin doesn't need all the app variables, so we can remove this
-        # env_file:
-        #    - .env.docker
 
 volumes:
     mysql_data:
     redis_data:
+    vite_node_modules:   # Named volume untuk node_modules Linux-native Vite
+    dev_vendor:
 
 networks:
     sikendis_network:

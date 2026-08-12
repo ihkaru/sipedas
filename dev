@@ -1,30 +1,21 @@
 #!/bin/bash
 
-# SIKENDIS Smart Dev Wrapper v1.0
-# Designed for seamless development in busy environments.
+# SIKENDIS Smart Dev Wrapper v2.0
+# Fully Docker-based — tidak memerlukan Node.js, PHP, atau tool apapun di host.
+# Semua service (PHP/Octane, Vite HMR, MySQL, Redis, phpMyAdmin) berjalan di Docker.
 
 PROJECT_NAME="sikendis"
 APP_PORT=8200
 DB_PORT=3309
 PMA_PORT=8281
+VITE_PORT=5173
 
 # Color coding
 GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
 RED='\033[0;31m'
-NC='\033[0m' # No Color
-
-function check_ports() {
-    local ports=($APP_PORT $DB_PORT $PMA_PORT)
-    for port in "${ports[@]}"; do
-        if netstat -tuln | grep -q ":$port "; then
-            # Check if it's OUR container
-            if ! docker ps --format '{{.Ports}}' | grep -q ":$port->"; then
-                echo -e "${RED}Error: Port $port is occupied by another process!${NC}"
-                exit 1
-            fi
-        fi
-    done
-}
+BOLD='\033[1m'
+NC='\033[0m'
 
 function get_hash() {
     cat composer.json package.json dockerfile docker/caddy/Caddyfile 2>/dev/null | md5sum | cut -d' ' -f1
@@ -40,25 +31,63 @@ function build_needed() {
 
 case "$1" in
     up)
-        check_ports
         BUILD_FLAG=""
         if build_needed; then
-            echo -e "${GREEN}Detected changes in dependencies or Dockerfile. Triggering build...${NC}"
+            echo -e "${YELLOW}Detected changes in dependencies or Dockerfile. Rebuilding...${NC}"
             BUILD_FLAG="--build"
         fi
-        
-        docker-compose -f docker-compose.dev.yml up $BUILD_FLAG -d
+
+        echo -e "${GREEN}${BOLD}Starting SIKENDIS dev stack (fully Docker)...${NC}"
+        docker-compose -f docker-compose.dev.yml up $BUILD_FLAG --remove-orphans -d
+
+        # Jika MySQL baru diinisialisasi (volume baru/fresh), app container bisa gagal
+        # start karena DB belum healthy. Tunggu DB healthy lalu start ulang app.
+        echo -n "Menunggu MySQL sehat"
+        for i in $(seq 1 30); do
+            STATUS=$(docker inspect --format "{{.State.Health.Status}}" sikendis-db 2>/dev/null)
+            if [ "$STATUS" = "healthy" ]; then
+                echo " ✓"
+                break
+            fi
+            echo -n "."
+            sleep 2
+        done
+
+        # Pastikan app container berjalan (mungkin gagal karena DB belum siap)
+        APP_STATUS=$(docker inspect --format "{{.State.Status}}" sikendis-app-run 2>/dev/null)
+        if [ "$APP_STATUS" != "running" ]; then
+            echo -e "${YELLOW}App container belum running, memulai ulang...${NC}"
+            docker start sikendis-app-run
+        fi
+
         get_hash > .build_hash
-        echo -e "${GREEN}SIKENDIS is up at http://localhost:$APP_PORT${NC}"
-        echo -e "${GREEN}phpMyAdmin is at http://localhost:$PMA_PORT${NC}"
+
+        echo ""
+        echo -e "${GREEN}${BOLD}╔══════════════════════════════════════════╗${NC}"
+        echo -e "${GREEN}${BOLD}║   SIKENDIS Dev Stack Running              ║${NC}"
+        echo -e "${GREEN}${BOLD}╠══════════════════════════════════════════╣${NC}"
+        echo -e "${GREEN}${BOLD}║  App  → http://localhost:$APP_PORT          ║${NC}"
+        echo -e "${GREEN}${BOLD}║  PMA  → http://localhost:$PMA_PORT          ║${NC}"
+        echo -e "${GREEN}${BOLD}║  Vite → http://localhost:$VITE_PORT (HMR)   ║${NC}"
+        echo -e "${GREEN}${BOLD}╚══════════════════════════════════════════╝${NC}"
+        echo ""
+        echo -e "  ${YELLOW}Tip: bash dev vite-logs${NC} untuk melihat log Vite HMR"
         ;;
-    
+
+
     down)
+        echo -e "${YELLOW}Stopping all services...${NC}"
         docker-compose -f docker-compose.dev.yml down
+        echo -e "${GREEN}All services stopped.${NC}"
         ;;
 
     logs)
         docker-compose -f docker-compose.dev.yml logs -f app
+        ;;
+
+    vite-logs)
+        echo -e "${GREEN}=== Vite HMR Log (Ctrl+C untuk berhenti) ===${NC}"
+        docker-compose -f docker-compose.dev.yml logs -f vite
         ;;
 
     shell)
@@ -66,7 +95,7 @@ case "$1" in
         ;;
 
     reset)
-        echo -e "${RED}WARNING: This will wipe your database! Continue? (y/n)${NC}"
+        echo -e "${RED}${BOLD}WARNING: This will wipe your database! Continue? (y/n)${NC}"
         read -n 1 -r
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
@@ -75,13 +104,47 @@ case "$1" in
         ;;
 
     fix)
-        echo "Fixing permissions and clearing caches..."
+        echo "Fixing permissions and clearing ALL caches (views, routes, config, icons)..."
         docker-compose -f docker-compose.dev.yml exec app chown -R www-data:www-data storage bootstrap/cache
         docker-compose -f docker-compose.dev.yml exec app php artisan optimize:clear
+        docker-compose -f docker-compose.dev.yml exec app php artisan view:clear
+        docker-compose -f docker-compose.dev.yml exec app php artisan icons:cache
+        docker-compose -f docker-compose.dev.yml exec app php artisan octane:reload
+        echo -e "${GREEN}All caches cleared and workers reloaded!${NC}"
+        ;;
+
+    reload)
+        echo "Reloading Octane workers (apply PHP/Blade changes)..."
+        docker-compose -f docker-compose.dev.yml exec app php artisan octane:reload
+        echo -e "${GREEN}Workers reloaded!${NC}"
+        ;;
+
+    clear)
+        echo "Clearing all framework caches (views, routes, config)..."
+        docker-compose -f docker-compose.dev.yml exec app php artisan optimize:clear
+        docker-compose -f docker-compose.dev.yml exec app php artisan view:clear
+        echo -e "${GREEN}Caches cleared!${NC}"
+        ;;
+
+    ps)
+        docker-compose -f docker-compose.dev.yml ps
         ;;
 
     *)
-        echo "Usage: ./dev {up|down|logs|shell|reset|fix}"
+        echo -e "${BOLD}SIKENDIS Dev Wrapper v2.0${NC} — Fully Docker"
+        echo ""
+        echo -e "Usage: ${BOLD}bash dev <command>${NC}"
+        echo ""
+        echo -e "  ${GREEN}up${NC}          - Start ALL services (App + Vite + DB + Redis + PMA)"
+        echo -e "  ${GREEN}down${NC}        - Stop ALL services"
+        echo -e "  ${GREEN}ps${NC}          - Status semua container"
+        echo -e "  ${GREEN}logs${NC}        - Tail log container app (PHP/Octane)"
+        echo -e "  ${GREEN}vite-logs${NC}   - Tail log container Vite (CSS/JS HMR)"
+        echo -e "  ${GREEN}shell${NC}       - Buka shell di dalam container app"
+        echo -e "  ${GREEN}reload${NC}      - Reload Octane workers (apply perubahan PHP)"
+        echo -e "  ${GREEN}clear${NC}       - Hapus cache framework (views, routes, config)"
+        echo -e "  ${GREEN}fix${NC}         - Fix permissions + hapus semua cache + reload"
+        echo -e "  ${GREEN}reset${NC}       - ⚠️  Wipe DB + migrate fresh + seed ulang"
         exit 1
         ;;
 esac

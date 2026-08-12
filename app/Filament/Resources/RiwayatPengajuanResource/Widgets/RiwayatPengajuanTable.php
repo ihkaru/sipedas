@@ -6,7 +6,12 @@ use App\Filament\Resources\PenugasanResource;
 
 use App\Models\Penugasan;
 use App\Models\RiwayatPengajuan;
+use App\Supports\Constants;
 use Filament\Actions\StaticAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
@@ -38,29 +43,13 @@ class RiwayatPengajuanTable extends BaseWidget
                                 ->success()
                                 ->send();
                         }
-
-                        // if ($arguments['another'] ?? false) {
-                        //     $action->fillForm([
-                        //         'mitras' => null,
-                        //         'nips' => null,
-                        //         'nama_tempat_tujuan' => null,
-                        //         'kecamatan_ids' => null,
-                        //         'desa_kel_ids' => null,
-                        //     ]);
-                        //     // Emit a Livewire event to reset specific fields
-                        //     $action->dispatch('reset-fields', [
-                        //         'mitras', 'nips', 'nama_tempat_tujuan', 'kecamatan_ids', 'desa_kel_ids'
-                        //     ]);
-                        //     $action->halt();
-                        // } else {
-                        //     $action->close();
-                        // }
-                    })
-                    // ->extraModalFooterActions(fn (Action $action): array => [
-                    //     $action->makeModalSubmitAction('createAnother', arguments: ['another' => true]),
-                    // ])
-                    ,
-                ];
+                    }),
+            Action::make("buat_laporan_header")
+                    ->label("Pengajuan Laporan Perjadin")
+                    ->icon("heroicon-o-document-plus")
+                    ->color("success")
+                    ->url(fn (): string => \App\Filament\Pages\LaporanPerjadinPage::getUrl()),
+        ];
     }
 
     public function table(Table $table): Table
@@ -102,6 +91,21 @@ class RiwayatPengajuanTable extends BaseWidget
                 TextColumn::make('last_status_timestamp')
                     ->label('Tanggal Perubahan Status')
                 ,
+            ])
+            ->actions([
+                Action::make('buat_laporan')
+                    ->label(fn (RiwayatPengajuan $record): string => $record->penugasan->laporanPerjadin()->exists() ? 'Lihat Laporan' : 'Buat Laporan')
+                    ->icon(fn (RiwayatPengajuan $record): string => $record->penugasan->laporanPerjadin()->exists() ? 'heroicon-o-eye' : 'heroicon-o-document-plus')
+                    ->color(fn (RiwayatPengajuan $record): string => $record->penugasan->laporanPerjadin()->exists() ? 'primary' : 'success')
+                    ->visible(fn (RiwayatPengajuan $record): bool => 
+                        in_array($record->status, [
+                            Constants::STATUS_PENGAJUAN_DISETUJUI,
+                            Constants::STATUS_PENGAJUAN_DICETAK,
+                            Constants::STATUS_PENGAJUAN_DIKUMPULKAN,
+                            Constants::STATUS_PENGAJUAN_DICAIRKAN,
+                        ])
+                    )
+                    ->url(fn (RiwayatPengajuan $record): string => \App\Filament\Pages\LaporanPerjadinPage::getUrl(['penugasanId' => $record->penugasan_id]))
             ]);
     }
 }

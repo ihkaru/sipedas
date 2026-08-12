@@ -16,6 +16,10 @@ class SuratTugasSeeder extends Seeder
     public function run(): void
     {
         if(env("MIGRATION_ENV","local")) $fileLocation = "./database/data/import_surtug.csv";
+        if (!file_exists($fileLocation)) {
+            $this->command->warn("File $fileLocation does not exist, skipping SuratTugas seeding.");
+            return;
+        }
         Excel::import(new SuratTugasImport,$fileLocation,readerType: ExcelExcel::CSV);
     }
 }

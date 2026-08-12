@@ -17,6 +17,10 @@ class NomorSuratSeeder extends Seeder
     {
         if(env("MIGRATION_ENV","local")) $fileLocation = "./database/data/nomor_surat.csv";
         // if(env("MIGRATION_ENV","production")) $fileLocation = "./../database/data/master_sls.csv";
+        if (!file_exists($fileLocation)) {
+            $this->command->warn("File $fileLocation does not exist, skipping NomorSurat seeding.");
+            return;
+        }
         Excel::import(new NomorSuratImport,$fileLocation,readerType: ExcelExcel::CSV);
     }
 }
