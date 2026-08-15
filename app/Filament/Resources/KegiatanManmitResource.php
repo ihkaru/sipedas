@@ -11,8 +11,8 @@ use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
@@ -199,7 +199,7 @@ class KegiatanManmitResource extends Resource
                             ->required()
                             ->helperText('Hari pertama kegiatan dimulai (mis. mulai lapangan)')
                             ->rules([
-                                function (Forms\Get $get, ?KegiatanManmit $record) {
+                                function (Get $get, ?KegiatanManmit $record) {
                                     return function (string $attribute, $value, \Closure $fail) use ($get, $record) {
                                         if (!$record) return;
 
@@ -230,7 +230,7 @@ class KegiatanManmitResource extends Resource
                             ->required()
                             ->helperText('Hari terakhir kegiatan selesai (mis. selesai entri data)')
                             ->rules([
-                                function (Forms\Get $get, ?KegiatanManmit $record) {
+                                function (Get $get, ?KegiatanManmit $record) {
                                     return function (string $attribute, $value, \Closure $fail) use ($get, $record) {
                                         if (!$record) return;
 

@@ -7,6 +7,7 @@ use App\Filament\Resources\CustomPageResource\RelationManagers;
 use App\Models\CustomPage;
 use Filament\Forms;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -33,7 +34,7 @@ class CustomPageResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->afterStateUpdated(fn (string $operation, $state, Forms\Set $set) => 
+                            ->afterStateUpdated(fn (string $operation, $state, Set $set) => 
                                 $operation === 'create' ? $set('slug', Str::slug($state)) : null
                             ),
                         Forms\Components\TextInput::make('slug')

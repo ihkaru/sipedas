@@ -6,6 +6,7 @@ use App\Filament\Resources\MicrositeResource\Pages;
 use App\Models\Microsite;
 use Filament\Forms;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -30,7 +31,7 @@ class MicrositeResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->afterStateUpdated(function (string $operation, $state, Forms\Set $set) {
+                            ->afterStateUpdated(function (string $operation, $state, Set $set) {
                                 if ($operation === 'create') {
                                     $set('slug', Str::slug($state));
                                 }

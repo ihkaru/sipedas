@@ -18,6 +18,7 @@ use App\Imports\HonorImport; // Import kelas importer kita
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification; // Untuk notifikasi
@@ -71,7 +72,7 @@ class HonorResource extends Resource
                             ->displayFormat('d M Y')
                             ->live()
                             ->rules([
-                                function (Forms\Get $get) {
+                                function (Get $get) {
                                     return function (string $attribute, $value, \Closure $fail) use ($get) {
                                         $kegiatanId = $get('kegiatan_manmit_id');
                                         if (!$kegiatanId || !$value) return;
@@ -91,7 +92,7 @@ class HonorResource extends Resource
                                     };
                                 }
                             ])
-                            ->helperText(function (Forms\Get $get, ?Honor $record) {
+                            ->helperText(function (Get $get, ?Honor $record) {
                                 $kegiatanId = $get('kegiatan_manmit_id');
                                 $parentRangeText = '';
                                 
@@ -134,7 +135,7 @@ class HonorResource extends Resource
 
                                 return new \Illuminate\Support\HtmlString($baseText . $parentRangeText);
                              })
-                            ->hintColor(function (Forms\Get $get, ?Honor $record) {
+                            ->hintColor(function (Get $get, ?Honor $record) {
                                 $kegiatanId = $get('kegiatan_manmit_id');
                                 if ($kegiatanId) {
                                     $kegiatan = \App\Models\KegiatanManmit::find($kegiatanId);
@@ -153,7 +154,7 @@ class HonorResource extends Resource
                                 if (!$record) return 'primary';
                                 return $record->alokasiHonors()->count() > 0 ? 'warning' : 'success';
                             })
-                            ->hintIcon(function (Forms\Get $get, ?Honor $record) {
+                            ->hintIcon(function (Get $get, ?Honor $record) {
                                 $kegiatanId = $get('kegiatan_manmit_id');
                                 if ($kegiatanId) {
                                     $kegiatan = \App\Models\KegiatanManmit::find($kegiatanId);
@@ -174,7 +175,7 @@ class HonorResource extends Resource
                                     ? 'heroicon-o-exclamation-triangle'
                                     : 'heroicon-o-check-circle';
                             })
-                            ->hint(function (Forms\Get $get, ?Honor $record) {
+                            ->hint(function (Get $get, ?Honor $record) {
                                 $kegiatanId = $get('kegiatan_manmit_id');
                                 if ($kegiatanId) {
                                     $kegiatan = \App\Models\KegiatanManmit::find($kegiatanId);
@@ -198,7 +199,7 @@ class HonorResource extends Resource
                         // Menampilkan ID Batasan Honor sebagai informasi (tidak bisa di-edit)
                         Placeholder::make('id_batasan_honor')
                             ->label('ID Batasan Honor')
-                            ->content(function (Forms\Get $get, ?Honor $record): string {
+                            ->content(function (Get $get, ?Honor $record): string {
                                 if ($record) {
                                     return $record->id_batasan_honor;
                                 }
