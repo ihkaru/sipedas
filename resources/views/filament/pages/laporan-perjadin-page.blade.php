@@ -466,27 +466,33 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
                     <div class="space-y-1.5">
                         <label class="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300">Pilih Surat Tugas</label>
-                        <select wire:model.live="selectedSuratTugasId" class="w-full rounded-xl border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-xs md:text-sm shadow-sm focus:border-teal-500 focus:ring-teal-500 py-2.5">
-                            <option value="">-- Pilih Surat Tugas --</option>
-                            @foreach($suratTugasOptions as $id => $label)
-                                <option value="{{ $id }}">{{ $label }}</option>
-                            @endforeach
-                        </select>
+                        <x-filament::input.wrapper>
+                            <x-filament::input.select wire:model.live="selectedSuratTugasId">
+                                <option value="">-- Pilih Surat Tugas --</option>
+                                @foreach($suratTugasOptions as $id => $label)
+                                    <option value="{{ $id }}">{{ $label }}</option>
+                                @endforeach
+                            </x-filament::input.select>
+                        </x-filament::input.wrapper>
                     </div>
 
                     <div class="space-y-1.5">
                         <label class="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300">Pilih Pelaksana</label>
-                        <select wire:model.live="selectedPelaksanaNip" class="w-full rounded-xl border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-xs md:text-sm shadow-sm focus:border-teal-500 focus:ring-teal-500 py-2.5" {{ !$selectedSuratTugasId ? 'disabled' : '' }}>
-                            <option value="">-- Pilih Pelaksana --</option>
-                            @foreach($pelaksanaOptions as $nip => $name)
-                                <option value="{{ $nip }}">{{ $name }}</option>
-                            @endforeach
-                        </select>
+                        <x-filament::input.wrapper :disabled="!$selectedSuratTugasId">
+                            <x-filament::input.select wire:model.live="selectedPelaksanaNip" :disabled="!$selectedSuratTugasId">
+                                <option value="">-- Pilih Pelaksana --</option>
+                                @foreach($pelaksanaOptions as $nip => $name)
+                                    <option value="{{ $nip }}">{{ $name }}</option>
+                                @endforeach
+                            </x-filament::input.select>
+                        </x-filament::input.wrapper>
                     </div>
 
                     <div class="space-y-1.5">
                         <label class="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300">Tanggal Melapor</label>
-                        <input type="date" wire:model="tanggalLaporan" class="w-full rounded-xl border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-xs md:text-sm shadow-sm focus:border-teal-500 focus:ring-teal-500 py-2.5">
+                        <x-filament::input.wrapper>
+                            <x-filament::input type="date" wire:model="tanggalLaporan" />
+                        </x-filament::input.wrapper>
                     </div>
 
                     <div class="space-y-1.5">
