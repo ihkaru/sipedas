@@ -308,8 +308,7 @@ class AlokasiHonorRelationManager extends RelationManager
                     ->visible(fn() => auth()->user()->can('create_honor')),
 
                 // FIXED: Create ActionGroup with dynamic actions for contract printing
-                ...collect($this->getDynamicPrintActions())
-                    ->toArray(),
+                ...$this->getDynamicPrintActions(),
             ])
             ->actions([EditAction::make(), DeleteAction::make()])
             ->bulkActions([BulkActionGroup::make([DeleteBulkAction::make()])]);
@@ -318,9 +317,14 @@ class AlokasiHonorRelationManager extends RelationManager
     protected function getHonorOptions(RelationManager $livewire): array
     {
         try {
-            Log::info('Getting honor options for owner record:', ['owner_id' => $livewire->ownerRecord->id]);
+            $owner = $livewire->getOwnerRecord();
+            if (!$owner) {
+                return [];
+            }
 
-            $honors = $livewire->ownerRecord->honors()->get();
+            Log::info('Getting honor options for owner record:', ['owner_id' => $owner->id]);
+
+            $honors = $owner->honors()->get();
             Log::info('Found honors:', ['count' => $honors->count()]);
 
             $options = $honors->mapWithKeys(function ($honor) {
@@ -338,7 +342,11 @@ class AlokasiHonorRelationManager extends RelationManager
 
     protected function getDynamicPrintActions(): array
     {
-        $kegiatanManmit = $this->ownerRecord;
+        $kegiatanManmit = $this->getOwnerRecord();
+        if (!$kegiatanManmit) {
+            return [];
+        }
+
         $actions = [];
 
         // Get unique months from honors related to this activity
