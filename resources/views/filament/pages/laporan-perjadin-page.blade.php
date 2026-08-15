@@ -1,5 +1,5 @@
 <x-filament-panels::page>
-    <div class="space-y-6" x-data="laporanPerjadinPage(@js($daerahDikunjungi ?: 'Kecamatan di Kab. Mempawah'), @js($isGenerated))">
+    <div class="space-y-6 laporan-perjadin-page" x-data="laporanPerjadinPage(@js($daerahDikunjungi ?: 'Kecamatan di Kab. Mempawah'), @js($isGenerated))">
         <!-- Print & Utility Styles -->
         <style>
             [x-cloak] {

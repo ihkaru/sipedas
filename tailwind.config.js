@@ -7,6 +7,9 @@ export default {
         './app/**/*.php',
     ],
     darkMode: 'class',
+    corePlugins: {
+        preflight: false,
+    },
     theme: {
         extend: {},
     },
