@@ -714,7 +714,7 @@ class PenugasanResource extends Resource
             ])
             ->filters(self::formFilterPengajuan())
             ->actions([
-                Tables\Actions\EditAction::make()
+                \Filament\Actions\EditAction::make()
                     ->visible(function () {
                         return auth()->user()->hasRole('operator_umum');
                     }),
@@ -1024,8 +1024,8 @@ class PenugasanResource extends Resource
                     })
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

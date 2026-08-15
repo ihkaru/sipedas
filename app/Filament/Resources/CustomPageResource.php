@@ -108,7 +108,7 @@ class CustomPageResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\Action::make('copy_link')
+                \Filament\Actions\Action::make('copy_link')
                     ->label('Copy')
                     ->icon('heroicon-o-clipboard-document')
                     ->color('info')
@@ -130,17 +130,17 @@ class CustomPageResource extends Resource
                             }
                         ",
                     ]),
-                Tables\Actions\Action::make('view_page')
+                \Filament\Actions\Action::make('view_page')
                     ->label('View')
                     ->icon('heroicon-o-arrow-top-right-on-square')
                     ->url(fn ($record) => $record ? route('custom-page.show', $record->slug) : null)
                     ->openUrlInNewTab(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                \Filament\Actions\EditAction::make(),
+                \Filament\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

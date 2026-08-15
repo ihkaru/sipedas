@@ -226,7 +226,7 @@ class HonorResource extends Resource
             ])
             ->headerActions([])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                \Filament\Actions\EditAction::make(),
             ]);
     }
 

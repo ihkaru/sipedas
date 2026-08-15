@@ -128,8 +128,8 @@ class RiwayatPpkResource extends Resource
             ])
             ->filters([])
             ->actions([
-                Tables\Actions\EditAction::make()->label('Ubah'),
-                Tables\Actions\DeleteAction::make()
+                \Filament\Actions\EditAction::make()->label('Ubah'),
+                \Filament\Actions\DeleteAction::make()
                     ->label('Hapus')
                     ->visible(fn () => auth()->user()->hasRole('super_admin')),
             ])

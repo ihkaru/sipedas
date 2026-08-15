@@ -84,7 +84,7 @@ class UserResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                \Filament\Actions\EditAction::make(),
                 Action::make('jadikan_kepala')
                     ->label("Tambah Role Kepala")
                     ->hidden(function (User $record) {
@@ -146,8 +146,8 @@ class UserResource extends Resource
 
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

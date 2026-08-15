@@ -331,11 +331,11 @@ class MitraResource extends Resource {
                     }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                \Filament\Actions\EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make(),
                     BulkAction::make('export_selected')
                         ->label('Export Terpilih')
                         ->icon('heroicon-o-arrow-down-tray')
