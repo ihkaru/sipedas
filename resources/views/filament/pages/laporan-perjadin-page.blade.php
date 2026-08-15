@@ -93,6 +93,13 @@
                     border-radius: 0 !important;
                 }
 
+                .f4-page-break {
+                    page-break-before: always !important;
+                    break-before: page !important;
+                    margin-top: 0 !important;
+                    padding-top: 0 !important;
+                }
+
                 table {
                     width: 100% !important;
                     border: 1px solid black !important;
@@ -129,17 +136,10 @@
                     line-height: 1.35 !important;
                 }
 
-                .lampiran-foto-container {
-                    margin-top: 14px !important;
-                    padding-top: 8px !important;
-                    page-break-inside: avoid !important;
-                    break-inside: avoid !important;
-                }
-
                 .photo-item {
                     page-break-inside: avoid !important;
                     break-inside: avoid !important;
-                    max-width: 260px !important;
+                    max-width: 280px !important;
                     margin: 0 auto !important;
                 }
 
@@ -845,7 +845,32 @@
             </div>
 
             <!-- PREVIEW SHEET WRAPPER DENGAN TAMPILAN KERTAS F4 RESMI (21.5 cm x 33.0 cm) -->
-            <div class="f4-preview-wrapper flex flex-col items-center gap-3 py-4">
+            @php
+                $allPhotos = [];
+                if(!empty($harian)) {
+                    foreach($harian as $h) {
+                        $tglLabel = \Illuminate\Support\Carbon::parse($h['tanggal'] ?? now())->translatedFormat('d M Y');
+                        foreach($h['titik_kegiatan'] ?? [] as $sp) {
+                            foreach($sp['foto'] ?? [] as $f) {
+                                $allPhotos[] = [
+                                    'path' => $f,
+                                    'label' => ($sp['nama_titik'] ?: 'Dokumentasi Lapangan') . ' (' . $tglLabel . ')',
+                                ];
+                            }
+                        }
+                    }
+                }
+                if(!empty($periodikData['foto'])) {
+                    foreach($periodikData['foto'] as $f) {
+                        $allPhotos[] = [
+                            'path' => $f,
+                            'label' => 'Dokumentasi Pelaksanaan Tugas Periode',
+                        ];
+                    }
+                }
+            @endphp
+
+            <div class="f4-preview-wrapper flex flex-col items-center gap-6 py-4">
                 <!-- Page Info / Indicator Bar (No Print) -->
                 <div class="no-print w-full max-w-[215mm] flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 px-2">
                     <div class="flex items-center gap-1.5 font-semibold">
@@ -854,235 +879,261 @@
                         </svg>
                         <span>Pratinjau Format Kertas F4 / Folio (21.5 cm × 33.0 cm)</span>
                     </div>
-                    <span class="text-[11px] bg-gray-200 dark:bg-gray-800 px-2.5 py-0.5 rounded text-gray-700 dark:text-gray-300 font-mono font-medium">
-                        Standar LPD BPS
+                    <span class="text-[11px] bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 px-2.5 py-0.5 rounded font-bold">
+                        {{ !empty($allPhotos) ? '📄 Total: 2 Halaman (Laporan + Lampiran)' : '📄 Total: 1 Halaman (Laporan Utama)' }}
                     </span>
                 </div>
 
-                <!-- LEMBAR KERTAS F4 FISIK -->
-                <div class="f4-sheet-preview print-container bg-white text-black leading-normal relative">
-                    
-                    <!-- 1. Document Title -->
-                    <div class="text-center mb-5">
-                        <h1 class="text-sm md:text-base font-bold tracking-wide uppercase">LAPORAN PERJALANAN DINAS</h1>
-                    </div>
+                <!-- ================= LEMBAR 1: LAPORAN KEGIATAN UTAMA (F4) ================= -->
+                <div class="f4-sheet-preview print-container bg-white text-black leading-normal relative flex flex-col justify-between">
+                    <div>
+                        <!-- Page Number Badge for Preview Only -->
+                        <div class="no-print absolute top-3 right-4 text-[10px] font-bold text-gray-400 bg-gray-100 dark:bg-gray-200 px-2 py-0.5 rounded shadow-sm">
+                            Halaman 1
+                        </div>
 
-                <!-- 2. Header Metadata (2-Column Grid) -->
-                <div class="text-[11px] mb-3 space-y-1">
-                    <div class="grid grid-cols-12 gap-1">
-                        <div class="col-span-4 sm:col-span-3 font-semibold">Nama Pelaksana</div>
-                        <div class="col-span-8 sm:col-span-9">: {{ $this->getPenugasan()->pegawai?->nama ?? $selectedPelaksanaNip }}</div>
-                    </div>
-                    <div class="grid grid-cols-12 gap-1">
-                        <div class="col-span-4 sm:col-span-3 font-semibold">NIP</div>
-                        <div class="col-span-8 sm:col-span-9">: {{ $selectedPelaksanaNip }}</div>
-                    </div>
-                    <div class="grid grid-cols-12 gap-1">
-                        <div class="col-span-4 sm:col-span-3 font-semibold">Wilayah Tugas</div>
-                        <div class="col-span-8 sm:col-span-9">: {{ $daerahDikunjungi }}</div>
-                    </div>
-                    <div class="grid grid-cols-12 gap-1">
-                        <div class="col-span-4 sm:col-span-3 font-semibold">Kegiatan</div>
-                        <div class="col-span-8 sm:col-span-9">: {{ $kegiatanNama }}</div>
-                    </div>
-                    <div class="grid grid-cols-12 gap-1">
-                        <div class="col-span-4 sm:col-span-3 font-semibold">Tanggal</div>
-                        <div class="col-span-8 sm:col-span-9">: {{ $periodeStr }}</div>
-                    </div>
-                </div>
+                        <!-- 1. Document Title -->
+                        <div class="text-center mb-5">
+                            <h1 class="text-sm md:text-base font-bold tracking-wide uppercase">LAPORAN PERJALANAN DINAS</h1>
+                        </div>
 
-                <div class="border-t-2 border-black mb-3"></div>
+                        <!-- 2. Header Metadata (2-Column Grid) -->
+                        <div class="text-[11px] mb-3 space-y-1">
+                            <div class="grid grid-cols-12 gap-1">
+                                <div class="col-span-4 sm:col-span-3 font-semibold">Nama Pelaksana</div>
+                                <div class="col-span-8 sm:col-span-9">: {{ $this->getPenugasan()->pegawai?->nama ?? $selectedPelaksanaNip }}</div>
+                            </div>
+                            <div class="grid grid-cols-12 gap-1">
+                                <div class="col-span-4 sm:col-span-3 font-semibold">NIP</div>
+                                <div class="col-span-8 sm:col-span-9">: {{ $selectedPelaksanaNip }}</div>
+                            </div>
+                            <div class="grid grid-cols-12 gap-1">
+                                <div class="col-span-4 sm:col-span-3 font-semibold">Wilayah Tugas</div>
+                                <div class="col-span-8 sm:col-span-9">: {{ $daerahDikunjungi }}</div>
+                            </div>
+                            <div class="grid grid-cols-12 gap-1">
+                                <div class="col-span-4 sm:col-span-3 font-semibold">Kegiatan</div>
+                                <div class="col-span-8 sm:col-span-9">: {{ $kegiatanNama }}</div>
+                            </div>
+                            <div class="grid grid-cols-12 gap-1">
+                                <div class="col-span-4 sm:col-span-3 font-semibold">Tanggal</div>
+                                <div class="col-span-8 sm:col-span-9">: {{ $periodeStr }}</div>
+                            </div>
+                        </div>
 
-                <!-- 3. Laporan Kegiatan Metadata -->
-                <div class="text-[11px] mb-3 space-y-1">
-                    <div class="font-bold mb-1.5">Laporan Kegiatan</div>
-                    
-                    <div class="grid grid-cols-12 gap-1 pl-4">
-                        <div class="col-span-5 sm:col-span-4 font-semibold">I. Dasar Pelaksanaan</div>
-                        <div class="col-span-7 sm:col-span-8">: {{ $nomorSuratTugas }}</div>
-                    </div>
-                    <div class="grid grid-cols-12 gap-1 pl-4">
-                        <div class="col-span-5 sm:col-span-4 font-semibold">II. Moda Transportasi</div>
-                        <div class="col-span-7 sm:col-span-8">: {{ $modaTransportasi }}</div>
-                    </div>
-                    <div class="grid grid-cols-12 gap-1 pl-4">
-                        <div class="col-span-5 sm:col-span-4 font-semibold">III. Daerah yang dikunjungi</div>
-                        <div class="col-span-7 sm:col-span-8">: {{ $daerahDikunjungi }}</div>
-                    </div>
-                </div>
+                        <div class="border-t-2 border-black mb-3"></div>
 
-                <!-- 4. TABEL MATRIKS KEGIATAN (5 KOLOM STANDAR BPS DENGAN STREAMING EFFECT) -->
-                <div class="mt-3 overflow-x-auto">
-                    <table class="w-full text-[11px] border border-black border-collapse table-fixed" style="font-family: Arial, Helvetica, sans-serif;">
-                        <thead>
-                            <tr class="bg-gray-100 text-center font-bold">
-                                <th class="border border-black px-2 py-1.5 text-center" style="width: 13%;">Tanggal</th>
-                                <th class="border border-black px-2 py-1.5 text-center" style="width: 14%;">Waktu (WIB)</th>
-                                <th class="border border-black px-2 py-1.5 text-center" style="width: 37%;">Uraian Kegiatan</th>
-                                <th class="border border-black px-2 py-1.5 text-center" style="width: 18%;">Permasalahan/ Pemecahan</th>
-                                <th class="border border-black px-2 py-1.5 text-center" style="width: 18%;">Keterangan</th>
-                                @if($isEditing)
-                                    <th class="border border-black px-1 py-1 w-10 no-print text-center">Aksi</th>
-                                @endif
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if(!empty($reportData['tabel_kegiatan']))
-                                @php
-                                    $grouped = collect($reportData['tabel_kegiatan'])->groupBy('tanggal');
-                                    $globalRowCounter = 0;
-                                @endphp
-                                @foreach($grouped as $tgl => $rows)
-                                    @foreach($rows as $rIdx => $row)
+                        <!-- 3. Laporan Kegiatan Metadata -->
+                        <div class="text-[11px] mb-3 space-y-1">
+                            <div class="font-bold mb-1.5">Laporan Kegiatan</div>
+                            
+                            <div class="grid grid-cols-12 gap-1 pl-4">
+                                <div class="col-span-5 sm:col-span-4 font-semibold">I. Dasar Pelaksanaan</div>
+                                <div class="col-span-7 sm:col-span-8">: {{ $nomorSuratTugas }}</div>
+                            </div>
+                            <div class="grid grid-cols-12 gap-1 pl-4">
+                                <div class="col-span-5 sm:col-span-4 font-semibold">II. Moda Transportasi</div>
+                                <div class="col-span-7 sm:col-span-8">: {{ $modaTransportasi }}</div>
+                            </div>
+                            <div class="grid grid-cols-12 gap-1 pl-4">
+                                <div class="col-span-5 sm:col-span-4 font-semibold">III. Daerah yang dikunjungi</div>
+                                <div class="col-span-7 sm:col-span-8">: {{ $daerahDikunjungi }}</div>
+                            </div>
+                        </div>
+
+                        <!-- 4. TABEL MATRIKS KEGIATAN (5 KOLOM STANDAR BPS DENGAN STREAMING EFFECT) -->
+                        <div class="mt-3 overflow-x-auto">
+                            <table class="w-full text-[11px] border border-black border-collapse table-fixed" style="font-family: Arial, Helvetica, sans-serif;">
+                                <thead>
+                                    <tr class="bg-gray-100 text-center font-bold">
+                                        <th class="border border-black px-2 py-1.5 text-center" style="width: 13%;">Tanggal</th>
+                                        <th class="border border-black px-2 py-1.5 text-center" style="width: 14%;">Waktu (WIB)</th>
+                                        <th class="border border-black px-2 py-1.5 text-center" style="width: 37%;">Uraian Kegiatan</th>
+                                        <th class="border border-black px-2 py-1.5 text-center" style="width: 18%;">Permasalahan/ Pemecahan</th>
+                                        <th class="border border-black px-2 py-1.5 text-center" style="width: 18%;">Keterangan</th>
+                                        @if($isEditing)
+                                            <th class="border border-black px-1 py-1 w-10 no-print text-center">Aksi</th>
+                                        @endif
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if(!empty($reportData['tabel_kegiatan']))
                                         @php
-                                            $rawRowIndex = array_search($row, $reportData['tabel_kegiatan']);
-                                            $globalRowCounter++;
+                                            $grouped = collect($reportData['tabel_kegiatan'])->groupBy('tanggal');
+                                            $globalRowCounter = 0;
                                         @endphp
-                                        <tr class="align-top">
-                                            @if($rIdx === 0)
-                                                <td rowspan="{{ count($rows) }}" class="border border-black px-2 py-1.5 text-center font-semibold bg-gray-50/50">
-                                                    {{ \Illuminate\Support\Carbon::parse($tgl)->translatedFormat('d F Y') }}
-                                                    @if($isEditing)
-                                                        <div class="no-print pt-1">
-                                                            <button type="button" wire:click="addTableRow('{{ $tgl }}')" class="text-[10px] text-teal-600 hover:underline block font-normal">
-                                                                + Tambah Baris
-                                                            </button>
-                                                        </div>
+                                        @foreach($grouped as $tgl => $rows)
+                                            @foreach($rows as $rIdx => $row)
+                                                @php
+                                                    $rawRowIndex = array_search($row, $reportData['tabel_kegiatan']);
+                                                    $globalRowCounter++;
+                                                @endphp
+                                                <tr class="align-top">
+                                                    @if($rIdx === 0)
+                                                        <td rowspan="{{ count($rows) }}" class="border border-black px-2 py-1.5 text-center font-semibold bg-gray-50/50">
+                                                            {{ \Illuminate\Support\Carbon::parse($tgl)->translatedFormat('d F Y') }}
+                                                            @if($isEditing)
+                                                                <div class="no-print pt-1">
+                                                                    <button type="button" wire:click="addTableRow('{{ $tgl }}')" class="text-[10px] text-teal-600 hover:underline block font-normal">
+                                                                        + Tambah Baris
+                                                                    </button>
+                                                                </div>
+                                                            @endif
+                                                        </td>
                                                     @endif
-                                                </td>
-                                            @endif
-                                            
-                                            <!-- Waktu -->
-                                            <td class="border border-black px-2 py-1.5 text-center whitespace-nowrap font-mono text-[10px]">
-                                                @if($isEditing)
-                                                    <input type="text" wire:model="reportData.tabel_kegiatan.{{ $rawRowIndex }}.waktu" class="w-full text-center text-xs p-1 border rounded">
-                                                @else
-                                                    {{ $row['waktu'] ?? '-' }}
-                                                @endif
-                                            </td>
+                                                    
+                                                    <!-- Waktu -->
+                                                    <td class="border border-black px-2 py-1.5 text-center whitespace-nowrap font-mono text-[10px]">
+                                                        @if($isEditing)
+                                                            <input type="text" wire:model="reportData.tabel_kegiatan.{{ $rawRowIndex }}.waktu" class="w-full text-center text-xs p-1 border rounded">
+                                                        @else
+                                                            {{ $row['waktu'] ?? '-' }}
+                                                        @endif
+                                                    </td>
 
-                                            <!-- Uraian Kegiatan -->
+                                                    <!-- Uraian Kegiatan -->
+                                                    <td class="border border-black px-2.5 py-1.5 text-justify leading-snug text-[10.5px]">
+                                                        @if($isEditing)
+                                                            <textarea wire:model="reportData.tabel_kegiatan.{{ $rawRowIndex }}.uraian_kegiatan" rows="2" class="w-full text-xs p-1 border rounded"></textarea>
+                                                        @else
+                                                            {{ $row['uraian_kegiatan'] ?? '-' }}
+                                                        @endif
+                                                    </td>
+
+                                                    <!-- Permasalahan / Pemecahan -->
+                                                    <td class="border border-black px-2.5 py-1.5 text-justify leading-snug text-[10.5px]">
+                                                        @if($isEditing)
+                                                            <textarea wire:model="reportData.tabel_kegiatan.{{ $rawRowIndex }}.permasalahan_pemecahan" rows="2" class="w-full text-xs p-1 border rounded"></textarea>
+                                                        @else
+                                                            {{ $row['permasalahan_pemecahan'] ?? '-' }}
+                                                        @endif
+                                                    </td>
+
+                                                    <!-- Keterangan -->
+                                                    <td class="border border-black px-2.5 py-1.5 leading-snug text-[10.5px]">
+                                                        @if($isEditing)
+                                                            <textarea wire:model="reportData.tabel_kegiatan.{{ $rawRowIndex }}.keterangan" rows="2" class="w-full text-xs p-1 border rounded"></textarea>
+                                                        @else
+                                                            {!! nl2br(e($row['keterangan'] ?? '-')) !!}
+                                                        @endif
+                                                    </td>
+
+                                                    @if($isEditing)
+                                                        <td class="border border-black p-1 text-center no-print">
+                                                            <button type="button" wire:click="removeTableRow({{ $rawRowIndex }})" class="text-red-500 hover:text-red-700 p-1" title="Hapus baris ini">
+                                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                </svg>
+                                                            </button>
+                                                        </td>
+                                                    @endif
+                                                </tr>
+                                            @endforeach
+                                        @endforeach
+                                    @else
+                                        <tr class="align-top">
+                                            <td class="border border-black px-2 py-1.5 text-center font-semibold">
+                                                {{ $periodeStr }}
+                                            </td>
+                                            <td class="border border-black px-2 py-1.5 text-center font-mono text-[10px]">
+                                                08.00 - 15.00
+                                            </td>
                                             <td class="border border-black px-2.5 py-1.5 text-justify leading-snug text-[10.5px]">
-                                                @if($isEditing)
-                                                    <textarea wire:model="reportData.tabel_kegiatan.{{ $rawRowIndex }}.uraian_kegiatan" rows="2" class="w-full text-xs p-1 border rounded"></textarea>
-                                                @else
-                                                    {{ $row['uraian_kegiatan'] ?? '-' }}
-                                                @endif
+                                                {{ $reportData['uraian_kegiatan_polished'] ?? ($reportData['ringkasan'] ?? '-') }}
                                             </td>
-
-                                            <!-- Permasalahan / Pemecahan -->
                                             <td class="border border-black px-2.5 py-1.5 text-justify leading-snug text-[10.5px]">
-                                                @if($isEditing)
-                                                    <textarea wire:model="reportData.tabel_kegiatan.{{ $rawRowIndex }}.permasalahan_pemecahan" rows="2" class="w-full text-xs p-1 border rounded"></textarea>
-                                                @else
-                                                    {{ $row['permasalahan_pemecahan'] ?? '-' }}
-                                                @endif
+                                                {{ $reportData['kendala_polished'] ?? '-' }}
                                             </td>
-
-                                            <!-- Keterangan -->
                                             <td class="border border-black px-2.5 py-1.5 leading-snug text-[10.5px]">
-                                                @if($isEditing)
-                                                    <textarea wire:model="reportData.tabel_kegiatan.{{ $rawRowIndex }}.keterangan" rows="2" class="w-full text-xs p-1 border rounded"></textarea>
-                                                @else
-                                                    {!! nl2br(e($row['keterangan'] ?? '-')) !!}
-                                                @endif
+                                                {{ $reportData['solusi_polished'] ?? '1. Pelaksanaan berjalan lancar sesuai SOP.' }}
                                             </td>
-
-                                            @if($isEditing)
-                                                <td class="border border-black p-1 text-center no-print">
-                                                    <button type="button" wire:click="removeTableRow({{ $rawRowIndex }})" class="text-red-500 hover:text-red-700 p-1" title="Hapus baris ini">
-                                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                        </svg>
-                                                    </button>
-                                                </td>
-                                            @endif
                                         </tr>
-                                    @endforeach
-                                @endforeach
-                            @else
-                                <tr class="align-top">
-                                    <td class="border border-black px-2 py-1.5 text-center font-semibold">
-                                        {{ $periodeStr }}
-                                    </td>
-                                    <td class="border border-black px-2 py-1.5 text-center font-mono text-[10px]">
-                                        08.00 - 15.00
-                                    </td>
-                                    <td class="border border-black px-2.5 py-1.5 text-justify leading-snug text-[10.5px]">
-                                        {{ $reportData['uraian_kegiatan_polished'] ?? ($reportData['ringkasan'] ?? '-') }}
-                                    </td>
-                                    <td class="border border-black px-2.5 py-1.5 text-justify leading-snug text-[10.5px]">
-                                        {{ $reportData['kendala_polished'] ?? '-' }}
-                                    </td>
-                                    <td class="border border-black px-2.5 py-1.5 leading-snug text-[10.5px]">
-                                        {{ $reportData['solusi_polished'] ?? '1. Pelaksanaan berjalan lancar sesuai SOP.' }}
-                                    </td>
-                                </tr>
-                            @endif
-                        </tbody>
-                    </table>
+                                    @endif
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    @if(empty($allPhotos))
+                        <!-- Jika tanpa foto dokumentasi, tanda tangan diletakkan di lembar utama -->
+                        <div class="signature-block flex justify-end mt-8 text-[11px]">
+                            <div class="text-center w-60 space-y-12">
+                                <div>
+                                    Mempawah, {{ \Illuminate\Support\Carbon::parse($tanggalLaporan)->translatedFormat('d F Y') }}<br>
+                                    yang melaporkan,
+                                </div>
+                                
+                                <div>
+                                    <div class="font-bold underline uppercase">
+                                        {{ $this->getPenugasan()->pegawai?->nama ?? $selectedPelaksanaNip }}
+                                    </div>
+                                    <div>NIP. {{ $selectedPelaksanaNip }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
-                <!-- 5. Foto Dokumentasi Pendukung (2 Kolom Besar) -->
-                @php
-                    $allPhotos = [];
-                    if(!empty($harian)) {
-                        foreach($harian as $h) {
-                            $tglLabel = \Illuminate\Support\Carbon::parse($h['tanggal'] ?? now())->translatedFormat('d M Y');
-                            foreach($h['titik_kegiatan'] ?? [] as $sp) {
-                                foreach($sp['foto'] ?? [] as $f) {
-                                    $allPhotos[] = [
-                                        'path' => $f,
-                                        'label' => ($sp['nama_titik'] ?: 'Dokumentasi Lapangan') . ' (' . $tglLabel . ')',
-                                    ];
-                                }
-                            }
-                        }
-                    }
-                    if(!empty($periodikData['foto'])) {
-                        foreach($periodikData['foto'] as $f) {
-                            $allPhotos[] = [
-                                'path' => $f,
-                                'label' => 'Dokumentasi Pelaksanaan Tugas Periode',
-                            ];
-                        }
-                    }
-                @endphp
                 @if(!empty($allPhotos))
-                    <div class="lampiran-foto-container mt-4 pt-3 border-t border-black">
-                        <span class="block text-[11px] font-bold uppercase mb-2.5 text-center tracking-wide">LAMPIRAN DOKUMENTASI FOTO KEGIATAN:</span>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 max-w-2xl mx-auto">
-                            @foreach($allPhotos as $item)
-                                <div class="photo-item border border-black rounded-lg overflow-hidden bg-white shadow-sm flex flex-col">
-                                    <div class="w-full bg-gray-50 flex items-center justify-center p-1">
-                                        <img src="{{ asset('storage/' . $item['path']) }}" class="w-full h-auto max-h-48 md:max-h-56 object-contain rounded">
+                    <!-- ================= PEMBATAS HALAMAN / PAGE BREAK DIVIDER (PREVIEW ONLY) ================= -->
+                    <div class="no-print w-full max-w-[215mm] flex items-center justify-center my-1">
+                        <div class="relative flex items-center justify-center w-full">
+                            <div class="border-t-2 border-dashed border-teal-400/80 dark:border-teal-600/80 w-full"></div>
+                            <span class="absolute bg-white dark:bg-gray-900 text-teal-800 dark:text-teal-300 text-xs px-4 py-1.5 rounded-full font-bold border border-teal-300 dark:border-teal-700 shadow-md flex items-center gap-1.5">
+                                ✂️ Batas Halaman (Page Break) ➔ Halaman 2: Lampiran Foto & Pengesahan
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- ================= LEMBAR 2: LAMPIRAN DOKUMENTASI FOTO & PENGESAHAN (F4) ================= -->
+                    <div class="f4-sheet-preview print-container f4-page-break bg-white text-black leading-normal relative flex flex-col justify-between">
+                        <div>
+                            <!-- Page Number Badge for Preview Only -->
+                            <div class="no-print absolute top-3 right-4 text-[10px] font-bold text-gray-400 bg-gray-100 dark:bg-gray-200 px-2 py-0.5 rounded shadow-sm">
+                                Halaman 2
+                            </div>
+
+                            <!-- 1. Header Lampiran -->
+                            <div class="text-center mb-6 pb-3 border-b-2 border-black">
+                                <h2 class="text-sm font-bold tracking-wide uppercase">LAMPIRAN DOKUMENTASI FOTO KEGIATAN</h2>
+                                <p class="text-[10.5px] text-gray-700 mt-1 font-medium">
+                                    Laporan Perjalanan Dinas — Surat Tugas No: {{ $nomorSuratTugas }}
+                                </p>
+                            </div>
+
+                            <!-- 2. Grid Foto Dokumentasi -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 max-w-2xl mx-auto">
+                                @foreach($allPhotos as $item)
+                                    <div class="photo-item border border-black rounded-lg overflow-hidden bg-white shadow-sm flex flex-col">
+                                        <div class="w-full bg-gray-50 flex items-center justify-center p-2">
+                                            <img src="{{ asset('storage/' . $item['path']) }}" class="w-full h-auto max-h-56 object-contain rounded">
+                                        </div>
+                                        <div class="bg-gray-100 px-3 py-1.5 border-t border-black text-[10px] font-semibold text-center text-gray-800">
+                                            {{ $item['label'] }}
+                                        </div>
                                     </div>
-                                    <div class="bg-gray-100 px-2 py-1 border-t border-black text-[9.5px] font-semibold text-center text-gray-800">
-                                        {{ $item['label'] }}
-                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- 3. Signature Block on Page 2 -->
+                        <div class="signature-block flex justify-end mt-8 text-[11px]">
+                            <div class="text-center w-60 space-y-12">
+                                <div>
+                                    Mempawah, {{ \Illuminate\Support\Carbon::parse($tanggalLaporan)->translatedFormat('d F Y') }}<br>
+                                    yang melaporkan,
                                 </div>
-                            @endforeach
+                                
+                                <div>
+                                    <div class="font-bold underline uppercase">
+                                        {{ $this->getPenugasan()->pegawai?->nama ?? $selectedPelaksanaNip }}
+                                    </div>
+                                    <div>NIP. {{ $selectedPelaksanaNip }}</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 @endif
-
-                <!-- 6. Signature Block -->
-                <div class="signature-block flex justify-end mt-5 text-[11px]">
-                    <div class="text-center w-60 space-y-10">
-                        <div>
-                            Mempawah, {{ \Illuminate\Support\Carbon::parse($tanggalLaporan)->translatedFormat('d F Y') }}<br>
-                            yang melaporkan,
-                        </div>
-                        
-                        <div>
-                            <div class="font-bold underline uppercase">
-                                {{ $this->getPenugasan()->pegawai?->nama ?? $selectedPelaksanaNip }}
-                            </div>
-                            <div>NIP. {{ $selectedPelaksanaNip }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
             </div>
         @endif
     </div>
