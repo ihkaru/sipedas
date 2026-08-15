@@ -5,60 +5,110 @@
             [x-cloak] {
                 display: none !important;
             }
+            /* F4 Paper Sheet Screen & Print Styling */
+            .f4-sheet-preview {
+                width: 215mm;
+                min-height: 330mm;
+                padding: 15mm 20mm;
+                margin: 0 auto;
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                font-family: Arial, Helvetica, sans-serif !important;
+                box-sizing: border-box;
+                border-radius: 4px;
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.15);
+                border: 1px solid #d1d5db;
+                position: relative;
+            }
+
             @media print {
                 @page {
-                    size: A4 portrait;
-                    margin: 1.2cm 1.5cm;
+                    size: 215mm 330mm; /* Standard F4 / Folio Indonesia (21.5 cm x 33.0 cm) */
+                    margin: 15mm 20mm 15mm 20mm;
                 }
-                html, body {
-                    background: white !important;
-                    color: black !important;
+                
+                /* Reset ALL dark mode styles and backgrounds to pure white */
+                html,
+                html.dark,
+                body,
+                body.dark,
+                #app,
+                .fi-body,
+                .fi-layout,
+                .fi-main,
+                .fi-main-ctn,
+                .fi-page,
+                .laporan-perjadin-page,
+                .f4-preview-wrapper {
+                    background: #ffffff !important;
+                    background-color: #ffffff !important;
+                    color: #000000 !important;
                     margin: 0 !important;
                     padding: 0 !important;
                     width: 100% !important;
-                    font-family: Arial, Helvetica, sans-serif !important;
-                    font-size: 9pt !important;
-                    -webkit-print-color-adjust: exact !important;
-                    print-color-adjust: exact !important;
+                    box-shadow: none !important;
+                    border: none !important;
                 }
-                /* Hide everything in the DOM */
+
+                /* Hide non-printable UI elements */
+                .no-print,
+                .fi-sidebar,
+                .fi-topbar,
+                .fi-header,
+                .fi-breadcrumbs,
+                header,
+                nav,
+                aside {
+                    display: none !important;
+                    visibility: hidden !important;
+                }
+
+                /* Hide everything in the body by default */
                 body * {
                     visibility: hidden !important;
                 }
-                /* Show ONLY the print container and all its descendants */
-                .print-container, .print-container * {
+
+                /* Make the print container and its children visible */
+                .print-container,
+                .print-container * {
                     visibility: visible !important;
                 }
-                .print-container {
-                    position: absolute !important;
-                    left: 0 !important;
-                    top: 0 !important;
+
+                .print-container,
+                .f4-sheet-preview {
+                    position: static !important;
+                    display: block !important;
                     width: 100% !important;
                     max-width: 100% !important;
+                    min-height: auto !important;
                     padding: 0 !important;
                     margin: 0 !important;
                     border: none !important;
                     box-shadow: none !important;
-                    background: white !important;
-                    color: black !important;
+                    background: #ffffff !important;
+                    background-color: #ffffff !important;
+                    color: #000000 !important;
                     font-family: Arial, Helvetica, sans-serif !important;
+                    font-size: 9.5pt !important;
+                    border-radius: 0 !important;
                 }
-                .no-print {
-                    display: none !important;
-                }
+
                 table {
                     width: 100% !important;
                     border: 1px solid black !important;
                     border-collapse: collapse !important;
                     table-layout: fixed !important;
                 }
+
                 thead {
                     display: table-header-group !important;
                 }
+
                 tr {
                     page-break-inside: avoid !important;
                     break-inside: avoid !important;
                 }
+
                 th {
                     border: 1px solid black !important;
                     padding: 4px 6px !important;
@@ -70,6 +120,7 @@
                     print-color-adjust: exact !important;
                     text-align: center !important;
                 }
+
                 td {
                     border: 1px solid black !important;
                     padding: 4px 6px !important;
@@ -77,29 +128,34 @@
                     font-size: 8.5pt !important;
                     line-height: 1.35 !important;
                 }
+
                 .lampiran-foto-container {
                     margin-top: 14px !important;
                     padding-top: 8px !important;
                     page-break-inside: avoid !important;
                     break-inside: avoid !important;
                 }
+
                 .photo-item {
                     page-break-inside: avoid !important;
                     break-inside: avoid !important;
                     max-width: 260px !important;
                     margin: 0 auto !important;
                 }
+
                 .photo-item img {
                     max-height: 160px !important;
                     width: auto !important;
                     object-fit: contain !important;
                 }
+
                 .signature-block {
                     margin-top: 16px !important;
                     page-break-inside: avoid !important;
                     break-inside: avoid !important;
                     font-size: 8.5pt !important;
                 }
+
                 img {
                     max-width: 100% !important;
                     page-break-inside: avoid !important;
@@ -788,13 +844,28 @@
                 </div>
             </div>
 
-            <!-- PREVIEW SHEET: 100% PERSIS CONTOH DOKUMEN RESMI BPS -->
-            <div class="print-container bg-white text-black border border-gray-300 shadow-2xl rounded-xl p-6 md:p-10 max-w-4xl mx-auto leading-normal transition duration-300 relative" style="font-family: Arial, Helvetica, sans-serif;">
-                
-                <!-- 1. Document Title -->
-                <div class="text-center mb-5">
-                    <h1 class="text-sm md:text-base font-bold tracking-wide uppercase">LAPORAN PERJALANAN DINAS</h1>
+            <!-- PREVIEW SHEET WRAPPER DENGAN TAMPILAN KERTAS F4 RESMI (21.5 cm x 33.0 cm) -->
+            <div class="f4-preview-wrapper flex flex-col items-center gap-3 py-4">
+                <!-- Page Info / Indicator Bar (No Print) -->
+                <div class="no-print w-full max-w-[215mm] flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 px-2">
+                    <div class="flex items-center gap-1.5 font-semibold">
+                        <svg class="h-4 w-4 text-teal-600 dark:text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span>Pratinjau Format Kertas F4 / Folio (21.5 cm × 33.0 cm)</span>
+                    </div>
+                    <span class="text-[11px] bg-gray-200 dark:bg-gray-800 px-2.5 py-0.5 rounded text-gray-700 dark:text-gray-300 font-mono font-medium">
+                        Standar LPD BPS
+                    </span>
                 </div>
+
+                <!-- LEMBAR KERTAS F4 FISIK -->
+                <div class="f4-sheet-preview print-container bg-white text-black leading-normal relative">
+                    
+                    <!-- 1. Document Title -->
+                    <div class="text-center mb-5">
+                        <h1 class="text-sm md:text-base font-bold tracking-wide uppercase">LAPORAN PERJALANAN DINAS</h1>
+                    </div>
 
                 <!-- 2. Header Metadata (2-Column Grid) -->
                 <div class="text-[11px] mb-3 space-y-1">
@@ -1011,7 +1082,7 @@
                         </div>
                     </div>
                 </div>
-
+            </div>
             </div>
         @endif
     </div>
