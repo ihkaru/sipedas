@@ -31,8 +31,7 @@
         "nunomaduro/collision": "^8.0|^9.0",
         "phpunit/phpunit": "^11.3|^12.0",
         "revolution/laravel-google-sheets": "^7.0",
-        "riskihajar/terbilang": "^2.0",
-        "spatie/laravel-ignition": "^2.10"
+        "riskihajar/terbilang": "^2.0"
     },
     "autoload": {
         "psr-4": {

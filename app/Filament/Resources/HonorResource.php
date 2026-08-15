@@ -11,7 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 // ... (use statements lain)
-use Filament\Tables\Actions\Action; // Ganti ImportAction dengan Action
+use Filament\Actions\Action; // Ganti ImportAction dengan Action
 use Filament\Forms\Components\FileUpload;
 use Maatwebsite\Excel\Facades\Excel; // Import facade Excel
 use App\Imports\HonorImport; // Import kelas importer kita
