@@ -6,6 +6,7 @@ use App\Filament\Resources\CustomPageResource\Pages;
 use App\Filament\Resources\CustomPageResource\RelationManagers;
 use App\Models\CustomPage;
 use Filament\Forms;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -26,7 +27,7 @@ class CustomPageResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
-                Forms\Components\Section::make('Page Details')
+                Section::make('Page Details')
                     ->schema([
                         Forms\Components\TextInput::make('title')
                             ->required()
@@ -76,7 +77,7 @@ class CustomPageResource extends Resource
                             ->required(),
                     ])->columns(2),
 
-                Forms\Components\Section::make('HTML Content')
+                Section::make('HTML Content')
                     ->schema([
                         AceEditor::make('content')
                             ->language('html')

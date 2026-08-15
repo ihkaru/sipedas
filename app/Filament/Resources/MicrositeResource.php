@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\MicrositeResource\Pages;
 use App\Models\Microsite;
 use Filament\Forms;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -23,7 +24,7 @@ class MicrositeResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
-                Forms\Components\Section::make('Microsite Details')
+                Section::make('Microsite Details')
                     ->schema([
                         Forms\Components\TextInput::make('title')
                             ->required()
@@ -57,7 +58,7 @@ class MicrositeResource extends Resource
                             ->default(true),
                     ])->columns(2),
 
-                Forms\Components\Section::make('Links')
+                Section::make('Links')
                     ->schema([
                         Forms\Components\Repeater::make('links')
                             ->relationship()

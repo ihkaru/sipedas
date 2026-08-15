@@ -17,6 +17,7 @@ use Maatwebsite\Excel\Facades\Excel; // Import facade Excel
 use App\Imports\HonorImport; // Import kelas importer kita
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
+use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification; // Untuk notifikasi
@@ -34,7 +35,7 @@ class HonorResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
-                Forms\Components\Section::make('Detail Honor')
+                Section::make('Detail Honor')
                     ->schema([
                         Select::make('kegiatan_manmit_id')
                             ->relationship('kegiatanManmit', 'nama')

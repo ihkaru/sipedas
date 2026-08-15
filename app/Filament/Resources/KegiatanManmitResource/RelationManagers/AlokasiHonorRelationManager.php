@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\KegiatanManmitResource\RelationManagers;
 
 use Filament\Forms;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
@@ -71,8 +73,8 @@ class AlokasiHonorRelationManager extends RelationManager
                     ->color('primary')
                     ->visible(fn() => auth()->user()->can('create_alokasi::honor'))
                     ->form([
-                        Forms\Components\Grid::make(2)->schema([
-                            Forms\Components\Section::make('Detail Honor')
+                        Grid::make(2)->schema([
+                            Section::make('Detail Honor')
                                 ->schema([
                                     Forms\Components\Select::make('honor_id')
                                         ->label('Pilih Honor untuk Dialokasikan')
@@ -188,7 +190,7 @@ class AlokasiHonorRelationManager extends RelationManager
                                         ->dehydrated(false),
                                 ]),
 
-                            Forms\Components\Section::make('Daftar Mitra untuk Dialokasikan')
+                            Section::make('Daftar Mitra untuk Dialokasikan')
                                 ->schema([
                                     Forms\Components\Repeater::make('alokasi_data')
                                         ->label('')

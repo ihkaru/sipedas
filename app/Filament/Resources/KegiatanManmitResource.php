@@ -15,6 +15,7 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Section;
 use Illuminate\Support\Str;
 
 class KegiatanManmitResource extends Resource
@@ -33,7 +34,7 @@ class KegiatanManmitResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
-                Forms\Components\Section::make('Informasi Utama')
+                Section::make('Informasi Utama')
                     ->schema([
                         Forms\Components\TextInput::make('nama')
                             ->label('Nama Kegiatan Utama')
@@ -96,7 +97,7 @@ class KegiatanManmitResource extends Resource
                             }),
                     ]),
 
-                Forms\Components\Section::make('Template Kontrak Sensus')
+                Section::make('Template Kontrak Sensus')
                     ->description('Isi bagian ini jika kegiatan adalah SENSUS dan membutuhkan pasal-pasal khusus.')
                     ->visible(fn(Get $get) => $get('jenis_kegiatan') === 'SENSUS')
                     ->schema([
@@ -169,7 +170,7 @@ class KegiatanManmitResource extends Resource
                     ->default([]), // Start with empty array
 
                 // --- BAGIAN UNTUK FREKUENSI TUNGGAL / EDIT MODE ---
-                Forms\Components\Section::make('Jadwal Pelaksanaan Kegiatan')
+                Section::make('Jadwal Pelaksanaan Kegiatan')
                     ->description('Rentang ini harus mencakup SELURUH fase kegiatan — dari hari pertama lapangan hingga hari terakhir entri/pengolahan selesai.')
                     ->schema([
                         Forms\Components\Placeholder::make('jadwal_info')

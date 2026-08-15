@@ -6,16 +6,19 @@ use App\Filament\Resources\RiwayatPpkResource\Pages;
 use App\Models\Pegawai;
 use App\Models\RiwayatPpk;
 use Filament\Forms;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class RiwayatPpkResource extends Resource
 {
     protected static ?string $model = RiwayatPpk::class;
 
     protected static ?string $label = 'Riwayat PPK';
+    protected static ?string $modelLabel = 'Riwayat PPK';
     protected static ?string $pluralModelLabel = 'Riwayat PPK';
     protected static ?string $navigationLabel = 'Riwayat PPK';
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-identification';
@@ -25,8 +28,8 @@ class RiwayatPpkResource extends Resource
     public static function canViewAny(): bool
     {
         return auth()->user()->hasRole('super_admin') ||
-            auth()->user()->hasRole('kepala_satker') ||
-            auth()->user()->hasRole('operator_umum');
+            auth()->user()->hasRole('operator_umum') ||
+            auth()->user()->hasRole('pj_kegiatan');
     }
 
     public static function canCreate(): bool
@@ -49,7 +52,7 @@ class RiwayatPpkResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
-                Forms\Components\Section::make('Informasi PPK')
+                Section::make('Informasi PPK')
                     ->description('Tentukan pegawai yang menjabat sebagai Pejabat Pembuat Komitmen (PPK) beserta masa aktifnya.')
                     ->icon('heroicon-o-identification')
                     ->schema([
