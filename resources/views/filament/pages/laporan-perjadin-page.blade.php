@@ -145,10 +145,10 @@
                     <div class="space-y-1.5">
                         <label class="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300">Pilih Surat Tugas</label>
                         <x-filament::input.wrapper>
-                            <x-filament::input.select wire:model.live="selectedSuratTugasId">
+                            <x-filament::input.select wire:model.live="selectedSuratTugasId" class="truncate pr-8 text-xs md:text-sm">
                                 <option value="">-- Pilih Surat Tugas --</option>
                                 @foreach($suratTugasOptions as $id => $label)
-                                    <option value="{{ $id }}">{{ $label }}</option>
+                                    <option value="{{ $id }}" title="{{ $label }}">{{ $label }}</option>
                                 @endforeach
                             </x-filament::input.select>
                         </x-filament::input.wrapper>
@@ -157,10 +157,10 @@
                     <div class="space-y-1.5">
                         <label class="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300">Pilih Pelaksana</label>
                         <x-filament::input.wrapper :disabled="!$selectedSuratTugasId">
-                            <x-filament::input.select wire:model.live="selectedPelaksanaNip" :disabled="!$selectedSuratTugasId">
+                            <x-filament::input.select wire:model.live="selectedPelaksanaNip" :disabled="!$selectedSuratTugasId" class="truncate pr-8 text-xs md:text-sm">
                                 <option value="">-- Pilih Pelaksana --</option>
                                 @foreach($pelaksanaOptions as $nip => $name)
-                                    <option value="{{ $nip }}">{{ $name }}</option>
+                                    <option value="{{ $nip }}" title="{{ $name }}">{{ $name }}</option>
                                 @endforeach
                             </x-filament::input.select>
                         </x-filament::input.wrapper>
