@@ -34,7 +34,7 @@ class RiwayatPengajuanTable extends BaseWidget
                     ->closeModalByClickingAway(false)
                     ->label("Pengajuan Surat Tugas")
                     ->icon("fluentui-document-add-20-o")
-                    ->form(self::$resource::formPengajuan())
+                    ->form(PenugasanResource::formPengajuan())
                     ->modalDescription(fn()=>new HtmlString("<span style='color:black;'> <b>Setelah disetujui</b>, pegawai silakan <b>mencetak sendiri</b> surat tugas dan <b>diserahkan ke TU</b> untuk ditandatangani </span>"))
                     ->action(function (array $data, array $arguments, Action $action,Set $set):void {
                         if (Penugasan::ajukan($data)) {

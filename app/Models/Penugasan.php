@@ -44,12 +44,12 @@ class Penugasan extends Model {
 
     protected function jenisSurat(): Attribute {
         return Attribute::make(
-            get: fn(mixed $value, array $attributes) => Constants::JENIS_SURAT_TUGAS_OPTIONS[$attributes["jenis_surat_tugas"]],
+            get: fn(mixed $value, array $attributes) => Constants::JENIS_SURAT_TUGAS_OPTIONS[$attributes["jenis_surat_tugas"] ?? ''] ?? null,
         );
     }
     protected function jenisTransportasi(): Attribute {
         return Attribute::make(
-            get: fn(mixed $value, array $attributes) => Constants::JENIS_TRANSPORTASI_OPTIONS[$attributes["transportasi"]],
+            get: fn(mixed $value, array $attributes) => Constants::JENIS_TRANSPORTASI_OPTIONS[$attributes["transportasi"] ?? ''] ?? 'Kendaraan Pribadi',
         );
     }
     protected function lamaPerjadin(): Attribute {
