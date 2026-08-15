@@ -1,327 +1,5 @@
 <x-filament-panels::page>
-    <div class="space-y-6" x-data="{
-        isPrinting: false,
-        showMapModal: false,
-        currentDayIndex: null,
-        currentSpotIndex: null,
-        isPeriodic: false,
-        mapLat: -0.0264,
-        mapLng: 109.3425,
-        leafletMap: null,
-        leafletMarker: null,
-        isLocating: false,
-        districtName: @js($daerahDikunjungi ?: 'Kecamatan di Kab. Mempawah'),
-
-        // 2026 Generative AI Streaming Reveal States
-        revealedRows: 0,
-        isStreaming: true,
-        loadingStep: 1,
-        stepInterval: null,
-
-        init() {
-            if (@js($isGenerated)) {
-                this.startStreaming();
-            }
-        },
-
-        startStreaming() {
-            this.revealedRows = 0;
-            this.isStreaming = true;
-            let total = 20;
-            let timer = setInterval(() => {
-                this.revealedRows++;
-                if (this.revealedRows >= total) {
-                    this.isStreaming = false;
-                    clearInterval(timer);
-                }
-            }, 180);
-        },
-
-        skipStreaming() {
-            this.revealedRows = 999;
-            this.isStreaming = false;
-        },
-
-        startLoadingProgress() {
-            this.loadingStep = 1;
-            if (this.stepInterval) clearInterval(this.stepInterval);
-            this.stepInterval = setInterval(() => {
-                if (this.loadingStep < 3) {
-                    this.loadingStep++;
-                }
-            }, 1800);
-        },
-
-        openMap(dayIndex, spotIndex = 0, isPeriodic = false) {
-            this.currentDayIndex = dayIndex;
-            this.currentSpotIndex = spotIndex;
-            this.isPeriodic = isPeriodic;
-            
-            let coordStr = '';
-            if (isPeriodic) {
-                let list = $wire.get('periodikData.titik_kegiatan') || [];
-                coordStr = list[spotIndex] ? list[spotIndex].koordinat : '';
-            } else {
-                let list = $wire.get('harian.' + dayIndex + '.titik_kegiatan') || [];
-                coordStr = list[spotIndex] ? list[spotIndex].koordinat : '';
-            }
-            
-            if (coordStr && coordStr.includes(',')) {
-                let parts = coordStr.split(',');
-                this.mapLat = parseFloat(parts[0].trim()) || -0.0264;
-                this.mapLng = parseFloat(parts[1].trim()) || 109.3425;
-                this.showMapModal = true;
-                this.$nextTick(() => {
-                    setTimeout(() => this.initOrUpdateMap(), 250);
-                });
-            } else if (navigator.geolocation) {
-                this.isLocating = true;
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        this.mapLat = pos.coords.latitude;
-                        this.mapLng = pos.coords.longitude;
-                        this.isLocating = false;
-                        this.showMapModal = true;
-                        this.$nextTick(() => {
-                            setTimeout(() => this.initOrUpdateMap(), 250);
-                        });
-                    },
-                    (err) => {
-                        this.isLocating = false;
-                        this.mapLat = -0.0264;
-                        this.mapLng = 109.3425;
-                        this.showMapModal = true;
-                        this.$nextTick(() => {
-                            setTimeout(() => this.initOrUpdateMap(), 250);
-                        });
-                    },
-                    { enableHighAccuracy: true, timeout: 6000 }
-                );
-            } else {
-                this.mapLat = -0.0264;
-                this.mapLng = 109.3425;
-                this.showMapModal = true;
-                this.$nextTick(() => {
-                    setTimeout(() => this.initOrUpdateMap(), 250);
-                });
-            }
-        },
-
-        loadLeaflet() {
-            if (window.L) return Promise.resolve();
-            return new Promise((resolve) => {
-                if (!document.getElementById('leaflet-css')) {
-                    let link = document.createElement('link');
-                    link.id = 'leaflet-css';
-                    link.rel = 'stylesheet';
-                    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-                    document.head.appendChild(link);
-                }
-                if (!document.getElementById('leaflet-js')) {
-                    let script = document.createElement('script');
-                    script.id = 'leaflet-js';
-                    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-                    script.onload = () => resolve();
-                    document.head.appendChild(script);
-                } else {
-                    resolve();
-                }
-            });
-        },
-
-        async initOrUpdateMap() {
-            await this.loadLeaflet();
-            if (!window.L) return;
-            let container = document.getElementById('interactive-map-canvas');
-            if (!container) return;
-
-            if (!this.leafletMap) {
-                this.leafletMap = L.map(container).setView([this.mapLat, this.mapLng], 15);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                    attribution: '© OpenStreetMap contributors'
-                }).addTo(this.leafletMap);
-
-                this.leafletMarker = L.marker([this.mapLat, this.mapLng], {
-                    draggable: true,
-                    autoPan: true
-                }).addTo(this.leafletMap);
-
-                this.leafletMarker.on('dragend', (e) => {
-                    let pos = e.target.getLatLng();
-                    this.mapLat = pos.lat;
-                    this.mapLng = pos.lng;
-                });
-
-                this.leafletMap.on('click', (e) => {
-                    this.mapLat = e.latlng.lat;
-                    this.mapLng = e.latlng.lng;
-                    this.leafletMarker.setLatLng(e.latlng);
-                });
-            } else {
-                this.leafletMap.invalidateSize();
-                this.leafletMap.setView([this.mapLat, this.mapLng], 15);
-                this.leafletMarker.setLatLng([this.mapLat, this.mapLng]);
-            }
-        },
-
-        useDeviceLocation() {
-            if (navigator.geolocation) {
-                this.isLocating = true;
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        this.mapLat = pos.coords.latitude;
-                        this.mapLng = pos.coords.longitude;
-                        this.isLocating = false;
-                        this.initOrUpdateMap();
-                    },
-                    (err) => {
-                        this.isLocating = false;
-                        alert('Gagal mendeteksi lokasi GPS device.');
-                    },
-                    { enableHighAccuracy: true }
-                );
-            }
-        },
-
-        confirmLocation() {
-            let coordFormatted = this.mapLat.toFixed(6) + ', ' + this.mapLng.toFixed(6);
-            if (this.isPeriodic) {
-                $wire.set('periodikData.titik_kegiatan.' + this.currentSpotIndex + '.koordinat', coordFormatted);
-            } else {
-                $wire.set('harian.' + this.currentDayIndex + '.titik_kegiatan.' + this.currentSpotIndex + '.koordinat', coordFormatted);
-            }
-            this.showMapModal = false;
-        },
-
-        processAndWatermarkPhoto(event, dayIndex, spotIndex = 0, isPeriodic = false) {
-            let files = event.target.files;
-            if (!files || files.length === 0) return;
-
-            let spotName = '';
-            let coordText = '';
-            let targetDate = '';
-
-            if (isPeriodic) {
-                let list = $wire.get('periodikData.titik_kegiatan') || [];
-                coordText = list[spotIndex] ? list[spotIndex].koordinat : '';
-                spotName = list[spotIndex] ? list[spotIndex].nama_titik : '';
-            } else {
-                let dayData = $wire.get('harian.' + dayIndex) || {};
-                let list = dayData.titik_kegiatan || [];
-                coordText = list[spotIndex] ? list[spotIndex].koordinat : '';
-                spotName = list[spotIndex] ? list[spotIndex].nama_titik : '';
-                targetDate = dayData.tanggal || '';
-            }
-
-            Array.from(files).forEach((file) => {
-                let reader = new FileReader();
-                reader.onload = (e) => {
-                    let img = new Image();
-                    img.onload = () => {
-                        let canvas = document.createElement('canvas');
-                        let maxDim = 1600;
-                        let width = img.width;
-                        let height = img.height;
-
-                        if (width > maxDim || height > maxDim) {
-                            if (width > height) {
-                                height = Math.round((height * maxDim) / width);
-                                width = maxDim;
-                            } else {
-                                width = Math.round((width * maxDim) / height);
-                                height = maxDim;
-                            }
-                        }
-
-                        canvas.width = width;
-                        canvas.height = height;
-                        let ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-
-                        // Calculate Date & Time string in WIB (UTC+7)
-                        let now = new Date();
-                        let timeOnly = now.toLocaleTimeString('id-ID', {
-                            timeZone: 'Asia/Jakarta',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit'
-                        }).replace(/\./g, ':');
-
-                        let dateFormatted = '';
-                        if (targetDate) {
-                            let parts = targetDate.split('-');
-                            if (parts.length === 3) {
-                                dateFormatted = parts[2] + '/' + parts[1] + '/' + parts[0];
-                            }
-                        }
-                        if (!dateFormatted) {
-                            dateFormatted = now.toLocaleDateString('id-ID', {
-                                timeZone: 'Asia/Jakarta',
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric'
-                            });
-                        }
-
-                        let timeStampStr = dateFormatted + ' ' + timeOnly + ' WIB (UTC+7)';
-
-                        // Font sizing proportional to image width
-                        let fontSize = Math.max(18, Math.round(width * 0.024));
-                        let lineHeight = fontSize * 1.35;
-                        let paddingX = Math.round(width * 0.02);
-                        let paddingY = Math.round(fontSize * 0.7);
-                        let boxHeight = (lineHeight * 3) + (paddingY * 2);
-
-                        // Draw Semi-transparent Dark Badge at Bottom-Left
-                        ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
-                        ctx.fillRect(0, height - boxHeight, width, boxHeight);
-
-                        // Top line of the banner (cyan accent stripe)
-                        ctx.fillStyle = '#06B6D4';
-                        ctx.fillRect(0, height - boxHeight, width, Math.max(3, Math.round(fontSize * 0.15)));
-
-                        let startY = height - boxHeight + paddingY + (fontSize * 0.9);
-
-                        // 1. Timestamp (White Bold)
-                        ctx.fillStyle = '#FFFFFF';
-                        ctx.font = 'bold ' + fontSize + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                        ctx.shadowColor = 'rgba(0,0,0,0.8)';
-                        ctx.shadowBlur = 4;
-                        ctx.fillText('🕒 ' + timeStampStr, paddingX, startY);
-
-                        // 2. GPS & Spot Name (Vibrant Cyan)
-                        let fallbackCoord = this.mapLat.toFixed(6) + ', ' + this.mapLng.toFixed(6);
-                        let displayCoord = coordText ? coordText : fallbackCoord;
-                        let displaySpot = spotName ? ' (' + spotName + ')' : '';
-                        ctx.fillStyle = '#38BDF8';
-                        ctx.font = 'bold ' + (fontSize * 0.92) + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                        ctx.fillText('📍 GPS: ' + displayCoord + displaySpot, paddingX, startY + lineHeight);
-
-                        // 3. Wilayah (Mint Green)
-                        let displayWilayah = this.districtName ? this.districtName : 'Kabupaten Mempawah';
-                        if (!displayWilayah.toLowerCase().includes('mempawah')) {
-                            displayWilayah += ', Kab. Mempawah';
-                        }
-                        ctx.fillStyle = '#6EE7B7';
-                        ctx.font = 'bold ' + (fontSize * 0.92) + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                        ctx.fillText('🏛️ Wilayah: ' + displayWilayah, paddingX, startY + (lineHeight * 2));
-
-                        ctx.shadowColor = 'transparent';
-                        ctx.shadowBlur = 0;
-
-                        // Save image directly
-                        let dataUrl = canvas.toDataURL('image/jpeg', 0.88);
-                        $wire.saveWatermarkedPhoto(dayIndex, spotIndex, dataUrl, isPeriodic);
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
-
-            event.target.value = '';
-        }
-    }">
+    <div class="space-y-6" x-data="laporanPerjadinPage(@js($daerahDikunjungi ?: 'Kecamatan di Kab. Mempawah'), @js($isGenerated))">
         <!-- Print & Utility Styles -->
         <style>
             [x-cloak] {
@@ -1300,4 +978,331 @@
             </div>
         @endif
     </div>
+
+    @push('scripts')
+        <script>
+            function laporanPerjadinPage(initialDistrictName, isGeneratedInitial) {
+                return {
+                    isPrinting: false,
+                    showMapModal: false,
+                    currentDayIndex: null,
+                    currentSpotIndex: null,
+                    isPeriodic: false,
+                    mapLat: -0.0264,
+                    mapLng: 109.3425,
+                    leafletMap: null,
+                    leafletMarker: null,
+                    isLocating: false,
+                    districtName: initialDistrictName || 'Kecamatan di Kab. Mempawah',
+
+                    revealedRows: 0,
+                    isStreaming: true,
+                    loadingStep: 1,
+                    stepInterval: null,
+
+                    init() {
+                        if (isGeneratedInitial) {
+                            this.startStreaming();
+                        }
+                    },
+
+                    startStreaming() {
+                        this.revealedRows = 0;
+                        this.isStreaming = true;
+                        let total = 20;
+                        let timer = setInterval(() => {
+                            this.revealedRows++;
+                            if (this.revealedRows >= total) {
+                                this.isStreaming = false;
+                                clearInterval(timer);
+                            }
+                        }, 180);
+                    },
+
+                    skipStreaming() {
+                        this.revealedRows = 999;
+                        this.isStreaming = false;
+                    },
+
+                    startLoadingProgress() {
+                        this.loadingStep = 1;
+                        if (this.stepInterval) clearInterval(this.stepInterval);
+                        this.stepInterval = setInterval(() => {
+                            if (this.loadingStep < 3) {
+                                this.loadingStep++;
+                            }
+                        }, 1800);
+                    },
+
+                    openMap(dayIndex, spotIndex = 0, isPeriodic = false) {
+                        this.currentDayIndex = dayIndex;
+                        this.currentSpotIndex = spotIndex;
+                        this.isPeriodic = isPeriodic;
+                        
+                        let coordStr = '';
+                        let wire = this.$wire || window.Livewire?.find(this.$el.closest('[wire\\:id]')?.getAttribute('wire:id'));
+                        if (isPeriodic) {
+                            let list = wire ? wire.get('periodikData.titik_kegiatan') : [];
+                            coordStr = list && list[spotIndex] ? list[spotIndex].koordinat : '';
+                        } else {
+                            let list = wire ? wire.get('harian.' + dayIndex + '.titik_kegiatan') : [];
+                            coordStr = list && list[spotIndex] ? list[spotIndex].koordinat : '';
+                        }
+                        
+                        if (coordStr && coordStr.includes(',')) {
+                            let parts = coordStr.split(',');
+                            this.mapLat = parseFloat(parts[0].trim()) || -0.0264;
+                            this.mapLng = parseFloat(parts[1].trim()) || 109.3425;
+                            this.showMapModal = true;
+                            this.$nextTick(() => {
+                                setTimeout(() => this.initOrUpdateMap(), 250);
+                            });
+                        } else if (navigator.geolocation) {
+                            this.isLocating = true;
+                            navigator.geolocation.getCurrentPosition(
+                                (pos) => {
+                                    this.mapLat = pos.coords.latitude;
+                                    this.mapLng = pos.coords.longitude;
+                                    this.isLocating = false;
+                                    this.showMapModal = true;
+                                    this.$nextTick(() => {
+                                        setTimeout(() => this.initOrUpdateMap(), 250);
+                                    });
+                                },
+                                (err) => {
+                                    this.isLocating = false;
+                                    this.mapLat = -0.0264;
+                                    this.mapLng = 109.3425;
+                                    this.showMapModal = true;
+                                    this.$nextTick(() => {
+                                        setTimeout(() => this.initOrUpdateMap(), 250);
+                                    });
+                                },
+                                { enableHighAccuracy: true, timeout: 6000 }
+                            );
+                        } else {
+                            this.mapLat = -0.0264;
+                            this.mapLng = 109.3425;
+                            this.showMapModal = true;
+                            this.$nextTick(() => {
+                                setTimeout(() => this.initOrUpdateMap(), 250);
+                            });
+                        }
+                    },
+
+                    loadLeaflet() {
+                        if (window.L) return Promise.resolve();
+                        return new Promise((resolve) => {
+                            if (!document.getElementById('leaflet-css')) {
+                                let link = document.createElement('link');
+                                link.id = 'leaflet-css';
+                                link.rel = 'stylesheet';
+                                link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+                                document.head.appendChild(link);
+                            }
+                            if (!document.getElementById('leaflet-js')) {
+                                let script = document.createElement('script');
+                                script.id = 'leaflet-js';
+                                script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+                                script.onload = () => resolve();
+                                document.head.appendChild(script);
+                            } else {
+                                resolve();
+                            }
+                        });
+                    },
+
+                    async initOrUpdateMap() {
+                        await this.loadLeaflet();
+                        if (!window.L) return;
+                        let container = document.getElementById('interactive-map-canvas');
+                        if (!container) return;
+
+                        if (!this.leafletMap) {
+                            this.leafletMap = L.map(container).setView([this.mapLat, this.mapLng], 15);
+                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                maxZoom: 19,
+                                attribution: '© OpenStreetMap contributors'
+                            }).addTo(this.leafletMap);
+
+                            this.leafletMarker = L.marker([this.mapLat, this.mapLng], {
+                                draggable: true,
+                                autoPan: true
+                            }).addTo(this.leafletMap);
+
+                            this.leafletMarker.on('dragend', (e) => {
+                                let pos = e.target.getLatLng();
+                                this.mapLat = pos.lat;
+                                this.mapLng = pos.lng;
+                            });
+
+                            this.leafletMap.on('click', (e) => {
+                                this.mapLat = e.latlng.lat;
+                                this.mapLng = e.latlng.lng;
+                                this.leafletMarker.setLatLng(e.latlng);
+                            });
+                        } else {
+                            this.leafletMap.invalidateSize();
+                            this.leafletMap.setView([this.mapLat, this.mapLng], 15);
+                            this.leafletMarker.setLatLng([this.mapLat, this.mapLng]);
+                        }
+                    },
+
+                    useDeviceLocation() {
+                        if (navigator.geolocation) {
+                            this.isLocating = true;
+                            navigator.geolocation.getCurrentPosition(
+                                (pos) => {
+                                    this.mapLat = pos.coords.latitude;
+                                    this.mapLng = pos.coords.longitude;
+                                    this.isLocating = false;
+                                    this.initOrUpdateMap();
+                                },
+                                (err) => {
+                                    this.isLocating = false;
+                                    alert('Gagal mendeteksi lokasi GPS device.');
+                                },
+                                { enableHighAccuracy: true }
+                            );
+                        }
+                    },
+
+                    confirmLocation() {
+                        let coordFormatted = this.mapLat.toFixed(6) + ', ' + this.mapLng.toFixed(6);
+                        let wire = this.$wire || window.Livewire?.find(this.$el.closest('[wire\\:id]')?.getAttribute('wire:id'));
+                        if (wire) {
+                            if (this.isPeriodic) {
+                                wire.set('periodikData.titik_kegiatan.' + this.currentSpotIndex + '.koordinat', coordFormatted);
+                            } else {
+                                wire.set('harian.' + this.currentDayIndex + '.titik_kegiatan.' + this.currentSpotIndex + '.koordinat', coordFormatted);
+                            }
+                        }
+                        this.showMapModal = false;
+                    },
+
+                    processAndWatermarkPhoto(event, dayIndex, spotIndex = 0, isPeriodic = false) {
+                        let files = event.target.files;
+                        if (!files || files.length === 0) return;
+
+                        let spotName = '';
+                        let coordText = '';
+                        let targetDate = '';
+                        let wire = this.$wire || window.Livewire?.find(this.$el.closest('[wire\\:id]')?.getAttribute('wire:id'));
+
+                        if (isPeriodic) {
+                            let list = wire ? wire.get('periodikData.titik_kegiatan') : [];
+                            coordText = list && list[spotIndex] ? list[spotIndex].koordinat : '';
+                            spotName = list && list[spotIndex] ? list[spotIndex].nama_titik : '';
+                        } else {
+                            let dayData = wire ? wire.get('harian.' + dayIndex) : {};
+                            let list = dayData ? dayData.titik_kegiatan : [];
+                            coordText = list && list[spotIndex] ? list[spotIndex].koordinat : '';
+                            spotName = list && list[spotIndex] ? list[spotIndex].nama_titik : '';
+                            targetDate = dayData ? dayData.tanggal : '';
+                        }
+
+                        Array.from(files).forEach((file) => {
+                            let reader = new FileReader();
+                            reader.onload = (e) => {
+                                let img = new Image();
+                                img.onload = () => {
+                                    let canvas = document.createElement('canvas');
+                                    let maxDim = 1600;
+                                    let width = img.width;
+                                    let height = img.height;
+
+                                    if (width > maxDim || height > maxDim) {
+                                        if (width > height) {
+                                            height = Math.round((height * maxDim) / width);
+                                            width = maxDim;
+                                        } else {
+                                            width = Math.round((width * maxDim) / height);
+                                            height = maxDim;
+                                        }
+                                    }
+
+                                    canvas.width = width;
+                                    canvas.height = height;
+                                    let ctx = canvas.getContext('2d');
+                                    ctx.drawImage(img, 0, 0, width, height);
+
+                                    let now = new Date();
+                                    let timeOnly = now.toLocaleTimeString('id-ID', {
+                                        timeZone: 'Asia/Jakarta',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        second: '2-digit'
+                                    }).replace(/\./g, ':');
+
+                                    let dateFormatted = '';
+                                    if (targetDate) {
+                                        let parts = targetDate.split('-');
+                                        if (parts.length === 3) {
+                                            dateFormatted = parts[2] + '/' + parts[1] + '/' + parts[0];
+                                        }
+                                    }
+                                    if (!dateFormatted) {
+                                        dateFormatted = now.toLocaleDateString('id-ID', {
+                                            timeZone: 'Asia/Jakarta',
+                                            day: '2-digit',
+                                            month: '2-digit',
+                                            year: 'numeric'
+                                        });
+                                    }
+
+                                    let timeStampStr = dateFormatted + ' ' + timeOnly + ' WIB (UTC+7)';
+                                    let fontSize = Math.max(18, Math.round(width * 0.024));
+                                    let lineHeight = fontSize * 1.35;
+                                    let paddingX = Math.round(width * 0.02);
+                                    let paddingY = Math.round(fontSize * 0.7);
+                                    let boxHeight = (lineHeight * 3) + (paddingY * 2);
+
+                                    ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+                                    ctx.fillRect(0, height - boxHeight, width, boxHeight);
+
+                                    ctx.fillStyle = '#06B6D4';
+                                    ctx.fillRect(0, height - boxHeight, width, Math.max(3, Math.round(fontSize * 0.15)));
+
+                                    let startY = height - boxHeight + paddingY + (fontSize * 0.9);
+
+                                    ctx.fillStyle = '#FFFFFF';
+                                    ctx.font = 'bold ' + fontSize + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                                    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+                                    ctx.shadowBlur = 4;
+                                    ctx.fillText('🕒 ' + timeStampStr, paddingX, startY);
+
+                                    let fallbackCoord = this.mapLat.toFixed(6) + ', ' + this.mapLng.toFixed(6);
+                                    let displayCoord = coordText ? coordText : fallbackCoord;
+                                    let displaySpot = spotName ? ' (' + spotName + ')' : '';
+                                    ctx.fillStyle = '#38BDF8';
+                                    ctx.font = 'bold ' + (fontSize * 0.92) + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                                    ctx.fillText('📍 GPS: ' + displayCoord + displaySpot, paddingX, startY + lineHeight);
+
+                                    let displayWilayah = this.districtName ? this.districtName : 'Kabupaten Mempawah';
+                                    if (!displayWilayah.toLowerCase().includes('mempawah')) {
+                                        displayWilayah += ', Kab. Mempawah';
+                                    }
+                                    ctx.fillStyle = '#6EE7B7';
+                                    ctx.font = 'bold ' + (fontSize * 0.92) + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                                    ctx.fillText('🏛️ Wilayah: ' + displayWilayah, paddingX, startY + (lineHeight * 2));
+
+                                    ctx.shadowColor = 'transparent';
+                                    ctx.shadowBlur = 0;
+
+                                    let dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+                                    if (wire) {
+                                        wire.saveWatermarkedPhoto(dayIndex, spotIndex, dataUrl, isPeriodic);
+                                    }
+                                };
+                                img.src = e.target.result;
+                            };
+                            reader.readAsDataURL(file);
+                        });
+
+                        event.target.value = '';
+                    }
+                };
+            }
+        </script>
+    @endpush
 </x-filament-panels::page>
