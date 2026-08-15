@@ -303,11 +303,17 @@
                                             Rute <b>{{ $daerahDikunjungi }}</b> aktif. Tambahkan titik singgah berurutan, AI akan membagi jam kegiatan dan waktu sholat secara proporsional.
                                         </span>
                                     </div>
-                                    <div class="flex items-center space-x-2">
-                                        <button type="button" wire:click="loadWorkdaysOnly" class="text-xs px-2.5 py-1.5 rounded-lg border border-teal-300 dark:border-teal-700 bg-white dark:bg-gray-800 text-teal-700 dark:text-teal-300 hover:bg-teal-50 transition font-medium">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <!-- Stempel / Watermark Toggle Option -->
+                                        <label class="inline-flex items-center gap-1.5 cursor-pointer bg-white dark:bg-gray-800 px-2.5 py-1 rounded-lg border border-teal-200 dark:border-teal-800 text-xs font-semibold text-teal-900 dark:text-teal-200 shadow-sm select-none">
+                                            <input type="checkbox" x-model="applyWatermark" class="rounded border-teal-400 text-teal-600 focus:ring-teal-500 h-3.5 w-3.5">
+                                            <span>⚡ Stempel Foto (Waktu, GPS & Alamat)</span>
+                                        </label>
+
+                                        <button type="button" wire:click="loadWorkdaysOnly" class="text-xs px-2.5 py-1 rounded-lg border border-teal-300 dark:border-teal-700 bg-white dark:bg-gray-800 text-teal-700 dark:text-teal-300 hover:bg-teal-50 transition font-medium">
                                             Muat Hari Kerja
                                         </button>
-                                        <button type="button" wire:click="addHarian" class="text-xs px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-bold transition flex items-center space-x-1 shadow-sm">
+                                        <button type="button" wire:click="addHarian" class="text-xs px-3 py-1 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-bold transition flex items-center space-x-1 shadow-sm">
                                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                             </svg>
@@ -552,7 +558,13 @@
                                 </div>
 
                                 <div class="space-y-2">
-                                    <label class="block text-xs font-bold text-gray-700 dark:text-gray-300">Upload Foto Dokumentasi Lapangan (Wajib Min. 1 Foto)</label>
+                                    <div class="flex flex-wrap items-center justify-between gap-2">
+                                        <label class="block text-xs font-bold text-gray-700 dark:text-gray-300">Upload Foto Dokumentasi Lapangan (Wajib Min. 1 Foto)</label>
+                                        <label class="inline-flex items-center gap-1.5 cursor-pointer bg-teal-50 dark:bg-teal-950/40 px-2.5 py-1 rounded-lg border border-teal-200 dark:border-teal-800 text-xs font-semibold text-teal-900 dark:text-teal-200 select-none">
+                                            <input type="checkbox" x-model="applyWatermark" class="rounded border-teal-400 text-teal-600 focus:ring-teal-500 h-3.5 w-3.5">
+                                            <span>⚡ Stempel Otomatis (Waktu, GPS & Alamat)</span>
+                                        </label>
+                                    </div>
                                     <div class="flex flex-wrap items-center gap-2">
                                         <label class="cursor-pointer px-3.5 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-teal-500/20 flex items-center space-x-1.5 transition">
                                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1320,7 +1332,57 @@
                         this.showMapModal = false;
                     },
 
-                    processAndWatermarkPhoto(event, dayIndex, spotIndex = 0, isPeriodic = false) {
+                    applyWatermark: true,
+
+                    async reverseGeocode(lat, lng) {
+                        if (!lat || !lng) return null;
+                        try {
+                            let controller = new AbortController();
+                            let timeoutId = setTimeout(() => controller.abort(), 2500);
+                            let res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, {
+                                signal: controller.signal,
+                                headers: { 'Accept-Language': 'id-ID,id;q=0.9' }
+                            });
+                            clearTimeout(timeoutId);
+                            if (res.ok) {
+                                let data = await res.json();
+                                if (data && data.address) {
+                                    let a = data.address;
+                                    let road = a.road || a.pedestrian || a.street || '';
+                                    let village = a.village || a.suburb || a.neighbourhood || a.quarter || '';
+                                    let subdistrict = a.municipality || a.subdistrict || a.city_district || '';
+                                    let regency = a.county || a.city || 'Kab. Mempawah';
+                                    
+                                    let parts = [];
+                                    if (road) parts.push(road);
+                                    if (village) parts.push('Ds. ' + village);
+                                    if (subdistrict) parts.push('Kec. ' + subdistrict);
+                                    if (regency) parts.push(regency);
+                                    
+                                    if (parts.length > 0) {
+                                        return parts.join(', ');
+                                    }
+                                }
+                            }
+                        } catch (e) {
+                            console.warn('Reverse geocoding OSM fallback:', e);
+                        }
+
+                        try {
+                            let res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=id`);
+                            if (res.ok) {
+                                let data = await res.json();
+                                let parts = [];
+                                if (data.locality) parts.push('Kec. ' + data.locality);
+                                if (data.city) parts.push(data.city);
+                                if (parts.length > 0) return parts.join(', ');
+                            }
+                        } catch (e) {}
+
+                        return null;
+                    },
+
+                    async processAndWatermarkPhoto(event, dayIndex, spotIndex = 0, isPeriodic = false) {
                         let files = event.target.files;
                         if (!files || files.length === 0) return;
 
@@ -1341,103 +1403,127 @@
                             targetDate = dayData ? dayData.tanggal : '';
                         }
 
-                        Array.from(files).forEach((file) => {
-                            let reader = new FileReader();
-                            reader.onload = (e) => {
-                                let img = new Image();
-                                img.onload = () => {
-                                    let canvas = document.createElement('canvas');
-                                    let maxDim = 1600;
-                                    let width = img.width;
-                                    let height = img.height;
+                        // Extract lat & lng from coordText or fallback
+                        let latNum = this.mapLat;
+                        let lngNum = this.mapLng;
+                        if (coordText && coordText.includes(',')) {
+                            let cParts = coordText.split(',');
+                            let pLat = parseFloat(cParts[0].trim());
+                            let pLng = parseFloat(cParts[1].trim());
+                            if (!isNaN(pLat) && !isNaN(pLng)) {
+                                latNum = pLat;
+                                lngNum = pLng;
+                            }
+                        }
 
-                                    if (width > maxDim || height > maxDim) {
-                                        if (width > height) {
-                                            height = Math.round((height * maxDim) / width);
-                                            width = maxDim;
-                                        } else {
-                                            width = Math.round((width * maxDim) / height);
-                                            height = maxDim;
+                        let geocodedAddress = null;
+                        if (this.applyWatermark) {
+                            geocodedAddress = await this.reverseGeocode(latNum, lngNum);
+                        }
+
+                        for (let file of Array.from(files)) {
+                            await new Promise((resolve) => {
+                                let reader = new FileReader();
+                                reader.onload = (e) => {
+                                    let img = new Image();
+                                    img.onload = () => {
+                                        let canvas = document.createElement('canvas');
+                                        let maxDim = 1600;
+                                        let width = img.width;
+                                        let height = img.height;
+
+                                        if (width > maxDim || height > maxDim) {
+                                            if (width > height) {
+                                                height = Math.round((height * maxDim) / width);
+                                                width = maxDim;
+                                            } else {
+                                                width = Math.round((width * maxDim) / height);
+                                                height = maxDim;
+                                            }
                                         }
-                                    }
 
-                                    canvas.width = width;
-                                    canvas.height = height;
-                                    let ctx = canvas.getContext('2d');
-                                    ctx.drawImage(img, 0, 0, width, height);
+                                        canvas.width = width;
+                                        canvas.height = height;
+                                        let ctx = canvas.getContext('2d');
+                                        ctx.drawImage(img, 0, 0, width, height);
 
-                                    let now = new Date();
-                                    let timeOnly = now.toLocaleTimeString('id-ID', {
-                                        timeZone: 'Asia/Jakarta',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        second: '2-digit'
-                                    }).replace(/\./g, ':');
+                                        if (this.applyWatermark) {
+                                            let now = new Date();
+                                            let timeOnly = now.toLocaleTimeString('id-ID', {
+                                                timeZone: 'Asia/Jakarta',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                second: '2-digit'
+                                            }).replace(/\./g, ':');
 
-                                    let dateFormatted = '';
-                                    if (targetDate) {
-                                        let parts = targetDate.split('-');
-                                        if (parts.length === 3) {
-                                            dateFormatted = parts[2] + '/' + parts[1] + '/' + parts[0];
+                                            let dateFormatted = '';
+                                            if (targetDate) {
+                                                let parts = targetDate.split('-');
+                                                if (parts.length === 3) {
+                                                    dateFormatted = parts[2] + '/' + parts[1] + '/' + parts[0];
+                                                }
+                                            }
+                                            if (!dateFormatted) {
+                                                dateFormatted = now.toLocaleDateString('id-ID', {
+                                                    timeZone: 'Asia/Jakarta',
+                                                    day: '2-digit',
+                                                    month: '2-digit',
+                                                    year: 'numeric'
+                                                });
+                                            }
+
+                                            let timeStampStr = dateFormatted + ' ' + timeOnly + ' WIB (UTC+7)';
+                                            let fontSize = Math.max(18, Math.round(width * 0.024));
+                                            let lineHeight = fontSize * 1.35;
+                                            let paddingX = Math.round(width * 0.02);
+                                            let paddingY = Math.round(fontSize * 0.7);
+
+                                            let displayWilayah = geocodedAddress || (this.districtName ? this.districtName : 'Kabupaten Mempawah');
+                                            if (!displayWilayah.toLowerCase().includes('mempawah')) {
+                                                displayWilayah += ', Kab. Mempawah';
+                                            }
+
+                                            let boxHeight = (lineHeight * 3) + (paddingY * 2);
+
+                                            ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+                                            ctx.fillRect(0, height - boxHeight, width, boxHeight);
+
+                                            ctx.fillStyle = '#06B6D4';
+                                            ctx.fillRect(0, height - boxHeight, width, Math.max(3, Math.round(fontSize * 0.15)));
+
+                                            let startY = height - boxHeight + paddingY + (fontSize * 0.9);
+
+                                            ctx.fillStyle = '#FFFFFF';
+                                            ctx.font = 'bold ' + fontSize + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                                            ctx.shadowColor = 'rgba(0,0,0,0.8)';
+                                            ctx.shadowBlur = 4;
+                                            ctx.fillText('🕒 ' + timeStampStr, paddingX, startY);
+
+                                            let displayCoord = coordText || (latNum.toFixed(6) + ', ' + lngNum.toFixed(6));
+                                            let displaySpot = spotName ? ' (' + spotName + ')' : '';
+                                            ctx.fillStyle = '#38BDF8';
+                                            ctx.font = 'bold ' + (fontSize * 0.92) + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                                            ctx.fillText('📍 GPS: ' + displayCoord + displaySpot, paddingX, startY + lineHeight);
+
+                                            ctx.fillStyle = '#6EE7B7';
+                                            ctx.font = 'bold ' + (fontSize * 0.92) + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                                            ctx.fillText('🏛️ Alamat: ' + displayWilayah, paddingX, startY + (lineHeight * 2));
+
+                                            ctx.shadowColor = 'transparent';
+                                            ctx.shadowBlur = 0;
                                         }
-                                    }
-                                    if (!dateFormatted) {
-                                        dateFormatted = now.toLocaleDateString('id-ID', {
-                                            timeZone: 'Asia/Jakarta',
-                                            day: '2-digit',
-                                            month: '2-digit',
-                                            year: 'numeric'
-                                        });
-                                    }
 
-                                    let timeStampStr = dateFormatted + ' ' + timeOnly + ' WIB (UTC+7)';
-                                    let fontSize = Math.max(18, Math.round(width * 0.024));
-                                    let lineHeight = fontSize * 1.35;
-                                    let paddingX = Math.round(width * 0.02);
-                                    let paddingY = Math.round(fontSize * 0.7);
-                                    let boxHeight = (lineHeight * 3) + (paddingY * 2);
-
-                                    ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
-                                    ctx.fillRect(0, height - boxHeight, width, boxHeight);
-
-                                    ctx.fillStyle = '#06B6D4';
-                                    ctx.fillRect(0, height - boxHeight, width, Math.max(3, Math.round(fontSize * 0.15)));
-
-                                    let startY = height - boxHeight + paddingY + (fontSize * 0.9);
-
-                                    ctx.fillStyle = '#FFFFFF';
-                                    ctx.font = 'bold ' + fontSize + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                                    ctx.shadowColor = 'rgba(0,0,0,0.8)';
-                                    ctx.shadowBlur = 4;
-                                    ctx.fillText('🕒 ' + timeStampStr, paddingX, startY);
-
-                                    let fallbackCoord = this.mapLat.toFixed(6) + ', ' + this.mapLng.toFixed(6);
-                                    let displayCoord = coordText ? coordText : fallbackCoord;
-                                    let displaySpot = spotName ? ' (' + spotName + ')' : '';
-                                    ctx.fillStyle = '#38BDF8';
-                                    ctx.font = 'bold ' + (fontSize * 0.92) + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                                    ctx.fillText('📍 GPS: ' + displayCoord + displaySpot, paddingX, startY + lineHeight);
-
-                                    let displayWilayah = this.districtName ? this.districtName : 'Kabupaten Mempawah';
-                                    if (!displayWilayah.toLowerCase().includes('mempawah')) {
-                                        displayWilayah += ', Kab. Mempawah';
-                                    }
-                                    ctx.fillStyle = '#6EE7B7';
-                                    ctx.font = 'bold ' + (fontSize * 0.92) + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                                    ctx.fillText('🏛️ Wilayah: ' + displayWilayah, paddingX, startY + (lineHeight * 2));
-
-                                    ctx.shadowColor = 'transparent';
-                                    ctx.shadowBlur = 0;
-
-                                    let dataUrl = canvas.toDataURL('image/jpeg', 0.88);
-                                    if (wire) {
-                                        wire.saveWatermarkedPhoto(dayIndex, spotIndex, dataUrl, isPeriodic);
-                                    }
+                                        let dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+                                        if (wire) {
+                                            wire.saveWatermarkedPhoto(dayIndex, spotIndex, dataUrl, isPeriodic);
+                                        }
+                                        resolve();
+                                    };
+                                    img.src = e.target.result;
                                 };
-                                img.src = e.target.result;
-                            };
-                            reader.readAsDataURL(file);
-                        });
+                                reader.readAsDataURL(file);
+                            });
+                        }
 
                         event.target.value = '';
                     }
