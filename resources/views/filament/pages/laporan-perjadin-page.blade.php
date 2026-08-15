@@ -847,11 +847,11 @@
                         </button>
                     @endif
 
-                    <button type="button" @click="window.print()" class="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl shadow-lg shadow-emerald-500/20 font-bold transition text-xs flex items-center space-x-1">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button type="button" @click="window.print()" class="px-4 py-2 !bg-teal-600 hover:!bg-teal-700 !text-white rounded-xl shadow-md shadow-teal-600/30 font-bold transition text-xs flex items-center space-x-1.5 shrink-0 active:scale-95">
+                        <svg class="h-4 w-4 !text-white shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-3a2 2 0 00-2-2H9a2 2 0 00-2 2v3a2 2 0 002 2zm5-17V7a4 4 0 00-8 0v4h8z" />
                         </svg>
-                        <span>Cetak PDF LPD</span>
+                        <span class="!text-white font-bold">Cetak PDF LPD</span>
                     </button>
                 </div>
             </div>
@@ -955,6 +955,22 @@
 
                         <!-- 4. TABEL MATRIKS KEGIATAN (5 KOLOM STANDAR BPS DENGAN STREAMING EFFECT) -->
                         <div class="mt-3 overflow-x-auto">
+                            <!-- AI Live Generation Gimmick Status Banner (No Print) -->
+                            <div x-show="isStreaming" x-cloak class="no-print mb-2.5 p-2 bg-gradient-to-r from-teal-500/10 via-emerald-500/10 to-cyan-500/10 dark:from-teal-900/30 dark:via-emerald-900/30 dark:to-cyan-900/30 border border-teal-300/80 dark:border-teal-700 rounded-xl flex items-center justify-between shadow-sm animate-pulse">
+                                <div class="flex items-center gap-2">
+                                    <span class="relative flex h-2 w-2">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
+                                    </span>
+                                    <span class="text-[11px] font-bold text-teal-900 dark:text-teal-200">
+                                        ✨ AI Generative Engine: Menyusun butir kegiatan, jam perjalanan & pemecahan masalah secara live...
+                                    </span>
+                                </div>
+                                <button type="button" @click="skipStreaming()" class="text-[10px] text-teal-700 dark:text-teal-300 hover:text-teal-900 dark:hover:text-white font-bold px-2 py-0.5 rounded bg-white/80 dark:bg-gray-800 border border-teal-200 dark:border-teal-700 transition">
+                                    Lewati Animasi ➔
+                                </button>
+                            </div>
+
                             <table class="w-full text-[11px] border border-black border-collapse table-fixed" style="font-family: Arial, Helvetica, sans-serif;">
                                 <thead>
                                     <tr class="bg-gray-100 text-center font-bold">
@@ -980,7 +996,8 @@
                                                     $rawRowIndex = array_search($row, $reportData['tabel_kegiatan']);
                                                     $globalRowCounter++;
                                                 @endphp
-                                                <tr class="align-top">
+                                                <tr class="align-top transition-all duration-300"
+                                                    :class="{ 'opacity-100': !isStreaming || revealedRows >= {{ $globalRowCounter }}, 'opacity-0': isStreaming && revealedRows < {{ $globalRowCounter }} }">
                                                     @if($rIdx === 0)
                                                         <td rowspan="{{ count($rows) }}" class="border border-black px-2 py-1.5 text-center font-semibold bg-gray-50/50">
                                                             {{ \Illuminate\Support\Carbon::parse($tgl)->translatedFormat('d F Y') }}
@@ -1008,7 +1025,8 @@
                                                         @if($isEditing)
                                                             <textarea wire:model="reportData.tabel_kegiatan.{{ $rawRowIndex }}.uraian_kegiatan" rows="2" class="w-full text-xs p-1 border rounded"></textarea>
                                                         @else
-                                                            {{ $row['uraian_kegiatan'] ?? '-' }}
+                                                            <span>{{ $row['uraian_kegiatan'] ?? '-' }}</span>
+                                                            <span x-show="isStreaming && revealedRows === {{ $globalRowCounter }}" class="inline-block w-1.5 h-3 bg-teal-500 animate-ping ml-0.5 align-middle no-print"></span>
                                                         @endif
                                                     </td>
 
