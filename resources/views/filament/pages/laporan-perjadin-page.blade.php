@@ -1054,24 +1054,22 @@
                         </div>
                     </div>
 
-                    @if(empty($allPhotos))
-                        <!-- Jika tanpa foto dokumentasi, tanda tangan diletakkan di lembar utama -->
-                        <div class="signature-block flex justify-end mt-8 text-[11px]">
-                            <div class="text-center w-60 space-y-12">
-                                <div>
-                                    Mempawah, {{ \Illuminate\Support\Carbon::parse($tanggalLaporan)->translatedFormat('d F Y') }}<br>
-                                    yang melaporkan,
+                    <!-- 5. Signature Block Tepat Setelah Tabel di Halaman 1 -->
+                    <div class="signature-block flex justify-end mt-5 text-[11px]">
+                        <div class="text-center w-60 space-y-10">
+                            <div>
+                                Mempawah, {{ \Illuminate\Support\Carbon::parse($tanggalLaporan)->translatedFormat('d F Y') }}<br>
+                                yang melaporkan,
+                            </div>
+                            
+                            <div>
+                                <div class="font-bold underline uppercase">
+                                    {{ $this->getPenugasan()->pegawai?->nama ?? $selectedPelaksanaNip }}
                                 </div>
-                                
-                                <div>
-                                    <div class="font-bold underline uppercase">
-                                        {{ $this->getPenugasan()->pegawai?->nama ?? $selectedPelaksanaNip }}
-                                    </div>
-                                    <div>NIP. {{ $selectedPelaksanaNip }}</div>
-                                </div>
+                                <div>NIP. {{ $selectedPelaksanaNip }}</div>
                             </div>
                         </div>
-                    @endif
+                    </div>
                 </div>
 
                 @if(!empty($allPhotos))
@@ -1080,13 +1078,13 @@
                         <div class="relative flex items-center justify-center w-full">
                             <div class="border-t-2 border-dashed border-teal-400/80 dark:border-teal-600/80 w-full"></div>
                             <span class="absolute bg-white dark:bg-gray-900 text-teal-800 dark:text-teal-300 text-xs px-4 py-1.5 rounded-full font-bold border border-teal-300 dark:border-teal-700 shadow-md flex items-center gap-1.5">
-                                ✂️ Batas Halaman (Page Break) ➔ Halaman 2: Lampiran Foto & Pengesahan
+                                ✂️ Batas Halaman (Page Break) ➔ Halaman 2: Lampiran Foto Dokumentasi
                             </span>
                         </div>
                     </div>
 
-                    <!-- ================= LEMBAR 2: LAMPIRAN DOKUMENTASI FOTO & PENGESAHAN (F4) ================= -->
-                    <div class="f4-sheet-preview print-container f4-page-break bg-white text-black leading-normal relative flex flex-col justify-between">
+                    <!-- ================= LEMBAR 2: LAMPIRAN DOKUMENTASI FOTO (F4) ================= -->
+                    <div class="f4-sheet-preview print-container f4-page-break bg-white text-black leading-normal relative flex flex-col justify-start">
                         <div>
                             <!-- Page Number Badge for Preview Only -->
                             <div class="no-print absolute top-3 right-4 text-[10px] font-bold text-gray-400 bg-gray-100 dark:bg-gray-200 px-2 py-0.5 rounded shadow-sm">
@@ -1113,23 +1111,6 @@
                                         </div>
                                     </div>
                                 @endforeach
-                            </div>
-                        </div>
-
-                        <!-- 3. Signature Block on Page 2 -->
-                        <div class="signature-block flex justify-end mt-8 text-[11px]">
-                            <div class="text-center w-60 space-y-12">
-                                <div>
-                                    Mempawah, {{ \Illuminate\Support\Carbon::parse($tanggalLaporan)->translatedFormat('d F Y') }}<br>
-                                    yang melaporkan,
-                                </div>
-                                
-                                <div>
-                                    <div class="font-bold underline uppercase">
-                                        {{ $this->getPenugasan()->pegawai?->nama ?? $selectedPelaksanaNip }}
-                                    </div>
-                                    <div>NIP. {{ $selectedPelaksanaNip }}</div>
-                                </div>
                             </div>
                         </div>
                     </div>
