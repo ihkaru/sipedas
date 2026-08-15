@@ -16,8 +16,10 @@
                     margin: 0 !important;
                     padding: 0 !important;
                     width: 100% !important;
-                    font-family: 'Times New Roman', Times, serif !important;
-                    font-size: 10.5pt !important;
+                    font-family: Arial, Helvetica, sans-serif !important;
+                    font-size: 9pt !important;
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
                 }
                 /* Hide everything in the DOM */
                 body * {
@@ -39,6 +41,7 @@
                     box-shadow: none !important;
                     background: white !important;
                     color: black !important;
+                    font-family: Arial, Helvetica, sans-serif !important;
                 }
                 .no-print {
                     display: none !important;
@@ -47,35 +50,55 @@
                     width: 100% !important;
                     border: 1px solid black !important;
                     border-collapse: collapse !important;
-                    page-break-inside: auto !important;
-                    break-inside: auto !important;
+                    table-layout: fixed !important;
                 }
                 thead {
                     display: table-header-group !important;
                 }
                 tr {
-                    page-break-inside: auto !important;
-                    break-inside: auto !important;
+                    page-break-inside: avoid !important;
+                    break-inside: avoid !important;
                 }
-                th, td {
+                th {
                     border: 1px solid black !important;
-                    padding: 3px 5px !important;
+                    padding: 4px 6px !important;
                     color: black !important;
-                    font-size: 10pt !important;
+                    font-size: 8.5pt !important;
+                    font-weight: bold !important;
+                    background-color: #f3f4f6 !important;
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
+                    text-align: center !important;
+                }
+                td {
+                    border: 1px solid black !important;
+                    padding: 4px 6px !important;
+                    color: black !important;
+                    font-size: 8.5pt !important;
+                    line-height: 1.35 !important;
                 }
                 .lampiran-foto-container {
-                    page-break-before: always !important;
-                    break-before: page !important;
+                    margin-top: 14px !important;
+                    padding-top: 8px !important;
                     page-break-inside: avoid !important;
                     break-inside: avoid !important;
                 }
                 .photo-item {
                     page-break-inside: avoid !important;
                     break-inside: avoid !important;
+                    max-width: 260px !important;
+                    margin: 0 auto !important;
+                }
+                .photo-item img {
+                    max-height: 160px !important;
+                    width: auto !important;
+                    object-fit: contain !important;
                 }
                 .signature-block {
+                    margin-top: 16px !important;
                     page-break-inside: avoid !important;
                     break-inside: avoid !important;
+                    font-size: 8.5pt !important;
                 }
                 img {
                     max-width: 100% !important;
@@ -542,20 +565,21 @@
                                 wire:loading.attr="disabled"
                                 wire:target="generateReport"
                                 @click="startLoadingProgress()"
-                                class="inline-flex flex-row items-center justify-center whitespace-nowrap min-h-[42px] px-5 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white rounded-xl shadow-lg shadow-teal-500/20 font-bold transition text-xs space-x-2 disabled:opacity-75 disabled:cursor-not-allowed active:scale-95 shrink-0">
+                                class="inline-flex items-center justify-center gap-2 whitespace-nowrap min-h-[42px] px-5 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white rounded-xl shadow-lg shadow-teal-500/20 font-bold transition text-xs disabled:opacity-75 disabled:cursor-not-allowed active:scale-95 shrink-0">
                                 
-                                <span wire:loading.remove wire:target="generateReport" class="inline-flex flex-row items-center space-x-2">
+                                <span wire:loading.remove wire:target="generateReport" class="inline-flex items-center gap-2">
                                     <span>Proses & Susun Tabel LPD Resmi</span>
                                     <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                     </svg>
                                 </span>
 
-                                <span wire:loading wire:target="generateReport" class="inline-flex flex-row items-center space-x-2">
-                                    <svg class="h-4 w-4 animate-spin text-white shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.235" />
+                                <span wire:loading.inline-flex wire:target="generateReport" class="items-center gap-2">
+                                    <svg class="h-4 w-4 animate-spin text-white shrink-0" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                                     </svg>
-                                    <span class="animate-pulse whitespace-nowrap">✨ AI Sedang Menyusun Laporan...</span>
+                                    <span class="animate-pulse whitespace-nowrap">AI Sedang Menyusun Laporan...</span>
                                 </span>
                             </button>
                         </div>
@@ -704,11 +728,24 @@
                     
                     <button type="button" 
                         wire:click="reviseReport" 
-                        class="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md shadow-teal-500/20 transition flex items-center justify-center space-x-1.5 shrink-0">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.235" />
-                        </svg>
-                        <span>Revisi dengan AI</span>
+                        wire:loading.attr="disabled"
+                        wire:target="reviseReport"
+                        class="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-md shadow-teal-500/20 transition inline-flex items-center justify-center gap-1.5 shrink-0 disabled:opacity-75">
+                        
+                        <span wire:loading.remove wire:target="reviseReport" class="inline-flex items-center gap-1.5">
+                            <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            <span>Revisi dengan AI</span>
+                        </span>
+
+                        <span wire:loading.inline-flex wire:target="reviseReport" class="items-center gap-1.5">
+                            <svg class="h-4 w-4 animate-spin text-white shrink-0" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                            </svg>
+                            <span class="animate-pulse">Merevisi...</span>
+                        </span>
                     </button>
                 </div>
             </div>
@@ -752,15 +789,15 @@
             </div>
 
             <!-- PREVIEW SHEET: 100% PERSIS CONTOH DOKUMEN RESMI BPS -->
-            <div class="print-container bg-white text-black border border-gray-300 shadow-2xl rounded-xl p-6 md:p-10 max-w-4xl mx-auto font-sans leading-normal transition duration-300 relative">
+            <div class="print-container bg-white text-black border border-gray-300 shadow-2xl rounded-xl p-6 md:p-10 max-w-4xl mx-auto leading-normal transition duration-300 relative" style="font-family: Arial, Helvetica, sans-serif;">
                 
                 <!-- 1. Document Title -->
-                <div class="text-center mb-6">
-                    <h1 class="text-base font-bold tracking-wide uppercase">LAPORAN PERJALANAN DINAS</h1>
+                <div class="text-center mb-5">
+                    <h1 class="text-sm md:text-base font-bold tracking-wide uppercase">LAPORAN PERJALANAN DINAS</h1>
                 </div>
 
                 <!-- 2. Header Metadata (2-Column Grid) -->
-                <div class="text-xs mb-4 space-y-1">
+                <div class="text-[11px] mb-3 space-y-1">
                     <div class="grid grid-cols-12 gap-1">
                         <div class="col-span-4 sm:col-span-3 font-semibold">Nama Pelaksana</div>
                         <div class="col-span-8 sm:col-span-9">: {{ $this->getPenugasan()->pegawai?->nama ?? $selectedPelaksanaNip }}</div>
@@ -783,11 +820,11 @@
                     </div>
                 </div>
 
-                <div class="border-t-2 border-black mb-4"></div>
+                <div class="border-t-2 border-black mb-3"></div>
 
                 <!-- 3. Laporan Kegiatan Metadata -->
-                <div class="text-xs mb-4 space-y-1">
-                    <div class="font-bold text-xs mb-2">Laporan Kegiatan</div>
+                <div class="text-[11px] mb-3 space-y-1">
+                    <div class="font-bold mb-1.5">Laporan Kegiatan</div>
                     
                     <div class="grid grid-cols-12 gap-1 pl-4">
                         <div class="col-span-5 sm:col-span-4 font-semibold">I. Dasar Pelaksanaan</div>
@@ -804,15 +841,15 @@
                 </div>
 
                 <!-- 4. TABEL MATRIKS KEGIATAN (5 KOLOM STANDAR BPS DENGAN STREAMING EFFECT) -->
-                <div class="mt-4 overflow-x-auto">
-                    <table class="w-full text-xs border border-black border-collapse">
+                <div class="mt-3 overflow-x-auto">
+                    <table class="w-full text-[11px] border border-black border-collapse table-fixed" style="font-family: Arial, Helvetica, sans-serif;">
                         <thead>
                             <tr class="bg-gray-100 text-center font-bold">
-                                <th class="border border-black px-2 py-2 w-28">Tanggal</th>
-                                <th class="border border-black px-2 py-2 w-28">Waktu (WIB)</th>
-                                <th class="border border-black px-3 py-2">Uraian Kegiatan</th>
-                                <th class="border border-black px-3 py-2 w-48">Permasalahan/ Pemecahan</th>
-                                <th class="border border-black px-3 py-2 w-48">Keterangan</th>
+                                <th class="border border-black px-2 py-1.5 text-center" style="width: 13%;">Tanggal</th>
+                                <th class="border border-black px-2 py-1.5 text-center" style="width: 14%;">Waktu (WIB)</th>
+                                <th class="border border-black px-2 py-1.5 text-center" style="width: 37%;">Uraian Kegiatan</th>
+                                <th class="border border-black px-2 py-1.5 text-center" style="width: 18%;">Permasalahan/ Pemecahan</th>
+                                <th class="border border-black px-2 py-1.5 text-center" style="width: 18%;">Keterangan</th>
                                 @if($isEditing)
                                     <th class="border border-black px-1 py-1 w-10 no-print text-center">Aksi</th>
                                 @endif
@@ -832,10 +869,10 @@
                                         @endphp
                                         <tr class="align-top">
                                             @if($rIdx === 0)
-                                                <td rowspan="{{ count($rows) }}" class="border border-black px-2 py-2 text-center font-semibold bg-gray-50/50">
+                                                <td rowspan="{{ count($rows) }}" class="border border-black px-2 py-1.5 text-center font-semibold bg-gray-50/50">
                                                     {{ \Illuminate\Support\Carbon::parse($tgl)->translatedFormat('d F Y') }}
                                                     @if($isEditing)
-                                                        <div class="no-print pt-2">
+                                                        <div class="no-print pt-1">
                                                             <button type="button" wire:click="addTableRow('{{ $tgl }}')" class="text-[10px] text-teal-600 hover:underline block font-normal">
                                                                 + Tambah Baris
                                                             </button>
@@ -845,7 +882,7 @@
                                             @endif
                                             
                                             <!-- Waktu -->
-                                            <td class="border border-black px-2 py-2 text-center whitespace-nowrap font-mono text-[11px]">
+                                            <td class="border border-black px-2 py-1.5 text-center whitespace-nowrap font-mono text-[10px]">
                                                 @if($isEditing)
                                                     <input type="text" wire:model="reportData.tabel_kegiatan.{{ $rawRowIndex }}.waktu" class="w-full text-center text-xs p-1 border rounded">
                                                 @else
@@ -854,7 +891,7 @@
                                             </td>
 
                                             <!-- Uraian Kegiatan -->
-                                            <td class="border border-black px-3 py-2 text-justify leading-relaxed">
+                                            <td class="border border-black px-2.5 py-1.5 text-justify leading-snug text-[10.5px]">
                                                 @if($isEditing)
                                                     <textarea wire:model="reportData.tabel_kegiatan.{{ $rawRowIndex }}.uraian_kegiatan" rows="2" class="w-full text-xs p-1 border rounded"></textarea>
                                                 @else
@@ -863,7 +900,7 @@
                                             </td>
 
                                             <!-- Permasalahan / Pemecahan -->
-                                            <td class="border border-black px-3 py-2 text-justify leading-relaxed">
+                                            <td class="border border-black px-2.5 py-1.5 text-justify leading-snug text-[10.5px]">
                                                 @if($isEditing)
                                                     <textarea wire:model="reportData.tabel_kegiatan.{{ $rawRowIndex }}.permasalahan_pemecahan" rows="2" class="w-full text-xs p-1 border rounded"></textarea>
                                                 @else
@@ -872,7 +909,7 @@
                                             </td>
 
                                             <!-- Keterangan -->
-                                            <td class="border border-black px-3 py-2 leading-relaxed">
+                                            <td class="border border-black px-2.5 py-1.5 leading-snug text-[10.5px]">
                                                 @if($isEditing)
                                                     <textarea wire:model="reportData.tabel_kegiatan.{{ $rawRowIndex }}.keterangan" rows="2" class="w-full text-xs p-1 border rounded"></textarea>
                                                 @else
@@ -894,19 +931,19 @@
                                 @endforeach
                             @else
                                 <tr class="align-top">
-                                    <td class="border border-black px-2 py-2 text-center font-semibold">
+                                    <td class="border border-black px-2 py-1.5 text-center font-semibold">
                                         {{ $periodeStr }}
                                     </td>
-                                    <td class="border border-black px-2 py-2 text-center font-mono text-[11px]">
+                                    <td class="border border-black px-2 py-1.5 text-center font-mono text-[10px]">
                                         08.00 - 15.00
                                     </td>
-                                    <td class="border border-black px-3 py-2 text-justify leading-relaxed">
+                                    <td class="border border-black px-2.5 py-1.5 text-justify leading-snug text-[10.5px]">
                                         {{ $reportData['uraian_kegiatan_polished'] ?? ($reportData['ringkasan'] ?? '-') }}
                                     </td>
-                                    <td class="border border-black px-3 py-2 text-justify">
+                                    <td class="border border-black px-2.5 py-1.5 text-justify leading-snug text-[10.5px]">
                                         {{ $reportData['kendala_polished'] ?? '-' }}
                                     </td>
-                                    <td class="border border-black px-3 py-2">
+                                    <td class="border border-black px-2.5 py-1.5 leading-snug text-[10.5px]">
                                         {{ $reportData['solusi_polished'] ?? '1. Pelaksanaan berjalan lancar sesuai SOP.' }}
                                     </td>
                                 </tr>
@@ -941,15 +978,15 @@
                     }
                 @endphp
                 @if(!empty($allPhotos))
-                    <div class="lampiran-foto-container mt-6 pt-4 border-t border-black">
-                        <span class="block text-xs font-bold uppercase mb-4 text-center tracking-wide">LAMPIRAN DOKUMENTASI FOTO KEGIATAN:</span>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                    <div class="lampiran-foto-container mt-4 pt-3 border-t border-black">
+                        <span class="block text-[11px] font-bold uppercase mb-2.5 text-center tracking-wide">LAMPIRAN DOKUMENTASI FOTO KEGIATAN:</span>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 max-w-2xl mx-auto">
                             @foreach($allPhotos as $item)
                                 <div class="photo-item border border-black rounded-lg overflow-hidden bg-white shadow-sm flex flex-col">
-                                    <div class="w-full bg-gray-50 flex items-center justify-center p-1.5">
-                                        <img src="{{ asset('storage/' . $item['path']) }}" class="w-full h-auto max-h-96 object-contain rounded">
+                                    <div class="w-full bg-gray-50 flex items-center justify-center p-1">
+                                        <img src="{{ asset('storage/' . $item['path']) }}" class="w-full h-auto max-h-48 md:max-h-56 object-contain rounded">
                                     </div>
-                                    <div class="bg-gray-100 px-3 py-1.5 border-t border-black text-[10px] font-semibold text-center text-gray-800">
+                                    <div class="bg-gray-100 px-2 py-1 border-t border-black text-[9.5px] font-semibold text-center text-gray-800">
                                         {{ $item['label'] }}
                                     </div>
                                 </div>
@@ -959,8 +996,8 @@
                 @endif
 
                 <!-- 6. Signature Block -->
-                <div class="signature-block flex justify-end mt-8 text-xs">
-                    <div class="text-center w-64 space-y-12">
+                <div class="signature-block flex justify-end mt-5 text-[11px]">
+                    <div class="text-center w-60 space-y-10">
                         <div>
                             Mempawah, {{ \Illuminate\Support\Carbon::parse($tanggalLaporan)->translatedFormat('d F Y') }}<br>
                             yang melaporkan,
