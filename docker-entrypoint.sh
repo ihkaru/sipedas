@@ -13,6 +13,10 @@ if [ ! -e /app/public/storage ]; then
   php artisan storage:link --force --no-interaction || true
 fi
 
+# Automatic migration on container startup (Ensures DB is ready on Coolify autodeploy)
+echo "Running database migrations..."
+php artisan migrate --force --no-interaction || true
+
 # Robust & Cross-Platform Permission Handling
 echo "Setting correct permissions..."
 mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache storage/logs bootstrap/cache

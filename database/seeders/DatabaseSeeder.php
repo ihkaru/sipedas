@@ -58,7 +58,8 @@ class DatabaseSeeder extends Seeder
             NomorSuratSeeder::class,
             AlokasiHonorSeeder::class, // Dijalankan terakhir, hanya untuk truncate
             SuratTugasSeeder::class,
-            PengajuanSeeder::class
+            PengajuanSeeder::class,
+            PresetRutePerjadinSeeder::class,
         ]);
     }
 }
