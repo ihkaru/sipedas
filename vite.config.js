@@ -34,11 +34,18 @@ export default defineConfig({
         },
 
         // usePolling WAJIB untuk WSL2 / Docker Desktop bind mount.
-        // inotify tidak propagate melewati bind mount, sehingga
-        // Vite tidak mendeteksi perubahan file tanpa polling.
+        // inotify tidak propagate melewati bind mount Windows/WSL.
+        // ignored membatasi pemindaian agar tidak membebani CPU.
         watch: {
             usePolling: true,
-            interval: 300, // ms - cek setiap 300ms (balance antara kecepatan & CPU)
+            interval: 800, // ms - balance optimal kecepatan HMR & utilisasi CPU rendah
+            ignored: [
+                '**/vendor/**',
+                '**/storage/**',
+                '**/.git/**',
+                '**/node_modules/**',
+                '**/bootstrap/cache/**',
+            ],
         },
     },
 });

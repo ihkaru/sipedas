@@ -21,6 +21,7 @@ yarn-error.log
 vendor.zip
 frankenphp
 .build_hash
+.config/
 *.zip
 
 # ==============================================================

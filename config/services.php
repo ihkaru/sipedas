@@ -31,4 +31,10 @@ return [
         ],
     ],
 
+    'ai' => [
+        'base_url' => env('AI_BASE_URL', 'https://ai.dvlpid.my.id/v1'),
+        'api_key' => env('AI_API_KEY', 'sk-af6376fcf20b4a148672456a6cae1902'),
+        'model' => env('AI_MODEL', 'gemini-3-flash'),
+    ],
+
 ];

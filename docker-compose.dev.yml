@@ -13,10 +13,12 @@ services:
             - "8200:8000"
         volumes:
             - ./:/app:cached
+            # Named volume untuk vendor PHP agar I/O native Linux cepat di container
+            - dev_vendor:/app/vendor
             # Mount dev OPcache config (validate_timestamps=1) agar perubahan PHP langsung terdeteksi
             - ./docker/php/conf.d/opcache.dev.ini:/usr/local/etc/php/conf.d/zz-opcache.ini:ro
             - ./docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh:ro
-        command: ["frankenphp", "php-server", "--listen", ":8000", "--root", "public/", "index.php"]
+        command: ["php", "artisan", "octane:start", "--server=frankenphp", "--host=0.0.0.0", "--port=8000", "--admin-port=2019", "--watch", "--poll"]
         depends_on:
             db:
                 condition: service_healthy
@@ -47,11 +49,9 @@ services:
         volumes:
             - ./:/app:cached
             # Named volume untuk node_modules — terisolasi dari host Windows.
-            # npm install dijalankan otomatis di entrypoint agar binary selalu Linux.
             - vite_node_modules:/app/node_modules
-        # Install dependencies lalu jalankan Vite dev server.
-        # npm install hanya lambat pada pertama kali; selanjutnya cache volume dipakai.
-        command: sh -c "npm install --prefer-offline && npm run dev"
+        # Fast startup: npm install hanya jika belum terpasang
+        command: sh -c "if [ ! -d node_modules/vite ]; then npm install --prefer-offline; fi && npm run dev"
         networks:
             - sikendis_network
 
@@ -66,9 +66,10 @@ services:
             - mysql_data:/var/lib/mysql
         healthcheck:
             test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root"]
-            interval: 10s
-            timeout: 5s
-            retries: 5
+            interval: 5s
+            timeout: 3s
+            retries: 10
+            start_period: 5s
         env_file:
             - .env.docker
         networks:

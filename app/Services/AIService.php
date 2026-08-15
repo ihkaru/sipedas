@@ -14,9 +14,9 @@ class AIService
 
     public function __construct()
     {
-        $this->baseUrl = 'https://ai.dvlpid.my.id/v1';
-        $this->apiKey = 'sk-af6376fcf20b4a148672456a6cae1902';
-        $this->model = 'gemini-2.5-flash';
+        $this->baseUrl = rtrim(config('services.ai.base_url', 'https://ai.dvlpid.my.id/v1'), '/');
+        $this->apiKey = config('services.ai.api_key', 'sk-af6376fcf20b4a148672456a6cae1902');
+        $this->model = config('services.ai.model', 'gemini-3-flash');
     }
 
     /**
