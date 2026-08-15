@@ -6,7 +6,7 @@ use App\Filament\Resources\Sipancong\PosisiDokumenResource\Pages;
 use App\Filament\Resources\Sipancong\PosisiDokumenResource\RelationManagers;
 use App\Models\Sipancong\PosisiDokumen;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -20,8 +20,8 @@ class PosisiDokumenResource extends Resource
     protected static ?string $label = "Posisi Dokumen";
     protected static ?string $navigationLabel = "Posisi Dokumen";
     protected static ?string $pluralModelLabel = "Posisi Dokumen";
-    protected static ?string $navigationIcon = 'heroicon-o-document-arrow-up';
-    protected static ?string $navigationGroup = "Pembayaran";
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-arrow-up';
+    protected static string | \UnitEnum | null $navigationGroup = "Pembayaran";
     protected static ?int $navigationSort = 3;
 
     public static function canViewAny(): bool
@@ -30,10 +30,9 @@ class PosisiDokumenResource extends Resource
     }
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 Forms\Components\TextInput::make('nama')
                     ->required()
                     ->maxLength(50),

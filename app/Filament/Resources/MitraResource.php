@@ -8,7 +8,7 @@ use App\Filament\Resources\MitraResource\RelationManagers\KemitraansRelationMana
 use App\Models\Mitra;
 use App\Exports\MitraExport;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
@@ -23,17 +23,16 @@ use Maatwebsite\Excel\Facades\Excel;
 class MitraResource extends Resource {
     protected static ?string $model = Mitra::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-user-group';
 
-    protected static ?string $navigationGroup = 'Manajemen Mitra';
+    protected static string | \UnitEnum | null $navigationGroup = 'Manajemen Mitra';
 
     public static function canViewAny(): bool {
         return true;
     }
 
-    public static function form(Form $form): Form {
-        return $form
-            ->schema([
+    public static function form(Schema $schema): Schema {
+        return $schema->schema([
                 Forms\Components\TextInput::make('id_sobat')
                     ->maxLength(255)
                     ->default(null),

@@ -7,7 +7,7 @@ use App\Filament\Resources\AlokasiHonorResource\RelationManagers;
 use App\Models\AlokasiHonor;
 use App\Models\Honor;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
@@ -19,15 +19,14 @@ class AlokasiHonorResource extends Resource
 {
     protected static ?string $model = AlokasiHonor::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-check';
-    protected static ?string $navigationGroup = "Honor Mitra";
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-check';
+    protected static string | \UnitEnum | null $navigationGroup = "Honor Mitra";
     protected static ?int $navigationSort = 3;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
         // Form hanya untuk view/edit, bukan untuk create dari sini
-        return $form
-            ->schema([
+        return $schema->schema([
                 Forms\Components\Select::make('mitra_id')->relationship('mitra', 'nama_1')->disabled(),
                 Forms\Components\Select::make('honor_id')->relationship('honor', 'id')->disabled(),
                 Forms\Components\TextInput::make('total_honor')->disabled(),

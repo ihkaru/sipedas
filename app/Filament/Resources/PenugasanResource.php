@@ -16,7 +16,7 @@ use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -38,8 +38,8 @@ class PenugasanResource extends Resource
     protected static ?string $label = "Pengajuan";
     protected static ?string $navigationLabel = "Pengajuan";
     protected static ?string $pluralModelLabel = "Pengajuan";
-    protected static ?string $navigationIcon = 'fluentui-document-add-24-o';
-    protected static ?string $navigationGroup = "Surat Tugas";
+    protected static string | \BackedEnum | null $navigationIcon = 'fluentui-document-add-24-o';
+    protected static string | \UnitEnum | null $navigationGroup = "Surat Tugas";
 
     public static function canViewAny(): bool
     {
@@ -583,10 +583,9 @@ class PenugasanResource extends Resource
         ];
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 Forms\Components\TextInput::make('nip')
                     ->required()
                     ->maxLength(255),

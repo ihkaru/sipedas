@@ -11,7 +11,7 @@ use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Resources\Resource;
@@ -28,8 +28,8 @@ class KegiatanResource extends Resource
     protected static ?string $label = "Kegiatan";
     protected static ?string $navigationLabel = "Kegiatan";
     protected static ?string $pluralModelLabel = "Kegiatan";
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
-    protected static ?string $navigationGroup = "Surat Tugas";
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static string | \UnitEnum | null $navigationGroup = "Surat Tugas";
     protected static ?int $navigationSort = 6;
 
     public static function canViewAny(): bool
@@ -61,10 +61,9 @@ class KegiatanResource extends Resource
             auth()->user()->hasRole('pegawai');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 TextInput::make('id')
                     ->label('Slug (ID)')
                     ->disabled()

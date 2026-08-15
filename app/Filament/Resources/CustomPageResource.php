@@ -6,7 +6,7 @@ use App\Filament\Resources\CustomPageResource\Pages;
 use App\Filament\Resources\CustomPageResource\RelationManagers;
 use App\Models\CustomPage;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -19,14 +19,13 @@ class CustomPageResource extends Resource
 {
     protected static ?string $model = CustomPage::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-globe-alt';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-globe-alt';
 
-    protected static ?string $navigationGroup = 'Content Management';
+    protected static string | \UnitEnum | null $navigationGroup = 'Content Management';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 Forms\Components\Section::make('Page Details')
                     ->schema([
                         Forms\Components\TextInput::make('title')

@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\KegiatanManmitResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -28,10 +28,9 @@ class AlokasiHonorRelationManager extends RelationManager
     protected static ?string $title = 'Alokasi Honor Mitra';
 
     // Form untuk Edit Action (tidak berubah)
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 Forms\Components\Select::make('mitra_id')
                     ->relationship('mitra', 'nama_1')
                     ->getOptionLabelFromRecordUsing(fn(Mitra $record) => "({$record->id_sobat}) {$record->nama_1}")

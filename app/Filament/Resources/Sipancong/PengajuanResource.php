@@ -7,7 +7,7 @@ use App\Filament\Resources\Sipancong\PengajuanResource\Pages;
 use App\Models\Sipancong\Pengajuan;
 use App\Services\Sipancong\PengajuanServices;
 use App\Supports\SipancongConstants as Constants;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -28,14 +28,14 @@ class PengajuanResource extends Resource
     protected static ?string $label = "Pengajuan";
     protected static ?string $navigationLabel = "Pengajuan";
     protected static ?string $pluralModelLabel = "Pengajuan";
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
-    protected static ?string $navigationGroup = "Pembayaran";
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-list';
+    protected static string | \UnitEnum | null $navigationGroup = "Pembayaran";
     protected static ?int $navigationSort = 1;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
         // Form ini hanya untuk super_admin, form per aksi ada di PengajuanForms
-        return $form->schema(PengajuanForms::fullForm());
+        return $schema->schema(PengajuanForms::fullForm());
     }
 
     public static function table(Table $table): Table

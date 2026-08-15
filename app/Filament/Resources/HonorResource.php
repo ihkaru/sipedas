@@ -6,7 +6,7 @@ use App\Filament\Resources\HonorResource\Pages;
 use App\Models\Honor;
 use App\Supports\Constants;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -25,16 +25,15 @@ use Filament\Tables\Columns\TextColumn;
 class HonorResource extends Resource
 {
     protected static ?string $model = Honor::class;
-    protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
-    protected static ?string $navigationGroup = "Honor Mitra";
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-currency-dollar';
+    protected static string | \UnitEnum | null $navigationGroup = "Honor Mitra";
     protected static ?int $navigationSort = 2;
 
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 Forms\Components\Section::make('Detail Honor')
                     ->schema([
                         Select::make('kegiatan_manmit_id')

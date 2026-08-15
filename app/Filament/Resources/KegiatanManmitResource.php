@@ -7,7 +7,7 @@ use App\Filament\Resources\KegiatanManmitResource\RelationManagers\AlokasiHonorR
 use App\Models\KegiatanManmit;
 use App\Supports\Constants;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -21,19 +21,18 @@ class KegiatanManmitResource extends Resource
 {
     protected static ?string $model = KegiatanManmit::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-calendar';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-calendar';
 
     protected static ?string $slug = 'kegiatan-manmit';
 
-    protected static ?string $navigationGroup = "Honor Mitra";
+    protected static string | \UnitEnum | null $navigationGroup = "Honor Mitra";
     protected static ?int $navigationSort = 1;
 
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 Forms\Components\Section::make('Informasi Utama')
                     ->schema([
                         Forms\Components\TextInput::make('nama')

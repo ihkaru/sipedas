@@ -7,7 +7,7 @@ use App\Filament\Resources\PegawaiResource\RelationManagers;
 use App\Models\Pegawai;
 use App\Exports\PegawaiExport;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -24,12 +24,11 @@ class PegawaiResource extends Resource {
     protected static ?string $label = "Pegawai";
     protected static ?string $navigationLabel = "Pegawai";
     protected static ?string $pluralModelLabel = "Pegawai";
-    protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
 
 
-    public static function form(Form $form): Form {
-        return $form
-            ->schema([
+    public static function form(Schema $schema): Schema {
+        return $schema->schema([
                 Forms\Components\TextInput::make('nama')
                     ->required()
                     ->maxLength(255),

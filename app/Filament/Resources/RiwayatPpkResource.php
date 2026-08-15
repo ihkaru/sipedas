@@ -6,7 +6,7 @@ use App\Filament\Resources\RiwayatPpkResource\Pages;
 use App\Models\Pegawai;
 use App\Models\RiwayatPpk;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -18,8 +18,8 @@ class RiwayatPpkResource extends Resource
     protected static ?string $label = 'Riwayat PPK';
     protected static ?string $pluralModelLabel = 'Riwayat PPK';
     protected static ?string $navigationLabel = 'Riwayat PPK';
-    protected static ?string $navigationIcon = 'heroicon-o-identification';
-    protected static ?string $navigationGroup = 'Sistem';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-identification';
+    protected static string | \UnitEnum | null $navigationGroup = 'Sistem';
     protected static ?int $navigationSort = 5;
 
     public static function canViewAny(): bool
@@ -46,10 +46,9 @@ class RiwayatPpkResource extends Resource
         return auth()->user()->hasRole('super_admin');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 Forms\Components\Section::make('Informasi PPK')
                     ->description('Tentukan pegawai yang menjabat sebagai Pejabat Pembuat Komitmen (PPK) beserta masa aktifnya.')
                     ->icon('heroicon-o-identification')

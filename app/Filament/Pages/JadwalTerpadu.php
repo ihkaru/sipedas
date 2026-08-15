@@ -11,15 +11,15 @@ use Exception;
 
 class JadwalTerpadu extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-calendar';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-calendar';
 
-    protected static string $view = 'filament.pages.jadwal-terpadu';
+    protected string $view = 'filament.pages.jadwal-terpadu';
 
     protected static ?string $navigationLabel = 'Jadwal Terpadu';
 
     protected static ?string $title = 'Jadwal Terpadu';
 
-    protected static ?string $navigationGroup = 'Content Management';
+    protected static string | \UnitEnum | null $navigationGroup = 'Content Management';
 
     public array $milestones = [];
     public array $metrics = [];

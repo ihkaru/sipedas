@@ -21,13 +21,13 @@ class MonitorHonorMitra extends Page implements HasTable
 {
     use InteractsWithTable;
 
-    protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-presentation-chart-line';
     protected static ?string $navigationLabel = 'Monitor Honor Mitra';
     protected static ?string $title = 'Monitoring Honor Bulanan Mitra';
     protected static ?string $slug = 'monitor-honor-mitra';
-    protected static ?string $navigationGroup = 'Monitoring';
+    protected static string | \UnitEnum | null $navigationGroup = 'Monitoring';
 
-    protected static string $view = 'filament.pages.monitor-honor-mitra';
+    protected string $view = 'filament.pages.monitor-honor-mitra';
 
     // State filter periode
     public int $filterMonth;

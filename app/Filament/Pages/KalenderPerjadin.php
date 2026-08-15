@@ -16,8 +16,8 @@ class KalenderPerjadin extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-calendar';
-    protected static string $view = 'filament.pages.kalender-perjadin';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-calendar';
+    protected string $view = 'filament.pages.kalender-perjadin';
 
     public ?int $year = null;
     public ?int $month = null;

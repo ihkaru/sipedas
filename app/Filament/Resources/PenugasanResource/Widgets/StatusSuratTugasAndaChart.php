@@ -8,8 +8,8 @@ use Filament\Widgets\ChartWidget;
 
 class StatusSuratTugasAndaChart extends ChartWidget
 {
-    protected static ?string $heading = 'Jumlah Status Surat Tugas Anda';
-    protected static string $color = 'primary';
+    protected ?string $heading = 'Jumlah Status Surat Tugas Anda';
+    protected string $color = 'primary';
 
 
     protected function getData(): array

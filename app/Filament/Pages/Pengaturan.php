@@ -8,7 +8,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Log;
@@ -17,10 +17,10 @@ class Pengaturan extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
-    protected static string $view = 'filament.pages.pengaturan';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cog-6-tooth';
+    protected string $view = 'filament.pages.pengaturan';
     protected static ?int $navigationSort = 100;
-    protected static ?string $navigationGroup = 'Sistem';
+    protected static string | \UnitEnum | null $navigationGroup = 'Sistem';
 
     public ?array $data = [];
 
@@ -37,10 +37,9 @@ class Pengaturan extends Page implements HasForms
         ]);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 Section::make('Otomatisasi PPK')
                     ->description('Perubahan pada pengaturan ini akan langsung disimpan secara otomatis.')
                     ->schema([

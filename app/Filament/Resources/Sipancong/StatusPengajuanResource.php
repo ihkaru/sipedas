@@ -6,7 +6,7 @@ use App\Filament\Resources\Sipancong\StatusPengajuanResource\Pages;
 use App\Filament\Resources\Sipancong\StatusPengajuanResource\RelationManagers;
 use App\Models\Sipancong\StatusPengajuan;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -20,8 +20,8 @@ class StatusPengajuanResource extends Resource
     protected static ?string $label = "Status Pengajuan";
     protected static ?string $navigationLabel = "Status Pengajuan";
     protected static ?string $pluralModelLabel = "Status Pengajuan";
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
-    protected static ?string $navigationGroup = "Pembayaran";
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-check';
+    protected static string | \UnitEnum | null $navigationGroup = "Pembayaran";
     protected static ?int $navigationSort = 5;
 
     public static function canViewAny(): bool
@@ -30,10 +30,9 @@ class StatusPengajuanResource extends Resource
     }
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 Forms\Components\TextInput::make('nama')
                     ->required()
                     ->maxLength(50),

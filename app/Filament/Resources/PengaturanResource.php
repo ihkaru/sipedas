@@ -6,7 +6,7 @@ use App\Filament\Resources\PengaturanResource\Pages;
 use App\Filament\Resources\PengaturanResource\RelationManagers;
 use App\Models\Pengaturan;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -20,15 +20,14 @@ class PengaturanResource extends Resource
     protected static ?string $label = "Pengaturan";
     protected static ?string $navigationLabel = "Pengaturan";
     protected static ?string $pluralModelLabel = "Pengaturan";
-    protected static ?string $navigationIcon = 'fluentui-settings-48-o';
+    protected static string | \BackedEnum | null $navigationIcon = 'fluentui-settings-48-o';
 
     public static function canViewAny(): bool{
         return auth()->user()->hasRole('operator_umum');
     }
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 Forms\Components\TextInput::make('nilai')
                     ->required()
                     ->maxLength(255),

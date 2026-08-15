@@ -5,7 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\MicrositeResource\Pages;
 use App\Models\Microsite;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -15,15 +15,14 @@ use Illuminate\Support\Str;
 class MicrositeResource extends Resource
 {
     protected static ?string $model = Microsite::class;
-    protected static ?string $navigationIcon = 'heroicon-o-link';
-    protected static ?string $navigationGroup = 'Content Management';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-link';
+    protected static string | \UnitEnum | null $navigationGroup = 'Content Management';
     protected static ?int $navigationSort = 9;
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 Forms\Components\Section::make('Microsite Details')
                     ->schema([
                         Forms\Components\TextInput::make('title')

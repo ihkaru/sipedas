@@ -7,7 +7,7 @@ use App\Filament\Resources\NomorSuratResource\RelationManagers;
 use App\Models\NomorSurat;
 use App\Supports\Constants;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -21,8 +21,8 @@ class NomorSuratResource extends Resource
     protected static ?string $label = "Nomor Surat";
     protected static ?string $navigationLabel = "Nomor Surat";
     protected static ?string $pluralModelLabel = "Nomor Surat";
-    protected static ?string $navigationIcon = 'fluentui-number-symbol-20';
-    protected static ?string $navigationGroup = "Surat Tugas";
+    protected static string | \BackedEnum | null $navigationIcon = 'fluentui-number-symbol-20';
+    protected static string | \UnitEnum | null $navigationGroup = "Surat Tugas";
 
     public static function canViewAny(): bool
     {
@@ -48,10 +48,9 @@ class NomorSuratResource extends Resource
             auth()->user()->hasRole('operator_umum');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 Forms\Components\TextInput::make('nomor')
                     ->required()
                     ->maxLength(255),

@@ -6,7 +6,7 @@ use App\Filament\Resources\RiwayatPengajuanResource\Pages;
 use App\Filament\Resources\RiwayatPengajuanResource\RelationManagers;
 use App\Models\RiwayatPengajuan;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -20,8 +20,8 @@ class RiwayatPengajuanResource extends Resource
     protected static ?string $label = "Riwayat Pengajuan";
     protected static ?string $navigationLabel = "Riwayat Pengajuan";
     protected static ?string $pluralModelLabel = "Riwayat Pengajuan";
-    protected static ?string $navigationIcon = 'fluentui-document-bullet-list-clock-20-o';
-    protected static ?string $navigationGroup = "Surat Tugas";
+    protected static string | \BackedEnum | null $navigationIcon = 'fluentui-document-bullet-list-clock-20-o';
+    protected static string | \UnitEnum | null $navigationGroup = "Surat Tugas";
 
     public static function canViewAny(): bool
     {
@@ -29,10 +29,9 @@ class RiwayatPengajuanResource extends Resource
             auth()->user()->hasRole('operator_umum');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 Forms\Components\TextInput::make('penugasan_id')
                     ->required()
                     ->numeric(),

@@ -7,7 +7,7 @@ use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -27,8 +27,8 @@ class UserResource extends Resource
     protected static ?string $label = "Pengguna";
     protected static ?string $navigationLabel = "Pengguna";
     protected static ?string $pluralModelLabel = "Pengguna";
-    protected static ?string $navigationIcon = 'heroicon-o-user';
-    protected static ?string $navigationGroup = "Pengguna";
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-user';
+    protected static string | \UnitEnum | null $navigationGroup = "Pengguna";
     protected static ?int $navigationSort = 8;
 
 
@@ -37,10 +37,9 @@ class UserResource extends Resource
         return true;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),

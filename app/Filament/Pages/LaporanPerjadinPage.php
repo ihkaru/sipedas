@@ -19,11 +19,11 @@ class LaporanPerjadinPage extends Page
 {
     use WithFileUploads;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $title = 'Laporan Perjalanan Dinas';
     protected static bool $shouldRegisterNavigation = false;
     protected static ?string $slug = 'laporan-perjadin/{penugasanId?}';
-    protected static string $view = 'filament.pages.laporan-perjadin-page';
+    protected string $view = 'filament.pages.laporan-perjadin-page';
 
     public static function canAccess(): bool
     {

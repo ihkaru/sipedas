@@ -6,7 +6,7 @@ use App\Filament\Resources\MasterSlsResource\Pages;
 use App\Filament\Resources\MasterSlsResource\RelationManagers;
 use App\Models\MasterSls;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -20,7 +20,7 @@ class MasterSlsResource extends Resource
     protected static ?string $label = "Master SLS";
     protected static ?string $navigationLabel = "Master SLS";
     protected static ?string $pluralModelLabel = "Master SLS";
-    protected static ?string $navigationIcon = 'heroicon-o-map';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-map';
 
 
     public static function canViewAny(): bool
@@ -28,10 +28,9 @@ class MasterSlsResource extends Resource
         return auth()->user()->hasRole('operator_umum');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 Forms\Components\TextInput::make('desa_kel_id')
                     ->label("ID Desa")
                     ->required()

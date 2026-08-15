@@ -10,7 +10,7 @@ use App\Models\Plh;
 use Filament\Forms;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -25,8 +25,8 @@ class PlhResource extends Resource
     protected static ?string $label = "PLH";
     protected static ?string $navigationLabel = "PLH";
     protected static ?string $pluralModelLabel = "PLH";
-    protected static ?string $navigationIcon = 'fluentui-people-swap-16-o';
-    protected static ?string $navigationGroup = "Surat Tugas";
+    protected static string | \BackedEnum | null $navigationIcon = 'fluentui-people-swap-16-o';
+    protected static string | \UnitEnum | null $navigationGroup = "Surat Tugas";
     protected static ?int $navigationSort = 7;
 
 
@@ -54,10 +54,9 @@ class PlhResource extends Resource
         return auth()->user()->hasRole('super_admin') ||
             auth()->user()->hasRole('operator_umum');
     }
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 Hidden::make('pegawai_digantikan_id')
                     ->default(Pengaturan::key('ID_PLH_DEFAULT')->nilai),
                 Select::make('pegawai_pengganti_id')

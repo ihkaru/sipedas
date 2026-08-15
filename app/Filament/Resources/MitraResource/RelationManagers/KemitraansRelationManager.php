@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\MitraResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -12,10 +12,9 @@ class KemitraansRelationManager extends RelationManager
 {
     protected static string $relationship = 'kemitraans';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 Forms\Components\TextInput::make('tahun')
                     ->required()
                     ->numeric()

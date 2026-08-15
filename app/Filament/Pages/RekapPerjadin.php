@@ -6,9 +6,9 @@ use Filament\Pages\Page;
 use Illuminate\Support\Facades\DB;
 
 class RekapPerjadin extends Page {
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
 
-    protected static string $view = 'filament.pages.rekap-perjadin';
+    protected string $view = 'filament.pages.rekap-perjadin';
 
     public $year;
     public $data;

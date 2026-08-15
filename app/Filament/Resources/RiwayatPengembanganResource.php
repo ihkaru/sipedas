@@ -6,7 +6,7 @@ use App\Filament\Resources\RiwayatPengembanganResource\Pages;
 use App\Filament\Resources\RiwayatPengembanganResource\RelationManagers;
 use App\Models\RiwayatPengembangan;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -20,15 +20,14 @@ class RiwayatPengembanganResource extends Resource
     protected static ?string $label = "Riwayat Pengembangan";
     protected static ?string $navigationLabel = "Riwayat Pengembangan";
     protected static ?string $pluralModelLabel = "Riwayat Pengembangan";
-    protected static ?string $navigationIcon = 'fluentui-branch-request-20';
+    protected static string | \BackedEnum | null $navigationIcon = 'fluentui-branch-request-20';
 
     public static function canViewAny(): bool{
         return auth()->user()->hasRole('super_admin');
     }
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 Forms\Components\TextInput::make('versi')
                     ->required()
                     ->maxLength(255),

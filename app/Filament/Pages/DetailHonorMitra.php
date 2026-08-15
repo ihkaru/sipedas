@@ -19,12 +19,12 @@ class DetailHonorMitra extends Page implements HasTable
 {
     use InteractsWithTable;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $title = 'Detail Kegiatan Mitra';
     protected static ?string $slug = 'detail-honor-mitra';
     protected static bool $shouldRegisterNavigation = false; // Hidden from sidebar
 
-    protected static string $view = 'filament.pages.detail-honor-mitra';
+    protected string $view = 'filament.pages.detail-honor-mitra';
 
     public ?int $mitraId = null;
     public ?int $month = null;

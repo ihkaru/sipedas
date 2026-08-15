@@ -16,8 +16,8 @@ use Illuminate\Support\Collection;
 class MatriksPerjadinPegawai extends Page implements HasForms {
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static string $view = 'filament.pages.matriks-perjadin-pegawai';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-text';
+    protected string $view = 'filament.pages.matriks-perjadin-pegawai';
     protected static ?string $title = 'Matriks Perjadin Pegawai';
 
     public ?array $selectedKegiatans = [];
