@@ -1,2 +1,34 @@
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Explicit modern styling for form inputs & textareas in custom Blade pages */
+input[type='text'],
+input[type='date'],
+textarea {
+    border: 1px solid #d1d5db;
+    border-radius: 0.75rem;
+    padding: 0.4rem 0.65rem;
+    font-size: 0.75rem;
+    line-height: 1.25rem;
+    background-color: #ffffff;
+    color: #111827;
+    outline: none;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.dark input[type='text'],
+.dark input[type='date'],
+.dark textarea {
+    border-color: #374151;
+    background-color: #1f2937;
+    color: #ffffff;
+}
+
+input[type='text']:focus,
+input[type='date']:focus,
+textarea:focus {
+    border-color: #0d9488 !important;
+    box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.25) !important;
+}
