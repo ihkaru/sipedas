@@ -69,7 +69,10 @@ class APanelProvider extends PanelProvider {
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
-            ->viteTheme('resources/css/filament/admin/theme.css')
+            ->renderHook(
+                \Filament\View\PanelsRenderHook::HEAD_END,
+                fn (): string => \Illuminate\Support\Facades\Blade::render("@vite(['resources/css/app.css', 'resources/js/filament-chart-js-plugins.js'])")
+            )
             ->authMiddleware([
                 Authenticate::class,
             ])
