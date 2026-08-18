@@ -1,16 +1,31 @@
 name: Publish Backend to Dev
+
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
 jobs:
-  FTP-Deploy-Action:
-    name: FTP-Deploy-Action
+  deploy:
+    name: FTP Deploy to cPanel
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: composer --version && php --version
-      - name: FTP-Deploy-Action
+      - name: ⬇️ Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies & Build Vite Assets
+        run: |
+          npm ci || npm install
+          npm run build
+
+      - name: 🚀 Sync Backend (admin.dvlp.asia)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.FTP_SERVER_DVLP }}
@@ -18,4 +33,37 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD_ADMIN }}
           protocol: ftp
           port: 21
+          server-dir: admin.dvlp.asia/
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github/**
+            **/.env
+            **/node_modules/**
+            **/storage/**
+            **/vendor/**
+            **/docker/**
+            **/docker-compose*.yml
+            **/dockerfile*
+            **/tests/**
+            **/appDataDir/**
+            **/*.zip
+
+      - name: 🌐 Sync Public Web Assets (public_html/admin.dvlp.asia)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.FTP_SERVER_DVLP }}
+          username: ${{ secrets.FTP_USERNAME_ADMIN }}
+          password: ${{ secrets.FTP_PASSWORD_ADMIN }}
+          protocol: ftp
+          port: 21
+          local-dir: ./public/
+          server-dir: public_html/admin.dvlp.asia/
+          exclude: |
+            **/index.php
+            **/.htaccess
+            **/hot
+            **/storage
+            **/SPPD_files/**
+
 
