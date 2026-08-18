@@ -49,7 +49,7 @@ class CustomPageResource extends Resource
                             ->visible(fn ($record) => $record !== null)
                             ->formatStateUsing(fn ($state, $record) => $record instanceof \App\Models\CustomPage ? route('custom-page.show', $record->slug) : null)
                             ->suffixAction(
-                                Forms\Components\Actions\Action::make('copy')
+                                \Filament\Actions\Action::make('copy')
                                     ->icon('heroicon-m-clipboard-document')
                                     ->color('info')
                                     ->extraAttributes([

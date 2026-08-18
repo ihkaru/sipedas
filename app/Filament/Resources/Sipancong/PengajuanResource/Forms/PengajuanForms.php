@@ -9,7 +9,7 @@ use App\Models\Sipancong\StatusPembayaran;
 use App\Models\Sipancong\StatusPengajuan;
 use App\Models\Sipancong\Subfungsi;
 use App\Supports\SipancongConstants as Constants;
-use Filament\Forms\Components\Actions\Action;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
