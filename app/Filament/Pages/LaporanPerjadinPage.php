@@ -36,6 +36,7 @@ class LaporanPerjadinPage extends Page
     public string $tanggalLaporan;
     public string $kegiatanNama = '';
     public string $nomorSuratTugas = '';
+    public string $nomorSpd = '';
     public string $modaTransportasi = 'Kendaraan Pribadi';
     public string $daerahDikunjungi = '';
     public string $modeLaporan = 'harian'; // 'harian' (Default) or 'periodik'
@@ -116,7 +117,10 @@ class LaporanPerjadinPage extends Page
 
     protected function loadSuratTugasOptions(): void
     {
-        $this->suratTugasOptions = Penugasan::whereNotNull('surat_tugas_id')
+        $user = auth()->user();
+        $isAdmin = $user?->hasRole('super_admin') || $user?->hasRole('operator_umum') || $user?->hasRole('kepala_satker');
+
+        $query = Penugasan::whereNotNull('surat_tugas_id')
             ->whereHas('riwayatPengajuan', function ($q) {
                 $q->whereIn('status', [
                     Constants::STATUS_PENGAJUAN_DISETUJUI,
@@ -124,18 +128,25 @@ class LaporanPerjadinPage extends Page
                     Constants::STATUS_PENGAJUAN_DIKUMPULKAN,
                     Constants::STATUS_PENGAJUAN_DICAIRKAN,
                 ]);
-            })
-            ->where(function ($q) {
-                $q->where('nip', auth()->user()->pegawai?->nip)
-                  ->orWhere('nip_pengaju', auth()->user()->pegawai?->nip);
-            })
-            ->with(['kegiatan', 'suratTugas'])
+            });
+
+        if (!$isAdmin) {
+            $userNip = $user?->pegawai?->nip;
+            $query->where(function ($q) use ($userNip) {
+                $q->where('nip', $userNip)
+                  ->orWhere('nip_pengaju', $userNip);
+            });
+        }
+
+        $this->suratTugasOptions = $query
+            ->with(['kegiatan', 'suratTugas', 'suratPerjadin'])
             ->get()
             ->groupBy('surat_tugas_id')
             ->mapWithKeys(function ($group) {
                 $first = $group->first();
-                $nomor = $first->suratTugas?->nomor ?? 'Draft/Belum Ada Nomor';
-                $label = "No: {$nomor} - {$first->kegiatan?->nama} (" . Carbon::parse($first->tgl_mulai_tugas)->format('d M') . " s.d " . Carbon::parse($first->tgl_akhir_tugas)->format('d M Y') . ")";
+                $nomorST = $first->suratTugas?->nomor_surat_tugas ?? ($first->suratTugas?->nomor ? "B-{$first->suratTugas->nomor}" : 'Draft/Belum Ada Nomor');
+                $nomorSPD = $first->suratPerjadin?->nomor_surat_perjadin ? " (SPD: {$first->suratPerjadin->nomor_surat_perjadin})" : '';
+                $label = "ST: {$nomorST}{$nomorSPD} - {$first->kegiatan?->nama} (" . Carbon::parse($first->tgl_mulai_tugas)->format('d M') . " s.d " . Carbon::parse($first->tgl_akhir_tugas)->format('d M Y') . ")";
                 return [$first->surat_tugas_id => $label];
             })
             ->toArray();
@@ -154,6 +165,7 @@ class LaporanPerjadinPage extends Page
         $this->periodikPhotos = [];
         $this->kegiatanNama = '';
         $this->nomorSuratTugas = '';
+        $this->nomorSpd = '';
         $this->modaTransportasi = 'Kendaraan Pribadi';
         $this->daerahDikunjungi = '';
 
@@ -352,7 +364,8 @@ class LaporanPerjadinPage extends Page
         }
 
         $this->kegiatanNama = $penugasan->kegiatan?->nama ?? '';
-        $this->nomorSuratTugas = $penugasan->suratTugas?->nomor ? "Surat Tugas Nomor: " . $penugasan->suratTugas->nomor : "Surat Tugas Nomor: -";
+        $this->nomorSuratTugas = $penugasan->suratTugas?->nomor_surat_tugas ?? ($penugasan->suratTugas?->nomor ? "B-{$penugasan->suratTugas->nomor}" : '-');
+        $this->nomorSpd = $penugasan->suratPerjadin?->nomor_surat_perjadin ?? ($penugasan->suratPerjadin?->nomor ? "{$penugasan->suratPerjadin->nomor}/SPD" : ($penugasan->jenis_surat_tugas === Constants::NON_SPPD ? 'Non-SPPD' : '-'));
         $this->modaTransportasi = $penugasan->jenis_transportasi ?? 'Kendaraan Pribadi';
         $this->daerahDikunjungi = $penugasan->tujuan_penugasan ?: 'Kecamatan Mempawah Timur';
         

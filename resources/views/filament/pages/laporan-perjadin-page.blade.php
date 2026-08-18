@@ -255,7 +255,10 @@
                     <div class="space-y-1.5">
                         <label class="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300">Detail Penugasan (Otomatis dari Sistem)</label>
                         <div class="bg-gray-100 dark:bg-gray-800/80 p-3 rounded-xl text-xs space-y-1 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-                            <div>📌 <b>Dasar Pelaksanaan:</b> {{ $nomorSuratTugas ?: '-' }}</div>
+                            <div>📌 <b>Surat Tugas:</b> {{ $nomorSuratTugas ?: '-' }}</div>
+                            @if(!empty($nomorSpd) && $nomorSpd !== '-')
+                                <div>📑 <b>Surat Perjalanan Dinas (SPD):</b> {{ $nomorSpd }}</div>
+                            @endif
                             <div>🚗 <b>Moda Transportasi:</b> {{ $modaTransportasi ?: '-' }}</div>
                             <div>📍 <b>Daerah Tujuan:</b> {{ $daerahDikunjungi ?: '-' }}</div>
                         </div>
@@ -601,14 +604,14 @@
 
                     </div>
 
-                    <!-- ACTION BUTTONS -->
+                    <!-- ACTION BUTTONS (SUBMIT & DRAFT) -->
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-6 border-t border-gray-100 dark:border-gray-800 mt-8">
                         <div>
                             @if($hasDraft)
                                 <button type="button" 
                                     wire:click="deleteDraft" 
                                     wire:confirm="Apakah Anda yakin ingin menghapus draf sementara ini dan mengulang formulir dari awal?"
-                                    class="w-full sm:w-auto px-4 py-2.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl border border-red-200 dark:border-red-800 transition text-xs font-semibold flex items-center justify-center space-x-1.5">
+                                    class="w-full sm:w-auto px-4 py-2.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl border border-red-200 dark:border-red-800 transition text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-sm">
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                     </svg>
@@ -617,37 +620,39 @@
                             @endif
                         </div>
 
-                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 md:gap-3">
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 md:gap-3">
                             <button type="button" 
                                 wire:click="saveDraftOnly" 
-                                class="inline-flex flex-row items-center justify-center whitespace-nowrap min-h-[42px] px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-bold transition text-xs space-x-1.5 border border-gray-300 dark:border-gray-700 shadow-sm shrink-0">
-                                <svg class="h-4 w-4 text-gray-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                class="w-full sm:w-auto inline-flex items-center justify-center min-h-[44px] px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-xl font-bold transition text-xs space-x-2 border border-gray-300 dark:border-gray-600 shadow-sm shrink-0 cursor-pointer"
+                                style="color: #1f2937 !important;">
+                                <svg class="h-4 w-4 text-gray-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                                 </svg>
-                                <span>Simpan Draf Lapangan</span>
+                                <span style="color: #1f2937 !important; font-weight: 600;">Simpan Draf Lapangan</span>
                             </button>
 
-                            <!-- GENERATE BUTTON DENGAN INSTANT FEEDBACK & ANTI DOUBLE CLICK -->
+                            <!-- GENERATE BUTTON DENGAN BULLETPROOF INLINE STYLING -->
                             <button type="button" 
                                 wire:click="generateReport" 
                                 wire:loading.attr="disabled"
                                 wire:target="generateReport"
                                 @click="startLoadingProgress()"
-                                class="inline-flex items-center justify-center gap-2 whitespace-nowrap min-h-[42px] px-5 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white rounded-xl shadow-lg shadow-teal-500/20 font-bold transition text-xs disabled:opacity-75 disabled:cursor-not-allowed active:scale-95 shrink-0">
+                                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 min-h-[44px] px-6 py-2.5 rounded-xl shadow-md font-bold transition text-xs disabled:opacity-75 disabled:cursor-not-allowed active:scale-95 shrink-0 cursor-pointer"
+                                style="background: linear-gradient(135deg, #0d9488 0%, #059669 100%) !important; color: #ffffff !important; border: 1px solid #0f766e !important;">
                                 
-                                <span wire:loading.remove wire:target="generateReport" class="inline-flex items-center gap-2">
-                                    <span>Proses & Susun Tabel LPD Resmi</span>
-                                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <span wire:loading.remove wire:target="generateReport" class="inline-flex items-center gap-2" style="color: #ffffff !important;">
+                                    <span style="color: #ffffff !important; font-weight: 700; font-size: 12px;">✨ Proses & Susun Tabel LPD Resmi</span>
+                                    <svg class="h-4 w-4 shrink-0 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                     </svg>
                                 </span>
 
-                                <span wire:loading.inline-flex wire:target="generateReport" class="items-center gap-2">
+                                <span wire:loading.inline-flex wire:target="generateReport" class="items-center gap-2" style="color: #ffffff !important;">
                                     <svg class="h-4 w-4 animate-spin text-white shrink-0" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                                     </svg>
-                                    <span class="animate-pulse whitespace-nowrap">AI Sedang Menyusun Laporan...</span>
+                                    <span class="animate-pulse whitespace-nowrap" style="color: #ffffff !important; font-weight: 600;">AI Sedang Menyusun Laporan...</span>
                                 </span>
                             </button>
                         </div>
@@ -941,7 +946,12 @@
                             
                             <div class="grid grid-cols-12 gap-1 pl-4">
                                 <div class="col-span-5 sm:col-span-4 font-semibold">I. Dasar Pelaksanaan</div>
-                                <div class="col-span-7 sm:col-span-8">: {{ $nomorSuratTugas }}</div>
+                                <div class="col-span-7 sm:col-span-8">
+                                    : Surat Tugas No. {{ $nomorSuratTugas }}
+                                    @if(!empty($nomorSpd) && $nomorSpd !== 'Non-SPPD' && $nomorSpd !== '-')
+                                        <br>&nbsp;&nbsp;SPD No. {{ $nomorSpd }}
+                                    @endif
+                                </div>
                             </div>
                             <div class="grid grid-cols-12 gap-1 pl-4">
                                 <div class="col-span-5 sm:col-span-4 font-semibold">II. Moda Transportasi</div>
@@ -1126,6 +1136,9 @@
                                 <h2 class="text-sm font-bold tracking-wide uppercase">LAMPIRAN DOKUMENTASI FOTO KEGIATAN</h2>
                                 <p class="text-[10.5px] text-gray-700 mt-1 font-medium">
                                     Laporan Perjalanan Dinas — Surat Tugas No: {{ $nomorSuratTugas }}
+                                    @if(!empty($nomorSpd) && $nomorSpd !== 'Non-SPPD' && $nomorSpd !== '-')
+                                        | SPD No: {{ $nomorSpd }}
+                                    @endif
                                 </p>
                             </div>
 
