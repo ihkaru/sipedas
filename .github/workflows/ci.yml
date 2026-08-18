@@ -24,6 +24,11 @@ jobs:
       - name: 📦 Install Composer Dependencies
         run: composer install --no-dev --prefer-dist --no-progress --no-interaction --optimize-autoloader
 
+      - name: 🚀 Publish Livewire & Filament Assets
+        run: |
+          php artisan livewire:publish --assets --no-interaction || true
+          php artisan filament:upgrade || true
+
       - name: 🟢 Setup Node.js
         uses: actions/setup-node@v4
         with:
