@@ -22,7 +22,10 @@ jobs:
           coverage: none
 
       - name: 📦 Install Composer Dependencies
-        run: composer install --no-dev --prefer-dist --no-progress --no-interaction --optimize-autoloader
+        run: composer install --prefer-dist --no-progress --no-interaction --optimize-autoloader
+
+      - name: 🔍 Run Static Analysis (Larastan / PHPStan)
+        run: ./vendor/bin/phpstan analyse --no-progress --memory-limit=2G
 
       - name: 🚀 Publish Livewire & Filament Assets
         run: |

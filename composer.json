@@ -56,6 +56,7 @@
             "@php artisan filament:optimize-clear",
             "@php artisan icons:clear"
         ],
+        "analyse": "vendor/bin/phpstan analyse --memory-limit=2G",
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi",
@@ -90,6 +91,7 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require-dev": {
-        "filament/upgrade": "^5.0"
+        "filament/upgrade": "^5.0",
+        "larastan/larastan": "^3.0"
     }
 }
