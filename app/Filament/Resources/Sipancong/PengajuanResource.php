@@ -17,7 +17,7 @@ use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -141,7 +141,7 @@ class PengajuanResource extends Resource
                         ->hidden(fn(): bool => !auth()->user()->hasRole(['super_admin', 'Admin'])),
 
                 ])->link()->label("Aksi"),
-            ], position: ActionsPosition::BeforeColumns)
+            ], position: RecordActionsPosition::BeforeColumns)
             ->columns([
                 // Kolom-kolom Anda tidak perlu diubah, sudah benar
                 TextColumn::make('posisiDokumen.nama')

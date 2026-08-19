@@ -25,6 +25,9 @@ class AppServiceProvider extends ServiceProvider
                 class_alias('Filament\Resources\Pages\ListRecords\Tab', 'Filament\Schemas\Components\Tabs\Tab');
             }
         }
+        if (!enum_exists('Filament\Tables\Enums\RecordActionsPosition') && enum_exists('Filament\Tables\Enums\ActionsPosition')) {
+            class_alias('Filament\Tables\Enums\ActionsPosition', 'Filament\Tables\Enums\RecordActionsPosition');
+        }
     }
 
     /**
