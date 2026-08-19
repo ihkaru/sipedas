@@ -17,7 +17,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Backward compatibility fallback for environments with older Filament vendor
+        if (!class_exists(\Filament\Resources\Components\Tab::class, false) && class_exists('Filament\Resources\Pages\ListRecords\Tab')) {
+            class_alias('Filament\Resources\Pages\ListRecords\Tab', 'Filament\Resources\Components\Tab');
+        }
     }
 
     /**
