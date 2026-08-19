@@ -15,7 +15,7 @@ class KegiatanPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_kegiatan');
+        return true;
     }
 
     /**
@@ -23,7 +23,7 @@ class KegiatanPolicy
      */
     public function view(User $user, Kegiatan $kegiatan): bool
     {
-        return $user->can('view_kegiatan');
+        return true;
     }
 
     /**
@@ -31,7 +31,7 @@ class KegiatanPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_kegiatan');
+        return true;
     }
 
     /**
@@ -39,7 +39,7 @@ class KegiatanPolicy
      */
     public function update(User $user, Kegiatan $kegiatan): bool
     {
-        return $user->can('update_kegiatan');
+        return true;
     }
 
     /**
@@ -47,7 +47,7 @@ class KegiatanPolicy
      */
     public function delete(User $user, Kegiatan $kegiatan): bool
     {
-        return $user->can('delete_kegiatan');
+        return true;
     }
 
     /**
