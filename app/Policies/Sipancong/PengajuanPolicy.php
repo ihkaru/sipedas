@@ -15,7 +15,7 @@ class PengajuanPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_sipancong::pengajuan');
+        return true;
     }
 
     /**
@@ -23,7 +23,7 @@ class PengajuanPolicy
      */
     public function view(User $user, Pengajuan $pengajuan): bool
     {
-        return $user->can('view_sipancong::pengajuan');
+        return true;
     }
 
     /**

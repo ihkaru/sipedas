@@ -32,6 +32,11 @@ class PengajuanResource extends Resource
     protected static string | \UnitEnum | null $navigationGroup = "Pembayaran";
     protected static ?int $navigationSort = 1;
 
+    public static function canViewAny(): bool
+    {
+        return auth()->check();
+    }
+
     public static function form(Schema $schema): Schema
     {
         // Form ini hanya untuk super_admin, form per aksi ada di PengajuanForms
