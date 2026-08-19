@@ -372,11 +372,6 @@ parameters:
 			count: 1
 			path: app/Filament/Resources/MitraResource/Pages/ListMitras.php
 
-		-
-			message: '#^Call to static method make\(\) on an unknown class Filament\\Resources\\Components\\Tab\.$#'
-			identifier: class.notFound
-			count: 4
-			path: app/Filament/Resources/MitraResource/Pages/ListMitras.php
 
 		-
 			message: '#^Match expression does not handle remaining value\: string$#'
@@ -588,11 +583,6 @@ parameters:
 			count: 6
 			path: app/Filament/Resources/Sipancong/PengajuanResource.php
 
-		-
-			message: '#^Call to static method make\(\) on an unknown class Filament\\Resources\\Components\\Tab\.$#'
-			identifier: class.notFound
-			count: 6
-			path: app/Filament/Resources/Sipancong/PengajuanResource.php
 
 		-
 			message: '#^Parameter \$form of anonymous function has invalid type App\\Filament\\Resources\\Sipancong\\Form\.$#'
@@ -612,11 +602,6 @@ parameters:
 			count: 1
 			path: app/Filament/Resources/Sipancong/PengajuanResource/Pages/ListPengajuans.php
 
-		-
-			message: '#^Call to static method make\(\) on an unknown class Filament\\Resources\\Components\\Tab\.$#'
-			identifier: class.notFound
-			count: 6
-			path: app/Filament/Resources/Sipancong/PengajuanResource/Pages/ListPengajuans.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$pegawai\.$#'
