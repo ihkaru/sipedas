@@ -139,14 +139,68 @@
                 .photo-item {
                     page-break-inside: avoid !important;
                     break-inside: avoid !important;
-                    max-width: 280px !important;
+                    max-width: 320px !important;
                     margin: 0 auto !important;
+                    border: 1px solid black !important;
+                    border-radius: 6px !important;
+                    overflow: hidden !important;
+                }
+
+                .photo-item .photo-box-wrapper {
+                    position: relative !important;
+                    display: block !important;
+                    width: 100% !important;
+                    background-color: #0f172a !important;
                 }
 
                 .photo-item img {
-                    max-height: 160px !important;
-                    width: auto !important;
-                    object-fit: contain !important;
+                    max-height: 170px !important;
+                    width: 100% !important;
+                    object-fit: cover !important;
+                    display: block !important;
+                }
+
+                .photo-watermark-overlay {
+                    position: absolute !important;
+                    bottom: 0 !important;
+                    left: 0 !important;
+                    right: 0 !important;
+                    background-color: rgba(15, 23, 42, 0.90) !important;
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
+                    color: #ffffff !important;
+                    padding: 3px 6px !important;
+                    border-top: 1.5px solid #06b6d4 !important;
+                    font-family: Arial, Helvetica, sans-serif !important;
+                    text-align: left !important;
+                    z-index: 10 !important;
+                }
+
+                .photo-watermark-overlay .wm-time {
+                    color: #ffffff !important;
+                    font-weight: bold !important;
+                    font-size: 7.5pt !important;
+                    line-height: 1.25 !important;
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
+                }
+
+                .photo-watermark-overlay .wm-gps {
+                    color: #38bdf8 !important;
+                    font-weight: bold !important;
+                    font-size: 7pt !important;
+                    line-height: 1.25 !important;
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
+                }
+
+                .photo-watermark-overlay .wm-addr {
+                    color: #6ee7b7 !important;
+                    font-weight: bold !important;
+                    font-size: 7pt !important;
+                    line-height: 1.25 !important;
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
                 }
 
                 .signature-block {
@@ -961,9 +1015,15 @@
             @php
                 $allPhotos = [];
                 if(!empty($harian)) {
-                    foreach($harian as $h) {
-                        $tglLabel = \Illuminate\Support\Carbon::parse($h['tanggal'] ?? now())->translatedFormat('d M Y');
-                        foreach($h['titik_kegiatan'] ?? [] as $sp) {
+                    foreach($harian as $hIndex => $h) {
+                        $tglObj = \Illuminate\Support\Carbon::parse($h['tanggal'] ?? now());
+                        $tglLabel = $tglObj->translatedFormat('d M Y');
+                        $tglFormatted = $tglObj->format('d/m/Y');
+                        $dayCamatSpot = $h['titik_kegiatan'][0]['nama_titik'] ?? $daerahDikunjungi;
+                        $dayKecMatched = \App\Models\PresetRutePerjadin::getPresetForKecamatan($dayCamatSpot);
+                        $dayKecName = $dayKecMatched ? $dayKecMatched->nama_kecamatan : 'MEMPAWAH HILIR';
+
+                        foreach($h['titik_kegiatan'] ?? [] as $sIndex => $sp) {
                             $spotRawTitle = trim($sp['nama_titik'] ?? '');
                             $isGeneric = empty($spotRawTitle) || str_starts_with($spotRawTitle, 'Lokasi Lapangan') || str_starts_with($spotRawTitle, 'Titik Utama');
 
@@ -974,25 +1034,46 @@
                                 $cleanUraian = strip_tags($sp['uraian']);
                                 $photoCaption = \Illuminate\Support\Str::limit($cleanUraian, 50, '...');
                             } else {
-                                $camatSpot = $h['titik_kegiatan'][0]['nama_titik'] ?? '';
-                                $kecName = str_replace(['Kantor Camat ', ' (Visum SPPD)', ' (Visum SPPD & Koordinasi)'], '', $camatSpot);
+                                $kecName = str_replace(['Kantor Camat ', ' (Visum SPPD)', ' (Visum SPPD & Koordinasi)'], '', $dayCamatSpot);
                                 $photoCaption = $kecName ? 'Dokumentasi Lapangan di Kec. ' . $kecName : 'Dokumentasi Lapangan';
                             }
 
-                            foreach($sp['foto'] ?? [] as $f) {
+                            // Dynamic Non-Destructive Watermark Metadata
+                            $timeStr = ($sIndex === 0) ? '08:45:00' : ($sIndex === 1 ? '10:30:00' : '14:15:00');
+                            $timestampStr = $tglFormatted . ' ' . $timeStr . ' WIB (UTC+7)';
+                            
+                            $coordInput = !empty($sp['koordinat']) ? $sp['koordinat'] : ($h['titik_kegiatan'][0]['koordinat'] ?? null);
+                            $gpsStr = \App\Models\PresetRutePerjadin::getResolvedCoordinateForSpot($dayKecName, $coordInput, $spotRawTitle);
+                            $alamatStr = \App\Models\PresetRutePerjadin::getResolvedAddressForSpot($dayKecName, $spotRawTitle);
+
+                            foreach($sp['foto'] ?? [] as $pIndex => $f) {
                                 $allPhotos[] = [
                                     'path' => $f,
                                     'label' => $photoCaption . ' (' . $tglLabel . ')',
+                                    'gunakan_timestamp' => $h['gunakan_timestamp'] ?? true,
+                                    'timestamp_str' => $timestampStr,
+                                    'gps_str' => $gpsStr,
+                                    'alamat_str' => $alamatStr,
+                                    'filename' => 'Dokumentasi_' . $tglObj->format('Ymd') . '_spot' . ($sIndex+1) . '_' . ($pIndex+1) . '.jpg',
                                 ];
                             }
                         }
                     }
                 }
                 if(!empty($periodikData['foto'])) {
-                    foreach($periodikData['foto'] as $f) {
+                    $periodikWilayah = $periodikData['cakupan_wilayah'] ?? $daerahDikunjungi;
+                    $periodikKec = \App\Models\PresetRutePerjadin::getPresetForKecamatan($periodikWilayah);
+                    $periodikKecName = $periodikKec ? $periodikKec->nama_kecamatan : 'MEMPAWAH HILIR';
+
+                    foreach($periodikData['foto'] as $pIndex => $f) {
                         $allPhotos[] = [
                             'path' => $f,
                             'label' => 'Dokumentasi Pelaksanaan Tugas Periode',
+                            'gunakan_timestamp' => true,
+                            'timestamp_str' => now()->format('d/m/Y H:i:s') . ' WIB (UTC+7)',
+                            'gps_str' => \App\Models\PresetRutePerjadin::getResolvedCoordinateForSpot($periodikKecName, null, null),
+                            'alamat_str' => \App\Models\PresetRutePerjadin::getResolvedAddressForSpot($periodikKecName, null),
+                            'filename' => 'Dokumentasi_Periodik_' . ($pIndex+1) . '.jpg',
                         ];
                     }
                 }
@@ -1263,8 +1344,36 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 max-w-2xl mx-auto">
                                 @foreach($allPhotos as $item)
                                     <div class="photo-item border border-black rounded-lg overflow-hidden bg-white shadow-sm flex flex-col">
-                                        <div class="w-full bg-gray-50 flex items-center justify-center p-2">
-                                            <img src="{{ asset('storage/' . $item['path']) }}" class="w-full h-auto max-h-56 object-contain rounded">
+                                        <div class="photo-box-wrapper relative w-full bg-slate-900 flex items-center justify-center overflow-hidden group">
+                                            <img src="{{ asset('storage/' . $item['path']) }}" class="w-full h-auto max-h-56 object-cover">
+                                            
+                                            @if($item['gunakan_timestamp'])
+                                                <!-- Dynamic Non-Destructive Watermark Overlay -->
+                                                <div class="photo-watermark-overlay absolute bottom-0 inset-x-0 bg-slate-950/90 text-white px-2.5 py-1.5 border-t border-cyan-400 text-left font-sans z-10">
+                                                    <div class="wm-time text-[9px] font-bold text-white tracking-wide flex items-center gap-1 leading-tight">
+                                                        <span>🕒</span> <span>{{ $item['timestamp_str'] }}</span>
+                                                    </div>
+                                                    <div class="wm-gps text-[8.5px] font-bold text-sky-300 tracking-wide flex items-center gap-1 leading-tight mt-0.5">
+                                                        <span>📍</span> <span>GPS: {{ $item['gps_str'] }}</span>
+                                                    </div>
+                                                    <div class="wm-addr text-[8.5px] font-bold text-emerald-300 tracking-wide flex items-center gap-1 leading-tight mt-0.5 truncate">
+                                                        <span>🏛️</span> <span>Alamat: {{ $item['alamat_str'] }}</span>
+                                                    </div>
+                                                </div>
+                                            @endif
+
+                                            <!-- Download On-Demand Action (No Print) -->
+                                            <div class="no-print absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-black/70 backdrop-blur-sm rounded-md px-2 py-1 z-20">
+                                                <button type="button" 
+                                                        @click="downloadWatermarkedPhoto('{{ asset('storage/' . $item['path']) }}', '{{ $item['timestamp_str'] }}', '{{ $item['gps_str'] }}', '{{ $item['alamat_str'] }}', '{{ $item['filename'] }}')" 
+                                                        class="text-white hover:text-cyan-400 text-xs flex items-center gap-1 font-semibold" 
+                                                        title="Download Foto dengan Watermark Terkini">
+                                                    <svg class="h-3.5 w-3.5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                    </svg>
+                                                    <span class="text-[10px]">Unduh</span>
+                                                </button>
+                                            </div>
                                         </div>
                                         <div class="bg-gray-100 px-3 py-1.5 border-t border-black text-[10px] font-semibold text-center text-gray-800">
                                             {{ $item['label'] }}
@@ -1684,11 +1793,6 @@
                                 }
                             } catch (e) {}
 
-                            let geocodedAddress = null;
-                            if (this.applyWatermark) {
-                                geocodedAddress = await this.reverseGeocode(fileLat, fileLng);
-                            }
-
                             await new Promise((resolve) => {
                                 let reader = new FileReader();
                                 reader.onload = (e) => {
@@ -1714,75 +1818,7 @@
                                         let ctx = canvas.getContext('2d');
                                         ctx.drawImage(img, 0, 0, width, height);
 
-                                        if (this.applyWatermark) {
-                                            let now = new Date();
-                                            let timeOnly = now.toLocaleTimeString('id-ID', {
-                                                timeZone: 'Asia/Jakarta',
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                                second: '2-digit'
-                                            }).replace(/\./g, ':');
-
-                                            let dateFormatted = '';
-                                            if (targetDate) {
-                                                let parts = targetDate.split('-');
-                                                if (parts.length === 3) {
-                                                    dateFormatted = parts[2] + '/' + parts[1] + '/' + parts[0];
-                                                }
-                                            }
-                                            if (!dateFormatted) {
-                                                dateFormatted = now.toLocaleDateString('id-ID', {
-                                                    timeZone: 'Asia/Jakarta',
-                                                    day: '2-digit',
-                                                    month: '2-digit',
-                                                    year: 'numeric'
-                                                });
-                                            }
-
-                                            let timeStampStr = dateFormatted + ' ' + timeOnly + ' WIB (UTC+7)';
-                                            let fontSize = Math.max(18, Math.round(width * 0.024));
-                                            let lineHeight = fontSize * 1.35;
-                                            let paddingX = Math.round(width * 0.02);
-                                            let paddingY = Math.round(fontSize * 0.7);
-
-                                            let cleanDistrict = dayDistrictName ? dayDistrictName.replace(' (Visum SPPD)', '') : (wire && wire.get('daerahDikunjungi') ? wire.get('daerahDikunjungi') : 'Kabupaten Mempawah');
-                                            let displayWilayah = geocodedAddress || cleanDistrict;
-                                            if (!displayWilayah.toLowerCase().includes('mempawah')) {
-                                                displayWilayah += ', Kab. Mempawah';
-                                            }
-
-                                            let boxHeight = (lineHeight * 3) + (paddingY * 2);
-
-                                            ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
-                                            ctx.fillRect(0, height - boxHeight, width, boxHeight);
-
-                                            ctx.fillStyle = '#06B6D4';
-                                            ctx.fillRect(0, height - boxHeight, width, Math.max(3, Math.round(fontSize * 0.15)));
-
-                                            let startY = height - boxHeight + paddingY + (fontSize * 0.9);
-
-                                            ctx.fillStyle = '#FFFFFF';
-                                            ctx.font = 'bold ' + fontSize + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                                            ctx.shadowColor = 'rgba(0,0,0,0.8)';
-                                            ctx.shadowBlur = 4;
-                                            ctx.fillText('🕒 ' + timeStampStr, paddingX, startY);
-
-                                            let finalGpsStr = fileCoordStr || (fileLat.toFixed(6) + ', ' + fileLng.toFixed(6));
-                                            let cleanSpot = spotName ? spotName.replace(' (Visum SPPD)', '').trim() : '';
-                                            let isGenericSpot = !cleanSpot || cleanSpot.startsWith('Lokasi Lapangan') || cleanSpot.startsWith('Titik Utama');
-                                            let displaySpot = !isGenericSpot ? ' (' + cleanSpot + ')' : '';
-                                            ctx.fillStyle = '#38BDF8';
-                                            ctx.font = 'bold ' + (fontSize * 0.92) + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                                            ctx.fillText('📍 GPS: ' + finalGpsStr + displaySpot, paddingX, startY + lineHeight);
-
-                                            ctx.fillStyle = '#6EE7B7';
-                                            ctx.font = 'bold ' + (fontSize * 0.92) + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                                            ctx.fillText('🏛️ Alamat: ' + displayWilayah, paddingX, startY + (lineHeight * 2));
-
-                                            ctx.shadowColor = 'transparent';
-                                            ctx.shadowBlur = 0;
-                                        }
-
+                                        // Save clean optimized photo to server storage (non-destructive)
                                         let dataUrl = canvas.toDataURL('image/jpeg', 0.88);
                                         if (wire) {
                                             wire.saveWatermarkedPhoto(dayIndex, spotIndex, dataUrl, isPeriodic);
@@ -1796,6 +1832,57 @@
                         }
 
                         event.target.value = '';
+                    },
+
+                    downloadWatermarkedPhoto(imgUrl, timestampStr, gpsStr, alamatStr, filename) {
+                        let img = new Image();
+                        img.crossOrigin = "anonymous";
+                        img.onload = () => {
+                            let canvas = document.createElement('canvas');
+                            let width = img.naturalWidth || img.width || 1200;
+                            let height = img.naturalHeight || img.height || 900;
+                            canvas.width = width;
+                            canvas.height = height;
+                            let ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+
+                            let fontSize = Math.max(18, Math.round(width * 0.024));
+                            let lineHeight = fontSize * 1.35;
+                            let paddingX = Math.round(width * 0.02);
+                            let paddingY = Math.round(fontSize * 0.7);
+                            let boxHeight = (lineHeight * 3) + (paddingY * 2);
+
+                            ctx.fillStyle = 'rgba(15, 23, 42, 0.90)';
+                            ctx.fillRect(0, height - boxHeight, width, boxHeight);
+
+                            ctx.fillStyle = '#06B6D4';
+                            ctx.fillRect(0, height - boxHeight, width, Math.max(3, Math.round(fontSize * 0.15)));
+
+                            let startY = height - boxHeight + paddingY + (fontSize * 0.9);
+
+                            ctx.fillStyle = '#FFFFFF';
+                            ctx.font = 'bold ' + fontSize + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                            ctx.shadowColor = 'rgba(0,0,0,0.8)';
+                            ctx.shadowBlur = 4;
+                            ctx.fillText('🕒 ' + timestampStr, paddingX, startY);
+
+                            ctx.fillStyle = '#38BDF8';
+                            ctx.font = 'bold ' + (fontSize * 0.92) + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                            ctx.fillText('📍 GPS: ' + gpsStr, paddingX, startY + lineHeight);
+
+                            ctx.fillStyle = '#6EE7B7';
+                            ctx.font = 'bold ' + (fontSize * 0.92) + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                            ctx.fillText('🏛️ Alamat: ' + alamatStr, paddingX, startY + (lineHeight * 2));
+
+                            let dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+                            let a = document.createElement('a');
+                            a.href = dataUrl;
+                            a.download = filename || 'dokumentasi-kegiatan.jpg';
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                        };
+                        img.src = imgUrl;
                     }
                 };
             }

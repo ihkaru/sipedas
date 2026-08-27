@@ -225,4 +225,52 @@ class PresetRutePerjadin extends Model
 
         return [];
     }
+
+    /**
+     * Resolve a formatted location/address string for a specific spot and kecamatan.
+     */
+    public static function getResolvedAddressForSpot(?string $kecamatanName, ?string $spotName = null): string
+    {
+        $preset = self::getPresetForKecamatan($kecamatanName);
+        $kecTitle = $preset ? 'Kec. ' . \Illuminate\Support\Str::title(strtolower($preset->nama_kecamatan)) : 'Kec. Mempawah Hilir';
+        
+        if ($spotName && !empty(trim($spotName))) {
+            $cleanSpot = trim(str_ireplace(['(Visum SPPD)', '(Visum SPPD & Koordinasi)'], '', $spotName));
+            if (!str_starts_with($cleanSpot, 'Lokasi Lapangan') && !str_starts_with($cleanSpot, 'Titik Utama')) {
+                return "{$cleanSpot}, {$kecTitle}, Kab. Mempawah";
+            }
+        }
+
+        if ($preset && !empty($preset->kantor_camat_alamat)) {
+            $alamat = $preset->kantor_camat_alamat;
+            if (!str_contains($alamat, 'Kab. Mempawah') && !str_contains($alamat, 'Mempawah')) {
+                $alamat .= ', Kab. Mempawah';
+            }
+            return $alamat;
+        }
+
+        return "{$kecTitle}, Kab. Mempawah";
+    }
+
+    /**
+     * Resolve a formatted GPS coordinate string for a specific spot and kecamatan.
+     */
+    public static function getResolvedCoordinateForSpot(?string $kecamatanName, ?string $coordInput = null, ?string $spotName = null): string
+    {
+        if (!empty($coordInput) && str_contains($coordInput, ',')) {
+            $coord = trim($coordInput);
+        } else {
+            $preset = self::getPresetForKecamatan($kecamatanName);
+            $coord = $preset !== null && !empty($preset->kantor_camat_koordinat) ? $preset->kantor_camat_koordinat : '0.354167, 108.961111';
+        }
+
+        if ($spotName && !empty(trim($spotName))) {
+            $cleanSpot = trim(str_ireplace(['(Visum SPPD)', '(Visum SPPD & Koordinasi)'], '', $spotName));
+            if (!str_starts_with($cleanSpot, 'Lokasi Lapangan') && !str_starts_with($cleanSpot, 'Titik Utama')) {
+                return "{$coord} ({$cleanSpot})";
+            }
+        }
+
+        return $coord;
+    }
 }
