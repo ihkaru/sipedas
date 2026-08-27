@@ -1623,14 +1623,16 @@
                         let wire = this.$wire || window.Livewire?.find(this.$el.closest('[wire\\:id]')?.getAttribute('wire:id'));
 
                         if (isPeriodic) {
-                            let list = wire ? wire.get('periodikData.titik_kegiatan') : [];
+                            let pData = wire ? (wire.periodikData || (typeof wire.get === 'function' ? wire.get('periodikData') : {})) : {};
+                            let list = pData ? (pData.titik_kegiatan || []) : [];
                             coordText = list && list[spotIndex] ? list[spotIndex].koordinat : '';
                             spotName = list && list[spotIndex] ? list[spotIndex].nama_titik : '';
                             dayCamatCoord = list && list[0] ? list[0].koordinat : '';
-                            dayDistrictName = wire ? wire.get('periodikData.cakupan_wilayah') : '';
+                            dayDistrictName = pData ? pData.cakupan_wilayah : '';
                         } else {
-                            let dayData = wire ? wire.get('harian.' + dayIndex) : {};
-                            let list = dayData ? dayData.titik_kegiatan : [];
+                            let allHarian = wire ? (wire.harian || (typeof wire.get === 'function' ? wire.get('harian') : [])) : [];
+                            let dayData = (allHarian && allHarian[dayIndex]) ? allHarian[dayIndex] : (wire && typeof wire.get === 'function' ? wire.get('harian.' + dayIndex) : {});
+                            let list = dayData ? (dayData.titik_kegiatan || []) : [];
                             coordText = list && list[spotIndex] ? list[spotIndex].koordinat : '';
                             spotName = list && list[spotIndex] ? list[spotIndex].nama_titik : '';
                             targetDate = dayData ? dayData.tanggal : '';
