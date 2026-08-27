@@ -964,10 +964,25 @@
                     foreach($harian as $h) {
                         $tglLabel = \Illuminate\Support\Carbon::parse($h['tanggal'] ?? now())->translatedFormat('d M Y');
                         foreach($h['titik_kegiatan'] ?? [] as $sp) {
+                            $spotRawTitle = trim($sp['nama_titik'] ?? '');
+                            $isGeneric = empty($spotRawTitle) || str_starts_with($spotRawTitle, 'Lokasi Lapangan') || str_starts_with($spotRawTitle, 'Titik Utama');
+
+                            $photoCaption = '';
+                            if (!$isGeneric) {
+                                $photoCaption = $spotRawTitle;
+                            } elseif (!empty($sp['uraian'])) {
+                                $cleanUraian = strip_tags($sp['uraian']);
+                                $photoCaption = \Illuminate\Support\Str::limit($cleanUraian, 50, '...');
+                            } else {
+                                $camatSpot = $h['titik_kegiatan'][0]['nama_titik'] ?? '';
+                                $kecName = str_replace(['Kantor Camat ', ' (Visum SPPD)', ' (Visum SPPD & Koordinasi)'], '', $camatSpot);
+                                $photoCaption = $kecName ? 'Dokumentasi Lapangan di Kec. ' . $kecName : 'Dokumentasi Lapangan';
+                            }
+
                             foreach($sp['foto'] ?? [] as $f) {
                                 $allPhotos[] = [
                                     'path' => $f,
-                                    'label' => ($sp['nama_titik'] ?: 'Dokumentasi Lapangan') . ' (' . $tglLabel . ')',
+                                    'label' => $photoCaption . ' (' . $tglLabel . ')',
                                 ];
                             }
                         }
@@ -1751,7 +1766,9 @@
                                             ctx.fillText('🕒 ' + timeStampStr, paddingX, startY);
 
                                             let finalGpsStr = fileCoordStr || (fileLat.toFixed(6) + ', ' + fileLng.toFixed(6));
-                                            let displaySpot = spotName ? ' (' + spotName.replace(' (Visum SPPD)', '') + ')' : '';
+                                            let cleanSpot = spotName ? spotName.replace(' (Visum SPPD)', '').trim() : '';
+                                            let isGenericSpot = !cleanSpot || cleanSpot.startsWith('Lokasi Lapangan') || cleanSpot.startsWith('Titik Utama');
+                                            let displaySpot = !isGenericSpot ? ' (' + cleanSpot + ')' : '';
                                             ctx.fillStyle = '#38BDF8';
                                             ctx.font = 'bold ' + (fontSize * 0.92) + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                                             ctx.fillText('📍 GPS: ' + finalGpsStr + displaySpot, paddingX, startY + lineHeight);

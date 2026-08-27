@@ -393,7 +393,7 @@ class LaporanPerjadinPage extends Page
                 ],
                 [
                     'kategori' => 'lapangan',
-                    'nama_titik' => 'Lokasi Lapangan / Sampel 1',
+                    'nama_titik' => '',
                     'koordinat' => '',
                     'uraian' => '',
                     'kendala' => '',
@@ -426,7 +426,7 @@ class LaporanPerjadinPage extends Page
         $spotNumber = count($this->harian[$dayIndex]['titik_kegiatan'] ?? []) + 1;
         $this->harian[$dayIndex]['titik_kegiatan'][] = [
             'kategori' => 'lapangan',
-            'nama_titik' => "Lokasi Lapangan / Sampel {$spotNumber}",
+            'nama_titik' => '',
             'koordinat' => '',
             'uraian' => '',
             'kendala' => '',
@@ -629,7 +629,7 @@ class LaporanPerjadinPage extends Page
                             ];
                             $spots[] = [
                                 'kategori' => 'lapangan',
-                                'nama_titik' => 'Lokasi Lapangan / Sampel 1',
+                                'nama_titik' => '',
                                 'koordinat' => '',
                                 'uraian' => $item['uraian_draft'] ?? '',
                                 'kendala' => $item['kendala'] ?? '',
