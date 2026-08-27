@@ -273,4 +273,75 @@ class PresetRutePerjadin extends Model
 
         return $coord;
     }
+
+    /**
+     * Format a clean, formal, publication-ready photo caption for BPS official report attachments.
+     */
+    public static function formatCleanPhotoCaption(?string $spotName, ?string $uraian, ?string $kecamatanName, string $tglLabel): string
+    {
+        $preset = self::getPresetForKecamatan($kecamatanName);
+        $cleanKec = $preset ? 'Kec. ' . \Illuminate\Support\Str::title(strtolower($preset->nama_kecamatan)) : 'Kec. Mempawah Hilir';
+        $kecBaseName = $preset ? \Illuminate\Support\Str::title(strtolower($preset->nama_kecamatan)) : 'Mempawah Hilir';
+        
+        $spotRaw = trim($spotName ?? '');
+        $isGenericSpot = empty($spotRaw) || str_starts_with($spotRaw, 'Lokasi Lapangan') || str_starts_with($spotRaw, 'Titik Utama');
+
+        // Priority 1: User explicitly typed a specific village / spot name
+        if (!$isGenericSpot) {
+            $cleanSpot = trim(str_ireplace(['(Visum SPPD)', '(Visum SPPD & Koordinasi)'], '', $spotRaw));
+            if (!str_contains(strtolower($cleanSpot), strtolower($kecBaseName))) {
+                return "{$cleanSpot}, {$cleanKec} ({$tglLabel})";
+            }
+            return "{$cleanSpot} ({$tglLabel})";
+        }
+
+        // Priority 2: User provided a note/uraian -> Smart sanitize into formal Title Case phrase
+        if (!empty(trim($uraian ?? ''))) {
+            $text = strip_tags($uraian);
+            
+            // Fix common typos / informal words
+            $text = (string) preg_replace('/\bpengaawasan\b/i', 'pengawasan', $text);
+            $text = (string) preg_replace('/\bkoordinasii\b/i', 'koordinasi', $text);
+            $text = (string) preg_replace('/^(melakukan|mengikuti|melaksanakan)\s+/i', '', $text);
+            
+            // Split into words
+            $words = preg_split('/\s+/', trim($text));
+            if ($words !== false) {
+                if (count($words) > 6) {
+                    $words = array_slice($words, 0, 6);
+                }
+                
+                // Remove trailing conjunctions / prepositions at cut boundary
+                while (!empty($words)) {
+                    $lastWord = strtolower(end($words));
+                    if (in_array($lastWord, ['dan', 'da', 'yang', 'di', 'ke', 'untuk', 'serta', 'terkait', 'dalam', 'dengan', 'pada', 'tentang', 'fasih'])) {
+                        array_pop($words);
+                    } else {
+                        break;
+                    }
+                }
+
+                if (!empty($words)) {
+                    $phrase = implode(' ', $words);
+                    $titleCased = \Illuminate\Support\Str::title($phrase);
+                    
+                    // Preserve official BPS acronyms
+                    $titleCased = (string) preg_replace('/\bPpl\b/', 'PPL', $titleCased);
+                    $titleCased = (string) preg_replace('/\bPml\b/', 'PML', $titleCased);
+                    $titleCased = (string) preg_replace('/\bSppd\b/', 'SPPD', $titleCased);
+                    $titleCased = (string) preg_replace('/\bBps\b/', 'BPS', $titleCased);
+                    $titleCased = (string) preg_replace('/\bKsa\b/', 'KSA', $titleCased);
+                    $titleCased = (string) preg_replace('/\bFasih\b/i', 'FASIH', $titleCased);
+                    
+                    if (!str_contains(strtolower($titleCased), strtolower($kecBaseName))) {
+                        return "{$titleCased} - {$cleanKec} ({$tglLabel})";
+                    }
+                    return "{$titleCased} ({$tglLabel})";
+                }
+            }
+        }
+
+        // Priority 3: Fallback standard official caption
+        return "Dokumentasi Kegiatan di {$cleanKec} ({$tglLabel})";
+    }
 }

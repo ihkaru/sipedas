@@ -606,8 +606,34 @@
 
                                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                                                                 <div class="space-y-1">
-                                                                    <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300">Catatan/Aktivitas di Titik Ini</label>
+                                                                    <div class="flex items-center justify-between">
+                                                                        <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300">Catatan/Aktivitas di Titik Ini</label>
+                                                                        <span class="text-[10px] text-gray-400">Tag cepat:</span>
+                                                                    </div>
                                                                     <textarea wire:model="harian.{{ $index }}.titik_kegiatan.{{ $sIdx }}.uraian" rows="2" placeholder="Contoh: Mengawasi ubinan padi sawah Pak Ahmad, hasil ubinan 4.2 kg..." class="w-full text-xs rounded-xl border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"></textarea>
+                                                                    <!-- Quick Tag Chips -->
+                                                                    <div class="flex flex-wrap items-center gap-1 pt-0.5">
+                                                                        <button type="button" 
+                                                                                @click="$wire.set('harian.{{ $index }}.titik_kegiatan.{{ $sIdx }}.uraian', 'Pengawasan dan Evaluasi Progres Petugas PML')" 
+                                                                                class="text-[9.5px] px-1.5 py-0.5 rounded bg-teal-50 hover:bg-teal-100 dark:bg-teal-950/40 dark:hover:bg-teal-900/50 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 transition">
+                                                                            📋 Pengawasan PML
+                                                                        </button>
+                                                                        <button type="button" 
+                                                                                @click="$wire.set('harian.{{ $index }}.titik_kegiatan.{{ $sIdx }}.uraian', 'Koordinasi dan Evaluasi Progres Petugas PPL')" 
+                                                                                class="text-[9.5px] px-1.5 py-0.5 rounded bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 transition">
+                                                                            🤝 Koordinasi PPL
+                                                                        </button>
+                                                                        <button type="button" 
+                                                                                @click="$wire.set('harian.{{ $index }}.titik_kegiatan.{{ $sIdx }}.uraian', 'Supervisi Pendataan Lapangan dan Verifikasi Responden')" 
+                                                                                class="text-[9.5px] px-1.5 py-0.5 rounded bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 transition">
+                                                                            📝 Supervisi Responden
+                                                                        </button>
+                                                                        <button type="button" 
+                                                                                @click="$wire.set('harian.{{ $index }}.titik_kegiatan.{{ $sIdx }}.uraian', 'Pelaksanaan Ubinan Tanaman Pangan Bersama Petugas')" 
+                                                                                class="text-[9.5px] px-1.5 py-0.5 rounded bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 transition">
+                                                                            🌾 Ubinan Lapangan
+                                                                        </button>
+                                                                    </div>
                                                                 </div>
 
                                                                 <div class="space-y-1">
@@ -1025,18 +1051,7 @@
 
                         foreach($h['titik_kegiatan'] ?? [] as $sIndex => $sp) {
                             $spotRawTitle = trim($sp['nama_titik'] ?? '');
-                            $isGeneric = empty($spotRawTitle) || str_starts_with($spotRawTitle, 'Lokasi Lapangan') || str_starts_with($spotRawTitle, 'Titik Utama');
-
-                            $photoCaption = '';
-                            if (!$isGeneric) {
-                                $photoCaption = $spotRawTitle;
-                            } elseif (!empty($sp['uraian'])) {
-                                $cleanUraian = strip_tags($sp['uraian']);
-                                $photoCaption = \Illuminate\Support\Str::limit($cleanUraian, 50, '...');
-                            } else {
-                                $kecName = str_replace(['Kantor Camat ', ' (Visum SPPD)', ' (Visum SPPD & Koordinasi)'], '', $dayCamatSpot);
-                                $photoCaption = $kecName ? 'Dokumentasi Lapangan di Kec. ' . $kecName : 'Dokumentasi Lapangan';
-                            }
+                            $photoCaption = \App\Models\PresetRutePerjadin::formatCleanPhotoCaption($spotRawTitle, $sp['uraian'] ?? '', $dayKecName, $tglLabel);
 
                             // Dynamic Non-Destructive Watermark Metadata
                             $timeStr = ($sIndex === 0) ? '08:45:00' : ($sIndex === 1 ? '10:30:00' : '14:15:00');
@@ -1049,7 +1064,7 @@
                             foreach($sp['foto'] ?? [] as $pIndex => $f) {
                                 $allPhotos[] = [
                                     'path' => $f,
-                                    'label' => $photoCaption . ' (' . $tglLabel . ')',
+                                    'label' => $photoCaption,
                                     'gunakan_timestamp' => $h['gunakan_timestamp'] ?? true,
                                     'timestamp_str' => $timestampStr,
                                     'gps_str' => $gpsStr,
