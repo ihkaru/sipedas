@@ -1022,7 +1022,7 @@
                             </div>
                             <div class="grid grid-cols-12 gap-1">
                                 <div class="col-span-4 sm:col-span-3 font-semibold">Wilayah Tugas</div>
-                                <div class="col-span-8 sm:col-span-9">: {{ $daerahDikunjungi }}</div>
+                                <div class="col-span-8 sm:col-span-9">: {{ $this->getWilayahTugasLabel() }}</div>
                             </div>
                             <div class="grid grid-cols-12 gap-1">
                                 <div class="col-span-4 sm:col-span-3 font-semibold">Kegiatan</div>
@@ -1055,7 +1055,13 @@
                             </div>
                             <div class="grid grid-cols-12 gap-1 pl-4">
                                 <div class="col-span-5 sm:col-span-4 font-semibold">III. Daerah yang dikunjungi</div>
-                                <div class="col-span-7 sm:col-span-8">: {{ $daerahDikunjungi }}</div>
+                                <div class="col-span-7 sm:col-span-8">
+                                    @if($isEditing)
+                                        <input type="text" wire:model="reportData.daerah_dikunjungi" class="w-full text-[11px] p-1 border rounded font-semibold text-black">
+                                    @else
+                                        : {{ $reportData['daerah_dikunjungi'] ?? $this->getSummaryDaerahDikunjungi() }}
+                                    @endif
+                                </div>
                             </div>
                         </div>
 
@@ -1507,6 +1513,89 @@
                         return null;
                     },
 
+                    extractExifGps(arrayBuffer) {
+                        try {
+                            let dataView = new DataView(arrayBuffer);
+                            if (dataView.getUint16(0) !== 0xFFD8) return null;
+
+                            let offset = 2;
+                            let length = arrayBuffer.byteLength;
+
+                            while (offset < length) {
+                                if (dataView.getUint8(offset) !== 0xFF) return null;
+                                let marker = dataView.getUint8(offset + 1);
+
+                                if (marker === 0xE1) {
+                                    let exifHeader = offset + 4;
+                                    if (dataView.getUint32(exifHeader) !== 0x45786966) return null; // "Exif"
+
+                                    let tiffOffset = exifHeader + 6;
+                                    let isLittle = dataView.getUint16(tiffOffset) === 0x4949;
+
+                                    let getU16 = (pos) => dataView.getUint16(tiffOffset + pos, isLittle);
+                                    let getU32 = (pos) => dataView.getUint32(tiffOffset + pos, isLittle);
+
+                                    let firstIFDOffset = getU32(4);
+                                    let numEntries = getU16(firstIFDOffset);
+                                    let gpsOffset = 0;
+
+                                    for (let i = 0; i < numEntries; i++) {
+                                        let entryOffset = firstIFDOffset + 2 + (i * 12);
+                                        let tag = getU16(entryOffset);
+                                        if (tag === 0x8825) {
+                                            gpsOffset = getU32(entryOffset + 8);
+                                            break;
+                                        }
+                                    }
+
+                                    if (!gpsOffset) return null;
+
+                                    let numGpsEntries = getU16(gpsOffset);
+                                    let latRef = 'N', lngRef = 'E', latValues = null, lngValues = null;
+
+                                    for (let i = 0; i < numGpsEntries; i++) {
+                                        let entryOffset = gpsOffset + 2 + (i * 12);
+                                        let tag = getU16(entryOffset);
+                                        let valOffset = getU32(entryOffset + 8);
+
+                                        if (tag === 1) {
+                                            latRef = String.fromCharCode(dataView.getUint8(tiffOffset + entryOffset + 8));
+                                        } else if (tag === 2) {
+                                            latValues = [
+                                                getU32(valOffset) / getU32(valOffset + 4),
+                                                getU32(valOffset + 8) / getU32(valOffset + 12),
+                                                getU32(valOffset + 16) / getU32(valOffset + 20)
+                                            ];
+                                        } else if (tag === 3) {
+                                            lngRef = String.fromCharCode(dataView.getUint8(tiffOffset + entryOffset + 8));
+                                        } else if (tag === 4) {
+                                            lngValues = [
+                                                getU32(valOffset) / getU32(valOffset + 4),
+                                                getU32(valOffset + 8) / getU32(valOffset + 12),
+                                                getU32(valOffset + 16) / getU32(valOffset + 20)
+                                            ];
+                                        }
+                                    }
+
+                                    if (latValues && lngValues) {
+                                        let lat = latValues[0] + (latValues[1] / 60) + (latValues[2] / 3600);
+                                        let lng = lngValues[0] + (lngValues[1] / 60) + (lngValues[2] / 3600);
+                                        if (latRef === 'S') lat = -lat;
+                                        if (lngRef === 'W') lng = -lng;
+                                        return { lat: parseFloat(lat.toFixed(6)), lng: parseFloat(lng.toFixed(6)) };
+                                    }
+
+                                    return null;
+                                }
+
+                                offset += 2 + dataView.getUint16(offset + 2);
+                            }
+                        } catch (e) {
+                            console.warn('EXIF GPS extraction error:', e);
+                        }
+                        return null;
+                    },
+
                     async processAndWatermarkPhoto(event, dayIndex, spotIndex = 0, isPeriodic = false) {
                         let files = event.target.files;
                         if (!files || files.length === 0) return;
@@ -1514,39 +1603,75 @@
                         let spotName = '';
                         let coordText = '';
                         let targetDate = '';
+                        let dayDistrictName = '';
+                        let dayCamatCoord = '';
                         let wire = this.$wire || window.Livewire?.find(this.$el.closest('[wire\\:id]')?.getAttribute('wire:id'));
 
                         if (isPeriodic) {
                             let list = wire ? wire.get('periodikData.titik_kegiatan') : [];
                             coordText = list && list[spotIndex] ? list[spotIndex].koordinat : '';
                             spotName = list && list[spotIndex] ? list[spotIndex].nama_titik : '';
+                            dayCamatCoord = list && list[0] ? list[0].koordinat : '';
+                            dayDistrictName = wire ? wire.get('periodikData.cakupan_wilayah') : '';
                         } else {
                             let dayData = wire ? wire.get('harian.' + dayIndex) : {};
                             let list = dayData ? dayData.titik_kegiatan : [];
                             coordText = list && list[spotIndex] ? list[spotIndex].koordinat : '';
                             spotName = list && list[spotIndex] ? list[spotIndex].nama_titik : '';
                             targetDate = dayData ? dayData.tanggal : '';
+                            dayCamatCoord = list && list[0] ? list[0].koordinat : '';
+                            dayDistrictName = list && list[0] ? list[0].nama_titik : '';
                         }
 
-                        // Extract lat & lng from coordText or fallback
-                        let latNum = this.mapLat;
-                        let lngNum = this.mapLng;
-                        if (coordText && coordText.includes(',')) {
-                            let cParts = coordText.split(',');
+                        // Hierarchy Fallback for Base Coordinates:
+                        // 1. Manual user input in this spot (coordText)
+                        // 2. That day's Titik 1 (Kantor Camat) coordinate
+                        // 3. Global Livewire kantorCamatKoordinat
+                        // 4. Mempawah Regency Centroid / BPS Office (0.354167, 108.961111)
+                        let baseCoord = coordText || dayCamatCoord || (wire ? wire.get('kantorCamatKoordinat') : '') || '0.354167, 108.961111';
+                        let defaultLat = 0.354167;
+                        let defaultLng = 108.961111;
+
+                        if (baseCoord && baseCoord.includes(',')) {
+                            let cParts = baseCoord.split(',');
                             let pLat = parseFloat(cParts[0].trim());
                             let pLng = parseFloat(cParts[1].trim());
                             if (!isNaN(pLat) && !isNaN(pLng)) {
-                                latNum = pLat;
-                                lngNum = pLng;
+                                defaultLat = pLat;
+                                defaultLng = pLng;
                             }
                         }
 
-                        let geocodedAddress = null;
-                        if (this.applyWatermark) {
-                            geocodedAddress = await this.reverseGeocode(latNum, lngNum);
-                        }
-
                         for (let file of Array.from(files)) {
+                            let fileLat = defaultLat;
+                            let fileLng = defaultLng;
+                            let fileCoordStr = coordText;
+
+                            // Extract real EXIF GPS from photo file if present
+                            try {
+                                let arrayBuffer = await file.arrayBuffer();
+                                let exifGps = this.extractExifGps(arrayBuffer);
+                                if (exifGps) {
+                                    fileLat = exifGps.lat;
+                                    fileLng = exifGps.lng;
+                                    fileCoordStr = fileLat.toFixed(6) + ', ' + fileLng.toFixed(6);
+
+                                    // Auto-populate coordinate input in form if it was empty
+                                    if (!coordText && wire) {
+                                        if (isPeriodic) {
+                                            wire.set('periodikData.titik_kegiatan.' + spotIndex + '.koordinat', fileCoordStr);
+                                        } else {
+                                            wire.set('harian.' + dayIndex + '.titik_kegiatan.' + spotIndex + '.koordinat', fileCoordStr);
+                                        }
+                                    }
+                                }
+                            } catch (e) {}
+
+                            let geocodedAddress = null;
+                            if (this.applyWatermark) {
+                                geocodedAddress = await this.reverseGeocode(fileLat, fileLng);
+                            }
+
                             await new Promise((resolve) => {
                                 let reader = new FileReader();
                                 reader.onload = (e) => {
@@ -1603,8 +1728,8 @@
                                             let paddingX = Math.round(width * 0.02);
                                             let paddingY = Math.round(fontSize * 0.7);
 
-                                            let currentDistrict = (wire && wire.get('daerahDikunjungi')) ? wire.get('daerahDikunjungi') : this.districtName;
-                                            let displayWilayah = geocodedAddress || (currentDistrict ? currentDistrict : 'Kabupaten Mempawah');
+                                            let cleanDistrict = dayDistrictName ? dayDistrictName.replace(' (Visum SPPD)', '') : (wire && wire.get('daerahDikunjungi') ? wire.get('daerahDikunjungi') : 'Kabupaten Mempawah');
+                                            let displayWilayah = geocodedAddress || cleanDistrict;
                                             if (!displayWilayah.toLowerCase().includes('mempawah')) {
                                                 displayWilayah += ', Kab. Mempawah';
                                             }
@@ -1625,11 +1750,11 @@
                                             ctx.shadowBlur = 4;
                                             ctx.fillText('🕒 ' + timeStampStr, paddingX, startY);
 
-                                            let displayCoord = coordText || (latNum.toFixed(6) + ', ' + lngNum.toFixed(6));
-                                            let displaySpot = spotName ? ' (' + spotName + ')' : '';
+                                            let finalGpsStr = fileCoordStr || (fileLat.toFixed(6) + ', ' + fileLng.toFixed(6));
+                                            let displaySpot = spotName ? ' (' + spotName.replace(' (Visum SPPD)', '') + ')' : '';
                                             ctx.fillStyle = '#38BDF8';
                                             ctx.font = 'bold ' + (fontSize * 0.92) + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                                            ctx.fillText('📍 GPS: ' + displayCoord + displaySpot, paddingX, startY + lineHeight);
+                                            ctx.fillText('📍 GPS: ' + finalGpsStr + displaySpot, paddingX, startY + lineHeight);
 
                                             ctx.fillStyle = '#6EE7B7';
                                             ctx.font = 'bold ' + (fontSize * 0.92) + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';

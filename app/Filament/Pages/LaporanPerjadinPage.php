@@ -481,6 +481,53 @@ class LaporanPerjadinPage extends Page
     }
 
     /**
+     * Get the official assignment region for the header (Wilayah Tugas).
+     */
+    public function getWilayahTugasLabel(): string
+    {
+        $penugasan = $this->getPenugasan();
+        if ($penugasan && !empty($penugasan->tujuan_penugasan)) {
+            return $penugasan->tujuan_penugasan;
+        }
+
+        return $this->daerahDikunjungi ?: 'Kabupaten Mempawah';
+    }
+
+    /**
+     * Get the summary of actual regions/kecamatans visited across all days in this report.
+     */
+    public function getSummaryDaerahDikunjungi(): string
+    {
+        if ($this->modeLaporan === 'periodik') {
+            return $this->periodikData['cakupan_wilayah'] ?: $this->daerahDikunjungi;
+        }
+
+        $kecamatanSet = [];
+        foreach ($this->harian as $day) {
+            $spot1 = $day['titik_kegiatan'][0]['nama_titik'] ?? '';
+            $matched = PresetRutePerjadin::getPresetForKecamatan($spot1);
+            if ($matched) {
+                $formatted = 'Kecamatan ' . \Illuminate\Support\Str::title(strtolower($matched->nama_kecamatan));
+                $kecamatanSet[$formatted] = true;
+            } else {
+                foreach ($day['titik_kegiatan'] ?? [] as $spot) {
+                    $m = PresetRutePerjadin::getPresetForKecamatan($spot['nama_titik'] ?? '');
+                    if ($m) {
+                        $formatted = 'Kecamatan ' . \Illuminate\Support\Str::title(strtolower($m->nama_kecamatan));
+                        $kecamatanSet[$formatted] = true;
+                    }
+                }
+            }
+        }
+
+        if (!empty($kecamatanSet)) {
+            return implode(', ', array_keys($kecamatanSet));
+        }
+
+        return $this->daerahDikunjungi ?: 'Kecamatan Mempawah Hilir';
+    }
+
+    /**
      * Load core assignment data and existing reports if they exist.
      */
     protected function loadPenugasanData(): void
@@ -870,11 +917,14 @@ class LaporanPerjadinPage extends Page
         $this->isGenerating = true;
         $this->errorMessage = null;
 
+        $summaryDaerah = $this->getSummaryDaerahDikunjungi();
+
         $metaContext = [
             'kegiatan_nama' => $this->kegiatanNama,
             'nomor_surat_tugas' => $this->nomorSuratTugas,
             'moda_transportasi' => $this->modaTransportasi,
-            'daerah_dikunjungi' => $this->daerahDikunjungi,
+            'daerah_dikunjungi' => $summaryDaerah,
+            'wilayah_tugas' => $this->getWilayahTugasLabel(),
             'pelaksana_nama' => $penugasan->pegawai?->nama ?? $this->selectedPelaksanaNip,
             'periode_str' => $this->periodeStr,
             'preset_steps' => $this->presetSteps,
@@ -889,6 +939,7 @@ class LaporanPerjadinPage extends Page
             } else {
                 // Map sequential stops for LLM Auto-Timing
                 $rawInput = array_map(function ($day) {
+                    $dayDistrict = $day['titik_kegiatan'][0]['nama_titik'] ?? $this->daerahDikunjungi;
                     return [
                         'tanggal' => $day['tanggal'],
                         'waktu_dinas' => "{$day['waktu_mulai']} - {$day['waktu_selesai']}",
@@ -903,7 +954,7 @@ class LaporanPerjadinPage extends Page
                                 'foto_count' => count($spot['foto'] ?? []),
                             ];
                         }, $day['titik_kegiatan'] ?? []),
-                        'preset_steps' => PresetRutePerjadin::getStepsForKecamatan($this->daerahDikunjungi, $day['tanggal']),
+                        'preset_steps' => PresetRutePerjadin::getStepsForKecamatan($dayDistrict, $day['tanggal']),
                     ];
                 }, $this->harian);
 
