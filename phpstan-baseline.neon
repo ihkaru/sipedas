@@ -187,18 +187,6 @@ parameters:
 			path: app/Filament/Pages/LaporanPerjadinPage.php
 
 		-
-			message: '#^Using nullsafe property access "\?\-\>kantor_camat_koordinat" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 2
-			path: app/Filament/Pages/LaporanPerjadinPage.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>kantor_camat_nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 2
-			path: app/Filament/Pages/LaporanPerjadinPage.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 4
@@ -371,7 +359,6 @@ parameters:
 			identifier: staticMethod.notFound
 			count: 1
 			path: app/Filament/Resources/MitraResource/Pages/ListMitras.php
-
 
 		-
 			message: '#^Match expression does not handle remaining value\: string$#'
@@ -565,7 +552,6 @@ parameters:
 			count: 1
 			path: app/Filament/Resources/Sipancong/PengajuanResource.php
 
-
 		-
 			message: '#^Call to an undefined static method App\\Services\\Sipancong\\PengajuanServices\:\:rawPerluPemeriksaanAtauProsesBendahara\(\)\.$#'
 			identifier: staticMethod.notFound
@@ -577,7 +563,6 @@ parameters:
 			identifier: class.notFound
 			count: 6
 			path: app/Filament/Resources/Sipancong/PengajuanResource.php
-
 
 		-
 			message: '#^Parameter \$form of anonymous function has invalid type App\\Filament\\Resources\\Sipancong\\Form\.$#'
@@ -596,7 +581,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/Filament/Resources/Sipancong/PengajuanResource/Pages/ListPengajuans.php
-
 
 		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$pegawai\.$#'

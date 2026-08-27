@@ -244,10 +244,10 @@ class LaporanPerjadinPage extends Page
         $presetModel = PresetRutePerjadin::getPresetForKecamatan($this->daerahDikunjungi);
         $this->presetSteps = PresetRutePerjadin::getStepsForKecamatan($this->daerahDikunjungi, $this->minDate);
         $this->desaSuggestions = PresetRutePerjadin::getDesaListForKecamatan($this->daerahDikunjungi);
-        $this->kantorCamatKoordinat = $presetModel?->kantor_camat_koordinat ?? '0.354167, 108.961111';
+        $this->kantorCamatKoordinat = $presetModel ? $presetModel->kantor_camat_koordinat : '0.354167, 108.961111';
 
-        $camatName = $presetModel?->kantor_camat_nama ?? 'Kantor Camat (Visum SPPD & Koordinasi)';
-        $camatCoord = $presetModel?->kantor_camat_koordinat ?? '';
+        $camatName = $presetModel ? $presetModel->kantor_camat_nama : 'Kantor Camat (Visum SPPD & Koordinasi)';
+        $camatCoord = $presetModel ? $presetModel->kantor_camat_koordinat : '';
 
         if ($updateExistingStops && !empty($this->harian)) {
             foreach ($this->harian as $idx => &$day) {
@@ -331,8 +331,8 @@ class LaporanPerjadinPage extends Page
         $this->harian[$dayIndex]['waktu_mulai'] = trim($startTime);
         $this->harian[$dayIndex]['waktu_selesai'] = trim($endTime);
 
-        $camatName = $presetModel?->kantor_camat_nama ?? 'Kantor Camat (Visum SPPD)';
-        $camatCoord = $presetModel?->kantor_camat_koordinat ?? '';
+        $camatName = $presetModel ? $presetModel->kantor_camat_nama : 'Kantor Camat (Visum SPPD)';
+        $camatCoord = $presetModel ? $presetModel->kantor_camat_koordinat : '';
 
         if (!empty($this->harian[$dayIndex]['titik_kegiatan'])) {
             $this->harian[$dayIndex]['titik_kegiatan'][0]['kategori'] = 'kantor_camat';
@@ -375,8 +375,8 @@ class LaporanPerjadinPage extends Page
         $startTime = !empty($dayPresets[0]['waktu']) ? explode('-', $dayPresets[0]['waktu'])[0] : '08.00';
         $endTime = !empty($dayPresets[5]['waktu']) ? explode('-', $dayPresets[5]['waktu'])[1] : '15.15';
 
-        $camatName = $presetModel?->kantor_camat_nama ?? 'Kantor Camat (Visum SPPD & Koordinasi)';
-        $camatCoord = $presetModel?->kantor_camat_koordinat ?? '';
+        $camatName = $presetModel ? $presetModel->kantor_camat_nama : 'Kantor Camat (Visum SPPD & Koordinasi)';
+        $camatCoord = $presetModel ? $presetModel->kantor_camat_koordinat : '';
 
         $this->harian[] = [
             'tanggal' => $nextDate,
@@ -521,7 +521,7 @@ class LaporanPerjadinPage extends Page
                 $this->daerahDikunjungi = 'Kecamatan Mempawah Hilir';
             }
             $presetModel = PresetRutePerjadin::getPresetForKecamatan($this->daerahDikunjungi);
-            $this->kantorCamatKoordinat = $presetModel?->kantor_camat_koordinat ?? '0.354167, 108.961111';
+            $this->kantorCamatKoordinat = $presetModel ? $presetModel->kantor_camat_koordinat : '0.354167, 108.961111';
         }
         
         $this->minDate = Carbon::parse($penugasan->tgl_mulai_tugas)->toDateString();
@@ -569,8 +569,8 @@ class LaporanPerjadinPage extends Page
                             }
                         } else {
                             $presetModel = PresetRutePerjadin::getPresetForKecamatan($this->daerahDikunjungi);
-                            $camatName = $presetModel?->kantor_camat_nama ?? 'Kantor Camat (Visum SPPD & Koordinasi)';
-                            $camatCoord = $item['koordinat'] ?: ($presetModel?->kantor_camat_koordinat ?? '');
+                            $camatName = $presetModel ? $presetModel->kantor_camat_nama : 'Kantor Camat (Visum SPPD & Koordinasi)';
+                            $camatCoord = $item['koordinat'] ?: ($presetModel ? $presetModel->kantor_camat_koordinat : '');
 
                             $spots[] = [
                                 'kategori' => 'kantor_camat',
