@@ -67,8 +67,13 @@ class ArtisanController extends Controller {
             return $output->fetch();
         }
         if (request("storage-link")) {
-            Artisan::call("storage:link", [], $output);
-            $msg = [$output->fetch()];
+            $msg = [];
+            try {
+                Artisan::call("storage:link", [], $output);
+                $msg[] = $output->fetch();
+            } catch (\Throwable $e) {
+                $msg[] = "Artisan storage:link notice: " . $e->getMessage();
+            }
 
             // Target storage directory
             $target = storage_path('app/public');
@@ -83,18 +88,22 @@ class ArtisanController extends Controller {
             foreach (array_unique($possiblePublicRoots) as $docRoot) {
                 if (is_dir($docRoot)) {
                     $linkPath = rtrim($docRoot, '/') . '/storage';
-                    if (is_link($linkPath)) {
-                        @unlink($linkPath);
-                    } elseif (is_dir($linkPath)) {
-                        @rename($linkPath, $linkPath . '_backup_' . date('Ymd_His'));
-                    } elseif (file_exists($linkPath)) {
-                        @unlink($linkPath);
-                    }
+                    try {
+                        if (is_link($linkPath)) {
+                            @unlink($linkPath);
+                        } elseif (is_dir($linkPath)) {
+                            @rename($linkPath, $linkPath . '_backup_' . date('Ymd_His'));
+                        } elseif (file_exists($linkPath)) {
+                            @unlink($linkPath);
+                        }
 
-                    if (@symlink($target, $linkPath)) {
-                        $msg[] = "Successfully linked: {$linkPath} -> {$target}";
-                    } else {
-                        $msg[] = "Notice: Could not symlink {$linkPath} automatically via PHP";
+                        if (@symlink($target, $linkPath)) {
+                            $msg[] = "Successfully linked: {$linkPath} -> {$target}";
+                        } else {
+                            $msg[] = "Notice: Symlink function not permitted or failed for {$linkPath}";
+                        }
+                    } catch (\Throwable $ex) {
+                        $msg[] = "Symlink notice for {$linkPath}: " . $ex->getMessage();
                     }
                 }
             }
