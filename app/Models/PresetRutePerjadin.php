@@ -30,21 +30,26 @@ class PresetRutePerjadin extends Model
             return self::where('nama_kecamatan', 'MEMPAWAH HILIR')->first();
         }
 
-        $upperInput = strtoupper(trim($kecamatanName));
+        $upperInput = strtoupper(trim(str_ireplace(['kecamatan', 'kabupaten', 'kota'], '', $kecamatanName)));
         
+        // Handle historical/common aliases in Kab. Mempawah
+        if (str_contains($upperInput, 'SIANTAN') || str_contains($upperInput, 'JUNGKAT')) {
+            $upperInput = 'JONGKAT';
+        }
+
         $presets = self::where('is_active', true)->get();
         foreach ($presets as $preset) {
-            if (str_contains($upperInput, strtoupper($preset->nama_kecamatan))) {
+            $presetName = strtoupper($preset->nama_kecamatan);
+            if (str_contains($upperInput, $presetName) || str_contains($presetName, $upperInput)) {
                 return $preset;
             }
         }
 
         // Fallback search
-        $cleanName = strtoupper(trim(str_ireplace(['kecamatan', 'kabupaten', 'kota'], '', $kecamatanName)));
         $matched = self::where('is_active', true)
-            ->where(function ($q) use ($cleanName) {
-                $q->where('nama_kecamatan', 'LIKE', "%{$cleanName}%")
-                  ->orWhereRaw("UPPER(nama_kecamatan) = ?", [$cleanName]);
+            ->where(function ($q) use ($upperInput) {
+                $q->where('nama_kecamatan', 'LIKE', "%{$upperInput}%")
+                  ->orWhereRaw("UPPER(nama_kecamatan) = ?", [$upperInput]);
             })
             ->first();
 
@@ -69,17 +74,7 @@ class PresetRutePerjadin extends Model
             }
         }
 
-        $cleanName = $kecamatanName ? strtoupper(trim(str_ireplace('kecamatan', '', $kecamatanName))) : '';
-        $preset = null;
-
-        if ($cleanName) {
-            $preset = self::where('is_active', true)
-                ->where(function ($q) use ($cleanName) {
-                    $q->where('nama_kecamatan', 'LIKE', "%{$cleanName}%")
-                      ->orWhereRaw("UPPER(nama_kecamatan) = ?", [$cleanName]);
-                })
-                ->first();
-        }
+        $preset = self::getPresetForKecamatan($kecamatanName);
 
         // Base travel start times
         $startCoord = '08.00 - 08.30';
@@ -132,5 +127,102 @@ class PresetRutePerjadin extends Model
             ['step' => 5, 'waktu' => '15.00 - 15.15', 'kategori' => 'sholat_ashar', 'uraian' => 'Istirahat dan Sholat Ashar'],
             ['step' => 6, 'waktu' => "15.15 - {$pulangEnd}", 'kategori' => 'kembali', 'uraian' => 'Perjalanan kembali ke Mempawah.'],
         ];
+    }
+
+    /**
+     * Get list of all available Mempawah kecamatan options for UI dropdowns.
+     *
+     * @return array<string, string> Key: Full name e.g. "Kecamatan Segedong", Value: Label with duration
+     */
+    public static function getAllKecamatanOptions(): array
+    {
+        $presets = self::where('is_active', true)->orderBy('id')->get();
+        if ($presets->isEmpty()) {
+            return [
+                'Kecamatan Mempawah Hilir' => 'Kecamatan Mempawah Hilir (~15 mnt - Dalam Kota)',
+                'Kecamatan Mempawah Timur' => 'Kecamatan Mempawah Timur (~30 mnt - Dekat)',
+                'Kecamatan Sungai Pinyuh' => 'Kecamatan Sungai Pinyuh (~45 mnt - Sedang)',
+                'Kecamatan Anjongan' => 'Kecamatan Anjongan (~50 mnt - Sedang)',
+                'Kecamatan Segedong' => 'Kecamatan Segedong (~50 mnt - Sedang)',
+                'Kecamatan Jongkat' => 'Kecamatan Jongkat (~60 mnt - Jauh)',
+                'Kecamatan Sungai Kunyit' => 'Kecamatan Sungai Kunyit (~50 mnt - Sedang)',
+                'Kecamatan Toho' => 'Kecamatan Toho (~80 mnt - Jauh)',
+                'Kecamatan Sadaniang' => 'Kecamatan Sadaniang (~105 mnt - Terjauh)',
+            ];
+        }
+
+        $options = [];
+        foreach ($presets as $p) {
+            $formattedName = 'Kecamatan ' . \Illuminate\Support\Str::title(strtolower($p->nama_kecamatan));
+            $options[$formattedName] = "{$formattedName} (~{$p->estimasi_menit} mnt - {$p->jarak_kategori})";
+        }
+
+        return $options;
+    }
+
+    /**
+     * Get list of villages/desa for a given kecamatan.
+     *
+     * @param string|null $kecamatanName
+     * @return array<string> List of village names (e.g. "Desa Parit Bugis", "Desa Peniti Besar")
+     */
+    public static function getDesaListForKecamatan(?string $kecamatanName): array
+    {
+        if (!$kecamatanName) {
+            return [];
+        }
+
+        $clean = strtoupper(trim(str_ireplace(['kecamatan', 'kabupaten', 'kota'], '', $kecamatanName)));
+        if (str_contains($clean, 'SIANTAN') || str_contains($clean, 'JUNGKAT')) {
+            $clean = 'JONGKAT';
+        }
+
+        // Fallback curated mapping for all 9 subdistricts in Mempawah
+        $fallbackDesas = [
+            'SEGEDONG' => ['Desa Parit Bugis', 'Desa Peniti Besar', 'Desa Peniti Dalam I', 'Desa Peniti Dalam II', 'Desa Sungai Burung', 'Desa Sungai Purun Besar'],
+            'MEMPAWAH HILIR' => ['Kelurahan Tengah', 'Kelurahan Terusan', 'Kelurahan Tanjung', 'Desa Kuala Secapah', 'Desa Pasir', 'Desa Penibung', 'Desa Sengkubang', 'Desa Malikian'],
+            'MEMPAWAH TIMUR' => ['Kelurahan Pulau Pedalaman', 'Desa Pasir Wan Salim', 'Desa Sungai Bakau Kecil', 'Desa Pasir Panjang', 'Desa Pasir Palembang', 'Desa Antibar', 'Desa Sejegi', 'Desa Parit Banjar'],
+            'SUNGAI PINYUH' => ['Kelurahan Sungai Pinyuh', 'Desa Sungai Purun Kecil', 'Desa Peniraman', 'Desa Nusapati', 'Desa Galang', 'Desa Sungai Rasau', 'Desa Sungai Batang', 'Desa Sungai Bakau Besar Laut', 'Desa Sungai Bakau Besar Darat'],
+            'ANJONGAN' => ['Kelurahan Anjungan Melancar', 'Desa Anjungan Dalam', 'Desa Pak Bulu', 'Desa Dema', 'Desa Kepayang'],
+            'JONGKAT' => ['Desa Jungkat', 'Desa Sungai Nipah', 'Desa Wajok Hilir', 'Desa Wajok Hulu', 'Desa Peniti Luar'],
+            'SUNGAI KUNYIT' => ['Desa Semudun', 'Desa Semparong Parit Raden', 'Desa Mendalok', 'Desa Sungai Dungun', 'Desa Sungai Limau', 'Desa Sungai Kunyit Laut', 'Desa Sungai Kunyit Dalam', 'Desa Sungai Kunyit Hulu', 'Desa Bukit Batu', 'Desa Sungai Bundung Laut', 'Desa Sungai Duri I', 'Desa Sungai Duri II'],
+            'TOHO' => ['Desa Sambora', 'Desa Benuang', 'Desa Pak Utan', 'Desa Sepang', 'Desa Pak Laheng', 'Desa Terap', 'Desa Kecurit', 'Desa Toho Ilir'],
+            'SADANIANG' => ['Desa Pentek', 'Desa Sekabuk', 'Desa Bumbun', 'Desa Amawang', 'Desa Ansiap', 'Desa Suak Barangan'],
+        ];
+
+        // Try DB lookup via MasterSls first
+        try {
+            if (class_exists(MasterSls::class)) {
+                $dbDesas = MasterSls::where('kecamatan', 'LIKE', "%{$clean}%")
+                    ->orWhereRaw("UPPER(kecamatan) = ?", [$clean])
+                    ->select('desa_kel')
+                    ->distinct()
+                    ->pluck('desa_kel')
+                    ->map(function ($d) {
+                        $title = \Illuminate\Support\Str::title(strtolower($d));
+                        if (in_array(strtoupper($d), ['TENGAH', 'TERUSAN', 'TANJUNG', 'PULAU PEDALAMAN', 'SUNGAI PINYUH', 'ANJUNGAN MELANCAR'])) {
+                            return 'Kelurahan ' . $title;
+                        }
+                        return 'Desa ' . $title;
+                    })
+                    ->values()
+                    ->toArray();
+
+                if (!empty($dbDesas)) {
+                    return $dbDesas;
+                }
+            }
+        } catch (\Throwable $e) {
+            // Silently fallback
+        }
+
+        // Return fallback if found
+        foreach ($fallbackDesas as $k => $desasList) {
+            if (str_contains($clean, $k) || str_contains($k, $clean)) {
+                return $desasList;
+            }
+        }
+
+        return [];
     }
 }

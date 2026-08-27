@@ -39,6 +39,10 @@ class LaporanPerjadinPage extends Page
     public string $nomorSpd = '';
     public string $modaTransportasi = 'Kendaraan Pribadi';
     public string $daerahDikunjungi = '';
+    public array $kecamatanOptions = [];
+    public array $desaSuggestions = [];
+    public ?string $kantorCamatKoordinat = null;
+    public bool $isLevelKabupaten = false;
     public string $modeLaporan = 'harian'; // 'harian' (Default) or 'periodik'
     public ?string $minDate = null;
     public ?string $maxDate = null;
@@ -102,6 +106,7 @@ class LaporanPerjadinPage extends Page
     public function mount(?int $penugasanId = null): void
     {
         $this->tanggalLaporan = now()->toDateString();
+        $this->kecamatanOptions = PresetRutePerjadin::getAllKecamatanOptions();
         $this->loadSuratTugasOptions();
 
         if ($penugasanId) {
@@ -216,6 +221,133 @@ class LaporanPerjadinPage extends Page
     public function setModeLaporan(string $mode): void
     {
         $this->modeLaporan = $mode;
+    }
+
+    public function updatedDaerahDikunjungi($value): void
+    {
+        $this->applyKecamatanPreset($value, updateExistingStops: true);
+    }
+
+    /**
+     * Apply or switch the active Kecamatan route template, updating coordinates, camat stop, and daily hours.
+     */
+    public function applyKecamatanPreset(?string $targetKecamatan = null, bool $updateExistingStops = true): void
+    {
+        if ($targetKecamatan) {
+            $this->daerahDikunjungi = $targetKecamatan;
+        }
+
+        if (empty($this->daerahDikunjungi)) {
+            $this->daerahDikunjungi = 'Kecamatan Mempawah Hilir';
+        }
+
+        $presetModel = PresetRutePerjadin::getPresetForKecamatan($this->daerahDikunjungi);
+        $this->presetSteps = PresetRutePerjadin::getStepsForKecamatan($this->daerahDikunjungi, $this->minDate);
+        $this->desaSuggestions = PresetRutePerjadin::getDesaListForKecamatan($this->daerahDikunjungi);
+        $this->kantorCamatKoordinat = $presetModel?->kantor_camat_koordinat ?? '0.354167, 108.961111';
+
+        $camatName = $presetModel?->kantor_camat_nama ?? 'Kantor Camat (Visum SPPD & Koordinasi)';
+        $camatCoord = $presetModel?->kantor_camat_koordinat ?? '';
+
+        if ($updateExistingStops && !empty($this->harian)) {
+            foreach ($this->harian as $idx => &$day) {
+                $date = $day['tanggal'] ?? $this->minDate;
+                $dayPresets = PresetRutePerjadin::getStepsForKecamatan($this->daerahDikunjungi, $date);
+                $startTime = !empty($dayPresets[0]['waktu']) ? explode('-', $dayPresets[0]['waktu'])[0] : '08.00';
+                $endTime = !empty($dayPresets[5]['waktu']) ? explode('-', $dayPresets[5]['waktu'])[1] : '15.15';
+
+                $day['waktu_mulai'] = trim($startTime);
+                $day['waktu_selesai'] = trim($endTime);
+
+                // Update Stop 1 (Kantor Camat & Visum SPPD)
+                if (!empty($day['titik_kegiatan'])) {
+                    $day['titik_kegiatan'][0]['kategori'] = 'kantor_camat';
+                    $day['titik_kegiatan'][0]['nama_titik'] = $camatName . ' (Visum SPPD)';
+                    $day['titik_kegiatan'][0]['koordinat'] = $camatCoord;
+                    $day['titik_kegiatan'][0]['uraian'] = "Perjalanan menuju {$camatName} untuk koordinasi pelaksanaan tugas dan penandatanganan/cap visum SPPD.";
+                }
+            }
+            unset($day);
+        }
+
+        if ($this->modeLaporan === 'periodik') {
+            $this->periodikData['cakupan_wilayah'] = $this->daerahDikunjungi;
+            if (!empty($this->periodikData['titik_kegiatan'])) {
+                $this->periodikData['titik_kegiatan'][0]['nama_titik'] = $camatName . ' (Posko / Visum)';
+                $this->periodikData['titik_kegiatan'][0]['koordinat'] = $camatCoord;
+            }
+        }
+
+        $formattedName = $presetModel?->nama_kecamatan ? 'Kecamatan ' . \Illuminate\Support\Str::title(strtolower($presetModel->nama_kecamatan)) : $this->daerahDikunjungi;
+
+        Notification::make()
+            ->title("Template Rute {$formattedName} Diterapkan")
+            ->body("Titik 1 (Kantor Camat & Visum), koordinat, serta jam dinas disesuaikan.")
+            ->success()
+            ->send();
+    }
+
+    /**
+     * Quick-insert a suggested village name into a stop's title.
+     */
+    public function setSpotDesa(int $dayIndex, int $spotIndex, string $desaName, bool $isPeriodic = false): void
+    {
+        $spotNumber = $spotIndex;
+        $label = "{$desaName} (Sampel {$spotNumber})";
+
+        if ($isPeriodic) {
+            if (isset($this->periodikData['titik_kegiatan'][$spotIndex])) {
+                $this->periodikData['titik_kegiatan'][$spotIndex]['nama_titik'] = $label;
+            }
+        } else {
+            if (isset($this->harian[$dayIndex]['titik_kegiatan'][$spotIndex])) {
+                $this->harian[$dayIndex]['titik_kegiatan'][$spotIndex]['nama_titik'] = $label;
+            }
+        }
+
+        Notification::make()
+            ->title("Lokasi Diisi: {$desaName}")
+            ->success()
+            ->duration(1800)
+            ->send();
+    }
+
+    /**
+     * Apply a specific Kecamatan route preset to a single day (useful for multi-day regency-wide assignments).
+     */
+    public function applyPresetToSpecificDay(int $dayIndex, string $kecamatanName): void
+    {
+        if (!isset($this->harian[$dayIndex]) || empty($kecamatanName)) {
+            return;
+        }
+
+        $presetModel = PresetRutePerjadin::getPresetForKecamatan($kecamatanName);
+        $date = $this->harian[$dayIndex]['tanggal'] ?? $this->minDate;
+        $dayPresets = PresetRutePerjadin::getStepsForKecamatan($kecamatanName, $date);
+
+        $startTime = !empty($dayPresets[0]['waktu']) ? explode('-', $dayPresets[0]['waktu'])[0] : '08.00';
+        $endTime = !empty($dayPresets[5]['waktu']) ? explode('-', $dayPresets[5]['waktu'])[1] : '15.15';
+
+        $this->harian[$dayIndex]['waktu_mulai'] = trim($startTime);
+        $this->harian[$dayIndex]['waktu_selesai'] = trim($endTime);
+
+        $camatName = $presetModel?->kantor_camat_nama ?? 'Kantor Camat (Visum SPPD)';
+        $camatCoord = $presetModel?->kantor_camat_koordinat ?? '';
+
+        if (!empty($this->harian[$dayIndex]['titik_kegiatan'])) {
+            $this->harian[$dayIndex]['titik_kegiatan'][0]['kategori'] = 'kantor_camat';
+            $this->harian[$dayIndex]['titik_kegiatan'][0]['nama_titik'] = $camatName . ' (Visum SPPD)';
+            $this->harian[$dayIndex]['titik_kegiatan'][0]['koordinat'] = $camatCoord;
+            $this->harian[$dayIndex]['titik_kegiatan'][0]['uraian'] = "Perjalanan menuju {$camatName} untuk koordinasi pelaksanaan tugas dan penandatanganan/cap visum SPPD.";
+        }
+
+        $formattedName = $presetModel?->nama_kecamatan ? 'Kecamatan ' . \Illuminate\Support\Str::title(strtolower($presetModel->nama_kecamatan)) : $kecamatanName;
+
+        Notification::make()
+            ->title("Rute Hari Ke-" . ($dayIndex + 1) . ": {$formattedName}")
+            ->body("Titik 1 (Kantor Camat & Visum) dan jam dinas disesuaikan.")
+            ->success()
+            ->send();
     }
 
     /**
@@ -367,13 +499,37 @@ class LaporanPerjadinPage extends Page
         $this->nomorSuratTugas = $penugasan->suratTugas?->nomor_surat_tugas ?? ($penugasan->suratTugas?->nomor ? "B-{$penugasan->suratTugas->nomor}" : '-');
         $this->nomorSpd = $penugasan->suratPerjadin?->nomor_surat_perjadin ?? ($penugasan->suratPerjadin?->nomor ? "{$penugasan->suratPerjadin->nomor}/SPD" : ($penugasan->jenis_surat_tugas === Constants::NON_SPPD ? 'Non-SPPD' : '-'));
         $this->modaTransportasi = $penugasan->jenis_transportasi ?? 'Kendaraan Pribadi';
-        $this->daerahDikunjungi = $penugasan->tujuan_penugasan ?: 'Kecamatan Mempawah Timur';
+        
+        $this->kecamatanOptions = PresetRutePerjadin::getAllKecamatanOptions();
+        $tujuanRaw = $penugasan->tujuan_penugasan ?: 'Kecamatan Mempawah Timur';
+        
+        $this->isLevelKabupaten = (
+            $penugasan->level_tujuan_penugasan === Constants::LEVEL_PENUGASAN_KABUPATEN_KOTA ||
+            $penugasan->level_tujuan_penugasan === Constants::LEVEL_PENUGASAN_TANPA_LOKASI ||
+            str_contains(strtoupper($tujuanRaw), 'KABUPATEN MEMPAWAH') ||
+            str_contains(strtoupper($tujuanRaw), 'KAB. MEMPAWAH') ||
+            trim(strtoupper($tujuanRaw)) === 'MEMPAWAH' ||
+            trim(strtoupper($tujuanRaw)) === 'KABUPATEN'
+        );
+
+        $matchedPreset = PresetRutePerjadin::getPresetForKecamatan($tujuanRaw);
+        if ($matchedPreset && !$this->isLevelKabupaten) {
+            $this->daerahDikunjungi = 'Kecamatan ' . \Illuminate\Support\Str::title(strtolower($matchedPreset->nama_kecamatan));
+            $this->kantorCamatKoordinat = $matchedPreset->kantor_camat_koordinat;
+        } else {
+            if (empty($this->daerahDikunjungi) || $this->daerahDikunjungi === 'Kabupaten Mempawah') {
+                $this->daerahDikunjungi = 'Kecamatan Mempawah Hilir';
+            }
+            $presetModel = PresetRutePerjadin::getPresetForKecamatan($this->daerahDikunjungi);
+            $this->kantorCamatKoordinat = $presetModel?->kantor_camat_koordinat ?? '0.354167, 108.961111';
+        }
         
         $this->minDate = Carbon::parse($penugasan->tgl_mulai_tugas)->toDateString();
         $this->maxDate = Carbon::parse($penugasan->tgl_akhir_tugas)->toDateString();
         $this->periodeStr = Carbon::parse($this->minDate)->translatedFormat('d F Y') . ' s.d ' . Carbon::parse($this->maxDate)->translatedFormat('d F Y');
 
         $this->presetSteps = PresetRutePerjadin::getStepsForKecamatan($this->daerahDikunjungi, $this->minDate);
+        $this->desaSuggestions = PresetRutePerjadin::getDesaListForKecamatan($this->daerahDikunjungi);
 
         // If report already exists in database
         if ($penugasan->laporanPerjadin) {

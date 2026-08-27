@@ -253,14 +253,62 @@
                     </div>
 
                     <div class="space-y-1.5">
-                        <label class="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300">Detail Penugasan (Otomatis dari Sistem)</label>
-                        <div class="bg-gray-100 dark:bg-gray-800/80 p-3 rounded-xl text-xs space-y-1 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-                            <div>📌 <b>Surat Tugas:</b> {{ $nomorSuratTugas ?: '-' }}</div>
+                        <div class="flex items-center justify-between">
+                            <label class="block text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                📍 Daerah Tujuan & Rute Standar
+                            </label>
+                            @php
+                                $currentPreset = \App\Models\PresetRutePerjadin::getPresetForKecamatan($daerahDikunjungi);
+                            @endphp
+                            @if($isLevelKabupaten)
+                                <span class="text-[10px] bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold px-2 py-0.5 rounded border border-indigo-200 dark:border-indigo-800 flex items-center gap-1 shadow-sm">
+                                    <span>🌐 Tingkat Kabupaten</span>
+                                </span>
+                            @elseif($currentPreset)
+                                <span class="text-[10px] bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 font-bold px-2 py-0.5 rounded border border-teal-200 dark:border-teal-800">
+                                    🚗 ~{{ $currentPreset->estimasi_menit }} mnt ({{ $currentPreset->jarak_kategori }})
+                                </span>
+                            @endif
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                            <div class="flex-1">
+                                <x-filament::input.wrapper :disabled="!$selectedSuratTugasId">
+                                    <x-filament::input.select wire:model.live="daerahDikunjungi" :disabled="!$selectedSuratTugasId" class="truncate pr-8 text-xs md:text-sm font-semibold">
+                                        <option value="">-- Pilih Kecamatan Tujuan Lapangan --</option>
+                                        @foreach($kecamatanOptions as $val => $label)
+                                            <option value="{{ $val }}" @selected(str_contains(strtoupper($daerahDikunjungi), strtoupper(str_replace('Kecamatan ', '', $val))))>{{ $label }}</option>
+                                        @endforeach
+                                    </x-filament::input.select>
+                                </x-filament::input.wrapper>
+                            </div>
+
+                            <button type="button" 
+                                wire:click="applyKecamatanPreset" 
+                                :disabled="!$selectedSuratTugasId"
+                                class="px-3 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center justify-center space-x-1.5 shadow-sm shrink-0 disabled:opacity-50 disabled:cursor-not-allowed" 
+                                title="Terapkan rute, koordinat kantor camat, dan jam dinas kecamatan terpilih ke seluruh tanggal">
+                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                                <span>Terapkan Template Rute</span>
+                            </button>
+                        </div>
+
+                        @if($isLevelKabupaten)
+                            <div class="text-[11px] text-indigo-700 dark:text-indigo-300 bg-indigo-50/50 dark:bg-indigo-950/30 p-2 rounded-lg border border-indigo-100 dark:border-indigo-900/50">
+                                💡 <b>Konteks Penugasan Tingkat Kabupaten:</b> Surat tugas ini mencakup seluruh wilayah Kab. Mempawah. Anda bebas memilih kecamatan tujuan yang dikunjungi (misal: <i>Kecamatan Segedong</i>).
+                            </div>
+                        @endif
+
+                        <div class="bg-gray-100 dark:bg-gray-800/80 p-2.5 rounded-xl text-[11px] space-y-1 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <div>📌 <b>Surat Tugas:</b> {{ $nomorSuratTugas ?: '-' }}</div>
+                                <div>🚗 <b>Transport:</b> {{ $modaTransportasi ?: '-' }}</div>
+                            </div>
                             @if(!empty($nomorSpd) && $nomorSpd !== '-')
                                 <div>📑 <b>Surat Perjalanan Dinas (SPD):</b> {{ $nomorSpd }}</div>
                             @endif
-                            <div>🚗 <b>Moda Transportasi:</b> {{ $modaTransportasi ?: '-' }}</div>
-                            <div>📍 <b>Daerah Tujuan:</b> {{ $daerahDikunjungi ?: '-' }}</div>
                         </div>
                     </div>
                 </div>
@@ -295,6 +343,14 @@
                                 </button>
                             </div>
                         </div>
+
+                        <!-- Shared Datalist for Autocomplete Desa Suggestions -->
+                        <datalist id="desa-datalist">
+                            @foreach($desaSuggestions as $d)
+                                <option value="{{ $d }} (Lokasi Sampel)"></option>
+                                <option value="{{ $d }}"></option>
+                            @endforeach
+                        </datalist>
 
                         <!-- MODE 1: SMART SEQUENTIAL STOPS PER DATE -->
                         @if($modeLaporan === 'harian')
@@ -356,7 +412,19 @@
                                                         </span>
                                                     </div>
 
-                                                    <div class="flex items-center space-x-2 md:space-x-3">
+                                                    <div class="flex flex-wrap items-center gap-2 md:gap-3">
+                                                        <div class="flex items-center space-x-1 text-xs">
+                                                            <span class="text-gray-500 text-[11px]">Rute Hari Ini:</span>
+                                                            <select wire:change="applyPresetToSpecificDay({{ $index }}, $event.target.value)" class="text-[11px] py-1 px-1.5 rounded-lg border border-teal-300 dark:border-teal-700 bg-white dark:bg-gray-800 font-semibold text-teal-700 dark:text-teal-300 shadow-sm focus:ring-teal-500 focus:border-teal-500 max-w-[140px] sm:max-w-[180px] truncate">
+                                                                <option value="">-- Ubah Rute --</option>
+                                                                @foreach($kecamatanOptions as $val => $label)
+                                                                    <option value="{{ $val }}" @selected(str_contains(strtoupper($day['titik_kegiatan'][0]['nama_titik'] ?? $daerahDikunjungi), strtoupper(str_replace('Kecamatan ', '', $val))))>
+                                                                        {{ str_replace('Kecamatan ', '', explode(' (~', $label)[0]) }}
+                                                                    </option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
+
                                                         <div class="flex items-center space-x-1 text-xs">
                                                             <span class="text-gray-500 text-[11px]">Jam Dinas:</span>
                                                             <input type="text" wire:model="harian.{{ $index }}.waktu_mulai" placeholder="08.00" class="w-14 text-center py-1 px-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs font-semibold">
@@ -385,19 +453,40 @@
 
                                                     @foreach($day['titik_kegiatan'] ?? [] as $sIdx => $spot)
                                                         <div class="bg-white dark:bg-gray-800/90 rounded-xl p-3.5 border border-gray-200 dark:border-gray-700 shadow-sm space-y-3" wire:key="spot-{{ $index }}-{{ $sIdx }}">
-                                                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 dark:border-gray-700/60 pb-2.5">
-                                                                <div class="flex items-center space-x-2 flex-1">
-                                                                    <span class="h-5 w-5 rounded-full bg-teal-50 dark:bg-teal-950 text-teal-600 dark:text-teal-400 font-bold text-[10px] flex items-center justify-center border border-teal-200 dark:border-teal-800 shrink-0">
+                                                            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-2 border-b border-gray-100 dark:border-gray-700/60 pb-2.5">
+                                                                <div class="flex items-start space-x-2 flex-1">
+                                                                    <span class="h-5 w-5 rounded-full bg-teal-50 dark:bg-teal-950 text-teal-600 dark:text-teal-400 font-bold text-[10px] flex items-center justify-center border border-teal-200 dark:border-teal-800 shrink-0 mt-1">
                                                                         {{ $sIdx + 1 }}
                                                                     </span>
-                                                                    <input type="text" 
-                                                                        wire:model="harian.{{ $index }}.titik_kegiatan.{{ $sIdx }}.nama_titik" 
-                                                                        placeholder="Contoh: Kantor Camat Mempawah Timur / Desa Pasir Panjang RT 02" 
-                                                                        class="w-full text-xs font-bold rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900 text-gray-900 dark:text-white py-1 px-2">
+                                                                    <div class="w-full space-y-1.5">
+                                                                        <input type="text" 
+                                                                            wire:model="harian.{{ $index }}.titik_kegiatan.{{ $sIdx }}.nama_titik" 
+                                                                            list="desa-datalist"
+                                                                            placeholder="{{ $sIdx === 0 ? 'Contoh: Kantor Camat Segedong (Visum SPPD)' : 'Contoh: Desa Parit Bugis / Lokasi Lapangan 1' }}" 
+                                                                            class="w-full text-xs font-bold rounded-lg border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900 text-gray-900 dark:text-white py-1 px-2.5">
+                                                                        
+                                                                        @php
+                                                                            $currentDaySpot1 = $day['titik_kegiatan'][0]['nama_titik'] ?? '';
+                                                                            $dayDesaSuggestions = \App\Models\PresetRutePerjadin::getDesaListForKecamatan($currentDaySpot1) ?: $desaSuggestions;
+                                                                        @endphp
+                                                                        @if(!empty($dayDesaSuggestions) && $sIdx > 0)
+                                                                            <div class="flex items-center gap-1 overflow-x-auto py-0.5 scrollbar-none text-[10px]">
+                                                                                <span class="text-gray-400 font-medium shrink-0">💡 Saran Desa:</span>
+                                                                                @foreach($dayDesaSuggestions as $desaName)
+                                                                                    <button type="button" 
+                                                                                        wire:click="setSpotDesa({{ $index }}, {{ $sIdx }}, '{{ $desaName }}')"
+                                                                                        class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800/80 shrink-0 transition font-medium cursor-pointer"
+                                                                                        title="Klik untuk memilih {{ $desaName }}">
+                                                                                        + {{ str_replace(['Desa ', 'Kelurahan '], '', $desaName) }}
+                                                                                    </button>
+                                                                                @endforeach
+                                                                            </div>
+                                                                        @endif
+                                                                    </div>
                                                                 </div>
 
                                                                 @if(count($day['titik_kegiatan']) > 1)
-                                                                    <div class="flex justify-end">
+                                                                    <div class="flex justify-end pt-1">
                                                                         <button type="button" wire:click="removeTitikKegiatan({{ $index }}, {{ $sIdx }})" class="text-xs text-red-500 hover:text-red-700 transition flex items-center space-x-1">
                                                                             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -693,14 +782,21 @@
                 <div class="relative rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
                     <div id="interactive-map-canvas"></div>
                     
-                    <div class="absolute top-3 right-3 z-[400]">
+                    <div class="absolute top-3 right-3 z-[400] flex items-center gap-1.5">
+                        <button type="button" 
+                            @click="centerOnDistrictCamat()" 
+                            class="bg-white/90 dark:bg-gray-900/90 hover:bg-white dark:hover:bg-gray-900 text-teal-700 dark:text-teal-300 px-2.5 py-1.5 rounded-lg text-xs font-semibold shadow-md border border-gray-200 dark:border-gray-700 flex items-center space-x-1 backdrop-blur-sm transition"
+                            title="Pusatkan peta ke Kantor Camat kecamatan ini">
+                            <span>🏛️ Kantor Camat</span>
+                        </button>
+
                         <button type="button" 
                             @click="useDeviceLocation()" 
-                            class="bg-white/90 dark:bg-gray-900/90 hover:bg-white dark:hover:bg-gray-900 text-teal-700 dark:text-teal-300 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-md border border-gray-200 dark:border-gray-700 flex items-center space-x-1.5 backdrop-blur-sm transition">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            class="bg-white/90 dark:bg-gray-900/90 hover:bg-white dark:hover:bg-gray-900 text-teal-700 dark:text-teal-300 px-2.5 py-1.5 rounded-lg text-xs font-semibold shadow-md border border-gray-200 dark:border-gray-700 flex items-center space-x-1 backdrop-blur-sm transition">
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            <span x-text="isLocating ? 'Mendeteksi...' : 'Pusatkan ke GPS Saya'"></span>
+                            <span x-text="isLocating ? 'Mendeteksi...' : 'GPS Saya'"></span>
                         </button>
                     </div>
                 </div>
@@ -1231,45 +1327,43 @@
                             let list = wire ? wire.get('harian.' + dayIndex + '.titik_kegiatan') : [];
                             coordStr = list && list[spotIndex] ? list[spotIndex].koordinat : '';
                         }
+
+                        let defaultLat = 0.354167;
+                        let defaultLng = 108.961111;
+                        let camatCoord = wire ? wire.get('kantorCamatKoordinat') : '';
+                        if (camatCoord && camatCoord.includes(',')) {
+                            let cp = camatCoord.split(',');
+                            defaultLat = parseFloat(cp[0].trim()) || 0.354167;
+                            defaultLng = parseFloat(cp[1].trim()) || 108.961111;
+                        }
                         
                         if (coordStr && coordStr.includes(',')) {
                             let parts = coordStr.split(',');
-                            this.mapLat = parseFloat(parts[0].trim()) || -0.0264;
-                            this.mapLng = parseFloat(parts[1].trim()) || 109.3425;
+                            this.mapLat = parseFloat(parts[0].trim()) || defaultLat;
+                            this.mapLng = parseFloat(parts[1].trim()) || defaultLng;
                             this.showMapModal = true;
                             this.$nextTick(() => {
                                 setTimeout(() => this.initOrUpdateMap(), 250);
                             });
-                        } else if (navigator.geolocation) {
-                            this.isLocating = true;
-                            navigator.geolocation.getCurrentPosition(
-                                (pos) => {
-                                    this.mapLat = pos.coords.latitude;
-                                    this.mapLng = pos.coords.longitude;
-                                    this.isLocating = false;
-                                    this.showMapModal = true;
-                                    this.$nextTick(() => {
-                                        setTimeout(() => this.initOrUpdateMap(), 250);
-                                    });
-                                },
-                                (err) => {
-                                    this.isLocating = false;
-                                    this.mapLat = -0.0264;
-                                    this.mapLng = 109.3425;
-                                    this.showMapModal = true;
-                                    this.$nextTick(() => {
-                                        setTimeout(() => this.initOrUpdateMap(), 250);
-                                    });
-                                },
-                                { enableHighAccuracy: true, timeout: 6000 }
-                            );
                         } else {
-                            this.mapLat = -0.0264;
-                            this.mapLng = 109.3425;
+                            // Default directly to selected Kecamatan coordinates (e.g. Segedong)
+                            this.mapLat = defaultLat;
+                            this.mapLng = defaultLng;
                             this.showMapModal = true;
                             this.$nextTick(() => {
                                 setTimeout(() => this.initOrUpdateMap(), 250);
                             });
+                        }
+                    },
+
+                    centerOnDistrictCamat() {
+                        let wire = this.$wire || window.Livewire?.find(this.$el.closest('[wire\\:id]')?.getAttribute('wire:id'));
+                        let camatCoord = wire ? wire.get('kantorCamatKoordinat') : '';
+                        if (camatCoord && camatCoord.includes(',')) {
+                            let parts = camatCoord.split(',');
+                            this.mapLat = parseFloat(parts[0].trim()) || 0.354167;
+                            this.mapLng = parseFloat(parts[1].trim()) || 108.961111;
+                            this.initOrUpdateMap();
                         }
                     },
 
@@ -1509,7 +1603,8 @@
                                             let paddingX = Math.round(width * 0.02);
                                             let paddingY = Math.round(fontSize * 0.7);
 
-                                            let displayWilayah = geocodedAddress || (this.districtName ? this.districtName : 'Kabupaten Mempawah');
+                                            let currentDistrict = (wire && wire.get('daerahDikunjungi')) ? wire.get('daerahDikunjungi') : this.districtName;
+                                            let displayWilayah = geocodedAddress || (currentDistrict ? currentDistrict : 'Kabupaten Mempawah');
                                             if (!displayWilayah.toLowerCase().includes('mempawah')) {
                                                 displayWilayah += ', Kab. Mempawah';
                                             }
