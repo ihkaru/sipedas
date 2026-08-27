@@ -35,3 +35,16 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::get('/p/{slug}', [\App\Http\Controllers\CustomPageController::class, 'show'])->name('custom-page.show');
+
+// Fallback serving public storage for cPanel environments if symlink is broken / missing
+Route::get('/storage/{path}', function (string $path) {
+    $fullPath = storage_path('app/public/' . $path);
+    $realFullPath = realpath($fullPath);
+    $realBasePath = realpath(storage_path('app/public'));
+
+    if (!$realFullPath || !$realBasePath || !str_starts_with($realFullPath, $realBasePath) || !is_file($realFullPath)) {
+        abort(404);
+    }
+
+    return response()->file($realFullPath);
+})->where('path', '.*')->name('storage.fallback');

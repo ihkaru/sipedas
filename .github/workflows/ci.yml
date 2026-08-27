@@ -27,9 +27,8 @@ jobs:
       - name: 🔍 Run Static Analysis (Larastan / PHPStan)
         run: ./vendor/bin/phpstan analyse --no-progress --memory-limit=2G
 
-      - name: 🚀 Publish Livewire & Filament Assets
+      - name: 🚀 Publish Filament Assets
         run: |
-          php artisan livewire:publish --assets --no-interaction || true
           php artisan filament:upgrade || true
 
       - name: 🟢 Setup Node.js

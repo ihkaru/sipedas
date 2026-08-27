@@ -68,7 +68,53 @@ class ArtisanController extends Controller {
         }
         if (request("storage-link")) {
             Artisan::call("storage:link", [], $output);
-            return $output->fetch();
+            $msg = [$output->fetch()];
+
+            // Target storage directory
+            $target = storage_path('app/public');
+
+            // Potential cPanel document root paths for subdomain
+            $possiblePublicRoots = array_filter([
+                $_SERVER['DOCUMENT_ROOT'] ?? null,
+                base_path('../public_html/admin.dvlp.asia'),
+                base_path('../public_html'),
+            ]);
+
+            foreach (array_unique($possiblePublicRoots) as $docRoot) {
+                if (is_dir($docRoot)) {
+                    $linkPath = rtrim($docRoot, '/') . '/storage';
+                    if (is_link($linkPath)) {
+                        @unlink($linkPath);
+                    } elseif (is_dir($linkPath)) {
+                        @rename($linkPath, $linkPath . '_backup_' . date('Ymd_His'));
+                    } elseif (file_exists($linkPath)) {
+                        @unlink($linkPath);
+                    }
+
+                    if (@symlink($target, $linkPath)) {
+                        $msg[] = "Successfully linked: {$linkPath} -> {$target}";
+                    } else {
+                        $msg[] = "Notice: Could not symlink {$linkPath} automatically via PHP";
+                    }
+                }
+            }
+
+            return implode("\n", $msg);
+        }
+        if (request("clean-livewire-assets")) {
+            $deleted = [];
+            $targets = [
+                public_path('vendor/livewire'),
+                ($_SERVER['DOCUMENT_ROOT'] ?? '') . '/vendor/livewire',
+                base_path('../public_html/admin.dvlp.asia/vendor/livewire'),
+            ];
+            foreach (array_unique(array_filter($targets)) as $dir) {
+                if (is_dir($dir)) {
+                    \Illuminate\Support\Facades\File::deleteDirectory($dir);
+                    $deleted[] = "Deleted: {$dir}";
+                }
+            }
+            return empty($deleted) ? "No published livewire assets found." : implode("\n", $deleted);
         }
         if (request("dump-autoload")) {
             app()->make(Composer::class)->dumpAutoloads();
@@ -115,7 +161,19 @@ class ArtisanController extends Controller {
         
         Artisan::call('optimize:clear');
         Artisan::call('filament:clear-cached-components');
+
+        // Cleanup obsolete published livewire assets if present
+        $targets = [
+            public_path('vendor/livewire'),
+            ($_SERVER['DOCUMENT_ROOT'] ?? '') . '/vendor/livewire',
+            base_path('../public_html/admin.dvlp.asia/vendor/livewire'),
+        ];
+        foreach (array_unique(array_filter($targets)) as $dir) {
+            if (is_dir($dir)) {
+                \Illuminate\Support\Facades\File::deleteDirectory($dir);
+            }
+        }
         
-        return "All caches cleared and then optimized!";
+        return "All caches cleared and obsolete livewire assets cleaned!";
     }
 }
