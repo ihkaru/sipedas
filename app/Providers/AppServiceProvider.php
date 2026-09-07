@@ -35,6 +35,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Enforce HTTPS URL generation in production, when APP_URL is HTTPS, or when behind reverse proxy
+        if (
+            app()->environment('production') ||
+            str_starts_with((string) config('app.url'), 'https://') ||
+            (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ||
+            (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
+        ) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         // Octane Watch Mode Test
         Carbon::setLocale('id');
         FilamentAsset::register([
@@ -45,3 +55,4 @@ class AppServiceProvider extends ServiceProvider
         \App\Models\Honor::observe(\App\Observers\HonorObserver::class);
     }
 }
+

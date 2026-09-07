@@ -73,6 +73,19 @@ class APanelProvider extends PanelProvider {
                 \Filament\View\PanelsRenderHook::HEAD_END,
                 fn (): string => \Illuminate\Support\Facades\Blade::render("@vite(['resources/css/app.css', 'resources/js/filament-chart-js-plugins.js'])")
             )
+            ->renderHook(
+                \Filament\View\PanelsRenderHook::SCRIPTS_AFTER,
+                fn (): string => '<script>
+                    if (window.location.protocol === "https:" && window.livewireScriptConfig) {
+                        if (window.livewireScriptConfig.uri && window.livewireScriptConfig.uri.startsWith("http:")) {
+                            window.livewireScriptConfig.uri = window.livewireScriptConfig.uri.replace(/^http:/, "https:");
+                        }
+                        if (window.livewireScriptConfig.moduleUrl && window.livewireScriptConfig.moduleUrl.startsWith("http:")) {
+                            window.livewireScriptConfig.moduleUrl = window.livewireScriptConfig.moduleUrl.replace(/^http:/, "https:");
+                        }
+                    }
+                </script>'
+            )
             ->authMiddleware([
                 Authenticate::class,
             ])

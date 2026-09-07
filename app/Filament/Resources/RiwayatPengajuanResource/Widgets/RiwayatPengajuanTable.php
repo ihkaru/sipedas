@@ -67,12 +67,26 @@ class RiwayatPengajuanTable extends BaseWidget
                 $query
             )
             ->columns([
-                TextColumn::make("penugasan.kegiatan.nama"),
+                TextColumn::make("penugasan.kegiatan.nama")
+                    ->label('Kegiatan')
+                    ->searchable(query: function (\Illuminate\Database\Eloquent\Builder $query, string $search): \Illuminate\Database\Eloquent\Builder {
+                        return $query->whereHas('penugasan', function ($q) use ($search) {
+                            $q->whereHas('kegiatan', function ($q2) use ($search) {
+                                $q2->where('nama', 'like', "%{$search}%");
+                            });
+                        });
+                    }),
                 TextColumn::make("tgl_perjadin")
                     ->label('Tanggal Perjadin')
                     ->badge()
                     ->state(function (RiwayatPengajuan $record){
-                        return $record->penugasan->tgl_perjadin;
+                        return $record->penugasan?->tgl_perjadin;
+                    })
+                    ->searchable(query: function (\Illuminate\Database\Eloquent\Builder $query, string $search): \Illuminate\Database\Eloquent\Builder {
+                        return $query->whereHas('penugasan', function ($q) use ($search) {
+                            $q->where('tgl_mulai_tugas', 'like', "%{$search}%")
+                              ->orWhere('tgl_akhir_tugas', 'like', "%{$search}%");
+                        });
                     })
                 ,
                 TextColumn::make('last_status')
@@ -87,16 +101,38 @@ class RiwayatPengajuanTable extends BaseWidget
                         if($state == 'Perlu Revisi') return 'warning';
                     })
                     ->badge()
+                    ->searchable(query: function (\Illuminate\Database\Eloquent\Builder $query, string $search): \Illuminate\Database\Eloquent\Builder {
+                        $matchingStatusKeys = collect(Constants::STATUS_PENGAJUAN_OPTIONS)
+                            ->filter(fn ($label, $key) => 
+                                str_contains(strtolower($label), strtolower($search)) || 
+                                str_contains(strtolower($key), strtolower($search))
+                            )
+                            ->keys()
+                            ->toArray();
+
+                        if (empty($matchingStatusKeys)) {
+                            return $query->where('status', 'like', "%{$search}%");
+                        }
+
+                        return $query->whereIn('status', $matchingStatusKeys);
+                    })
                 ,
                 TextColumn::make('last_status_timestamp')
                     ->label('Tanggal Perubahan Status')
+                    ->searchable()
+                    ->sortable()
                 ,
+            ])
+            ->filters([
+                \Filament\Tables\Filters\SelectFilter::make('status')
+                    ->label('Status')
+                    ->options(Constants::STATUS_PENGAJUAN_OPTIONS),
             ])
             ->actions([
                 Action::make('buat_laporan')
-                    ->label(fn (RiwayatPengajuan $record): string => $record->penugasan->laporanPerjadin()->exists() ? 'Lihat Laporan' : 'Buat Laporan')
-                    ->icon(fn (RiwayatPengajuan $record): string => $record->penugasan->laporanPerjadin()->exists() ? 'heroicon-o-eye' : 'heroicon-o-document-plus')
-                    ->color(fn (RiwayatPengajuan $record): string => $record->penugasan->laporanPerjadin()->exists() ? 'primary' : 'success')
+                    ->label(fn (RiwayatPengajuan $record): string => $record->penugasan?->laporanPerjadin()->exists() ? 'Lihat Laporan' : 'Buat Laporan')
+                    ->icon(fn (RiwayatPengajuan $record): string => $record->penugasan?->laporanPerjadin()->exists() ? 'heroicon-o-eye' : 'heroicon-o-document-plus')
+                    ->color(fn (RiwayatPengajuan $record): string => $record->penugasan?->laporanPerjadin()->exists() ? 'primary' : 'success')
                     ->visible(fn (RiwayatPengajuan $record): bool => 
                         in_array($record->status, [
                             Constants::STATUS_PENGAJUAN_DISETUJUI,

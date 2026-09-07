@@ -5,14 +5,63 @@
 | Komponen | Versi | Catatan |
 |---|---|---|
 | **Filament** | **v3.3.33** (`^3.2`) | Selalu cari dokumentasi **Filament v3**, bukan v2 atau v4 |
-| **Laravel** | **v11.x** | Framework PHP utama |
-| **PHP** | **8.4.23** | Runtime di dalam container |
+| **Laravel** | **v11.x / v13.x** | Framework PHP utama |
+| **PHP** | **8.4.24** | Runtime di dalam container Docker |
 | **Laravel Octane** | **^2.3** | Server: FrankenPHP (bukan Swoole/RoadRunner) |
 | **Livewire** | **v3.x** | Komponen reaktif (bundled dengan Filament v3) |
 | **Tailwind CSS** | **v3.x** | Filament v3 hanya support Tailwind v3, **bukan v4** |
 | **Vite** | **v5.x** | Bundler frontend |
 
 > **⚠️ Penting saat riset internet:** Selalu tambahkan kata kunci `filament v3` atau `filament 3.x` saat mencari dokumentasi. Banyak hasil pencarian menampilkan Filament v2 (API sangat berbeda) atau Filament v4 (masih beta/berubah).
+
+---
+
+## 🐳 Aturan Development Server (WAJIB DOCKER)
+
+1. **SELALU GUNAKAN DOCKER untuk Development Server:**
+   - Stack development sudah terkonfigurasi lengkap di `docker-compose.dev.yml` dan script `dev`.
+   - **Dilarang** menjalankan `php artisan serve` di host Windows karena PHP host lokal adalah versi 8.3, sedangkan container Docker sudah menggunakan **PHP 8.4** lengkap dengan FrankenPHP + Octane + MySQL + Redis.
+   - **Port 8000 di komputer ini adalah COOLIFY DASHBOARD**, BUKAN aplikasi SIPEDAS!
+
+2. **Daftar Port & Endpoint Lokal (Docker):**
+   - **Aplikasi Web / Login:** [http://localhost:8200/login](http://localhost:8200/login) atau [http://127.0.0.1:8200/login](http://127.0.0.1:8200/login)
+   - **Dashboard Filament:** [http://localhost:8200/a](http://localhost:8200/a)
+   - **Database (MySQL 8.0):** Port `3309` (`sikendis-db`)
+   - **phpMyAdmin:** [http://localhost:8281](http://localhost:8281) (`sikendis-pma`)
+   - **Redis Cache & Session:** Port `6379` (`sikendis-redis`)
+   - **Vite HMR Server:** Port `5173` (`sikendis-vite`)
+
+3. **Perintah Menjalankan & Mengelola Stack:**
+   - **Menjalankan server:**
+     ```bash
+     docker compose -f docker-compose.dev.yml up -d
+     # atau
+     bash dev up
+     ```
+   - **Menjalankan perintah Artisan:**
+     ```bash
+     docker exec sikendis-app-run php artisan <perintah>
+     # atau
+     bash dev artisan <perintah>
+     ```
+   - **Menjalankan Composer:**
+     ```bash
+     docker exec sikendis-app-run composer <perintah>
+     # atau
+     bash dev composer <perintah>
+     ```
+   - **Restart Octane / Reload Worker:**
+     ```bash
+     docker exec sikendis-app-run php artisan octane:reload
+     # atau
+     docker restart sikendis-app-run
+     ```
+   - **Stop server:**
+     ```bash
+     docker compose -f docker-compose.dev.yml down
+     # atau
+     bash dev down
+     ```
 
 ---
 
