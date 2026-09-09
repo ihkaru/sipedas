@@ -146,6 +146,13 @@
                     overflow: hidden !important;
                 }
 
+                .photo-item.photo-item-single {
+                    max-width: 580px !important;
+                    width: 100% !important;
+                    margin: 0 auto !important;
+                    border-radius: 8px !important;
+                }
+
                 .photo-item .photo-box-wrapper {
                     position: relative !important;
                     display: block !important;
@@ -157,6 +164,14 @@
                     max-height: 170px !important;
                     width: 100% !important;
                     object-fit: cover !important;
+                    display: block !important;
+                }
+
+                .photo-item.photo-item-single img {
+                    max-height: 400px !important;
+                    width: 100% !important;
+                    object-fit: contain !important;
+                    background-color: #0f172a !important;
                     display: block !important;
                 }
 
@@ -176,6 +191,11 @@
                     z-index: 10 !important;
                 }
 
+                .photo-item.photo-item-single .photo-watermark-overlay {
+                    padding: 6px 12px !important;
+                    border-top: 2px solid #06b6d4 !important;
+                }
+
                 .photo-watermark-overlay .wm-time {
                     color: #ffffff !important;
                     font-weight: bold !important;
@@ -183,6 +203,11 @@
                     line-height: 1.25 !important;
                     -webkit-print-color-adjust: exact !important;
                     print-color-adjust: exact !important;
+                }
+
+                .photo-item.photo-item-single .photo-watermark-overlay .wm-time {
+                    font-size: 9.5pt !important;
+                    line-height: 1.35 !important;
                 }
 
                 .photo-watermark-overlay .wm-gps {
@@ -194,6 +219,11 @@
                     print-color-adjust: exact !important;
                 }
 
+                .photo-item.photo-item-single .photo-watermark-overlay .wm-gps {
+                    font-size: 9pt !important;
+                    line-height: 1.35 !important;
+                }
+
                 .photo-watermark-overlay .wm-addr {
                     color: #6ee7b7 !important;
                     font-weight: bold !important;
@@ -201,6 +231,17 @@
                     line-height: 1.25 !important;
                     -webkit-print-color-adjust: exact !important;
                     print-color-adjust: exact !important;
+                }
+
+                .photo-item.photo-item-single .photo-watermark-overlay .wm-addr {
+                    font-size: 9pt !important;
+                    line-height: 1.35 !important;
+                }
+
+                .photo-item.photo-item-single .photo-caption {
+                    font-size: 9.5pt !important;
+                    font-weight: bold !important;
+                    padding: 6px 10px !important;
                 }
 
                 .signature-block {
@@ -1355,23 +1396,27 @@
                                 </p>
                             </div>
 
-                            <!-- 2. Grid Foto Dokumentasi -->
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 max-w-2xl mx-auto">
+                            <!-- 2. Grid/Single Foto Dokumentasi -->
+                            @php
+                                $isSinglePhoto = count($allPhotos) === 1;
+                            @endphp
+
+                            <div class="{{ $isSinglePhoto ? 'max-w-2xl w-full mx-auto flex justify-center' : 'grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 max-w-2xl mx-auto' }}">
                                 @foreach($allPhotos as $item)
-                                    <div class="photo-item border border-black rounded-lg overflow-hidden bg-white shadow-sm flex flex-col">
-                                        <div class="photo-box-wrapper relative w-full bg-slate-900 flex items-center justify-center overflow-hidden group">
-                                            <img src="{{ asset('storage/' . $item['path']) }}" class="w-full h-auto max-h-56 object-cover">
+                                    <div class="photo-item {{ $isSinglePhoto ? 'photo-item-single w-full max-w-2xl rounded-xl shadow-md' : 'rounded-lg shadow-sm' }} border border-black overflow-hidden bg-white flex flex-col">
+                                        <div class="photo-box-wrapper relative w-full bg-slate-950 flex items-center justify-center overflow-hidden group">
+                                            <img src="{{ asset('storage/' . $item['path']) }}" class="w-full h-auto {{ $isSinglePhoto ? 'max-h-[460px] object-contain sm:object-cover' : 'max-h-56 object-cover' }}">
                                             
                                             @if($item['gunakan_timestamp'])
                                                 <!-- Dynamic Non-Destructive Watermark Overlay -->
-                                                <div class="photo-watermark-overlay absolute bottom-0 inset-x-0 bg-slate-950/90 text-white px-2.5 py-1.5 border-t border-cyan-400 text-left font-sans z-10">
-                                                    <div class="wm-time text-[9px] font-bold text-white tracking-wide flex items-center gap-1 leading-tight">
+                                                <div class="photo-watermark-overlay {{ $isSinglePhoto ? 'photo-watermark-overlay-single px-3.5 py-2.5' : 'px-2.5 py-1.5' }} absolute bottom-0 inset-x-0 bg-slate-950/90 text-white border-t {{ $isSinglePhoto ? 'border-t-2' : 'border-t' }} border-cyan-400 text-left font-sans z-10">
+                                                    <div class="wm-time {{ $isSinglePhoto ? 'text-xs md:text-sm font-bold' : 'text-[9px] font-bold' }} text-white tracking-wide flex items-center gap-1.5 leading-tight">
                                                         <span>🕒</span> <span>{{ $item['timestamp_str'] }}</span>
                                                     </div>
-                                                    <div class="wm-gps text-[8.5px] font-bold text-sky-300 tracking-wide flex items-center gap-1 leading-tight mt-0.5">
+                                                    <div class="wm-gps {{ $isSinglePhoto ? 'text-[11px] md:text-xs font-bold mt-1' : 'text-[8.5px] font-bold mt-0.5' }} text-sky-300 tracking-wide flex items-center gap-1.5 leading-tight">
                                                         <span>📍</span> <span>GPS: {{ $item['gps_str'] }}</span>
                                                     </div>
-                                                    <div class="wm-addr text-[8.5px] font-bold text-emerald-300 tracking-wide flex items-center gap-1 leading-tight mt-0.5 truncate">
+                                                    <div class="wm-addr {{ $isSinglePhoto ? 'text-[11px] md:text-xs font-bold mt-1' : 'text-[8.5px] font-bold mt-0.5' }} text-emerald-300 tracking-wide flex items-center gap-1.5 leading-tight truncate">
                                                         <span>🏛️</span> <span>Alamat: {{ $item['alamat_str'] }}</span>
                                                     </div>
                                                 </div>
@@ -1390,7 +1435,7 @@
                                                 </button>
                                             </div>
                                         </div>
-                                        <div class="bg-gray-100 px-3 py-1.5 border-t border-black text-[10px] font-semibold text-center text-gray-800">
+                                        <div class="photo-caption bg-gray-100 {{ $isSinglePhoto ? 'px-4 py-2.5 text-xs md:text-sm font-bold' : 'px-3 py-1.5 text-[10px] font-semibold' }} border-t border-black text-center text-gray-800">
                                             {{ $item['label'] }}
                                         </div>
                                     </div>

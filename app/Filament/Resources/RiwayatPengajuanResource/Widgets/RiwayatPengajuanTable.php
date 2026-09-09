@@ -19,6 +19,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\HtmlString;
 
 class RiwayatPengajuanTable extends BaseWidget
@@ -54,12 +55,28 @@ class RiwayatPengajuanTable extends BaseWidget
 
     public function table(Table $table): Table
     {
-        $query = RiwayatPengajuan::query()->with('penugasan')->whereHas("penugasan",function($query){
-            $query->whereHas('pegawai',function($query){$query->where('nip',auth()->user()->pegawai?->nip);
+        $query = RiwayatPengajuan::query()
+            ->with([
+                'penugasan.kegiatan',
+                'penugasan.suratTugas',
+                'penugasan.suratPerjadin',
+                'penugasan.tujuanSuratTugas',
+                'penugasan.provinsi',
+                'penugasan.kabkot',
+                'penugasan.kecamatan',
+                'penugasan.desa',
+                'penugasan.pegawai',
+            ])
+            ->whereHas("penugasan", function ($query) {
+                $query->whereHas('pegawai', function ($query) {
+                    $query->where('nip', auth()->user()->pegawai?->nip);
+                });
             });
-        });
+
         return $table
-            ->defaultSort('last_status_timestamp','desc')
+            ->defaultSort('last_status_timestamp', 'desc')
+            ->searchPlaceholder('Cari no. ST, kegiatan, lokasi, tanggal, status...')
+            ->searchDebounce('500ms')
             ->headerActions(
                 $this->getTableHeaderActions()
             )
@@ -67,22 +84,76 @@ class RiwayatPengajuanTable extends BaseWidget
                 $query
             )
             ->columns([
+                TextColumn::make('penugasan.suratTugas.nomor_surat_tugas')
+                    ->label('No. Surat Tugas')
+                    ->state(function (RiwayatPengajuan $record): string {
+                        $st = $record->penugasan?->suratTugas;
+                        if (!$st) {
+                            return $record->penugasan?->surat_tugas_id ? "ID: {$record->penugasan->surat_tugas_id}" : '-';
+                        }
+                        return $st->nomor_surat_tugas ?? '-';
+                    })
+                    ->description(function (RiwayatPengajuan $record): ?string {
+                        $spd = $record->penugasan?->suratPerjadin?->nomor_surat_perjadin;
+                        return $spd ? "SPD: {$spd}" : null;
+                    })
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        $cleanNum = ltrim(preg_replace('/[^0-9]/', '', $search), '0');
+                        return $query->whereHas('penugasan', function ($q) use ($search, $cleanNum) {
+                            $q->whereHas('suratTugas', function ($st) use ($search, $cleanNum) {
+                                $st->where('nomor', 'like', "%{$search}%")
+                                   ->orWhere('sub_nomor', 'like', "%{$search}%")
+                                   ->orWhere('tahun', 'like', "%{$search}%");
+                                if (!empty($cleanNum)) {
+                                    $st->orWhere('nomor', $cleanNum);
+                                }
+                            })->orWhereHas('suratPerjadin', function ($spd) use ($search, $cleanNum) {
+                                $spd->where('nomor', 'like', "%{$search}%")
+                                    ->orWhere('sub_nomor', 'like', "%{$search}%")
+                                    ->orWhere('tahun', 'like', "%{$search}%");
+                                if (!empty($cleanNum)) {
+                                    $spd->orWhere('nomor', $cleanNum);
+                                }
+                            });
+                        });
+                    }),
                 TextColumn::make("penugasan.kegiatan.nama")
                     ->label('Kegiatan')
-                    ->searchable(query: function (\Illuminate\Database\Eloquent\Builder $query, string $search): \Illuminate\Database\Eloquent\Builder {
+                    ->searchable(query: function (Builder $query, string $search): Builder {
                         return $query->whereHas('penugasan', function ($q) use ($search) {
                             $q->whereHas('kegiatan', function ($q2) use ($search) {
                                 $q2->where('nama', 'like', "%{$search}%");
                             });
                         });
                     }),
+                TextColumn::make("penugasan.tujuan_penugasan")
+                    ->label('Lokasi Penugasan')
+                    ->state(function (RiwayatPengajuan $record): string {
+                        return $record->penugasan?->tujuan_penugasan ?? '-';
+                    })
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereHas('penugasan', function ($q) use ($search) {
+                            $q->whereHas('tujuanSuratTugas', function ($t) use ($search) {
+                                $t->where('nama_tempat_tujuan', 'like', "%{$search}%");
+                            })->orWhereHas('provinsi', function ($p) use ($search) {
+                                $p->where('provinsi', 'like', "%{$search}%");
+                            })->orWhereHas('kabkot', function ($k) use ($search) {
+                                $k->where('kabkot', 'like', "%{$search}%");
+                            })->orWhereHas('kecamatan', function ($kc) use ($search) {
+                                $kc->where('kecamatan', 'like', "%{$search}%");
+                            })->orWhereHas('desa', function ($d) use ($search) {
+                                $d->where('desa_kel', 'like', "%{$search}%");
+                            });
+                        });
+                    })
+                    ->toggleable(),
                 TextColumn::make("tgl_perjadin")
                     ->label('Tanggal Perjadin')
                     ->badge()
                     ->state(function (RiwayatPengajuan $record){
                         return $record->penugasan?->tgl_perjadin;
                     })
-                    ->searchable(query: function (\Illuminate\Database\Eloquent\Builder $query, string $search): \Illuminate\Database\Eloquent\Builder {
+                    ->searchable(query: function (Builder $query, string $search): Builder {
                         return $query->whereHas('penugasan', function ($q) use ($search) {
                             $q->where('tgl_mulai_tugas', 'like', "%{$search}%")
                               ->orWhere('tgl_akhir_tugas', 'like', "%{$search}%");
@@ -101,7 +172,7 @@ class RiwayatPengajuanTable extends BaseWidget
                         if($state == 'Perlu Revisi') return 'warning';
                     })
                     ->badge()
-                    ->searchable(query: function (\Illuminate\Database\Eloquent\Builder $query, string $search): \Illuminate\Database\Eloquent\Builder {
+                    ->searchable(query: function (Builder $query, string $search): Builder {
                         $matchingStatusKeys = collect(Constants::STATUS_PENGAJUAN_OPTIONS)
                             ->filter(fn ($label, $key) => 
                                 str_contains(strtolower($label), strtolower($search)) || 

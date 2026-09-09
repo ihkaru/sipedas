@@ -56,11 +56,37 @@ class RiwayatPengajuanResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['penugasan.pegawai', 'penugasan.kegiatan', 'penugasan.suratTugas']))
+            ->searchPlaceholder('Cari riwayat (no. ST, pegawai, kegiatan, status)...')
+            ->searchDebounce('500ms')
             ->columns([
                 Tables\Columns\TextColumn::make('penugasan_id')
                     ->numeric()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('penugasan.suratTugas.nomor_surat_tugas')
+                    ->label('No. Surat Tugas')
+                    ->state(function (RiwayatPengajuan $record): string {
+                        return $record->penugasan?->suratTugas?->nomor_surat_tugas ?? ($record->penugasan?->surat_tugas_id ? "ID: {$record->penugasan->surat_tugas_id}" : '-');
+                    })
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        $cleanNum = ltrim(preg_replace('/[^0-9]/', '', $search), '0');
+                        return $query->whereHas('penugasan.suratTugas', function ($st) use ($search, $cleanNum) {
+                            $st->where('nomor', 'like', "%{$search}%")
+                               ->orWhere('sub_nomor', 'like', "%{$search}%")
+                               ->orWhere('tahun', 'like', "%{$search}%");
+                            if (!empty($cleanNum)) {
+                                $st->orWhere('nomor', $cleanNum);
+                            }
+                        });
+                    }),
+                Tables\Columns\TextColumn::make('penugasan.pegawai.nama')
+                    ->label('Pegawai')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('penugasan.kegiatan.nama')
+                    ->label('Kegiatan')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('status')
+                    ->badge()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tgl_dikirim')
                     ->dateTime()
