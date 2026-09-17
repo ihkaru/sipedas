@@ -1,40 +1,52 @@
-# Production Deployment & Performance Guide (April 2026)
+# Production Deployment & Performance Guide (September 2026)
 
 This guide explains the production architecture and performance optimizations implemented for SIKENDIS on Coolify.
 
 ## 1. High-Performance Runtime: FrankenPHP Worker Mode
-We have enabled **Worker Mode** via `FRANKENPHP_CONFIG` in the Dockerfile.
+We have enabled **Worker Mode** via FrankenPHP and Laravel Octane in Dockerfile.
 
-- **How it works**: Your application stays in RAM. It boots once and handles thousands of requests without re-booting Laravel.
-- **Boot Tax**: 0ms.
+- **Engine**: FrankenPHP on Debian Bookworm (ensuring robust glibc thread-stacking, stable JIT compiler, and reliable networking).
+- **How it works**: Your application boots once into RAM and serves thousands of requests with zero bootstrap overhead.
+- **Boot Tax**: ~0ms.
 - **Latency**: Sub-millisecond.
+- **Worker Recycling**: Default `--max-requests=1000` is enabled in `Dockerfile` to guard against potential memory leaks in long-lived workers.
 
-### Crucial: State Management
-Because the application is persistent, you must ensure your code is **Stateless**.
-- **Avoid**: Saving request-specific data to static variables or global singletons.
-- **Memory**: We have set `GOMEMLIMIT` to **800MiB** to ensure the container stays within a 1GB limit without crashing the server.
+## 2. Bytecode & Server Layer Excellence: OPcache, JIT & Caddyfile
+- **OPcache**: Bytecode is cached in shared memory (`opcache.validate_timestamps=0` in production).
+- **JIT**: Enabled in **Tracing Mode** for native CPU execution of hotspots.
+- **Custom Caddyfile**: Configured with `encode zstd br gzip`, static asset caching (`max-age=31536000, immutable`), and security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`).
 
-## 2. Bytecode Excellence: OPcache & JIT
-We have tuned `opcache.ini` for maximum throughput.
-
-- **OPcache**: Bytecode is cached in shared memory. Validation of timestamps is disabled for production speed (`opcache.validate_timestamps=0`).
-- **JIT (Just-In-Time)**: Enabled in **Tracing Mode**. This optimizes hotspots in your code for native CPU execution, providing 10-20% extra performance for logic-heavy tasks.
-
-## 3. Laravel 11 & Filament Optimization
-The application runs several "Catching" commands automatically during build and startup:
+## 3. Automated Production Framework Optimization
+During startup (`docker-entrypoint.sh`), when `APP_ENV=production`, the container automatically warms:
 - `php artisan optimize`: Caches configuration, routes, and views.
-- `php artisan filament:optimize`: Specifically optimizes Filament's resource and component discovery.
-- `php artisan icons:cache`: Caches the FluentUI SVG icons to reduce disk I/O.
+- `php artisan filament:optimize`: Specifically caches Filament resources, pages, widgets, and components.
+- `php artisan icons:cache`: Pre-caches FluentUI SVG icons to eliminate disk I/O.
 
-## 4. Coolify Deployment Checklist
-When deploying to Coolify, ensure these Environment Variables are set:
+## 4. Coolify Deployment Recommendations (Zero-Downtime)
+
+### Option A: Standard Application Deployment (RECOMMENDED for Zero-Downtime)
+1. In Coolify, create a new resource: **Application** -> **Public/Private Repository** -> Select `sipedas`.
+2. Build Pack: **Dockerfile**.
+3. Ports Exposes: `80`.
+4. Domain: Set your domain (e.g. `https://admin.dvlpid.my.id`).
+5. Coolify will manage Traefik SSL and use rolling updates (starts new container, waits for healthcheck `http://localhost/up`, shifts traffic, then removes old container).
+
+### Option B: Docker Compose Deployment
+1. If deploying via `docker-compose.yml`, ensure the server network `coolify` is attached.
+2. Health check includes `start_period: 30s` to allow database migration and initial caching without premature failures.
+
+## 5. Required Environment Variables on Coolify
+Ensure these Environment Variables are set in Coolify:
 - `APP_ENV`: `production`
 - `APP_DEBUG`: `false`
-- `DB_HOST`, `REDIS_HOST`, etc.
-- `OCTANE_MAX_REQUESTS`: `1000` (If using Octane; ensures workers recycle before memory leaks occur).
-
-## 5. Security: Trusted Proxies
-The application is configured to trust **all proxies** (`*`) via `bootstrap/app.php`. This allows Traefik and Cloudflare to pass the real User IP and HTTPS status safely.
+- `APP_KEY`: *(Generated via artisan key:generate)*
+- `APP_URL`: `https://admin.dvlpid.my.id`
+- `DB_HOST`: *(Your database container/host name)*
+- `DB_DATABASE`: *(Your database name)*
+- `DB_USERNAME`: *(Your database username)*
+- `DB_PASSWORD`: *(Your database password)*
+- `REDIS_HOST`: *(Your redis container/host name)*
+- `OCTANE_MAX_REQUESTS`: `1000`
 
 ---
-*Maintained by Antigravity AI - April 2026*
+*Maintained by Antigravity AI - September 2026*

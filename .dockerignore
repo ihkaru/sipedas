@@ -18,5 +18,16 @@ docker-compose.*.yml
 README.md
 PRODUCTION_GUIDE.md
 dockerfile
+Dockerfile
 .dockerignore
 .config
+tests
+spec
+docs
+references
+tes.html
+tes.js
+test_*.php
+god-files-report.csv
+phpunit.xml
+phpstan*.neon

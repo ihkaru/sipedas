@@ -1,4 +1,4 @@
-# SIKENDIS Production Stack (April 2026)
+# SIKENDIS Production Stack (September 2026)
 # Optimized for Coolify & FrankenPHP Worker Mode
 services:
     app:
@@ -7,7 +7,7 @@ services:
             target: prod
         image: sikendis-app:latest
         restart: unless-stopped
-        # Production Traefik & SSL Labels (Exact match from server recommendation)
+        # Production Traefik & SSL Labels
         labels:
             - "traefik.enable=true"
             - "traefik.docker.network=coolify"
@@ -19,9 +19,10 @@ services:
             - "coolify.managed=true"
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost/up"]
-            interval: 30s
-            timeout: 10s
+            interval: 20s
+            timeout: 5s
             retries: 3
+            start_period: 30s
         networks:
             - coolify
 
