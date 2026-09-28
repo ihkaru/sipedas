@@ -129,7 +129,7 @@ class RiwayatPengajuanTable extends BaseWidget
                 TextColumn::make("penugasan.tujuan_penugasan")
                     ->label('Lokasi Penugasan')
                     ->state(function (RiwayatPengajuan $record): string {
-                        return $record->penugasan?->tujuan_penugasan ?? '-';
+                        return $record->penugasan->tujuan_penugasan ?? '-';
                     })
                     ->searchable(query: function (Builder $query, string $search): Builder {
                         return $query->whereHas('penugasan', function ($q) use ($search) {

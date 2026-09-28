@@ -7,6 +7,20 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany; // <-- Import ini
 
+/**
+ * @property int $id
+ * @property string|null $id_sobat
+ * @property string|null $nama_1
+ * @property string|null $nik
+ * @property string|null $email
+ * @property string|null $no_telp
+ * @property string|null $kabupaten_domisili
+ * @property string|null $kecamatan_domisili
+ * @property string|null $desa_domisili
+ * @property-read string $kabupaten_name
+ * @property-read string $kecamatan_name
+ * @property-read string $desa_name
+ */
 class Mitra extends Model
 {
     use HasFactory;

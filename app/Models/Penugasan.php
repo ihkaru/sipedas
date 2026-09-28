@@ -12,8 +12,44 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Collection;
-use PHPUnit\TextUI\Configuration\Constant;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @property int $id
+ * @property string|null $nip
+ * @property string|null $id_sobat
+ * @property int|null $kegiatan_id
+ * @property int|null $surat_tugas_id
+ * @property int|null $surat_perjadin_id
+ * @property string|null $plh_id
+ * @property string|null $tgl_pengajuan_tugas
+ * @property string|null $tgl_mulai_tugas
+ * @property string|null $tgl_akhir_tugas
+ * @property string|null $jenis_surat_tugas
+ * @property string|null $transportasi
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read bool $is_mitra
+ * @property-read string|null $jenis_surat
+ * @property-read string $jenis_transportasi
+ * @property-read int $lama_perjadin
+ * @property-read string|null $jenis_perjadin
+ * @property-read string|null $tujuan_penugasan
+ * @property-read string|null $tertugas
+ * @property-read string $jenis_petugas
+ * @property-read string $tgl_perjadin
+ * @property-read \App\Models\NomorSurat|null $suratTugas
+ * @property-read \App\Models\NomorSurat|null $suratPerjadin
+ * @property-read \App\Models\Pegawai|null $pegawai
+ * @property-read \App\Models\Pegawai|null $pengaju
+ * @property-read \App\Models\Mitra|null $mitra
+ * @property-read \App\Models\Pegawai|null $plh
+ * @property-read \App\Models\RiwayatPengajuan|null $riwayatPengajuan
+ * @property-read \App\Models\LaporanPerjadin|null $laporanPerjadin
+ * @property-read \App\Models\Kegiatan|null $kegiatan
+ */
 class Penugasan extends Model {
     use HasFactory;
     protected $guarded = [];
@@ -99,19 +135,19 @@ class Penugasan extends Model {
         );
     }
 
-    public function suratTugas() {
+    public function suratTugas(): BelongsTo {
         return $this->belongsTo(NomorSurat::class, "surat_tugas_id", "id");
     }
-    public function suratPerjadin() {
+    public function suratPerjadin(): BelongsTo {
         return $this->belongsTo(NomorSurat::class, "surat_perjadin_id", "id");
     }
-    public function pegawai() {
+    public function pegawai(): BelongsTo {
         return $this->belongsTo(Pegawai::class, "nip", "nip");
     }
-    public function pengaju() {
+    public function pengaju(): BelongsTo {
         return $this->belongsTo(Pegawai::class, "nip_pengaju", "nip");
     }
-    public function mitra() {
+    public function mitra(): BelongsTo {
         return $this->belongsTo(Mitra::class, "id_sobat", "id_sobat");
     }
     public function plhSesuai() {
@@ -124,22 +160,22 @@ class Penugasan extends Model {
         $this->plhSaatMulaiPerjalanan = Plh::getPlhAktif(Carbon::parse($this->tgl_mulai_tugas), returnPegawai: true);
         return $this->plhSaatMulaiPerjalanan;
     }
-    public function plh() {
+    public function plh(): BelongsTo {
         return $this->belongsTo(Pegawai::class, "plh_id", "nip");
     }
-    public function riwayatPengajuan() {
+    public function riwayatPengajuan(): HasOne {
         return $this->hasOne(RiwayatPengajuan::class, "penugasan_id", "id");
     }
-    public function laporanPerjadin() {
+    public function laporanPerjadin(): HasOne {
         return $this->hasOne(LaporanPerjadin::class, "penugasan_id", "id");
     }
-    public function kegiatan() {
+    public function kegiatan(): BelongsTo {
         return $this->belongsTo(Kegiatan::class, "kegiatan_id", "id");
     }
-    public function satuSurat() {
+    public function satuSurat(): HasMany {
         return $this->hasMany(Penugasan::class, "surat_tugas_id", "surat_tugas_id");
     }
-    public function tujuanSuratTugas() {
+    public function tujuanSuratTugas(): HasMany {
         return $this->hasMany(TujuanSuratTugas::class);
     }
 

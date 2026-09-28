@@ -6,6 +6,15 @@ use App\Supports\Constants;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $penugasan_id
+ * @property string|null $nama_tempat_tujuan
+ * @property string|null $prov_id
+ * @property string|null $kabkot_id
+ * @property string|null $kecamatan_id
+ * @property string|null $desa_kel_id
+ */
 class TujuanSuratTugas extends Model
 {
     use HasFactory;

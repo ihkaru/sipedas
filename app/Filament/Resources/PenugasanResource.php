@@ -56,8 +56,31 @@ class PenugasanResource extends Resource
     public static function formFilterPengajuan()
     {
         return [
+            SelectFilter::make('tahun_dibuat')
+                ->label('Tahun Dibuat')
+                ->options(function () {
+                    $years = Penugasan::selectRaw('DISTINCT YEAR(created_at) as year')
+                        ->whereNotNull('created_at')
+                        ->orderByDesc('year')
+                        ->pluck('year', 'year')
+                        ->toArray();
+                    return $years ?: [now()->year => now()->year];
+                })
+                ->default(now()->year)
+                ->query(function (Builder $query, array $data) {
+                    if (!empty($data['value'])) {
+                        $query->whereYear('penugasans.created_at', $data['value']);
+                    }
+                }),
             SelectFilter::make('pegawai')
+                ->label('Pegawai')
                 ->relationship('pegawai', 'nama')
+                ->multiple()
+                ->searchable()
+                ->preload(),
+            SelectFilter::make('mitra')
+                ->label('Mitra')
+                ->relationship('mitra', 'nama_1')
                 ->multiple()
                 ->searchable()
                 ->preload(),
@@ -70,6 +93,7 @@ class PenugasanResource extends Resource
             SelectFilter::make("kegiatan")
                 ->label("Kegiatan")
                 ->relationship('kegiatan', 'nama')
+                ->searchable()
                 ->preload()
                 ->multiple(),
             SelectFilter::make('riwayatPengajuan')

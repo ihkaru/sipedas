@@ -66,7 +66,7 @@ class RiwayatPengajuanResource extends Resource
                 Tables\Columns\TextColumn::make('penugasan.suratTugas.nomor_surat_tugas')
                     ->label('No. Surat Tugas')
                     ->state(function (RiwayatPengajuan $record): string {
-                        return $record->penugasan?->suratTugas?->nomor_surat_tugas ?? ($record->penugasan?->surat_tugas_id ? "ID: {$record->penugasan->surat_tugas_id}" : '-');
+                        return $record->penugasan?->suratTugas->nomor_surat_tugas ?? ($record->penugasan?->surat_tugas_id ? "ID: {$record->penugasan->surat_tugas_id}" : '-');
                     })
                     ->searchable(query: function (Builder $query, string $search): Builder {
                         $cleanNum = ltrim(preg_replace('/[^0-9]/', '', $search), '0');

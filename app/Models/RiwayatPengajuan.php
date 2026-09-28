@@ -8,12 +8,25 @@ use Illuminate\Database\Eloquent\Model;
 use PHPUnit\TextUI\Configuration\Constant;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+/**
+ * @property int $id
+ * @property int|null $penugasan_id
+ * @property string|null $status
+ * @property string|null $catatan_butuh_perbaikan
+ * @property string|null $last_status
+ * @property-read \App\Models\Penugasan|null $penugasan
+ */
 class RiwayatPengajuan extends Model
 {
     use HasFactory;
     protected $guarded = [];
 
-    public function penugasan(){
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Penugasan, $this>
+     */
+    public function penugasan(): BelongsTo{
         return $this->belongsTo(Penugasan::class,"penugasan_id","id");
     }
 

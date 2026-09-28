@@ -10,6 +10,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $nomor
+ * @property int|null $sub_nomor
+ * @property string|null $tanggal_nomor
+ * @property string|null $jenis
+ * @property int|null $tahun
+ * @property-read string|null $nomor_surat_tugas
+ * @property-read string|null $nomor_surat_perjadin
+ */
 class NomorSurat extends Model
 {
     use HasFactory;

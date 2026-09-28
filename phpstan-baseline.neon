@@ -49,12 +49,6 @@ parameters:
 			path: app/Exports/PengajuanExport.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$nama_1\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Pages/DetailHonorMitra.php
-
-		-
 			message: '#^Parameter \#1 \$options of method Filament\\Forms\\Components\\Select\:\:options\(\) expects array\<array\<string\>\|string\>\|Closure\|Illuminate\\Contracts\\Support\\Arrayable\|string\|null, non\-empty\-array\<int, int\> given\.$#'
 			identifier: argument.type
 			count: 1
@@ -73,60 +67,6 @@ parameters:
 			path: app/Filament/Pages/KalenderPerjadin.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Penugasan\:\:\$pegawai\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Pages/KalenderPerjadin.php
-
-		-
-			message: '#^Relation ''kegiatan'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Filament/Pages/KalenderPerjadin.php
-
-		-
-			message: '#^Relation ''pegawai'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Filament/Pages/KalenderPerjadin.php
-
-		-
-			message: '#^Relation ''riwayatPengajuan'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Filament/Pages/KalenderPerjadin.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Penugasan\:\:\$kegiatan\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Pages/LaporanPerjadinPage.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Penugasan\:\:\$laporanPerjadin\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Filament/Pages/LaporanPerjadinPage.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Penugasan\:\:\$suratPerjadin\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Filament/Pages/LaporanPerjadinPage.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Penugasan\:\:\$suratTugas\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Filament/Pages/LaporanPerjadinPage.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Penugasan\:\:\$tujuan_penugasan\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Pages/LaporanPerjadinPage.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$pegawai\.$#'
 			identifier: property.notFound
 			count: 1
@@ -136,48 +76,6 @@ parameters:
 			message: '#^Parameter \#1 \$rules of method Filament\\Pages\\BasePage\:\:validate\(\) expects array\<string, array\<mixed\>\>\|null, array\<string, string\> given\.$#'
 			identifier: argument.type
 			count: 2
-			path: app/Filament/Pages/LaporanPerjadinPage.php
-
-		-
-			message: '#^Relation ''kegiatan'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Filament/Pages/LaporanPerjadinPage.php
-
-		-
-			message: '#^Relation ''laporanPerjadin'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Filament/Pages/LaporanPerjadinPage.php
-
-		-
-			message: '#^Relation ''pegawai'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Filament/Pages/LaporanPerjadinPage.php
-
-		-
-			message: '#^Relation ''riwayatPengajuan'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Filament/Pages/LaporanPerjadinPage.php
-
-		-
-			message: '#^Relation ''suratPerjadin'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Filament/Pages/LaporanPerjadinPage.php
-
-		-
-			message: '#^Relation ''suratTugas'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
-			path: app/Filament/Pages/LaporanPerjadinPage.php
-
-		-
-			message: '#^Relation ''tujuanSuratTugas'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
 			path: app/Filament/Pages/LaporanPerjadinPage.php
 
 		-
@@ -208,30 +106,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Filament\\Pages\\MatriksPerjadinPegawai\:\:\$form\.$#'
 			identifier: property.notFound
 			count: 2
-			path: app/Filament/Pages/MatriksPerjadinPegawai.php
-
-		-
-			message: '#^Relation ''kegiatan'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Filament/Pages/MatriksPerjadinPegawai.php
-
-		-
-			message: '#^Relation ''pegawai'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Filament/Pages/MatriksPerjadinPegawai.php
-
-		-
-			message: '#^Relation ''riwayatPengajuan'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Filament/Pages/MatriksPerjadinPegawai.php
-
-		-
-			message: '#^Relation ''tujuanSuratTugas'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
 			path: app/Filament/Pages/MatriksPerjadinPegawai.php
 
 		-
@@ -289,30 +163,6 @@ parameters:
 			path: app/Filament/Resources/KegiatanManmitResource/RelationManagers/AlokasiHonorRelationManager.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$id_sobat\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Filament/Resources/KegiatanManmitResource/RelationManagers/AlokasiHonorRelationManager.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$nama_1\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Filament/Resources/KegiatanManmitResource/RelationManagers/AlokasiHonorRelationManager.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Mitra\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Mitra\>\:\:\$id_sobat\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Resources/KegiatanManmitResource/RelationManagers/AlokasiHonorRelationManager.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Mitra\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Mitra\>\:\:\$nama_1\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Resources/KegiatanManmitResource/RelationManagers/AlokasiHonorRelationManager.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 5
@@ -367,36 +217,6 @@ parameters:
 			path: app/Filament/Resources/MitraResource/RelationManagers/KemitraansRelationManager.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$nama_1\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Resources/PenugasanResource.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Penugasan\:\:\$jenis_surat\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Resources/PenugasanResource.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Penugasan\:\:\$jenis_transportasi\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Resources/PenugasanResource.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Penugasan\:\:\$riwayatPengajuan\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Filament/Resources/PenugasanResource.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Penugasan\:\:\$tujuanSuratTugas\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Filament/Resources/PenugasanResource.php
-
-		-
 			message: '#^Call to method fill\(\) on an unknown class App\\Filament\\Resources\\Form\.$#'
 			identifier: class.notFound
 			count: 3
@@ -439,36 +259,6 @@ parameters:
 			path: app/Filament/Resources/PenugasanResource/Pages/ListPenugasans.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Penugasan\:\:\$riwayatPengajuan\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Resources/PenugasanResource/Widgets/PenugasanDisetujuiTable.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Penugasan\:\:\$tujuanSuratTugas\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Filament/Resources/PenugasanResource/Widgets/PenugasanDisetujuiTable.php
-
-		-
-			message: '#^Call to method fill\(\) on an unknown class App\\Filament\\Resources\\PenugasanResource\\Widgets\\Form\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Filament/Resources/PenugasanResource/Widgets/PenugasanDisetujuiTable.php
-
-		-
-			message: '#^Parameter \$form of anonymous function has invalid type App\\Filament\\Resources\\PenugasanResource\\Widgets\\Form\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Filament/Resources/PenugasanResource/Widgets/PenugasanDisetujuiTable.php
-
-		-
-			message: '#^Relation ''riwayatPengajuan'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Filament/Resources/PenugasanResource/Widgets/PenugasanDisetujuiTable.php
-
-		-
 			message: '#^Call to method fill\(\) on an unknown class App\\Filament\\Resources\\PenugasanResource\\Widgets\\Form\.$#'
 			identifier: class.notFound
 			count: 1
@@ -484,12 +274,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\RiwayatPengajuan\:\:\$jumlah\.$#'
 			identifier: property.notFound
 			count: 8
-			path: app/Filament/Resources/PenugasanResource/Widgets/StatusSuratTugasAndaChart.php
-
-		-
-			message: '#^Relation ''penugasan'' is not found in App\\Models\\RiwayatPengajuan model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
 			path: app/Filament/Resources/PenugasanResource/Widgets/StatusSuratTugasAndaChart.php
 
 		-
@@ -517,21 +301,9 @@ parameters:
 			path: app/Filament/Resources/PenugasanResource/Widgets/StatusSuratTugasChart.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\RiwayatPengajuan\:\:\$penugasan\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Filament/Resources/RiwayatPengajuanResource/Widgets/RiwayatPengajuanTable.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$pegawai\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Filament/Resources/RiwayatPengajuanResource/Widgets/RiwayatPengajuanTable.php
-
-		-
-			message: '#^Relation ''penugasan'' is not found in App\\Models\\RiwayatPengajuan model\.$#'
-			identifier: larastan.relationExistence
-			count: 2
 			path: app/Filament/Resources/RiwayatPengajuanResource/Widgets/RiwayatPengajuanTable.php
 
 		-
@@ -643,42 +415,6 @@ parameters:
 			path: app/Http/Controllers/PdfController.php
 
 		-
-			message: '#^Relation ''kegiatan'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/PdfController.php
-
-		-
-			message: '#^Relation ''pegawai'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/PdfController.php
-
-		-
-			message: '#^Relation ''plh'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/PdfController.php
-
-		-
-			message: '#^Relation ''satuSurat'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/PdfController.php
-
-		-
-			message: '#^Relation ''suratPerjadin'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/PdfController.php
-
-		-
-			message: '#^Relation ''suratTugas'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/PdfController.php
-
-		-
 			message: '#^Method Carbon\\Carbon\:\:addDay\(\) invoked with 1 parameter, 0 required\.$#'
 			identifier: arguments.count
 			count: 1
@@ -745,54 +481,6 @@ parameters:
 			path: app/Models/Penugasan.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Penugasan\:\:\$kegiatan\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Models/Penugasan.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Penugasan\:\:\$mitra\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Penugasan.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Penugasan\:\:\$pegawai\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Penugasan.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Penugasan\:\:\$riwayatPengajuan\.$#'
-			identifier: property.notFound
-			count: 20
-			path: app/Models/Penugasan.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Penugasan\:\:\$suratPerjadin\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Models/Penugasan.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Penugasan\:\:\$suratTugas\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Models/Penugasan.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Penugasan\:\:\$tujuanSuratTugas\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Penugasan.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Penugasan\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Penugasan\>\:\:\$riwayatPengajuan\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Models/Penugasan.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$nip\.$#'
 			identifier: property.notFound
 			count: 2
@@ -802,6 +490,12 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$pegawai\.$#'
 			identifier: property.notFound
 			count: 11
+			path: app/Models/Penugasan.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama_tempat_tujuan\.$#'
+			identifier: property.notFound
+			count: 1
 			path: app/Models/Penugasan.php
 
 		-
@@ -826,12 +520,6 @@ parameters:
 			message: '#^Method Carbon\\Carbon\:\:subMonth\(\) invoked with 1 parameter, 0 required\.$#'
 			identifier: arguments.count
 			count: 1
-			path: app/Models/Penugasan.php
-
-		-
-			message: '#^Relation ''riwayatPengajuan'' is not found in App\\Models\\Penugasan model\.$#'
-			identifier: larastan.relationExistence
-			count: 3
 			path: app/Models/Penugasan.php
 
 		-
