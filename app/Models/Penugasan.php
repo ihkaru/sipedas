@@ -32,6 +32,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read bool $is_mitra
+ * @property-read bool $is_magang
+ * @property-read string $label_identitas
  * @property-read string|null $jenis_surat
  * @property-read string $jenis_transportasi
  * @property-read int $lama_perjadin
@@ -75,6 +77,26 @@ class Penugasan extends Model {
     protected function isMitra(): Attribute {
         return Attribute::make(
             get: fn(mixed $value, array $attributes) => (bool) $attributes['id_sobat'],
+        );
+    }
+
+    protected function isMagang(): Attribute {
+        return Attribute::make(
+            get: fn(mixed $value, array $attributes) => $this->pegawai ? (bool) $this->pegawai->is_magang : false,
+        );
+    }
+
+    protected function labelIdentitas(): Attribute {
+        return Attribute::make(
+            get: function (mixed $value, array $attributes) {
+                if ($this->is_mitra) {
+                    return 'ID Sobat';
+                }
+                if ($this->is_magang) {
+                    return 'NIK';
+                }
+                return 'NIP';
+            },
         );
     }
 

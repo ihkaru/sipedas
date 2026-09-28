@@ -567,7 +567,7 @@
               line-height: 11pt;
               text-align: left;
             ">
-                    NIP
+                    {{ $penugasan->label_identitas }}
                 </p>
             </td>
             <td style="width: 17pt">
@@ -589,7 +589,7 @@
               line-height: 11pt;
               text-align: left;
             ">
-                    {{ $penugasan->pegawai?->nip ?? '-' }}
+                    {{ $penugasan->nip ?? $penugasan->id_sobat ?? '-' }}
                 </p>
             </td>
         </tr>
@@ -943,7 +943,7 @@
               line-height: 115%;
               text-align: left;
             ">
-                        Nama / NIP pegawai yang melaksanakan perjalanan dinas
+                        Nama / {{ $penugasan->label_identitas }} pegawai yang melaksanakan perjalanan dinas
                     </p>
                 </td>
                 <td style="
@@ -967,7 +967,7 @@
               text-align: left;
             ">
                         {{ $penugasan->pegawai?->nama }} <br />
-                        NIP. {{ $penugasan->pegawai?->nip }}
+                        {{ $penugasan->label_identitas }}. {{ $penugasan->pegawai?->nip }}
                     </p>
                 </td>
             </tr>
@@ -2324,14 +2324,10 @@
             </tr>
             <tr>
                 <td>
-                    @if ($penugasan->id_sobat != null)
-                        ID SOBAT
-                    @else
-                        NIP
-                    @endif
+                    {{ $penugasan->label_identitas }}
                 </td>
                 <td>:</td>
-                <td>{{ $penugasan->pegawai?->nip }}</td>
+                <td>{{ $penugasan->pegawai?->nip ?? $penugasan->id_sobat }}</td>
             </tr>
             <tr>
                 <td>Pangkat/Golongan</td>
@@ -2430,7 +2426,7 @@
               line-height: 13pt;
               text-align: center;
             ">
-                        NIP. {{ $penugasan->pegawai?->nip }}
+                        {{ $penugasan->label_identitas }}. {{ $penugasan->pegawai?->nip }}
                     </p>
                 </td>
             </tr>

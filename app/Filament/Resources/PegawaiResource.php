@@ -33,7 +33,7 @@ class PegawaiResource extends Resource {
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('nip')
-                    ->label("NIP")
+                    ->label(fn ($record) => $record?->is_magang ? 'NIK' : 'NIP')
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('nip9')
@@ -74,7 +74,7 @@ class PegawaiResource extends Resource {
                 Tables\Columns\TextColumn::make('nama')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nip')
-                    ->label("NIP")
+                    ->label("NIP / NIK")
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nip9')
                     ->label("NIP 9")

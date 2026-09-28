@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $unit_kerja
  * @property string|null $atasan_langsung_id
  * @property-read string $pangkat_golongan
+ * @property-read bool $is_magang
+ * @property-read string $label_identitas
  */
 class Pegawai extends Model {
     use HasFactory;
@@ -64,6 +66,23 @@ class Pegawai extends Model {
                 $subText = $golonganText !== '' ? " {$golonganText} " : ' ';
                 return trim("{$pangkatText}{$subText}(" . strtoupper($pangkat) . "/{$golongan})");
             },
+        );
+    }
+
+    protected function isMagang(): Attribute {
+        return Attribute::make(
+            get: function (mixed $value, array $attributes) {
+                $pangkat = trim((string) ($attributes['pangkat'] ?? ''));
+                $golongan = trim((string) ($attributes['golongan'] ?? ''));
+
+                return ($pangkat === '-' || $pangkat === '') && ($golongan === '-' || $golongan === '');
+            },
+        );
+    }
+
+    protected function labelIdentitas(): Attribute {
+        return Attribute::make(
+            get: fn (mixed $value, array $attributes) => $this->is_magang ? 'NIK' : 'NIP',
         );
     }
 

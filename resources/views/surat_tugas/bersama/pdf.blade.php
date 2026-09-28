@@ -2,6 +2,17 @@
     $c = Illuminate\Support\Carbon::class;
     $cons = App\Supports\Constants::class;
     $peng = App\Models\Pengaturan::class;
+
+    $hasPns = $penugasans->contains(fn($p) => !$p->isMitra && !$p->isMagang);
+    $hasMagang = $penugasans->contains(fn($p) => $p->isMagang);
+    $hasMitra = $penugasans->contains(fn($p) => $p->isMitra);
+
+    $labelIdentitasList = [];
+    if ($hasPns) $labelIdentitasList[] = 'NIP';
+    if ($hasMagang) $labelIdentitasList[] = 'NIK';
+    if ($hasMitra) $labelIdentitasList[] = 'ID Sobat';
+    if (empty($labelIdentitasList)) $labelIdentitasList[] = 'NIP';
+    $labelIdentitasBersama = implode(' / ', $labelIdentitasList);
 @endphp
 
 <!DOCTYPE html
@@ -584,7 +595,7 @@
               line-height: 11pt;
               text-align: left;
             ">
-                    NIP
+                    {{ $labelIdentitasBersama }}
                 </p>
             </td>
             <td style="width: 17pt">
@@ -894,13 +905,7 @@
                 text-indent: 0pt;
                 text-align: center;
                 ">
-                            NIP
-                            @foreach ($penugasans as $p)
-                                @if ($p->isMitra)
-                                    /ID Sobat
-                                    @break
-                                @endif
-                            @endforeach
+                            {{ $labelIdentitasBersama }}
                         </p>
                     </td>
                     <td
@@ -1270,7 +1275,7 @@
                 line-height: 115%;
                 text-align: left;
                 ">
-                            Nama / NIP pegawai yang melaksanakan perjalanan dinas
+                            Nama / {{ $penugasan->label_identitas }} pegawai yang melaksanakan perjalanan dinas
                         </p>
                     </td>
                     <td style="
@@ -1295,7 +1300,7 @@
                 ">
                             {{ $penugasan->pegawai?->nama ?? $penugasan?->mitra->nama_1 }} <br />
                             @if ($penugasan->pegawai)
-                                NIP. {{ $penugasan->pegawai->nip }}
+                                {{ $penugasan->label_identitas }}. {{ $penugasan->pegawai->nip }}
                             @endif
                         </p>
                     </td>
@@ -2645,14 +2650,10 @@
                     </tr>
                     <tr>
                         <td>
-                            @if ($penugasan->id_sobat != null)
-                                ID SOBAT
-                            @else
-                                NIP
-                            @endif
+                            {{ $penugasan->label_identitas }}
                         </td>
                         <td>:</td>
-                        <td>{{ $penugasan->pegawai?->nip }}</td>
+                        <td>{{ $penugasan->pegawai?->nip ?? $penugasan->id_sobat }}</td>
                     </tr>
                     <tr>
                         <td>Pangkat/Golongan</td>
@@ -2750,7 +2751,7 @@
                     line-height: 13pt;
                     text-align: center;
                     ">
-                                NIP. {{ $penugasan->pegawai?->nip }}
+                                {{ $penugasan->label_identitas }}. {{ $penugasan->pegawai?->nip }}
                             </p>
                         </td>
                     </tr>

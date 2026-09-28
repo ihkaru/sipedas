@@ -63,7 +63,7 @@ class PenugasanDisetujuiExport implements FromCollection, WithHeadings, ShouldAu
             'No. Surat Tugas',
             'Nama Petugas',
             'Jenis Petugas',
-            'NIP / ID Sobat',
+            'NIP / NIK / ID Sobat',
             'Nama Kegiatan',
             'Lokasi Penugasan',
             'Tanggal Diajukan',
