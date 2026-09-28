@@ -193,12 +193,6 @@ parameters:
 			path: app/Filament/Resources/KegiatanManmitResource/RelationManagers/AlokasiHonorRelationManager.php
 
 		-
-			message: '#^Called ''pluck'' on Laravel collection, but could have been retrieved as a query\.$#'
-			identifier: larastan.noUnnecessaryCollectionCall
-			count: 1
-			path: app/Filament/Resources/KegiatanResource.php
-
-		-
 			message: '#^Call to static method make\(\) on an unknown class Guava\\FilamentIconPicker\\Forms\\IconPicker\.$#'
 			identifier: class.notFound
 			count: 1

@@ -685,16 +685,20 @@ class PenugasanResource extends Resource
                     ->numeric()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
-                Tables\Columns\TextColumn::make('provinsi.provinsi')
+                Tables\Columns\TextColumn::make('tujuanSuratTugas.provinsi.provinsi')
+                    ->label('Provinsi')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('kabkot.kabkot')
+                Tables\Columns\TextColumn::make('tujuanSuratTugas.kabkot.kabkot')
+                    ->label('Kabupaten/Kota')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('kecamatan.kecamatan')
+                Tables\Columns\TextColumn::make('tujuanSuratTugas.kecamatan.kecamatan')
+                    ->label('Kecamatan')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('desa.desa_kel')
+                Tables\Columns\TextColumn::make('tujuanSuratTugas.desa.desa_kel')
+                    ->label('Desa/Kelurahan')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('jenis_surat_tugas')

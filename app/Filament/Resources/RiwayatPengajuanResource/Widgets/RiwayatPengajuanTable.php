@@ -60,11 +60,10 @@ class RiwayatPengajuanTable extends BaseWidget
                 'penugasan.kegiatan',
                 'penugasan.suratTugas',
                 'penugasan.suratPerjadin',
-                'penugasan.tujuanSuratTugas',
-                'penugasan.provinsi',
-                'penugasan.kabkot',
-                'penugasan.kecamatan',
-                'penugasan.desa',
+                'penugasan.tujuanSuratTugas.provinsi',
+                'penugasan.tujuanSuratTugas.kabkot',
+                'penugasan.tujuanSuratTugas.kecamatan',
+                'penugasan.tujuanSuratTugas.desa',
                 'penugasan.pegawai',
             ])
             ->whereHas("penugasan", function ($query) {
@@ -132,18 +131,12 @@ class RiwayatPengajuanTable extends BaseWidget
                         return $record->penugasan->tujuan_penugasan ?? '-';
                     })
                     ->searchable(query: function (Builder $query, string $search): Builder {
-                        return $query->whereHas('penugasan', function ($q) use ($search) {
-                            $q->whereHas('tujuanSuratTugas', function ($t) use ($search) {
-                                $t->where('nama_tempat_tujuan', 'like', "%{$search}%");
-                            })->orWhereHas('provinsi', function ($p) use ($search) {
-                                $p->where('provinsi', 'like', "%{$search}%");
-                            })->orWhereHas('kabkot', function ($k) use ($search) {
-                                $k->where('kabkot', 'like', "%{$search}%");
-                            })->orWhereHas('kecamatan', function ($kc) use ($search) {
-                                $kc->where('kecamatan', 'like', "%{$search}%");
-                            })->orWhereHas('desa', function ($d) use ($search) {
-                                $d->where('desa_kel', 'like', "%{$search}%");
-                            });
+                        return $query->whereHas('penugasan.tujuanSuratTugas', function ($t) use ($search) {
+                            $t->where('nama_tempat_tujuan', 'like', "%{$search}%")
+                              ->orWhereHas('provinsi', fn($p) => $p->where('provinsi', 'like', "%{$search}%"))
+                              ->orWhereHas('kabkot', fn($k) => $k->where('kabkot', 'like', "%{$search}%"))
+                              ->orWhereHas('kecamatan', fn($kc) => $kc->where('kecamatan', 'like', "%{$search}%"))
+                              ->orWhereHas('desa', fn($d) => $d->where('desa_kel', 'like', "%{$search}%"));
                         });
                     })
                     ->toggleable(),

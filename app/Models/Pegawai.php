@@ -7,6 +7,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property string $nip
+ * @property string|null $nama
+ * @property string|null $pangkat
+ * @property string|null $golongan
+ * @property string|null $jabatan
+ * @property string|null $email
+ * @property string|null $unit_kerja
+ * @property string|null $atasan_langsung_id
+ * @property-read string $pangkat_golongan
+ */
 class Pegawai extends Model {
     use HasFactory;
     protected $guarded = [];
@@ -32,13 +43,26 @@ class Pegawai extends Model {
     protected function pangkatGolongan(): Attribute {
         return Attribute::make(
             get: function (mixed $value, array $attributes) {
-                // Jika Pegawai Golongan V maka langsung tampilkan nama jabatan saja.
-                if ($attributes['golongan'] == 'V') {
-                    return Constants::PANGKAT_OPTIONS[$attributes['golongan']];
+                $pangkat = $attributes['pangkat'] ?? null;
+                $golongan = $attributes['golongan'] ?? null;
+
+                // Jika Golongan V (PPPK/Operator)
+                if ($golongan === 'V') {
+                    return Constants::PANGKAT_OPTIONS['V'];
                 }
-                $golongan = $attributes['pangkat'] == Constants::PANGKAT_IV ? Constants::GOLONGAN_IV_OPTIONS[$attributes['golongan']] : Constants::GOLONGAN_I_III_OPTIONS[$attributes['golongan']];
-                $res = Constants::PANGKAT_OPTIONS[$attributes['pangkat']] . ' ' . ($golongan ? '' . $golongan . ' ' : '') . "(" . strtoupper($attributes['pangkat']) . "/" . $attributes['golongan'] . ")";
-                return $res;
+
+                // Jika tidak memiliki pangkat/golongan atau berupa tanda strip '-'
+                if (!$pangkat || $pangkat === '-' || !$golongan || $golongan === '-') {
+                    return '-';
+                }
+
+                $pangkatText = Constants::PANGKAT_OPTIONS[$pangkat] ?? $pangkat;
+                $golonganText = ($pangkat === Constants::PANGKAT_IV)
+                    ? (Constants::GOLONGAN_IV_OPTIONS[$golongan] ?? '')
+                    : (Constants::GOLONGAN_I_III_OPTIONS[$golongan] ?? '');
+
+                $subText = $golonganText !== '' ? " {$golonganText} " : ' ';
+                return trim("{$pangkatText}{$subText}(" . strtoupper($pangkat) . "/{$golongan})");
             },
         );
     }
