@@ -26,6 +26,10 @@ class PegawaiResource extends Resource {
     protected static ?string $pluralModelLabel = "Pegawai";
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
 
+    public static function canViewAny(): bool {
+        return true;
+    }
+
 
     public static function form(Schema $schema): Schema {
         return $schema->schema([

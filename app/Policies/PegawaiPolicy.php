@@ -10,12 +10,21 @@ class PegawaiPolicy
 {
     use HandlesAuthorization;
 
+    public function before(User $user, string $ability): ?bool
+    {
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        return null;
+    }
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_pegawai');
+        return true;
     }
 
     /**
@@ -23,7 +32,7 @@ class PegawaiPolicy
      */
     public function view(User $user, Pegawai $pegawai): bool
     {
-        return $user->can('view_pegawai');
+        return true;
     }
 
     /**
