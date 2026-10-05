@@ -67,7 +67,7 @@ class PengajuanResource extends Resource
                         ->icon("heroicon-o-pencil")
                         ->form(PengajuanForms::pengajuanPembayaran())
                         // -- TAMBAHKAN BLOK INI --
-                        ->mountUsing(function (Form $form, Pengajuan $record) {
+                        ->mountUsing(function (Schema $form, Pengajuan $record) {
                             $form->fill($record->toArray());
                         })
                         // ------------------------
@@ -78,7 +78,7 @@ class PengajuanResource extends Resource
                         ->icon("heroicon-o-chat-bubble-left-right")
                         ->form(PengajuanForms::tanggapanPengaju())
                         // -- TAMBAHKAN BLOK INI --
-                        ->mountUsing(function (Form $form, Pengajuan $record) {
+                        ->mountUsing(function (Schema $form, Pengajuan $record) {
                             $form->fill($record->toArray());
                         })
                         // ------------------------
@@ -91,7 +91,7 @@ class PengajuanResource extends Resource
                         ->icon("heroicon-o-check")
                         ->form(PengajuanForms::pemeriksaanPpk())
                         // -- TAMBAHKAN BLOK INI --
-                        ->mountUsing(function (Form $form, Pengajuan $record) {
+                        ->mountUsing(function (Schema $form, Pengajuan $record) {
                             $form->fill($record->toArray());
                         })
                         // ------------------------
@@ -103,7 +103,7 @@ class PengajuanResource extends Resource
                         ->icon("heroicon-o-check")
                         ->form(PengajuanForms::pemeriksaanPpspm())
                         // -- TAMBAHKAN BLOK INI --
-                        ->mountUsing(function (Form $form, Pengajuan $record) {
+                        ->mountUsing(function (Schema $form, Pengajuan $record) {
                             $form->fill($record->toArray());
                         })
                         // ------------------------
@@ -117,7 +117,7 @@ class PengajuanResource extends Resource
                         ->icon("heroicon-o-check")
                         ->form(PengajuanForms::pemeriksaanBendahara())
                         // -- TAMBAHKAN BLOK INI --
-                        ->mountUsing(function (Form $form, Pengajuan $record) {
+                        ->mountUsing(function (Schema $form, Pengajuan $record) {
                             $form->fill($record->toArray());
                         })
                         // ------------------------
@@ -130,7 +130,7 @@ class PengajuanResource extends Resource
                         ->icon("heroicon-o-credit-card")
                         ->form(PengajuanForms::pemrosesanBendahara())
                         // -- TAMBAHKAN BLOK INI --
-                        ->mountUsing(function (Form $form, Pengajuan $record) {
+                        ->mountUsing(function (Schema $form, Pengajuan $record) {
                             $form->fill($record->toArray());
                         })
                         // ------------------------

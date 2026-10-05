@@ -32,7 +32,7 @@ class PenugasanTable extends BaseWidget
             Action::make("tambah_pengajuan")
                     ->label("Pengajuan Surat Tugas")
                     ->icon("fluentui-document-add-20-o")
-                    ->mountUsing(function (Form $form){
+                    ->mountUsing(function (Schema $form){
                         $form->fill([
 
                         ]);

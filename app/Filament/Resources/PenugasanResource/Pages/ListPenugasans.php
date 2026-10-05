@@ -30,7 +30,7 @@ class ListPenugasans extends ListRecords
                     ->visible(false)
                     ->label("Pengajuan Surat Tugas")
                     ->icon("fluentui-document-add-20-o")
-                    ->mountUsing(function (Form $form){
+                    ->mountUsing(function (Schema $form){
                         $form->fill([
 
                         ]);
