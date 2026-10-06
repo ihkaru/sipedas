@@ -751,7 +751,7 @@ class PenugasanResource extends Resource
                     ->disabledForm()
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel("Close")
-                    ->mountUsing(function (Form $form, Penugasan $record) {
+                    ->mountUsing(function (Schema $form, Penugasan $record) {
                         $pegawais = Pegawai::whereIn('nip', Penugasan::find($record->id)->satuSurat()->whereHas('riwayatPengajuan', function ($query) {
                             $query->where('status', Constants::STATUS_PENGAJUAN_DISETUJUI);
                         })->pluck('nip'));
@@ -858,7 +858,7 @@ class PenugasanResource extends Resource
                     })
                     ->label("Cairkan"),
                 Action::make("revisi")
-                    ->mountUsing(function (Form $form, Penugasan $record) {
+                    ->mountUsing(function (Schema $form, Penugasan $record) {
                         $form->fill([
                             ...$record->toArray(),
                             ...[
@@ -959,7 +959,7 @@ class PenugasanResource extends Resource
                     ->visible(function (Penugasan $record) {
                         return $record->canAjukanRevisi();;
                     })
-                    ->mountUsing(function (Form $form, Penugasan $record) {
+                    ->mountUsing(function (Schema $form, Penugasan $record) {
                         $form->fill([
                             ...$record->toArray(),
                             ...[
