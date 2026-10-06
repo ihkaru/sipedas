@@ -434,20 +434,45 @@ class Penugasan extends Model {
     }
     public function tolak(bool $checkRole = true) {
         if (!$this->canTolak($checkRole)) return 0;
-        $suratTugas = $this->suratTugas;
-        $suratPerjadin = $this->suratPerjadin;
-        $suratTugas->delete();
-        $suratPerjadin->delete();
+        $suratTugasId = $this->surat_tugas_id;
+        $suratPerjadinId = $this->surat_perjadin_id;
+        $this->surat_tugas_id = null;
+        $this->surat_perjadin_id = null;
         $this->save();
-        return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DITOLAK, "tgl_ditolak", now());
+
+        $idsToDelete = [];
+        if ($suratTugasId && !self::where('id', '!=', $this->id)->where('surat_tugas_id', $suratTugasId)->exists()) {
+            $idsToDelete[] = $suratTugasId;
+        }
+        if ($suratPerjadinId && !self::where('id', '!=', $this->id)->where('surat_perjadin_id', $suratPerjadinId)->exists()) {
+            $idsToDelete[] = $suratPerjadinId;
+        }
+        if (!empty($idsToDelete)) {
+            NomorSurat::whereIn('id', $idsToDelete)->delete();
+        }
+
+        return $this->riwayatPengajuan?->updateStatus(Constants::STATUS_PENGAJUAN_DITOLAK, "tgl_ditolak", now());
     }
     public function batalkan(bool $checkRole = true) {
         if (!$this->canBatalkan($checkRole)) return 0;
-        $suratTugasId = $this->suratTugas;
-        $suratPerjadinId = $this->suratPerjadin;
+        $suratTugasId = $this->surat_tugas_id;
+        $suratPerjadinId = $this->surat_perjadin_id;
+        $this->surat_tugas_id = null;
+        $this->surat_perjadin_id = null;
         $this->save();
-        NomorSurat::whereIn('id', [$suratTugasId, $suratPerjadinId])->delete();
-        $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DIBATALKAN, "tgl_dibatalkan", now());
+
+        $idsToDelete = [];
+        if ($suratTugasId && !self::where('id', '!=', $this->id)->where('surat_tugas_id', $suratTugasId)->exists()) {
+            $idsToDelete[] = $suratTugasId;
+        }
+        if ($suratPerjadinId && !self::where('id', '!=', $this->id)->where('surat_perjadin_id', $suratPerjadinId)->exists()) {
+            $idsToDelete[] = $suratPerjadinId;
+        }
+        if (!empty($idsToDelete)) {
+            NomorSurat::whereIn('id', $idsToDelete)->delete();
+        }
+
+        $this->riwayatPengajuan?->updateStatus(Constants::STATUS_PENGAJUAN_DIBATALKAN, "tgl_dibatalkan", now());
         return $this->delete();
     }
     public function cetak(bool $checkRole = true) {
