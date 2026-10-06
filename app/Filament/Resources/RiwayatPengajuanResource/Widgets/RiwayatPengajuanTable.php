@@ -4,6 +4,7 @@ namespace App\Filament\Resources\RiwayatPengajuanResource\Widgets;
 
 use App\Filament\Resources\PenugasanResource;
 
+use App\Models\MasterSls;
 use App\Models\Penugasan;
 use App\Models\RiwayatPengajuan;
 use App\Supports\Constants;
@@ -55,6 +56,8 @@ class RiwayatPengajuanTable extends BaseWidget
 
     public function table(Table $table): Table
     {
+        $nip = auth()->user()?->pegawai?->nip;
+
         $query = RiwayatPengajuan::query()
             ->with([
                 'penugasan.kegiatan',
@@ -65,12 +68,14 @@ class RiwayatPengajuanTable extends BaseWidget
                 'penugasan.tujuanSuratTugas.kecamatan',
                 'penugasan.tujuanSuratTugas.desa',
                 'penugasan.pegawai',
-            ])
-            ->whereHas("penugasan", function ($query) {
-                $query->whereHas('pegawai', function ($query) {
-                    $query->where('nip', auth()->user()->pegawai?->nip);
-                });
-            });
+            ]);
+
+        if ($nip) {
+            $userPenugasanIds = Penugasan::where('nip', $nip)->pluck('id');
+            $query->whereIn('penugasan_id', $userPenugasanIds);
+        } else {
+            $query->whereRaw('1 = 0');
+        }
 
         return $table
             ->defaultSort('last_status_timestamp', 'desc')
@@ -131,12 +136,55 @@ class RiwayatPengajuanTable extends BaseWidget
                         return $record->penugasan->tujuan_penugasan ?? '-';
                     })
                     ->searchable(query: function (Builder $query, string $search): Builder {
-                        return $query->whereHas('penugasan.tujuanSuratTugas', function ($t) use ($search) {
-                            $t->where('nama_tempat_tujuan', 'like', "%{$search}%")
-                              ->orWhereHas('provinsi', fn($p) => $p->where('provinsi', 'like', "%{$search}%"))
-                              ->orWhereHas('kabkot', fn($k) => $k->where('kabkot', 'like', "%{$search}%"))
-                              ->orWhereHas('kecamatan', fn($kc) => $kc->where('kecamatan', 'like', "%{$search}%"))
-                              ->orWhereHas('desa', fn($d) => $d->where('desa_kel', 'like', "%{$search}%"));
+                        $search = trim($search);
+                        if ($search === '') {
+                            return $query;
+                        }
+
+                        $matchingDesa = MasterSls::where('desa_kel', 'like', "%{$search}%")
+                            ->pluck('desa_kel_id')
+                            ->unique()
+                            ->filter()
+                            ->values()
+                            ->toArray();
+
+                        $matchingKec = MasterSls::where('kecamatan', 'like', "%{$search}%")
+                            ->pluck('kec_id')
+                            ->unique()
+                            ->filter()
+                            ->values()
+                            ->toArray();
+
+                        $matchingKab = MasterSls::where('kabkot', 'like', "%{$search}%")
+                            ->pluck('kabkot_id')
+                            ->unique()
+                            ->filter()
+                            ->values()
+                            ->toArray();
+
+                        $matchingProv = MasterSls::where('provinsi', 'like', "%{$search}%")
+                            ->pluck('prov_id')
+                            ->unique()
+                            ->filter()
+                            ->values()
+                            ->toArray();
+
+                        return $query->whereHas('penugasan.tujuanSuratTugas', function ($t) use ($search, $matchingDesa, $matchingKec, $matchingKab, $matchingProv) {
+                            $t->where(function ($sub) use ($search, $matchingDesa, $matchingKec, $matchingKab, $matchingProv) {
+                                $sub->where('nama_tempat_tujuan', 'like', "%{$search}%");
+                                if (!empty($matchingDesa)) {
+                                    $sub->orWhereIn('desa_kel_id', $matchingDesa);
+                                }
+                                if (!empty($matchingKec)) {
+                                    $sub->orWhereIn('kecamatan_id', $matchingKec);
+                                }
+                                if (!empty($matchingKab)) {
+                                    $sub->orWhereIn('kabkot_id', $matchingKab);
+                                }
+                                if (!empty($matchingProv)) {
+                                    $sub->orWhereIn('prov_id', $matchingProv);
+                                }
+                            });
                         });
                     })
                     ->toggleable(),
