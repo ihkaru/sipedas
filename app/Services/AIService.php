@@ -11,12 +11,33 @@ class AIService
     protected string $baseUrl;
     protected string $apiKey;
     protected string $model;
+    protected int $timeout;
+    protected int $executionTimeLimit;
 
     public function __construct()
     {
         $this->baseUrl = rtrim(config('services.ai.base_url', 'https://ai.dvlpid.my.id/v1'), '/');
         $this->apiKey = config('services.ai.api_key', 'sk-af6376fcf20b4a148672456a6cae1902');
-        $this->model = config('services.ai.model', 'gemini-3-flash');
+        $this->model = config('services.ai.model', 'gemini-3.7-flash');
+        $this->timeout = (int) config('services.ai.timeout', 60);
+        $this->executionTimeLimit = (int) config('services.ai.execution_time_limit', 120);
+    }
+
+    /**
+     * Prepare environment execution time limit before making heavy external AI requests.
+     * Ensures script execution time is extended, or bounds HTTP timeout to prevent uncatchable FatalError.
+     */
+    public function prepareExecutionEnvironment(): int
+    {
+        @set_time_limit($this->executionTimeLimit);
+        @ini_set('max_execution_time', (string) $this->executionTimeLimit);
+
+        $currentMaxExec = (int) ini_get('max_execution_time');
+        if ($currentMaxExec > 0 && $this->timeout >= $currentMaxExec) {
+            return max(5, $currentMaxExec - 3);
+        }
+
+        return $this->timeout;
     }
 
     /**
@@ -30,15 +51,16 @@ class AIService
     public function generateStructuredReport(array $rawInput, array $metaContext): array
     {
         $prompt = $this->buildPrompt($rawInput, $metaContext);
+        $timeout = $this->prepareExecutionEnvironment();
 
         try {
-            Log::info("AIService: Sending request to LLM using model {$this->model}...");
+            Log::info("AIService: Sending request to LLM using model {$this->model} (timeout: {$timeout}s)...");
             
             $response = Http::withHeaders([
                 'Authorization' => "Bearer {$this->apiKey}",
                 'Content-Type' => 'application/json',
             ])
-            ->timeout(60)
+            ->timeout($timeout)
             ->post("{$this->baseUrl}/chat/completions", [
                 'model' => $this->model,
                 'messages' => [
@@ -80,8 +102,15 @@ class AIService
 
             return $parsedJson;
 
-        } catch (Exception $e) {
-            Log::error("AIService Error: " . $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error("AIService Error: " . $e->getMessage(), [
+                'exception' => get_class($e),
+            ]);
+
+            if ($e instanceof \Illuminate\Http\Client\ConnectionException || str_contains($e->getMessage(), 'timed out') || str_contains($e->getMessage(), 'cURL error 28')) {
+                throw new Exception("Permintaan ke AI Service melebihi batas waktu (timeout). Silakan periksa jaringan atau coba beberapa saat lagi.", 0, $e);
+            }
+
             throw $e;
         }
     }
@@ -211,15 +240,16 @@ PROMPT;
     public function generatePeriodicStructuredReport(array $periodikData, array $metaContext): array
     {
         $prompt = $this->buildPeriodicPrompt($periodikData, $metaContext);
+        $timeout = $this->prepareExecutionEnvironment();
 
         try {
-            Log::info("AIService: Sending periodic report request to LLM using model {$this->model}...");
+            Log::info("AIService: Sending periodic report request to LLM using model {$this->model} (timeout: {$timeout}s)...");
             
             $response = Http::withHeaders([
                 'Authorization' => "Bearer {$this->apiKey}",
                 'Content-Type' => 'application/json',
             ])
-            ->timeout(60)
+            ->timeout($timeout)
             ->post("{$this->baseUrl}/chat/completions", [
                 'model' => $this->model,
                 'messages' => [
@@ -261,8 +291,15 @@ PROMPT;
 
             return $parsedJson;
 
-        } catch (Exception $e) {
-            Log::error("AIService Periodic Error: " . $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error("AIService Periodic Error: " . $e->getMessage(), [
+                'exception' => get_class($e),
+            ]);
+
+            if ($e instanceof \Illuminate\Http\Client\ConnectionException || str_contains($e->getMessage(), 'timed out') || str_contains($e->getMessage(), 'cURL error 28')) {
+                throw new Exception("Permintaan ke AI Service melebihi batas waktu (timeout). Silakan periksa jaringan atau coba beberapa saat lagi.", 0, $e);
+            }
+
             throw $e;
         }
     }
@@ -364,14 +401,16 @@ Keluarkan HANYA JSON valid dengan struktur yang sama seperti tabel saat ini:
 }
 PROMPT;
 
+        $timeout = $this->prepareExecutionEnvironment();
+
         try {
-            Log::info("AIService: Sending report revision request to LLM using model {$this->model}...");
+            Log::info("AIService: Sending report revision request to LLM using model {$this->model} (timeout: {$timeout}s)...");
             
             $response = Http::withHeaders([
                 'Authorization' => "Bearer {$this->apiKey}",
                 'Content-Type' => 'application/json',
             ])
-            ->timeout(60)
+            ->timeout($timeout)
             ->post("{$this->baseUrl}/chat/completions", [
                 'model' => $this->model,
                 'messages' => [
@@ -410,8 +449,15 @@ PROMPT;
 
             return $parsedJson;
 
-        } catch (Exception $e) {
-            Log::error("AIService Revision Error: " . $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error("AIService Revision Error: " . $e->getMessage(), [
+                'exception' => get_class($e),
+            ]);
+
+            if ($e instanceof \Illuminate\Http\Client\ConnectionException || str_contains($e->getMessage(), 'timed out') || str_contains($e->getMessage(), 'cURL error 28')) {
+                throw new Exception("Permintaan ke AI Service melebihi batas waktu (timeout). Silakan periksa jaringan atau coba beberapa saat lagi.", 0, $e);
+            }
+
             throw $e;
         }
     }

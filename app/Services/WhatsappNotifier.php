@@ -41,7 +41,7 @@ class WhatsappNotifier
 
             $response = Http::withHeaders([
                 'Authorization' => $token,
-            ])->asForm()->post('https://api.fonnte.com/send', [
+            ])->timeout(10)->asForm()->post('https://api.fonnte.com/send', [
                 'target' => $targetNumber,
                 'message' => $message,
                 'countryCode' => '62', // Opsional, bisa dihapus jika default sudah sesuai

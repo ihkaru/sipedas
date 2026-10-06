@@ -963,7 +963,7 @@ class LaporanPerjadinPage extends Page
 
             $this->isGenerated = true;
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->errorMessage = "Gagal memproses AI: " . $e->getMessage();
             Notification::make()
                 ->title('Gagal Memanggil AI Service')
@@ -1070,7 +1070,7 @@ class LaporanPerjadinPage extends Page
                 ->success()
                 ->send();
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $this->errorMessage = "Gagal memproses revisi AI: " . $e->getMessage();
             Notification::make()
                 ->title('Gagal Memproses Revisi')
