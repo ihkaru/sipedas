@@ -144,6 +144,62 @@ class ApiAuditLog extends Model
                 }
             }
 
+            if ($this->action === 'RENAME_KEGIATAN_ID') {
+                $oldId = $this->state_before['id'];
+                $currentId = $this->state_after['id'];
+                $oldNama = $this->state_before['nama'];
+
+                $currentKegiatan = KegiatanManmit::find($currentId);
+                if (!$currentKegiatan) {
+                    throw new \RuntimeException("Kegiatan dengan ID '{$currentId}' tidak ditemukan untuk di-rollback.");
+                }
+
+                // 1. Buat parent KegiatanManmit dengan oldId
+                $kegiatanData = $currentKegiatan->getAttributes();
+                $kegiatanData['id'] = $oldId;
+                $kegiatanData['nama'] = $oldNama;
+                unset($kegiatanData['created_at'], $kegiatanData['updated_at']);
+                KegiatanManmit::create($kegiatanData);
+
+                // 2. Clone honors kembali ke old prefix
+                $honors = Honor::where('kegiatan_manmit_id', $currentId)->get();
+                foreach ($honors as $honor) {
+                    $currHonorId = $honor->id;
+                    if (str_starts_with($currHonorId, $currentId)) {
+                        $origHonorId = $oldId . substr($currHonorId, strlen($currentId));
+                    } else {
+                        $origHonorId = \Illuminate\Support\Str::upper($oldId . '-' . $honor->jabatan . '-' . $honor->jenis_honor);
+                    }
+
+                    $honorData = $honor->getAttributes();
+                    $honorData['id'] = $origHonorId;
+                    $honorData['kegiatan_manmit_id'] = $oldId;
+                    unset($honorData['created_at'], $honorData['updated_at']);
+                    Honor::create($honorData);
+
+                    AlokasiHonor::where('honor_id', $currHonorId)->update(['honor_id' => $origHonorId]);
+                    $honor->delete();
+                }
+
+                DB::table('kegiatans')
+                    ->where('kegiatan_manmit_id', $currentId)
+                    ->update(['kegiatan_manmit_id' => $oldId]);
+
+                $currentKegiatan->delete();
+
+                $this->update([
+                    'is_rolled_back' => true,
+                    'rolled_back_at' => now(),
+                    'rolled_back_by_user_id' => $byUser?->id,
+                    'rollback_reason' => $reason ?? 'Rollback rename ID kegiatan ke ID semula via audit log',
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => "ID kegiatan #{$currentId} berhasil dikembalikan ke '{$oldId}'.",
+                ];
+            }
+
             throw new \RuntimeException("Handler rollback belum diimplementasikan untuk aksi '{$this->action}'.");
         });
     }

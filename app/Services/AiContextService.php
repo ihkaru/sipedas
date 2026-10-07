@@ -181,6 +181,24 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
 }
 }
 ```
+
+#### Endpoint Khusus: Rename / Migrasi ID Kegiatan (Cascade Safe)
+- **Method & Path**: `POST /api/v1/kegiatan-manmit/{id}/rename-id`
+- **Tujuan**: Memperbaiki / menstandarisasi ID kegiatan (contoh: `SERUTI26` menjadi `SERUTI26-TW3`) secara aman tanpa merusak dokumen yang sudah terbit.
+- **Request Body (JSON)**:
+```json
+{
+  "new_id": "SERUTI26-TW3",
+  "new_nama": "Survei Ekonomi Rumah Tangga Triwulan III",
+  "cascade_honor_ids": true
+}
+```
+- **Karakteristik Keamanan**:
+  - Mengubah primary key `kegiatan_manmits.id` secara atomik.
+  - Meng-cascade seluruh `honors` (menyesuaikan prefix ID) dan `alokasi_honors` (`honor_id`).
+  - **100% AMAN**: Nomor surat SPK dan BAST yang sudah terbit TIDAK BERUBAH dan TIDAK DIHAPUS. Tautan cetak SPK bulanan tetap utuh.
+  - Tercatat di Audit Log dan dapat di-rollback sewaktu-waktu via endpoint rollback.
+
 ---
 ### Endpoint 2: Lookup Mitra Statistik
 - **Method & Path**: `GET /api/v1/mitras`

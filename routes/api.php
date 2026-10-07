@@ -17,8 +17,9 @@ Route::get('/v1/skill.md', [SkillApiController::class, 'show']);
 
 // Protected REST API routes for Coding Agents & Integrations (Requires API Key)
 Route::prefix('v1')->middleware('api.key')->group(function () {
-    // 1. Discovery Endpoints (Lookup Kegiatan, Honor, Mitra)
+    // 1. Discovery & Management Endpoints (Lookup Kegiatan, Honor, Mitra, Migration)
     Route::get('/kegiatan-manmit', [KegiatanManmitApiController::class, 'index']);
+    Route::post('/kegiatan-manmit/{id}/rename-id', [KegiatanManmitApiController::class, 'renameId']);
     Route::get('/mitras', [KegiatanManmitApiController::class, 'mitras']);
 
     // 2. Alokasi Honor & Automatic SPK/BAST Trigger

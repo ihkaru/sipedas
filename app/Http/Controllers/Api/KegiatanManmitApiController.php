@@ -3,12 +3,18 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AlokasiHonor;
+use App\Models\ApiAuditLog;
+use App\Models\Honor;
 use App\Models\KegiatanManmit;
 use App\Models\Mitra;
 use App\Services\HonorService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class KegiatanManmitApiController extends Controller
 {
@@ -283,6 +289,160 @@ class KegiatanManmitApiController extends Controller
                 'per_page' => $paginated->perPage(),
                 'total' => $paginated->total(),
                 'has_more' => $paginated->hasMorePages(),
+            ],
+        ]);
+    }
+
+    /**
+     * Rename / Migrasi Primary Key ID Kegiatan Manmit secara atomik.
+     * Meng-cascade update referensi di tabel honors, alokasi_honors, dan kegiatans.
+     * 100% aman menjaga keutuhan dokumen SPK, BAST, dan histori alokasi mitra tanpa mengubah nomor surat.
+     */
+    public function renameId(string $id, Request $request): JsonResponse
+    {
+        $kegiatan = KegiatanManmit::find($id);
+        if (!$kegiatan) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Kegiatan Manmit dengan ID '{$id}' tidak ditemukan.",
+            ], 404);
+        }
+
+        $request->validate([
+            'new_id' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::notIn([$id]),
+                'unique:kegiatan_manmits,id',
+            ],
+            'new_nama' => ['nullable', 'string', 'max:255'],
+            'cascade_honor_ids' => ['nullable', 'boolean'],
+        ], [
+            'new_id.required' => 'Parameter new_id wajib disertakan.',
+            'new_id.unique' => 'Kegiatan dengan ID tujuan tersebut sudah terdaftar.',
+            'new_id.not_in' => 'new_id tidak boleh sama dengan ID saat ini.',
+        ]);
+
+        $newId = trim($request->input('new_id'));
+        $newNama = $request->input('new_nama') ? trim($request->input('new_nama')) : null;
+        $cascadeHonorIds = $request->boolean('cascade_honor_ids', true);
+
+        $affectedHonors = [];
+        $affectedAlokasiCount = 0;
+
+        DB::beginTransaction();
+        try {
+            // 1. Buat parent KegiatanManmit baru dengan newId
+            $kegiatanData = $kegiatan->getAttributes();
+            $kegiatanData['id'] = $newId;
+            if ($newNama) {
+                $kegiatanData['nama'] = $newNama;
+            }
+            unset($kegiatanData['created_at'], $kegiatanData['updated_at']);
+            KegiatanManmit::create($kegiatanData);
+
+            // 2. Ambil seluruh honors terkait untuk dipindahkan ke newId
+            $honors = Honor::where('kegiatan_manmit_id', $id)->get();
+
+            foreach ($honors as $honor) {
+                $oldHonorId = $honor->id;
+                if ($cascadeHonorIds) {
+                    if (str_starts_with($oldHonorId, $id)) {
+                        $newHonorId = $newId . substr($oldHonorId, strlen($id));
+                    } else {
+                        $newHonorId = Str::upper($newId . '-' . $honor->jabatan . '-' . $honor->jenis_honor);
+                    }
+                } else {
+                    $newHonorId = $oldHonorId;
+                }
+
+                if ($newHonorId !== $oldHonorId) {
+                    // Buat honor baru dengan newHonorId dan newId
+                    $honorData = $honor->getAttributes();
+                    $honorData['id'] = $newHonorId;
+                    $honorData['kegiatan_manmit_id'] = $newId;
+                    unset($honorData['created_at'], $honorData['updated_at']);
+                    Honor::create($honorData);
+
+                    // Pindahkan referensi alokasi ke newHonorId
+                    $alokasiUpdated = AlokasiHonor::where('honor_id', $oldHonorId)->update(['honor_id' => $newHonorId]);
+                    $affectedAlokasiCount += $alokasiUpdated;
+
+                    // Hapus honor lama yang sudah tidak direferensikan lagi
+                    $honor->delete();
+
+                    $affectedHonors[] = [
+                        'old_honor_id' => $oldHonorId,
+                        'new_honor_id' => $newHonorId,
+                        'alokasi_count' => $alokasiUpdated,
+                    ];
+                } else {
+                    $honorData = $honor->getAttributes();
+                    $honorData['kegiatan_manmit_id'] = $newId;
+                    unset($honorData['created_at'], $honorData['updated_at']);
+                    Honor::create($honorData);
+
+                    $alokasiUpdated = AlokasiHonor::where('honor_id', $oldHonorId)->update(['honor_id' => $newHonorId]);
+                    $affectedAlokasiCount += $alokasiUpdated;
+
+                    $honor->delete();
+
+                    $affectedHonors[] = [
+                        'old_honor_id' => $oldHonorId,
+                        'new_honor_id' => $oldHonorId,
+                        'alokasi_count' => $alokasiUpdated,
+                    ];
+                }
+            }
+
+            // 3. Pindahkan relasi kegiatans (jika ada)
+            DB::table('kegiatans')
+                ->where('kegiatan_manmit_id', $id)
+                ->update(['kegiatan_manmit_id' => $newId]);
+
+            // 4. Hapus kegiatan lama (semua referensi anak sudah bersih berpindah)
+            $kegiatan->delete();
+
+            // 5. Catat Audit Log
+            \App\Services\ApiAuditService::record(
+                request: $request,
+                action: 'RENAME_KEGIATAN_ID',
+                targetModel: KegiatanManmit::class,
+                targetId: null,
+                stateBefore: [
+                    'id' => $id,
+                    'nama' => $kegiatan->nama,
+                    'honors' => $honors->pluck('id')->toArray(),
+                ],
+                stateAfter: [
+                    'id' => $newId,
+                    'nama' => $newNama ?? $kegiatan->nama,
+                    'honors' => collect($affectedHonors)->pluck('new_honor_id')->toArray(),
+                ],
+                statusCode: 200,
+                isReversible: true,
+            );
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+
+        $freshKegiatan = KegiatanManmit::find($newId);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "ID Kegiatan Manmit berhasil diubah dari '{$id}' menjadi '{$newId}' secara aman dan atomik.",
+            'data' => [
+                'old_id' => $id,
+                'new_id' => $newId,
+                'nama' => $freshKegiatan->nama,
+                'affected_honors_count' => count($affectedHonors),
+                'affected_alokasi_count' => $affectedAlokasiCount,
+                'honors' => $affectedHonors,
+                'note' => 'Seluruh nomor dokumen SPK dan BAST, ID alokasi, dan relasi mitra tetap utuh 100% tanpa perubahan nomor surat.',
             ],
         ]);
     }

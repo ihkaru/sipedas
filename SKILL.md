@@ -57,9 +57,12 @@ Skill ini memberikan instruksi lengkap bagi AI Coding Agent untuk berinteraksi d
 
 ## 4. Spesifikasi Endpoint
 
-### A. Lookup Kegiatan Manmit
+### A. Lookup & Manajemen Kegiatan Manmit
 - `GET /api/v1/kegiatan-manmit?tahun=2026&bulan=3&has_honors=1&compact=1`
 - Query Params: `q`, `tahun`, `bulan`, `jenis` (SURVEI/SENSUS), `has_honors`, `compact`, `sort_by`, `sort_order`, `per_page`.
+- `POST /api/v1/kegiatan-manmit/{id}/rename-id` (Rename / Migrasi ID Kegiatan):
+  - Body: `{"new_id": "SERUTI26-TW3", "new_nama": "Opsional Nama Baru", "cascade_honor_ids": true}`
+  - Fitur: Migrasi PK ID kegiatan secara atomik dan meng-cascade referensi di `honors`, `alokasi_honors`, dan `kegiatans`. 100% aman menjaga keutuhan nomor SPK dan BAST tanpa mereset nomor surat!
 
 ### B. Lookup Mitra Statistik
 - `GET /api/v1/mitras?tahun=2026&bulan=3&available_only=1&compact=1`
