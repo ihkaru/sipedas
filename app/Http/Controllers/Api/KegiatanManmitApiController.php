@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\KegiatanManmit;
 use App\Models\Mitra;
+use App\Services\HonorService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -12,70 +14,204 @@ class KegiatanManmitApiController extends Controller
 {
     /**
      * Daftar Kegiatan Manmit beserta jenis honor yang tersedia.
+     * Dilengkapi fitur search, multi-filter, sorting, dan mode compact untuk efisiensi token AI.
      */
     public function index(Request $request): JsonResponse
     {
         $query = KegiatanManmit::with('honors');
 
+        // 1. Search (Keyword Search pada Nama atau ID Kegiatan)
+        $search = $request->input('q') ?? $request->input('search');
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('id', 'like', "%{$search}%");
+            });
+        }
+
+        // 2. Filter Tahun
         if ($request->filled('tahun')) {
-            $year = $request->input('tahun');
-            $query->whereYear('tgl_mulai_pelaksanaan', $year);
+            $year = (int)$request->input('tahun');
+            $query->where(function ($q) use ($year) {
+                $q->whereYear('tgl_mulai_pelaksanaan', $year)
+                  ->orWhereYear('tgl_akhir_pelaksanaan', $year);
+            });
         }
 
-        if ($request->filled('jenis_kegiatan')) {
-            $query->where('jenis_kegiatan', $request->input('jenis_kegiatan'));
+        // 3. Filter Bulan (Kegiatan yang aktif pada bulan target)
+        if ($request->filled('bulan')) {
+            $bulan = (int)$request->input('bulan');
+            $tahun = (int)($request->input('tahun') ?? now()->year);
+            $startOfMonth = Carbon::create($tahun, $bulan, 1)->startOfMonth()->toDateString();
+            $endOfMonth = Carbon::create($tahun, $bulan, 1)->endOfMonth()->toDateString();
+
+            $query->where(function ($q) use ($startOfMonth, $endOfMonth) {
+                $q->where('tgl_mulai_pelaksanaan', '<=', $endOfMonth)
+                  ->where('tgl_akhir_pelaksanaan', '>=', $startOfMonth);
+            });
         }
 
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where('nama', 'like', "%{$search}%");
+        // 4. Filter Jenis Kegiatan (SURVEI / SENSUS)
+        $jenis = $request->input('jenis') ?? $request->input('jenis_kegiatan');
+        if ($jenis) {
+            $query->where('jenis_kegiatan', strtoupper($jenis));
         }
 
-        $kegiatans = $query->latest('id')->paginate(25);
+        // 5. Filter Hanya yang Memiliki Rincian Honor
+        if ($request->boolean('has_honors', false)) {
+            $query->whereHas('honors');
+        }
+
+        // 6. Sorting
+        $allowedSorts = ['id', 'nama', 'tgl_mulai_pelaksanaan', 'tgl_akhir_pelaksanaan', 'created_at'];
+        $sortBy = in_array($request->input('sort_by'), $allowedSorts) ? $request->input('sort_by') : 'tgl_mulai_pelaksanaan';
+        $sortOrder = strtolower($request->input('sort_order', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $query->orderBy($sortBy, $sortOrder);
+
+        // 7. Pagination
+        $perPage = min(max((int)($request->input('per_page') ?? $request->input('limit') ?? 20), 1), 100);
+        $paginated = $query->paginate($perPage);
+
+        // 8. Compact / Token-Dense Mode (Hemat Token AI ~80%)
+        $isCompact = $request->boolean('compact', false) || $request->boolean('summary', false);
+
+        if ($isCompact) {
+            $items = collect($paginated->items())->map(function ($keg) {
+                return [
+                    'id' => $keg->id,
+                    'nama' => $keg->nama,
+                    'jenis' => $keg->jenis_kegiatan,
+                    'tgl_mulai' => $keg->tgl_mulai_pelaksanaan,
+                    'tgl_akhir' => $keg->tgl_akhir_pelaksanaan,
+                    'honors' => $keg->honors->map(fn($h) => [
+                        'id' => $h->id,
+                        'jabatan' => $h->jabatan,
+                        'harga' => (float)$h->harga_per_satuan,
+                        'satuan' => $h->satuan_honor,
+                    ]),
+                ];
+            });
+        } else {
+            $items = $paginated->items();
+        }
 
         return response()->json([
             'status' => 'success',
-            'data' => $kegiatans->items(),
+            'data' => $items,
             'meta' => [
-                'current_page' => $kegiatans->currentPage(),
-                'last_page' => $kegiatans->lastPage(),
-                'total' => $kegiatans->total(),
+                'current_page' => $paginated->currentPage(),
+                'last_page' => $paginated->lastPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total(),
+                'has_more' => $paginated->hasMorePages(),
             ],
         ]);
     }
 
     /**
-     * Daftar Mitra beserta status kemitraan untuk tahun yang ditentukan.
+     * Daftar Mitra beserta status kemitraan dan indikator sisa plafon SBML.
+     * Dilengkapi pencarian fleksibel, batch lookup IDs, dan mode compact.
      */
     public function mitras(Request $request): JsonResponse
     {
         $tahun = (int)$request->input('tahun', now()->year);
-        $search = $request->input('search');
+        $search = $request->input('q') ?? $request->input('search');
 
         $query = Mitra::with(['kemitraans' => fn($q) => $q->where('tahun', $tahun)]);
 
+        // 1. Batch ID / ID Sobat lookup (Fetch-Once, Process-Locally)
+        if ($request->filled('ids')) {
+            $rawIds = is_array($request->input('ids')) ? $request->input('ids') : explode(',', $request->input('ids'));
+            $cleanIds = array_map('trim', array_filter($rawIds));
+            if (!empty($cleanIds)) {
+                $query->where(function ($q) use ($cleanIds) {
+                    $q->whereIn('id', $cleanIds)
+                      ->orWhereIn('id_sobat', $cleanIds);
+                });
+            }
+        }
+
+        // 2. Keyword Search (Nama, ID Sobat, atau NIK)
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nama_1', 'like', "%{$search}%")
-                  ->orWhere('id_sobat', 'like', "%{$search}%");
+                  ->orWhere('id_sobat', 'like', "%{$search}%")
+                  ->orWhere('nik', 'like', "%{$search}%");
             });
         }
 
-        if ($request->boolean('aktif_only', true)) {
-            $query->whereHas('kemitraans', function ($q) use ($tahun) {
-                $q->where('tahun', $tahun)->where('status', 'AKTIF');
-            });
+        // 3. Status Kemitraan Filter
+        if ($request->filled('status')) {
+            $status = strtoupper($request->input('status'));
+            $query->whereHas('kemitraans', fn($q) => $q->where('tahun', $tahun)->where('status', $status));
+        } elseif ($request->boolean('aktif_only', true)) {
+            $query->whereHas('kemitraans', fn($q) => $q->where('tahun', $tahun)->where('status', 'AKTIF'));
         }
 
-        $mitras = $query->orderBy('nama_1')->paginate(50);
+        // 4. Sorting
+        $allowedSorts = ['id', 'nama_1', 'id_sobat', 'created_at'];
+        $sortBy = in_array($request->input('sort_by'), $allowedSorts) ? $request->input('sort_by') : 'nama_1';
+        $sortOrder = strtolower($request->input('sort_order', 'asc')) === 'desc' ? 'desc' : 'asc';
+        $query->orderBy($sortBy, $sortOrder);
+
+        // 5. Pagination
+        $perPage = min(max((int)($request->input('per_page') ?? $request->input('limit') ?? 20), 1), 100);
+        $paginated = $query->paginate($perPage);
+
+        // 6. Indikator Sisa SBML per Bulan (Opsional untuk AI Pre-selection)
+        $withSbml = $request->boolean('with_sbml', false) || $request->filled('bulan');
+        $targetBulan = $request->filled('bulan') ? (int)$request->input('bulan') : null;
+
+        $isCompact = $request->boolean('compact', false) || $request->boolean('summary', false);
+
+        $items = collect($paginated->items())->map(function ($mitra) use ($tahun, $isCompact, $withSbml, $targetBulan) {
+            $kemitraan = $mitra->kemitraans->first();
+            $status = $kemitraan?->status ?? 'BELUM_TERDAFTAR';
+
+            $row = [
+                'id' => $mitra->id,
+                'id_sobat' => $mitra->id_sobat,
+                'nik' => $mitra->nik,
+                'nama' => $mitra->nama_1,
+                'status_kemitraan' => $status,
+                'tahun_kemitraan' => $tahun,
+            ];
+
+            if ($withSbml && $targetBulan) {
+                $start = Carbon::create($tahun, $targetBulan, 1)->startOfMonth();
+                $end = Carbon::create($tahun, $targetBulan, 1)->endOfMonth();
+                $remaining = HonorService::getMitraRemainingBudget($mitra->id, $start, $end);
+                $row['sisa_sbml'] = [
+                    'bulan' => $targetBulan,
+                    'sisa_survei' => $remaining['min_survei'],
+                    'sisa_sensus' => $remaining['min_sensus'],
+                ];
+            }
+
+            if (!$isCompact) {
+                $row['email'] = $mitra->email;
+                $row['no_telp'] = $mitra->no_telp;
+                $row['created_at'] = $mitra->created_at;
+            }
+
+            return $row;
+        });
+
+        // 7. Filter Hanya yang Sisa SBML Masih Tersedia di Bulan Tersebut
+        if ($request->boolean('available_only', false) && $targetBulan) {
+            $items = $items->filter(fn($m) => ($m['sisa_sbml']['sisa_survei'] ?? 0) > 0)->values();
+        }
 
         return response()->json([
             'status' => 'success',
-            'data' => $mitras->items(),
+            'data' => $items,
             'meta' => [
                 'tahun' => $tahun,
-                'current_page' => $mitras->currentPage(),
-                'total' => $mitras->total(),
+                'current_page' => $paginated->currentPage(),
+                'last_page' => $paginated->lastPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total(),
+                'has_more' => $paginated->hasMorePages(),
             ],
         ]);
     }

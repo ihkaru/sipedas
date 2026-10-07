@@ -95,10 +95,26 @@
         </div>
     </div>
 
-    <!-- Info Callout -->
-    <div class="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-800 dark:text-amber-200">
-        <span class="font-semibold">💡 Tips Penggunaan:</span>
-        Salin teks di bawah ini lalu tempelkan (*paste*) langsung pada jendela chat Coding Agent (seperti Claude 3.7 Sonnet, Cursor, Windsurf, ChatGPT, atau terminal agent). Agen akan langsung memahami seluruh alur kerja SIPEDAS, batas SBML, aturan Sensus, format payload, dan kredensial API Key ini tanpa perlu konfigurasi tambahan.
+    <!-- Token-Efficient Architecture Badges & Tips -->
+    <div class="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-2">
+        <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
+            <span class="px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-900/60 text-teal-800 dark:text-teal-200 font-bold">
+                ⚡ Agent-Native Architecture (Oct 2026)
+            </span>
+            <span class="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-200 font-semibold">
+                ✓ Server-Side Filtering (Bulan, Jenis, Sisa SBML)
+            </span>
+            <span class="px-2 py-0.5 rounded-full bg-purple-100 dark:purple-900/60 text-purple-800 dark:text-purple-200 font-semibold">
+                ✓ Mode ?compact=1 (Hemat 80% Token)
+            </span>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 font-semibold">
+                ✓ Idempotent Rollback / Undo
+            </span>
+        </div>
+        <div class="text-xs text-amber-800 dark:text-amber-200">
+            <span class="font-semibold">💡 Tips Integrasi:</span>
+            Salin teks di bawah ini lalu tempelkan (*paste*) langsung pada jendela chat Coding Agent (Claude, Cursor, Windsurf, ChatGPT, atau agent script). Prompt ini telah dipersenjatai panduan efisiensi token, query filter presisi, dan kredensial API Key aktif di atas.
+        </div>
     </div>
 
     <!-- Textarea Monospace Editor -->

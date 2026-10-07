@@ -9,6 +9,7 @@ class AiContextService
 {
     /**
      * Generate prompt konteks sistem lengkap dan terperinci untuk AI Coding Agent.
+     * Mengikuti prinsip Agent-Native API Design & Token-Efficiency per Oktober 2026.
      */
     public static function generateContextForApiKey(ApiKey $apiKey): string
     {
@@ -84,14 +85,35 @@ Pahami hubungan antar-entitas di SIPEDAS sebelum memanggil endpoint mutasi:
 
 ---
 
-## 3. ALUR KERJA STANDAR AGENT (RECOMMENDED AGENTIC PIPELINE)
+## 3. ATURAN EMAS EFISIENSI TOKEN AI (AGENT-NATIVE BEST PRACTICES - OKTOBER 2026)
+
+Untuk menghemat context window, mempercepat reasoning, dan menghindari payload bloat:
+
+1. **Selalu Gunakan Parameter `compact=1`**:
+   - Seluruh endpoint GET (`/kegiatan-manmit`, `/mitras`, `/alokasi`, `/kontrak`, `/bast`, `/audit-logs`) mendukung parameter `compact=1`.
+   - Menghemat hingga **80% token** dengan memangkas metadata timestamps dan relasi berulang yang tidak esensial.
+2. **Lakukan Filtering di Server (Server-Side Heavy Lifting)**:
+   - Jangan pernah mengambil seluruh data lalu memfilter di dalam prompt. Gunakan query parameters:
+     - `bulan={1..12}`: Menyaring data hanya pada bulan yang sedang Anda proses.
+     - `q={keyword}` atau `search={keyword}`: Pencarian instan (nama, ID Sobat, NIK, nama kegiatan, no surat).
+     - `has_honors=1`: Pada kegiatan, hanya ambil kegiatan yang sudah memiliki slot honor.
+     - `ids={id1,id2,...}`: Pada mitra, lakukan batch lookup sekaligus (*Fetch-Once, Process-Locally*).
+     - `with_sbml=1` & `available_only=1`: Pada mitra, server langsung menghitung dan menyaring mitra yang sisa pagu SBML-nya masih cukup.
+3. **Paginasi Terukur**:
+   - Gunakan `per_page=10` atau `limit=10` jika hanya membutuhkan sampel verifikasi.
+4. **Audit Trail Pruning**:
+   - Gunakan `only_rollbackable=1` untuk langsung menemukan mutasi yang dapat di-undo tanpa membanjiri konteks dengan log lawas.
+
+---
+
+## 4. ALUR KERJA STANDAR AGENT (RECOMMENDED AGENTIC PIPELINE)
 
 Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
 
 ```
-[Phase 1: Discovery]
-   │──► GET /kegiatan-manmit?tahun={$currentYear} (Cari ID Kegiatan & Honor)
-   └──► GET /mitras?tahun={$currentYear}&aktif_only=1&search={nama} (Cari ID Mitra / id_sobat)
+[Phase 1: Token-Efficient Discovery]
+   │──► GET /kegiatan-manmit?tahun={$currentYear}&bulan=3&has_honors=1&compact=1
+   └──► GET /mitras?tahun={$currentYear}&bulan=3&available_only=1&compact=1
          │
 [Phase 2: Pre-Flight Simulation]
    └──► POST /alokasi/check (Simulasi Dry-Run: Cek bentrok jadwal & sisa pagu SBML)
@@ -104,27 +126,30 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
    └──► POST /alokasi (Atomic Write: Buat AlokasiHonor + Otomatis Terbitkan SPK & BAST)
          │
 [Phase 4: Document Verification]
-   │──► GET /kontrak?mitra_id={id} (Ambil nomor SPK & link PDF cetak)
-   └──► GET /bast?mitra_id={id} (Ambil nomor BAST & link PDF cetak)
+   │──► GET /kontrak?mitra_id={id}&bulan=3&compact=1 (Ambil nomor SPK & link PDF cetak)
+   └──► GET /bast?mitra_id={id}&bulan=3&compact=1 (Ambil nomor BAST & link PDF cetak)
          │
 [Phase 5: Self-Correction / Undo (Opsional)]
+   │──► GET /audit-logs?only_rollbackable=1&compact=1 (Cari ID mutasi yang ingin dibatalkan)
    └──► POST /audit-logs/{id}/rollback (Kembalikan data jika AI mendeteksi kekeliruan)
 ```
 
 ---
 
-## 4. KATALOG REST API ENDPOINTS & SPESIFIKASI TEKNIS
+## 5. KATALOG REST API ENDPOINTS & SPESIFIKASI TEKNIS
 
 ### Endpoint 1: Lookup Kegiatan & Rincian Honor
 - **Method & Path**: `GET /api/v1/kegiatan-manmit`
-- **Tujuan**: Mengambil daftar kegiatan dan rincian honor yang tersedia untuk dialokasikan.
 - **Query Parameters**:
+  - `q` / `search` (string) - Cari nama atau kode ID kegiatan
   - `tahun` (integer, default: {$currentYear}) - Filter tahun anggaran
+  - `bulan` (integer 1-12) - **Sangat disarankan**: Hanya tampilkan kegiatan aktif di bulan target
   - `jenis` (string: `SURVEI` atau `SENSUS`) - Filter jenis kegiatan
-  - `search` (string, opsional) - Kata kunci pencarian nama kegiatan
-  - `page` (integer, opsional) - Halaman paginasi
-  - `per_page` (integer, default: 20) - Jumlah baris per halaman
-- **Contoh Response (200 OK)**:
+  - `has_honors` (boolean: `1` atau `0`) - **Sangat disarankan**: Hanya kegiatan yang memiliki rincian honor
+  - `compact` (boolean: `1` atau `0`) - **Mode hemat token (~80% lebih kecil)**
+  - `sort_by` (`tgl_mulai_pelaksanaan`, `nama`, `id`) & `sort_order` (`asc`/`desc`)
+  - `per_page` / `limit` (integer 1-100, default: 20)
+- **Contoh Compact Response (200 OK)**:
 ```json
 {
   "status": "success",
@@ -132,17 +157,15 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
     {
       "id": "KEG-2026-001",
       "nama": "Survei Biaya Hidup Triwulan I",
-      "jenis_kegiatan": "SURVEI",
-      "tgl_mulai_pelaksanaan": "{$currentYear}-03-01",
-      "tgl_akhir_pelaksanaan": "{$currentYear}-03-31",
+      "jenis": "SURVEI",
+      "tgl_mulai": "{$currentYear}-03-01",
+      "tgl_akhir": "{$currentYear}-03-31",
       "honors": [
         {
           "id": "HON-2026-001",
           "jabatan": "Pencacah Lapangan",
-          "satuan_honor": "Dokumen",
-          "harga_per_satuan": 65000,
-          "tanggal_mulai_kegiatan": "{$currentYear}-03-01",
-          "tanggal_akhir_kegiatan": "{$currentYear}-03-25"
+          "harga": 65000,
+          "satuan": "Dokumen"
         }
       ]
     }
@@ -150,7 +173,9 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
   "meta": {
     "current_page": 1,
     "last_page": 1,
-    "total": 1
+    "per_page": 20,
+    "total": 1,
+    "has_more": false
   }
 }
 ```
@@ -159,13 +184,16 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
 
 ### Endpoint 2: Lookup Mitra Statistik
 - **Method & Path**: `GET /api/v1/mitras`
-- **Tujuan**: Mengambil daftar mitra yang memenuhi syarat untuk dialokasikan honor.
 - **Query Parameters**:
-  - `tahun` (integer, default: {$currentYear}) - Filter tahun status kemitraan
-  - `aktif_only` (integer: `1` atau `0`, default: `1`) - Hanya tampilkan mitra berstatus AKTIF
-  - `search` (string, opsional) - Cari berdasarkan Nama, NIK, atau ID Sobat
-  - `page` (integer, default: 1)
-  - `per_page` (integer, default: 20)
+  - `q` / `search` (string) - Cari nama, NIK, atau ID Sobat
+  - `ids` (string) - Batch lookup ID atau ID Sobat dipisah koma (contoh: `ids=105,108,61041001`)
+  - `tahun` (integer, default: {$currentYear})
+  - `bulan` (integer 1-12) - Sertakan jika ingin kalkulasi sisa plafon SBML
+  - `with_sbml` (boolean: `1` atau `0`) - Lampirkan objek kalkulasi sisa SBML bulan target
+  - `available_only` (boolean: `1` atau `0`) - Hanya mitra yang sisa pagu SBML-nya > 0 di bulan target
+  - `aktif_only` (boolean: `1` atau `0`, default: `1`)
+  - `compact` (boolean: `1` atau `0`, default: `0`)
+  - `per_page` / `limit` (integer 1-100, default: 20)
 - **Contoh Response (200 OK)**:
 ```json
 {
@@ -177,7 +205,12 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
       "nik": "6104101234560001",
       "nama": "Budi Santoso",
       "status_kemitraan": "AKTIF",
-      "tahun_kemitraan": {$currentYear}
+      "tahun_kemitraan": {$currentYear},
+      "sisa_sbml": {
+        "bulan": 3,
+        "sisa_survei": 2703000,
+        "sisa_sensus": 4044000
+      }
     }
   ]
 }
@@ -187,7 +220,7 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
 
 ### Endpoint 3: Pre-Flight Check / Dry-Run (Simulasi Kelayakan)
 - **Method & Path**: `POST /api/v1/alokasi/check`
-- **Tujuan**: Mengecek apakah alokasi yang direncanakan memenuhi semua aturan (SBML, jadwal tidak bentrok, mitra aktif) **TANPA MENYIMPAN KE DATABASE**.
+- **Tujuan**: Memastikan alokasi memenuhi aturan (SBML, jadwal tidak bentrok, mitra aktif) **TANPA MENULIS KE DATABASE**.
 - **Request Body (JSON)**:
 ```json
 {
@@ -196,7 +229,7 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
   "target": 12
 }
 ```
-*(Catatan: Anda juga dapat menggunakan `"id_sobat": "61041001"` sebagai pengganti `mitra_id`)*
+*(Dapat menggunakan `"id_sobat": "61041001"` sebagai pengganti `mitra_id`)*
 
 - **Contoh Response Lolos (200 OK)**:
 ```json
@@ -207,25 +240,19 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
     "estimated_total_honor": 780000,
     "harga_per_satuan": 65000,
     "target": 12,
-    "mitra": {
-      "id": 105,
-      "nama": "Budi Santoso"
-    },
-    "kegiatan": {
-      "nama": "Survei Biaya Hidup Triwulan I",
-      "jenis": "SURVEI"
-    }
+    "mitra": { "id": 105, "nama": "Budi Santoso" },
+    "kegiatan": { "nama": "Survei Biaya Hidup Triwulan I", "jenis": "SURVEI" }
   }
 }
 ```
 
-- **Contoh Response Gagal / Bentrok (422 Unprocessable Content)**:
+- **Contoh Response Ditolak (422 Unprocessable Content)**:
 ```json
 {
   "status": "error",
   "data": {
     "eligible": false,
-    "reason": "Alokasi ditolak: Penambahan honor sebesar Rp 3.500.000 melampaui batas SBML bulanan pada bulan Maret (Plafon: Rp 3.353.000, Akumulasi menjadi: Rp 3.800.000).",
+    "reason": "Alokasi ditolak: Penambahan honor melampaui batas SBML bulanan pada bulan Maret (Plafon: Rp {$formattedSbmlSurvei}).",
     "mitra_id": 105,
     "honor_id": "HON-2026-001"
   }
@@ -234,9 +261,8 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
 
 ---
 
-### Endpoint 4: Eksekusi Pembuatan Alokasi Honor (Single Allocation)
+### Endpoint 4: Eksekusi Alokasi Honor (Single Allocation)
 - **Method & Path**: `POST /api/v1/alokasi`
-- **Tujuan**: Membuat alokasi honor definitif dan memicu penerbitan nomor SPK & BAST secara otomatis.
 - **Request Body (JSON)**:
 ```json
 {
@@ -245,7 +271,7 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
   "target": 10
 }
 ```
-- **Contoh Response Berhasil (201 Created)**:
+- **Contoh Response (201 Created)**:
 ```json
 {
   "status": "success",
@@ -260,8 +286,7 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
     "nomor_spk": "B-042/61041/VS.100/03/{$currentYear}",
     "nomor_bast": "B-042.1/61041/VS.100/03/{$currentYear}",
     "surat_perjanjian_kerja_id": 88,
-    "surat_bast_id": 89,
-    "created_at": "{$currentYear}-03-02T10:00:00.000000Z"
+    "surat_bast_id": 89
   }
 }
 ```
@@ -269,26 +294,17 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
 ---
 
 ### Endpoint 5: Eksekusi Alokasi Massal (Batch Allocation)
-- **Method & Path**: `POST /api/v1/alokasi` (Gunakan kunci `"allocations"`)
-- **Tujuan**: Mengalokasikan honor ke beberapa mitra sekaligus dalam satu request.
+- **Method & Path**: `POST /api/v1/alokasi` (Gunakan key `"allocations"`)
 - **Request Body (JSON)**:
 ```json
 {
   "allocations": [
-    {
-      "mitra_id": 105,
-      "honor_id": "HON-2026-001",
-      "target": 10
-    },
-    {
-      "id_sobat": "61041002",
-      "honor_id": "HON-2026-001",
-      "target": 8
-    }
+    { "mitra_id": 105, "honor_id": "HON-2026-001", "target": 10 },
+    { "id_sobat": "61041002", "honor_id": "HON-2026-001", "target": 8 }
   ]
 }
 ```
-- **Contoh Response Berhasil Penuh (201 Created)**:
+- **Contoh Response (201 Created / 207 Multi-Status)**:
 ```json
 {
   "status": "success",
@@ -304,25 +320,29 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
 
 ---
 
-### Endpoint 6: Pencarian Dokumen SPK (Kontrak Kerja)
-- **Method & Path**: `GET /api/v1/kontrak`
-- **Tujuan**: Menemukan dokumen Kontrak/SPK yang diterbitkan beserta URL langsung untuk mengunduh/mencetak PDF resmi.
+### Endpoint 6: Daftar Alokasi Honor
+- **Method & Path**: `GET /api/v1/alokasi`
 - **Query Parameters**:
-  - `mitra_id` (integer, opsional)
-  - `bulan` (integer, opsional)
-  - `tahun` (integer, opsional)
-  - `search` (string, opsional) - Cari nomor surat
-- **Contoh Response (200 OK)**:
+  - `q` / `search` (string) - Cari nama mitra, id_sobat, NIK, nama kegiatan, no SPK/BAST
+  - `mitra_id` / `id_sobat` (integer/string)
+  - `kegiatan_id` (string)
+  - `honor_id` (string)
+  - `tahun` & `bulan` (integer)
+  - `compact` (boolean: `1` atau `0`)
+  - `per_page` / `limit` (integer 1-100)
+- **Contoh Compact Response (200 OK)**:
 ```json
 {
   "status": "success",
   "data": [
     {
-      "id": 88,
-      "nomor_surat": "B-042/61041/VS.100/03/{$currentYear}",
-      "tanggal_nomor": "{$currentYear}-03-01",
-      "jenis": "SPK",
-      "url_cetak_pdf": "{$baseUrl}/../cetak/kontrak?id=88"
+      "id": 521,
+      "mitra_id": 105,
+      "nama_mitra": "Budi Santoso",
+      "nama_kegiatan": "Survei Biaya Hidup",
+      "total_honor": 650000,
+      "nomor_spk": "B-042/61041/VS.100/03/{$currentYear}",
+      "nomor_bast": "B-042.1/61041/VS.100/03/{$currentYear}"
     }
   ]
 }
@@ -330,66 +350,76 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
 
 ---
 
-### Endpoint 7: Pencarian Dokumen BAST
-- **Method & Path**: `GET /api/v1/bast`
-- **Tujuan**: Menemukan dokumen Berita Acara Serah Terima (BAST) dan link PDF cetak.
-- **Query Parameters**: `mitra_id`, `bulan`, `tahun`, `search`.
+### Endpoint 7: Pencarian Dokumen SPK (Kontrak) & BAST
+- **Method & Path**: `GET /api/v1/kontrak` dan `GET /api/v1/bast`
+- **Query Parameters**:
+  - `q` / `search` (string) - Cari nomor surat atau nama mitra
+  - `mitra_id` / `id_sobat`
+  - `kegiatan_id`
+  - `tahun` & `bulan`
+  - `compact` (boolean: `1` atau `0`)
+  - `per_page` / `page`
+- **Contoh Compact Response (200 OK)**:
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 88,
+      "nomor_spk": "B-042/61041/VS.100/03/{$currentYear}",
+      "tanggal": "{$currentYear}-03-01",
+      "mitra": "Budi Santoso",
+      "total_honor": 650000,
+      "url_cetak_pdf": "{$baseUrl}/../cetak/kontrak?tahun={$currentYear}&bulan=3&mitra_id=105"
+    }
+  ]
+}
+```
 
 ---
 
 ### Endpoint 8: Audit Log & Self-Correction Rollback (Undo Mechanism)
-Sistem secara otomatis mencatat seluruh mutasi Anda di tabel audit log. Jika Anda melakukan kesalahan (misal: salah menginput target volume atau salah mitra), Anda dapat mengembalikan keadaan (*rollback*) secara aman.
-
-1. **Lihat Jejak Mutasi Anda**:
-   - `GET /api/v1/audit-logs`
-   - Ambil atribut `id` dari entri log mutasi yang ingin dibatalkan. Pastikan `is_reversible: true` dan `is_rolled_back: false`.
-
-2. **Eksekusi Rollback (Undo State)**:
-   - **Method & Path**: `POST /api/v1/audit-logs/{id}/rollback`
-   - **Request Body (JSON)**:
-```json
-{
-  "reason": "Salah input volume target alokasi honor"
-}
-```
-   - **Contoh Response (200 OK)**:
-```json
-{
-  "status": "success",
-  "message": "Alokasi honor #521 dan nomor dokumen terkait berhasil dikembalikan (di-rollback).",
-  "data": {
-    "audit_log_id": 312,
-    "action": "ALLOCATE_HONOR",
-    "is_rolled_back": true,
-    "rolled_back_at": "{$currentYear}-03-02T10:15:00.000000Z"
-  }
-}
-```
-   - **Efek Rollback**: Record alokasi honor akan dihapus, dan nomor surat SPK serta BAST yang sempat diterbitkan akan dibersihkan secara bersih jika tidak lagi dipakai alokasi lain.
+1. **Cari Mutasi yang Ingin Di-Undo**:
+   - `GET /api/v1/audit-logs?only_rollbackable=1&compact=1`
+   - Ambil `id` audit log.
+2. **Lihat Detail State Diff (Opsional)**:
+   - `GET /api/v1/audit-logs/{id}`
+3. **Eksekusi Rollback**:
+   - `POST /api/v1/audit-logs/{id}/rollback`
+   - Body: `{"reason": "Dibatalkan oleh AI Agent karena salah target"}`
+   - Efek: Record alokasi dihapus dan nomor dokumen yang tidak lagi terpakai dibersihkan secara atomik.
 
 ---
 
-## 5. CONTOH KODE EKSEKUSI CEPAT (COPY-PASTE READY)
+## 6. CONTOH KODE EKSEKUSI CEPAT (COPY-PASTE READY)
 
-### cURL (Linux / macOS Bash):
+### cURL (Linux / macOS):
 ```bash
-# 1. Cek Kelayakan Mitra (Dry-run)
+# 1. Cari Kegiatan Aktif di Bulan Maret dengan Mode Compact (Hemat Token)
+curl -s "{$baseUrl}/kegiatan-manmit?tahun={$currentYear}&bulan=3&has_honors=1&compact=1" \
+  -H "X-API-KEY: {$keyToken}"
+
+# 2. Cari Mitra yang Sisa SBML Masih Cukup di Bulan Maret
+curl -s "{$baseUrl}/mitras?tahun={$currentYear}&bulan=3&available_only=1&compact=1" \
+  -H "X-API-KEY: {$keyToken}"
+
+# 3. Pre-flight Check (Dry-run)
 curl -s -X POST "{$baseUrl}/alokasi/check" \
   -H "X-API-KEY: {$keyToken}" \
   -H "Content-Type: application/json" \
   -d '{"id_sobat": "61041001", "honor_id": "HON-2026-001", "target": 10}'
 
-# 2. Eksekusi Buat Alokasi
+# 4. Eksekusi Alokasi
 curl -s -X POST "{$baseUrl}/alokasi" \
   -H "X-API-KEY: {$keyToken}" \
   -H "Content-Type: application/json" \
   -d '{"id_sobat": "61041001", "honor_id": "HON-2026-001", "target": 10}'
 
-# 3. Rollback jika Terjadi Kesalahan
+# 5. Rollback jika Terjadi Kesalahan
 curl -s -X POST "{$baseUrl}/audit-logs/312/rollback" \
   -H "X-API-KEY: {$keyToken}" \
   -H "Content-Type: application/json" \
-  -d '{"reason": "Dibatalkan oleh AI Agent"}'
+  -d '{"reason": "Rollback oleh AI Agent"}'
 ```
 
 ### Python (3.9+ / requests):
@@ -398,39 +428,39 @@ import requests
 
 BASE_URL = "{$baseUrl}"
 API_KEY = "{$keyToken}"
-HEADERS = {
-    "X-API-KEY": API_KEY,
-    "Content-Type": "application/json",
-    "Accept": "application/json"
-}
+HEADERS = {"X-API-KEY": API_KEY, "Content-Type": "application/json"}
 
-# 1. Pre-flight check
-check_payload = {"id_sobat": "61041001", "honor_id": "HON-2026-001", "target": 10}
-res_check = requests.post(f"{BASE_URL}/alokasi/check", json=check_payload, headers=HEADERS)
-data_check = res_check.json()
+# 1. Cari kegiatan aktif hemat token
+keg_res = requests.get(f"{BASE_URL}/kegiatan-manmit?bulan=3&has_honors=1&compact=1", headers=HEADERS).json()
+kegiatan = keg_res["data"][0]
+honor_id = kegiatan["honors"][0]["id"]
 
-if data_check.get("data", {}).get("eligible"):
-    # 2. Eksekusi alokasi
-    res_alloc = requests.post(f"{BASE_URL}/alokasi", json=check_payload, headers=HEADERS)
-    print("Alokasi Berhasil Dibuat:", res_alloc.json())
+# 2. Cari mitra yang tersedia
+mitra_res = requests.get(f"{BASE_URL}/mitras?bulan=3&available_only=1&compact=1", headers=HEADERS).json()
+mitra = mitra_res["data"][0]
+
+# 3. Dry-run preflight check
+payload = {"mitra_id": mitra["id"], "honor_id": honor_id, "target": 5}
+check_res = requests.post(f"{BASE_URL}/alokasi/check", json=payload, headers=HEADERS).json()
+
+if check_res.get("data", {}).get("eligible"):
+    # 4. Eksekusi alokasi
+    alloc_res = requests.post(f"{BASE_URL}/alokasi", json=payload, headers=HEADERS).json()
+    print("Alokasi Berhasil Dibuat:", alloc_res)
 else:
-    print("Ditolak Sistem:", data_check)
+    print("Alokasi Ditolak:", check_res)
 ```
 
 ---
 
-## 6. PANDUAN PENANGANAN ERROR & SELF-HEALING AI
+## 7. PANDUAN PENANGANAN ERROR & SELF-HEALING AI
 
-Jika Anda menerima HTTP error status code:
-- **`401 Unauthorized`**: Kunci API Anda tidak valid, tidak aktif, atau kedaluwarsa. Pastikan header `X-API-KEY: {$keyToken}` dikirim dengan benar.
-- **`404 Not Found`**: ID Kegiatan, ID Honor, atau ID Mitra tidak ditemukan dalam database. Jalankan endpoint discovery `GET /kegiatan-manmit` atau `GET /mitras` untuk memverifikasi ID yang valid.
-- **`422 Unprocessable Content (Validasi Bisnis)`**:
-  - *Pesan*: "Mitra ... tidak memiliki status kemitraan AKTIF pada tahun ...":
-    -> **Solusi AI**: Ganti mitra dengan mitra lain yang memiliki `status_kemitraan: "AKTIF"` pada tahun target.
-  - *Pesan*: "Bentrok jadwal kegiatan SENSUS":
-    -> **Solusi AI**: Mitra sudah memiliki komitmen survei/sensus lain pada rentang tanggal tersebut. Jangan dialokasikan ke kegiatan yang bertabrakan.
-  - *Pesan*: "Melampaui batas SBML bulanan":
-    -> **Solusi AI**: Kurangi nilai `target` volume atau alokasikan mitra tersebut ke bulan kalender yang berbeda.
+- **`401 Unauthorized`**: Token API Key tidak valid / nonaktif. Pastikan header `X-API-KEY: {$keyToken}` terkirim.
+- **`404 Not Found`**: ID Kegiatan / Honor / Mitra tidak ada. Gunakan endpoint pencarian `q=...`.
+- **`422 Unprocessable Content`**:
+  - *Mitra tidak aktif*: Ganti mitra dengan yang berstatus `AKTIF` via `GET /mitras?aktif_only=1`.
+  - *Bentrok jadwal SENSUS*: Jadwal mitra bertabrakan di bulan tersebut. Alokasikan ke mitra lain.
+  - *Melampaui SBML*: Kurangi `target` volume atau gunakan `GET /mitras?bulan=X&available_only=1`.
 PROMPT;
     }
 }

@@ -22,19 +22,48 @@ class AlokasiHonorApiController extends Controller
     {
         $query = AlokasiHonor::with(['mitra', 'honor.kegiatanManmit', 'kontrak', 'bast']);
 
+        // 1. Search (Keyword pada nama mitra, id_sobat, nik, nama kegiatan, no SPK, no BAST)
+        $search = $request->input('q') ?? $request->input('search');
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('mitra', function ($m) use ($search) {
+                    $m->where('nama_1', 'like', "%{$search}%")
+                      ->orWhere('id_sobat', 'like', "%{$search}%")
+                      ->orWhere('nik', 'like', "%{$search}%");
+                })
+                ->orWhereHas('honor.kegiatanManmit', function ($k) use ($search) {
+                    $k->where('nama', 'like', "%{$search}%")
+                      ->orWhere('id', 'like', "%{$search}%");
+                })
+                ->orWhereHas('kontrak', function ($ns) use ($search) {
+                    $ns->where('nomor_surat_tugas', 'like', "%{$search}%");
+                })
+                ->orWhereHas('bast', function ($ns) use ($search) {
+                    $ns->where('nomor_surat_tugas', 'like', "%{$search}%");
+                });
+            });
+        }
+
+        // 2. Filter Honor ID
         if ($request->filled('honor_id')) {
             $query->where('honor_id', $request->input('honor_id'));
         }
 
+        // 3. Filter Mitra ID / ID Sobat
         if ($request->filled('mitra_id')) {
             $query->where('mitra_id', $request->input('mitra_id'));
+        } elseif ($request->filled('id_sobat')) {
+            $idSobat = $request->input('id_sobat');
+            $query->whereHas('mitra', fn($m) => $m->where('id_sobat', $idSobat));
         }
 
-        if ($request->filled('kegiatan_manmit_id')) {
-            $kegiatanId = $request->input('kegiatan_manmit_id');
+        // 4. Filter Kegiatan ID
+        $kegiatanId = $request->input('kegiatan_manmit_id') ?? $request->input('kegiatan_id');
+        if ($kegiatanId) {
             $query->whereHas('honor', fn($q) => $q->where('kegiatan_manmit_id', $kegiatanId));
         }
 
+        // 5. Filter Tahun & Bulan
         if ($request->filled('tahun')) {
             $query->whereYear('tanggal_mulai_perjanjian', $request->input('tahun'));
         }
@@ -43,17 +72,49 @@ class AlokasiHonorApiController extends Controller
             $query->whereMonth('tanggal_mulai_perjanjian', $request->input('bulan'));
         }
 
-        $perPage = min((int)$request->input('per_page', 20), 100);
-        $paginated = $query->latest('id')->paginate($perPage);
+        // 6. Sorting
+        $allowedSorts = ['id', 'total_honor', 'target_per_satuan_honor', 'tanggal_mulai_perjanjian', 'created_at'];
+        $sortBy = in_array($request->input('sort_by'), $allowedSorts) ? $request->input('sort_by') : 'id';
+        $sortOrder = strtolower($request->input('sort_order', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $query->orderBy($sortBy, $sortOrder);
+
+        // 7. Pagination
+        $perPage = min(max((int)($request->input('per_page') ?? $request->input('limit') ?? 20), 1), 100);
+        $paginated = $query->paginate($perPage);
+
+        // 8. Compact / Token-Dense Mode
+        $isCompact = $request->boolean('compact', false) || $request->boolean('summary', false);
+
+        if ($isCompact) {
+            $data = collect($paginated->items())->map(function ($alokasi) {
+                return [
+                    'id' => $alokasi->id,
+                    'mitra_id' => $alokasi->mitra_id,
+                    'nama_mitra' => $alokasi->mitra?->nama_1,
+                    'id_sobat' => $alokasi->mitra?->id_sobat,
+                    'kegiatan_id' => $alokasi->honor?->kegiatan_manmit_id,
+                    'nama_kegiatan' => $alokasi->honor?->kegiatanManmit?->nama,
+                    'honor_id' => $alokasi->honor_id,
+                    'target' => (float)$alokasi->target_per_satuan_honor,
+                    'total_honor' => (float)$alokasi->total_honor,
+                    'nomor_spk' => $alokasi->kontrak?->nomor_surat_perjanjian_kerja,
+                    'nomor_bast' => $alokasi->bast?->nomor_surat_tugas,
+                    'created_at' => $alokasi->created_at?->toISOString(),
+                ];
+            });
+        } else {
+            $data = AlokasiHonorResource::collection($paginated);
+        }
 
         return response()->json([
             'status' => 'success',
-            'data' => AlokasiHonorResource::collection($paginated),
+            'data' => $data,
             'meta' => [
                 'current_page' => $paginated->currentPage(),
                 'last_page' => $paginated->lastPage(),
                 'per_page' => $paginated->perPage(),
                 'total' => $paginated->total(),
+                'has_more' => $paginated->hasMorePages(),
             ],
         ]);
     }

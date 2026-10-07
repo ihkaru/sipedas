@@ -34,5 +34,6 @@ Route::prefix('v1')->middleware('api.key')->group(function () {
 
     // 4. Audit Log & Rollback Endpoints
     Route::get('/audit-logs', [AuditLogApiController::class, 'index']);
+    Route::get('/audit-logs/{id}', [AuditLogApiController::class, 'show']);
     Route::post('/audit-logs/{id}/rollback', [AuditLogApiController::class, 'rollback']);
 });

@@ -1,16 +1,17 @@
 ---
 name: sipedas-contract-bast-agent
-description: REST API skill untuk pembuatan alokasi honor mitra, penerbitan kontrak/SPK, dan BAST otomatis di SIPEDAS BPS.
-version: 1.0.0
+description: REST API skill untuk pembuatan alokasi honor mitra, penerbitan kontrak/SPK, dan BAST otomatis di SIPEDAS BPS dengan optimasi efisiensi token AI.
+version: 1.1.0
 auth_header: X-API-KEY <your_api_key>
 ---
 
-# SIPEDAS Contract & BAST Agent Protocol
+# SIPEDAS Contract & BAST Agent Protocol (October 2026 Edition)
 
-Skill ini memberikan instruksi lengkap bagi AI Coding Agent untuk berinteraksi dengan REST API SIPEDAS secara deterministik dan aman.
+Skill ini memberikan instruksi lengkap bagi AI Coding Agent untuk berinteraksi dengan REST API SIPEDAS secara deterministik, presisi, dan hemat token.
+
+---
 
 ## 1. Aturan Bisnis & Validasi Ketat (Mandatory Constraints)
-Sebelum membuat alokasi, pahami 4 aturan validasi:
 1. **Status Kemitraan Aktif**: Mitra HARUS berstatus `AKTIF` pada tahun kegiatan yang dialokasikan (`kemitraans.tahun == tahun_kegiatan`).
 2. **Larangan Bentrok Jadwal Sensus (Strict Overlap)**:
    - Jika kegiatan bertipe `SENSUS`: tanggal kontrak sama sekali TIDAK BOLEH beririsan dengan kontrak lain di bulan yang sama.
@@ -21,65 +22,66 @@ Sebelum membuat alokasi, pahami 4 aturan validasi:
    - Proporsi dihitung per hari kalender aktif di bulan target. Total akumulasi honor di setiap bulan terdampak tidak boleh melampaui limit.
 4. **Target Volume**: Wajib berupa angka positif (`target > 0`).
 
-## 2. Alur Kerja Standar Agen (Recommended Workflow)
+---
+
+## 2. Prinsip Efisiensi Token AI (Agent-Native Best Practices)
+1. **Mode Compact (`?compact=1`)**: Selalu sertakan `compact=1` saat melakukan query `GET` untuk memangkas ukuran JSON payload hingga **80%**.
+2. **Server-Side Filtering**:
+   - Selalu filter berdasarkan bulan target: `?bulan=3`
+   - Filter hanya kegiatan ber-honor: `?has_honors=1`
+   - Filter mitra yang masih punya kuota SBML: `?available_only=1&with_sbml=1`
+   - Gunakan batch ID lookup: `?ids=101,102,61041001` alih-alih request satu per satu.
+3. **Pencarian Cepat**: Gunakan `?q={keyword}` untuk mencari spesifik nama, NIK, ID Sobat, kode kegiatan, atau nomor surat.
+
+---
+
+## 3. Alur Kerja Standar Agen (Recommended Workflow)
 
 ```
-[Step 1: Lookup Kegiatan & Honor] ──► GET /api/v1/kegiatan-manmit?tahun=2026
-                │
-[Step 2: Lookup Mitra Aktif]      ──► GET /api/v1/mitras?tahun=2026&aktif_only=1
-                │
-[Step 3: Pre-Flight Check]        ──► POST /api/v1/alokasi/check (Dry-Run: Cek bentrok & sisa SBML)
-                │ (Jika eligible: true)
-                ▼
-[Step 4: Eksekusi Alokasi]        ──► POST /api/v1/alokasi (Atomik: Generate SPK & BAST)
-                │
-[Step 5: Verifikasi Dokumen]      ──► GET /api/v1/kontrak & GET /api/v1/bast (Dapatkan link PDF cetak)
-                │
-[Step 6: Rollback jika Salah]     ──► POST /api/v1/audit-logs/{id}/rollback (Kembalikan state)
+[Step 1: Lookup Kegiatan Hemat Token] ──► GET /api/v1/kegiatan-manmit?tahun=2026&bulan=3&has_honors=1&compact=1
+                 │
+[Step 2: Lookup Mitra Tersedia]       ──► GET /api/v1/mitras?tahun=2026&bulan=3&available_only=1&compact=1
+                 │
+[Step 3: Pre-Flight Check]             ──► POST /api/v1/alokasi/check (Dry-Run: Cek bentrok & sisa SBML)
+                 │ (Jika eligible: true)
+                 ▼
+[Step 4: Eksekusi Alokasi]             ──► POST /api/v1/alokasi (Atomik: Generate SPK & BAST)
+                 │
+[Step 5: Verifikasi Dokumen]           ──► GET /api/v1/kontrak?bulan=3&compact=1 & GET /api/v1/bast?compact=1
+                 │
+[Step 6: Rollback jika Salah]          ──► GET /api/v1/audit-logs?only_rollbackable=1&compact=1
+                                       ──► POST /api/v1/audit-logs/{id}/rollback
 ```
 
-## 3. Spesifikasi Endpoint
+---
 
-### A. Pre-Flight Check (Dry Run)
-- **Method**: `POST`
-- **Path**: `/api/v1/alokasi/check`
-- **Headers**: `X-API-KEY: <key>`, `Content-Type: application/json`
-- **Body**:
-  ```json
-  {
-    "honor_id": "HONOR_ID",
-    "mitra_id": 123,
-    "target": 10.0
-  }
-  ```
-- **Response**: `{ "status": "success", "data": { "eligible": true|false, "message": "...", "sisa_limit_sbml": {...} } }`
+## 4. Spesifikasi Endpoint
 
-### B. Buat Alokasi (Single / Batch)
-- **Method**: `POST`
-- **Path**: `/api/v1/alokasi`
-- **Single Body**:
-  ```json
-  {
-    "honor_id": "HONOR_ID",
-    "mitra_id": 123,
-    "target": 10.0
-  }
-  ```
-- **Batch Body**:
-  ```json
-  {
-    "allocations": [
-      { "honor_id": "HONOR_1", "mitra_id": 10, "target": 5 },
-      { "honor_id": "HONOR_1", "id_sobat": "61040002", "target": 8 }
-    ]
-  }
-  ```
-- **Response (201 Created)**: Mengembalikan ID alokasi, detail nomor SPK, nomor BAST, dan URL cetak PDF.
+### A. Lookup Kegiatan Manmit
+- `GET /api/v1/kegiatan-manmit?tahun=2026&bulan=3&has_honors=1&compact=1`
+- Query Params: `q`, `tahun`, `bulan`, `jenis` (SURVEI/SENSUS), `has_honors`, `compact`, `sort_by`, `sort_order`, `per_page`.
 
-### C. Dokumen Kontrak & BAST
-- `GET /api/v1/kontrak?tahun=2026&bulan=5&id_kegiatan_manmit=123`: Rekap Kontrak SPK dan link cetak PDF.
-- `GET /api/v1/bast?tahun=2026&bulan=5&id_kegiatan_manmit=123`: Rekap Dokumen BAST dan link cetak PDF.
+### B. Lookup Mitra Statistik
+- `GET /api/v1/mitras?tahun=2026&bulan=3&available_only=1&compact=1`
+- Query Params: `q`, `ids` (comma-separated), `tahun`, `bulan`, `with_sbml`, `available_only`, `aktif_only`, `compact`, `per_page`.
 
-### D. Audit Log & Rollback
-- `GET /api/v1/audit-logs`: Lihat riwayat perubahan yang dilakukan melalui API.
-- `POST /api/v1/audit-logs/{id}/rollback`: Batalkan perubahan sebelumnya dan pulihkan database ke state semula.
+### C. Pre-Flight Check (Dry Run)
+- `POST /api/v1/alokasi/check`
+- Body: `{"honor_id": "HON-1", "mitra_id": 123, "target": 10.0}`
+- Response: `{ "status": "success", "data": { "eligible": true|false, "reason": "...", ... } }`
+
+### D. Buat Alokasi (Single / Batch)
+- `POST /api/v1/alokasi`
+- Single Body: `{"honor_id": "HON-1", "mitra_id": 123, "target": 10.0}`
+- Batch Body: `{"allocations": [{"honor_id": "HON-1", "mitra_id": 123, "target": 10}]}`
+- Response: ID alokasi, nomor SPK, nomor BAST, dan URL cetak PDF.
+
+### E. Dokumen Kontrak & BAST
+- `GET /api/v1/kontrak?tahun=2026&bulan=3&compact=1`
+- `GET /api/v1/bast?tahun=2026&bulan=3&compact=1`
+- Query Params: `q`, `mitra_id`, `id_sobat`, `kegiatan_id`, `tahun`, `bulan`, `compact`, `page`, `per_page`.
+
+### F. Audit Log & Rollback
+- `GET /api/v1/audit-logs?only_rollbackable=1&compact=1`: Temukan mutasi yang bisa dibatalkan.
+- `GET /api/v1/audit-logs/{id}`: Detail state diff sebelum dan sesudah.
+- `POST /api/v1/audit-logs/{id}/rollback`: Batalkan perubahan dan bersihkan nomor dokumen terkait secara atomik.
