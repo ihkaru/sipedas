@@ -36,10 +36,10 @@ class AlokasiHonorApiController extends Controller
                       ->orWhere('id', 'like', "%{$search}%");
                 })
                 ->orWhereHas('kontrak', function ($ns) use ($search) {
-                    $ns->where('nomor_surat_tugas', 'like', "%{$search}%");
+                    $ns->searchNomor($search);
                 })
                 ->orWhereHas('bast', function ($ns) use ($search) {
-                    $ns->where('nomor_surat_tugas', 'like', "%{$search}%");
+                    $ns->searchNomor($search);
                 });
             });
         }
@@ -98,7 +98,7 @@ class AlokasiHonorApiController extends Controller
                     'target' => (float)$alokasi->target_per_satuan_honor,
                     'total_honor' => (float)$alokasi->total_honor,
                     'nomor_spk' => $alokasi->kontrak?->nomor_surat_perjanjian_kerja,
-                    'nomor_bast' => $alokasi->bast?->nomor_surat_tugas,
+                    'nomor_bast' => $alokasi->bast?->nomor_surat_bast,
                     'created_at' => $alokasi->created_at?->toISOString(),
                 ];
             });
