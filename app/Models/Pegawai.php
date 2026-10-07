@@ -24,6 +24,8 @@ class Pegawai extends Model {
     use HasFactory;
     protected $guarded = [];
     protected $primaryKey = "nip";
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected function casts(): array {
         return [

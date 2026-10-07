@@ -11,6 +11,7 @@ use App\Models\ActionToken;
 use Illuminate\Support\Str;
 use App\Supports\SipancongConstants as Constants; // Ganti nama alias jika perlu
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -181,6 +182,171 @@ class PengajuanServices {
         };
 
         return $query ? $query->whereYear('created_at', $year)->count() : 0;
+    }
+
+    /**
+     * Hitung jumlah pengajuan yang sudah diverifikasi dan siap dibayar oleh Bendahara.
+     */
+    public static function countPendingPaymentBendahara(?int $year = null): int {
+        $year = $year ?? now()->year;
+        return Pengajuan::where('posisi_dokumen_id', Constants::POSISI_BENDAHARA)
+            ->whereYear('created_at', $year)
+            ->whereIn('status_pengajuan_ppk_id', [Constants::STATUS_DISETUJUI_TANPA_CATATAN, Constants::STATUS_DISETUJUI_DENGAN_CATATAN])
+            ->whereIn('status_pengajuan_ppspm_id', [Constants::STATUS_DISETUJUI_TANPA_CATATAN, Constants::STATUS_DISETUJUI_DENGAN_CATATAN])
+            ->whereIn('status_pengajuan_bendahara_id', [Constants::STATUS_DISETUJUI_TANPA_CATATAN, Constants::STATUS_DISETUJUI_DENGAN_CATATAN])
+            ->count();
+    }
+
+    /**
+     * Bulk pay / cairkan semua pengajuan yang sudah terverifikasi di meja Bendahara untuk tahun tertentu.
+     */
+    public static function bulkPayBendahara(?int $year = null, array $data = [], bool $sendNotification = false): int {
+        $year = $year ?? now()->year;
+        $statusPembayaranId = $data['status_pembayaran_id'] ?? Constants::PEMBAYARAN_SUDAH_CMS;
+        $tanggalPembayaran = $data['tanggal_pembayaran'] ?? now()->toDateString();
+
+        $query = Pengajuan::where('posisi_dokumen_id', Constants::POSISI_BENDAHARA)
+            ->whereYear('created_at', $year)
+            ->whereIn('status_pengajuan_ppk_id', [Constants::STATUS_DISETUJUI_TANPA_CATATAN, Constants::STATUS_DISETUJUI_DENGAN_CATATAN])
+            ->whereIn('status_pengajuan_ppspm_id', [Constants::STATUS_DISETUJUI_TANPA_CATATAN, Constants::STATUS_DISETUJUI_DENGAN_CATATAN])
+            ->whereIn('status_pengajuan_bendahara_id', [Constants::STATUS_DISETUJUI_TANPA_CATATAN, Constants::STATUS_DISETUJUI_DENGAN_CATATAN]);
+
+        $records = $query->get();
+        $processed = 0;
+
+        DB::transaction(function () use ($records, $statusPembayaranId, $tanggalPembayaran, $sendNotification, &$processed) {
+            foreach ($records as $record) {
+                $record->nominal_dibayarkan = $record->nominal_pengajuan;
+                $record->nominal_dikembalikan = 0;
+                $record->status_pembayaran_id = $statusPembayaranId;
+                $record->tanggal_pembayaran = $tanggalPembayaran;
+
+                if (Constants::isSelesaiDibayar($statusPembayaranId)) {
+                    $record->posisi_dokumen_id = Constants::POSISI_SELESAI;
+                }
+
+                $record->save();
+                $processed++;
+
+                if ($sendNotification && Constants::isSelesaiDibayar($statusPembayaranId)) {
+                    self::pemrosesanBendaharaNotifier($record);
+                }
+            }
+        });
+
+        return $processed;
+    }
+
+    /**
+     * Bulk verifikasi pengajuan yang dipilih via checkbox tabel oleh Bendahara.
+     */
+    public static function bulkPemeriksaanBendahara(mixed $records): int {
+        $ids = self::extractIds($records);
+        if (empty($ids)) return 0;
+
+        return Pengajuan::whereIn('id', $ids)
+            ->where('posisi_dokumen_id', Constants::POSISI_BENDAHARA)
+            ->where(function ($query) {
+                $query->whereNull('status_pengajuan_bendahara_id')
+                    ->orWhereNotIn('status_pengajuan_bendahara_id', [
+                        Constants::STATUS_DISETUJUI_TANPA_CATATAN,
+                        Constants::STATUS_DISETUJUI_DENGAN_CATATAN,
+                    ]);
+            })
+            ->update([
+                'status_pengajuan_bendahara_id' => Constants::STATUS_DISETUJUI_TANPA_CATATAN,
+                'catatan_bendahara' => 'Disetujui massal oleh Bendahara.',
+                'updated_at' => now(),
+            ]);
+    }
+
+    /**
+     * Bulk pencairan pengajuan yang dipilih via checkbox tabel oleh Bendahara.
+     */
+    public static function bulkPemrosesanBendahara(mixed $records, array $data, bool $sendNotification = false): int {
+        $ids = self::extractIds($records);
+        if (empty($ids)) return 0;
+
+        $statusPembayaranId = $data['status_pembayaran_id'] ?? Constants::PEMBAYARAN_SUDAH_CMS;
+        $tanggalPembayaran = $data['tanggal_pembayaran'] ?? now()->toDateString();
+
+        $query = Pengajuan::whereIn('id', $ids)
+            ->where('posisi_dokumen_id', Constants::POSISI_BENDAHARA)
+            ->whereIn('status_pengajuan_ppk_id', [Constants::STATUS_DISETUJUI_TANPA_CATATAN, Constants::STATUS_DISETUJUI_DENGAN_CATATAN])
+            ->whereIn('status_pengajuan_ppspm_id', [Constants::STATUS_DISETUJUI_TANPA_CATATAN, Constants::STATUS_DISETUJUI_DENGAN_CATATAN])
+            ->whereIn('status_pengajuan_bendahara_id', [Constants::STATUS_DISETUJUI_TANPA_CATATAN, Constants::STATUS_DISETUJUI_DENGAN_CATATAN]);
+
+        $items = $query->get();
+        $processed = 0;
+
+        DB::transaction(function () use ($items, $statusPembayaranId, $tanggalPembayaran, $sendNotification, &$processed) {
+            foreach ($items as $record) {
+                $record->nominal_dibayarkan = $record->nominal_pengajuan;
+                $record->nominal_dikembalikan = 0;
+                $record->status_pembayaran_id = $statusPembayaranId;
+                $record->tanggal_pembayaran = $tanggalPembayaran;
+
+                if (Constants::isSelesaiDibayar($statusPembayaranId)) {
+                    $record->posisi_dokumen_id = Constants::POSISI_SELESAI;
+                }
+
+                $record->save();
+                $processed++;
+
+                if ($sendNotification && Constants::isSelesaiDibayar($statusPembayaranId)) {
+                    self::pemrosesanBendaharaNotifier($record);
+                }
+            }
+        });
+
+        return $processed;
+    }
+
+    /**
+     * Bulk verifikasi pengajuan yang dipilih via checkbox tabel oleh PPK.
+     */
+    public static function bulkPemeriksaanPpk(mixed $records): int {
+        $ids = self::extractIds($records);
+        if (empty($ids)) return 0;
+
+        return Pengajuan::whereIn('id', $ids)
+            ->where('posisi_dokumen_id', Constants::POSISI_PPK)
+            ->update([
+                'status_pengajuan_ppk_id' => Constants::STATUS_DISETUJUI_TANPA_CATATAN,
+                'catatan_ppk' => 'Disetujui massal oleh PPK.',
+                'posisi_dokumen_id' => Constants::POSISI_PPSPM,
+                'updated_at' => now(),
+            ]);
+    }
+
+    /**
+     * Bulk verifikasi pengajuan yang dipilih via checkbox tabel oleh PPSPM.
+     */
+    public static function bulkPemeriksaanPpspm(mixed $records): int {
+        $ids = self::extractIds($records);
+        if (empty($ids)) return 0;
+
+        return Pengajuan::whereIn('id', $ids)
+            ->where('posisi_dokumen_id', Constants::POSISI_PPSPM)
+            ->update([
+                'status_pengajuan_ppspm_id' => Constants::STATUS_DISETUJUI_TANPA_CATATAN,
+                'catatan_ppspm' => 'Disetujui massal oleh PPSPM.',
+                'posisi_dokumen_id' => Constants::POSISI_BENDAHARA,
+                'updated_at' => now(),
+            ]);
+    }
+
+    /**
+     * Ekstrak array ID dari Collection, Model, atau Array.
+     */
+    private static function extractIds(mixed $records): array {
+        if ($records instanceof \Illuminate\Support\Collection) {
+            return $records->map(fn($r) => is_object($r) ? $r->id : $r)->filter()->values()->all();
+        }
+        if (is_array($records)) {
+            return array_values(array_filter(array_map(fn($r) => is_object($r) ? $r->id : $r, $records)));
+        }
+        return [];
     }
 
 

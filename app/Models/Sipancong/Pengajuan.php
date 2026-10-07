@@ -19,6 +19,10 @@ class Pengajuan extends Model implements HasMedia
     {
         return $this->hasOne(Pegawai::class, "nip", "nip_pengaju");
     }
+    public function pengaju()
+    {
+        return $this->belongsTo(Pegawai::class, "nip_pengaju", "nip");
+    }
     public function penanggungJawab()
     {
         return $this->hasOne(Pegawai::class, "nip", "nip_penanggung_jawab");

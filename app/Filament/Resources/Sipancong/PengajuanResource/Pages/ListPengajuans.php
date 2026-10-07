@@ -10,9 +10,12 @@ use App\Models\Sipancong\Pengajuan;
 
 use App\Services\Sipancong\PengajuanServices;
 use App\Supports\SipancongConstants as Constants;
+use App\Models\Sipancong\StatusPembayaran;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Resources\Pages\ListRecords;
@@ -222,6 +225,47 @@ class ListPengajuans extends ListRecords {
                             ->success()
                             ->title("Berhasil Menyetujui {$count} Pengajuan Revisi")
                             ->body("pengajuan revisi tahun {$data['tahun']} telah ditarik dan diverifikasi oleh Bendahara.")
+                            ->send();
+                    }),
+
+                Action::make("bulk_pay_all_bendahara")
+                    ->label(fn() => "Cairkan Semua Bendahara (" . PengajuanServices::countPendingPaymentBendahara() . ")")
+                    ->icon("heroicon-o-banknotes")
+                    ->color("success")
+                    ->form([
+                        Select::make('tahun')
+                            ->label('Tahun Pengajuan')
+                            ->options(
+                                collect(range(now()->year - 2, now()->year + 1))
+                                    ->mapWithKeys(fn($year) => [$year => $year])
+                            )
+                            ->default(now()->year)
+                            ->required(),
+                        Select::make('status_pembayaran_id')
+                            ->label('Metode / Status Pembayaran')
+                            ->options(StatusPembayaran::pluck('nama', 'id'))
+                            ->default(Constants::PEMBAYARAN_SUDAH_CMS)
+                            ->required(),
+                        DatePicker::make('tanggal_pembayaran')
+                            ->label('Tanggal Pembayaran / Cair')
+                            ->default(now())
+                            ->required(),
+                        Toggle::make('kirim_wa')
+                            ->label('Kirim Notifikasi WhatsApp ke Pengaju')
+                            ->default(false)
+                            ->helperText('Kirim notifikasi otomatis ke nomor WhatsApp masing-masing pengaju.'),
+                    ])
+                    ->modalHeading("Pencairan Massal Bendahara")
+                    ->modalDescription(fn() => "Anda akan mencairkan " . PengajuanServices::countPendingPaymentBendahara() . " pengajuan yang telah lolos verifikasi di meja Bendahara. Dokumen akan dicairkan penuh dan posisinya dipindahkan ke Selesai.")
+                    ->modalSubmitActionLabel("Ya, Cairkan Semua")
+                    ->hidden(fn(): bool => !auth()->user()->hasAnyRole(["super_admin", "Admin", "bendahara"]))
+                    ->action(function (array $data) {
+                        $sendWa = (bool)($data['kirim_wa'] ?? false);
+                        $count = PengajuanServices::bulkPayBendahara($data['tahun'], $data, $sendWa);
+                        Notification::make()
+                            ->success()
+                            ->title("Berhasil Mencairkan {$count} Pengajuan")
+                            ->body("Pengajuan tahun {$data['tahun']} telah dicairkan dan posisinya dipindahkan ke Selesai.")
                             ->send();
                     }),
             ])
