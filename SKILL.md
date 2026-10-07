@@ -1,13 +1,13 @@
 ---
-name: sipedas-contract-bast-agent
-description: REST API skill untuk pembuatan alokasi honor mitra, penerbitan kontrak/SPK, dan BAST otomatis di SIPEDAS BPS dengan optimasi efisiensi token AI.
-version: 1.1.0
+name: dokter-v-contract-bast-agent
+description: REST API skill untuk pembuatan alokasi honor mitra, penerbitan kontrak/SPK, dan BAST otomatis di Dokter V BPS dengan optimasi efisiensi token AI.
+version: 1.2.0
 auth_header: X-API-KEY <your_api_key>
 ---
 
-# SIPEDAS Contract & BAST Agent Protocol (October 2026 Edition)
+# Dokter V Contract & BAST Agent Protocol (October 2026 Edition)
 
-Skill ini memberikan instruksi lengkap bagi AI Coding Agent untuk berinteraksi dengan REST API SIPEDAS secara deterministik, presisi, dan hemat token.
+Skill ini memberikan instruksi lengkap bagi AI Coding Agent untuk berinteraksi dengan REST API Dokter V secara deterministik, presisi, dan hemat token.
 
 ---
 

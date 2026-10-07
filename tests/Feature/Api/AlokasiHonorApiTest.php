@@ -22,7 +22,10 @@ class AlokasiHonorApiTest extends TestCase
     {
         parent::setUp();
 
-        config(['sipedas.api_key' => $this->apiKey]);
+        config([
+            'dokter_v.api_key' => $this->apiKey,
+            'sipedas.api_key' => $this->apiKey,
+        ]);
 
         // Setup SBML settings
         Setting::updateOrCreate(

@@ -25,7 +25,10 @@ class TokenEfficientSearchFilterTest extends TestCase
     {
         parent::setUp();
 
-        config(['sipedas.api_key' => $this->apiKey]);
+        config([
+            'dokter_v.api_key' => $this->apiKey,
+            'sipedas.api_key' => $this->apiKey,
+        ]);
 
         $this->user = User::factory()->create([
             'email' => 'agent@bps.go.id',

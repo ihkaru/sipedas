@@ -26,16 +26,16 @@ class SkillApiController extends Controller
         } else {
             $markdownSkill = <<<MARKDOWN
 ---
-name: sipedas-contract-bast-agent
-description: REST API skill untuk pembuatan alokasi honor mitra, penerbitan kontrak/SPK, dan BAST otomatis di SIPEDAS BPS.
-version: 1.0.0
+name: dokter-v-contract-bast-agent
+description: REST API skill untuk pembuatan alokasi honor mitra, penerbitan kontrak/SPK, dan BAST otomatis di Dokter V BPS.
+version: 1.2.0
 base_url: {$baseUrl}
 auth_header: X-API-KEY <your_api_key>
 ---
 
-# SIPEDAS Contract & BAST Agent Protocol
+# Dokter V Contract & BAST Agent Protocol
 
-Skill ini memberikan instruksi lengkap bagi AI Coding Agent untuk berinteraksi dengan REST API SIPEDAS secara deterministik dan aman.
+Skill ini memberikan instruksi lengkap bagi AI Coding Agent untuk berinteraksi dengan REST API Dokter V secara deterministik dan aman.
 
 ## 1. Aturan Bisnis & Validasi Ketat (Mandatory Constraints)
 Sebelum membuat alokasi, pahami 4 aturan validasi:
@@ -105,7 +105,7 @@ Sebelum membuat alokasi, pahami 4 aturan validasi:
 - **Response (201 Created)**: Mengembalikan ID alokasi, detail nomor SPK, nomor BAST, dan URL cetak PDF.
 
 ### C. Dokumen Kontrak & BAST
-- `GET /kontrak?tahun=2026&bulan=5&id_kegiatan_manmit=123`: Rekap Kontrak SPK dan link cetak PDF.
+- `GET /kontrak?tahun=2026&bulan=5&mitra_id=123`: Rekap Kontrak SPK dan link cetak PDF (Konsolidasi bulanan).
 - `GET /bast?tahun=2026&bulan=5&id_kegiatan_manmit=123`: Rekap Dokumen BAST dan link cetak PDF.
 
 ### D. Audit Log & Rollback
@@ -118,8 +118,8 @@ MARKDOWN;
             return response()->json([
                 'status' => 'success',
                 'skill' => [
-                    'name' => 'sipedas-contract-bast-agent',
-                    'version' => '1.0.0',
+                    'name' => 'dokter-v-contract-bast-agent',
+                    'version' => '1.2.0',
                     'base_url' => $baseUrl,
                     'documentation_markdown' => $markdownSkill,
                     'endpoints' => [

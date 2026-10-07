@@ -22,7 +22,10 @@ class DokumenApiTest extends TestCase
     {
         parent::setUp();
 
-        config(['sipedas.api_key' => $this->apiKey]);
+        config([
+            'dokter_v.api_key' => $this->apiKey,
+            'sipedas.api_key' => $this->apiKey,
+        ]);
 
         Setting::updateOrCreate(
             ['key' => 'STANDAR_BIAYA_MASUKAN_LAINNYA_NON_PNS_OB_PETUGAS_PENDATAAN_LAPANGAN_SENSUS'],

@@ -1,12 +1,12 @@
 # DOKUMEN SPESIFIKASI KEBUTUHAN SISTEM & DESAIN TEKNIS
 ## Modul Laporan Perjalanan Dinas (LPD) Terintegrasi Generative AI (LLM)
-**Sistem Informasi Perjalanan Dinas & Akuntabilitas (SIPEDAS)**  
+**Dokter V (Dokumentasi Elektronik Terpadu & Verifikasi / formerly SIPEDAS)**  
 *Badan Pusat Statistik (BPS)*
 
 ---
 
 ### 1. RINGKASAN EKSEKUTIF & LATAR BELAKANG
-Dokumen ini disusun sebagai spesifikasi kebutuhan teknis dan bukti dukung pengembangan **Modul Laporan Perjalanan Dinas (LPD) Berbasis Generative AI** pada sistem SIPEDAS. 
+Dokumen ini disusun sebagai spesifikasi kebutuhan teknis dan bukti dukung pengembangan **Modul Laporan Perjalanan Dinas (LPD) Berbasis Generative AI** pada sistem Dokter V. 
 
 Inovasi ini dirancang untuk mengatasi hambatan administratif pegawai dalam menyusun laporan perjalanan dinas yang formal, terstruktur, dan akuntabel. Pegawai cukup menginputkan *catatan harian mentah/draf bebas*, koordinat lokasi (GPS), dan foto lapangan. Selanjutnya, **Generative AI (API LLM)** secara otomatis mentransformasikan draf mentah tersebut menjadi narasi Laporan Perjalanan Dinas resmi berstandar tata bahasa pemerintah (EYD/PUEBI) yang dilengkapi dengan Ringkasan Eksekutif, Rincian Harian (Uraian, Kendala, Solusi), Kesimpulan, dan Rekomendasi/Tindak Lanjut.
 

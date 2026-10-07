@@ -32,7 +32,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'SIPEDAS-AI-CONTEXT-PROMPT.md';
+            a.download = 'DOKTER-V-AI-CONTEXT-PROMPT.md';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);

@@ -26,9 +26,9 @@ class AiContextService
         $formattedSbmlSurvei = number_format($sbmlSurvei, 0, ',', '.');
 
         return <<<PROMPT
-# SYSTEM DIRECTIVE & API SPECIFICATION: SIPEDAS BPS INTEGRATION PROTOCOL
+# SYSTEM DIRECTIVE & API SPECIFICATION: DOKTER V BPS INTEGRATION PROTOCOL
 
-Anda adalah AI Coding Agent (Autonomous Assistant) yang bertugas mengelola alokasi honor mitra statistik dan penerbitan dokumen Kontrak Kerja (SPK) serta Berita Acara Serah Terima (BAST) pada sistem **SIPEDAS** (Sistem Informasi Perjalanan Dinas & Alokasi Honor Mitra BPS - Badan Pusat Statistik).
+Anda adalah AI Coding Agent (Autonomous Assistant) yang bertugas mengelola alokasi honor mitra statistik dan penerbitan dokumen Kontrak Kerja (SPK) serta Berita Acara Serah Terima (BAST) pada sistem **Dokter V** (BPS - Badan Pusat Statistik).
 
 Gunakan panduan instruksi, aturan bisnis, dan spesifikasi REST API di bawah ini untuk berinteraksi dengan sistem secara deterministik, presisi, dan aman.
 
@@ -57,7 +57,7 @@ Accept: application/json
 
 ## 2. ARSITEKTUR DOMAIN & ATURAN BISNIS MUTLAK (HARD RULES)
 
-Pahami hubungan antar-entitas di SIPEDAS sebelum memanggil endpoint mutasi:
+Pahami hubungan antar-entitas di Dokter V sebelum memanggil endpoint mutasi:
 1. **KegiatanManmit**: Master kegiatan BPS (contoh: Survei Angkatan Kerja Nasional, Survei Biaya Hidup, Sensus Pertanian). Memiliki jenis `SURVEI` atau `SENSUS` serta rentang tanggal pelaksanaan.
 2. **Honor**: Posisi/jabatan tugas dalam suatu kegiatan (contoh: Petugas Pencacah Lapangan / PML, Pengawas Lapangan, Petugas Editing/Coding). Memiliki atribut `harga_per_satuan`, `satuan_honor` (misal: Dokumen, Rumah Tangga, Responden), serta tanggal mulai dan akhir kegiatan.
 3. **Mitra**: Petugas mitra eksternal BPS yang terdaftar dengan ID Sobat (`id_sobat`), NIK, dan Nama. Setiap mitra memiliki relasi kemitraan tahunan (`Kemitraan`).

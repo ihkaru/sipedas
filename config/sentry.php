@@ -25,7 +25,7 @@ return [
 
     // Self-describing SRE telemetry tags (SSOT for Autonomous Remediation Agents)
     'tags' => [
-        'app_name' => 'sipedas',
+        'app_name' => env('SENTRY_APP_NAME', 'dokter-v'),
         'repository' => env('GITHUB_REPOSITORY', 'https://github.com/ihkaru/sipedas'),
         'verification_command' => 'php artisan test',
         'branch' => env('GIT_BRANCH', 'main'),

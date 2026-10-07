@@ -93,7 +93,7 @@ class FilamentIntegrationTest extends TestCase
 
         $this->assertStringContainsString('spk_test_1234567890abcdef', $context);
         $this->assertStringContainsString('Agent Context Test', $context);
-        $this->assertStringContainsString('SIPEDAS BPS INTEGRATION PROTOCOL', $context);
+        $this->assertStringContainsString('DOKTER V BPS INTEGRATION PROTOCOL', $context);
         $this->assertStringContainsString('/api/v1/alokasi/check', $context);
         $this->assertStringContainsString('/api/v1/audit-logs', $context);
         $this->assertGreaterThan(100, substr_count($context, "\n")); // Over 100 lines

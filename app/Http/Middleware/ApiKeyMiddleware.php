@@ -26,8 +26,8 @@ class ApiKeyMiddleware
             ], 401);
         }
 
-        // 1. Cek apakah token cocok dengan master SIPEDAS_API_KEY dari env
-        $configuredApiKey = config('sipedas.api_key');
+        // 1. Cek apakah token cocok dengan master DOKTER_V_API_KEY / SIPEDAS_API_KEY dari env
+        $configuredApiKey = config('dokter_v.api_key') ?: config('sipedas.api_key');
         if (!empty($configuredApiKey) && hash_equals($configuredApiKey, $token)) {
             return $next($request);
         }
