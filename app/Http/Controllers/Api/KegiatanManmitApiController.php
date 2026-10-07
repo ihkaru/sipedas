@@ -131,12 +131,14 @@ class KegiatanManmitApiController extends Controller
             }
         }
 
-        // 2. Keyword Search (Nama, ID Sobat, atau NIK)
+        // 2. Keyword Search (Nama, ID Sobat, NIK, Email, atau No Telp)
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nama_1', 'like', "%{$search}%")
                   ->orWhere('id_sobat', 'like', "%{$search}%")
-                  ->orWhere('nik', 'like', "%{$search}%");
+                  ->orWhere('nik', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('no_telp', 'like', "%{$search}%");
             });
         }
 
@@ -148,19 +150,84 @@ class KegiatanManmitApiController extends Controller
             $query->whereHas('kemitraans', fn($q) => $q->where('tahun', $tahun)->where('status', 'AKTIF'));
         }
 
-        // 4. Sorting
-        $allowedSorts = ['id', 'nama_1', 'id_sobat', 'created_at'];
-        $sortBy = in_array($request->input('sort_by'), $allowedSorts) ? $request->input('sort_by') : 'nama_1';
+        // 4. Filter Wilayah Domisili (Kecamatan & Desa)
+        if ($request->filled('kecamatan')) {
+            $kec = $request->input('kecamatan');
+            $query->where(function ($q) use ($kec) {
+                $q->where('kecamatan_domisili', 'like', "%{$kec}%")
+                  ->orWhere('alamat_kec', $kec);
+            });
+        }
+        if ($request->filled('desa')) {
+            $desa = $request->input('desa');
+            $query->where(function ($q) use ($desa) {
+                $q->where('desa_domisili', 'like', "%{$desa}%")
+                  ->orWhere('alamat_desa', $desa);
+            });
+        }
+
+        // 5. Filter Demografis & Posisi (Jenis Kelamin & Posisi)
+        if ($request->filled('jenis_kelamin')) {
+            $jk = strtoupper(trim($request->input('jenis_kelamin')));
+            if (in_array($jk, ['L', 'LAKI-LAKI', 'PRIA'])) {
+                $query->where(function ($q) {
+                    $q->where('jenis_kelamin', 'like', 'L%')
+                      ->orWhere('jenis_kelamin', 'PRIA');
+                });
+            } elseif (in_array($jk, ['P', 'PEREMPUAN', 'WANITA'])) {
+                $query->where(function ($q) {
+                    $q->where('jenis_kelamin', 'like', 'P%')
+                      ->orWhere('jenis_kelamin', 'WANITA');
+                });
+            } else {
+                $query->where('jenis_kelamin', 'like', "%{$jk}%");
+            }
+        }
+        if ($request->filled('posisi')) {
+            $posisi = $request->input('posisi');
+            $query->where(function ($q) use ($posisi) {
+                $q->where('posisi', 'like', "%{$posisi}%")
+                  ->orWhere('posisi_daftar', 'like', "%{$posisi}%");
+            });
+        }
+
+        // 6. Filter Penugasan di Bulan Tertentu (has_allocations: 1/0)
+        $targetBulan = $request->filled('bulan') ? (int)$request->input('bulan') : null;
+        if ($request->filled('has_allocations') && $targetBulan) {
+            $hasAlloc = $request->boolean('has_allocations');
+            if ($hasAlloc) {
+                $query->whereHas('alokasiHonors', function ($q) use ($tahun, $targetBulan) {
+                    $q->whereMonth('tanggal_mulai_perjanjian', $targetBulan)
+                      ->whereYear('tanggal_mulai_perjanjian', $tahun);
+                });
+            } else {
+                $query->whereDoesntHave('alokasiHonors', function ($q) use ($tahun, $targetBulan) {
+                    $q->whereMonth('tanggal_mulai_perjanjian', $targetBulan)
+                      ->whereYear('tanggal_mulai_perjanjian', $tahun);
+                });
+            }
+        }
+
+        // 7. Sorting
+        $sortMap = [
+            'id' => 'id',
+            'nama' => 'nama_1',
+            'nama_1' => 'nama_1',
+            'id_sobat' => 'id_sobat',
+            'nik' => 'nik',
+            'created_at' => 'created_at',
+        ];
+        $sortKey = $request->input('sort_by');
+        $sortBy = $sortMap[$sortKey] ?? 'nama_1';
         $sortOrder = strtolower($request->input('sort_order', 'asc')) === 'desc' ? 'desc' : 'asc';
         $query->orderBy($sortBy, $sortOrder);
 
-        // 5. Pagination
+        // 8. Pagination
         $perPage = min(max((int)($request->input('per_page') ?? $request->input('limit') ?? 20), 1), 100);
         $paginated = $query->paginate($perPage);
 
-        // 6. Indikator Sisa SBML per Bulan (Opsional untuk AI Pre-selection)
+        // 9. Indikator Sisa SBML per Bulan (Opsional untuk AI Pre-selection)
         $withSbml = $request->boolean('with_sbml', false) || $request->filled('bulan');
-        $targetBulan = $request->filled('bulan') ? (int)$request->input('bulan') : null;
 
         $isCompact = $request->boolean('compact', false) || $request->boolean('summary', false);
 
@@ -191,6 +258,10 @@ class KegiatanManmitApiController extends Controller
             if (!$isCompact) {
                 $row['email'] = $mitra->email;
                 $row['no_telp'] = $mitra->no_telp;
+                $row['kecamatan'] = $mitra->kecamatan_domisili;
+                $row['desa'] = $mitra->desa_domisili;
+                $row['jenis_kelamin'] = $mitra->jenis_kelamin;
+                $row['posisi'] = $mitra->posisi ?? $mitra->posisi_daftar;
                 $row['created_at'] = $mitra->created_at;
             }
 

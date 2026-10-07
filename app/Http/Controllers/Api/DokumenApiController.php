@@ -88,8 +88,8 @@ class DokumenApiController extends Controller
             $tahun = $first->tanggal_mulai_perjanjian?->year;
             $tanggalDokumen = $kontrak?->tanggal_nomor ? Carbon::parse($kontrak->tanggal_nomor) : now();
 
+            // SPK adalah konsolidasi 1 kontrak per mitra per bulan: gunakan tautan bersih tanpa filter kegiatan
             $printUrl = url("/cetak/kontrak?tahun={$tahun}&bulan={$bulan}" .
-                ($kegiatan ? "&id_kegiatan_manmit={$kegiatan->id}" : "") .
                 ($mitra ? "&mitra_id={$mitra->id}" : ""));
 
             if ($isCompact) {

@@ -63,7 +63,7 @@ Skill ini memberikan instruksi lengkap bagi AI Coding Agent untuk berinteraksi d
 
 ### B. Lookup Mitra Statistik
 - `GET /api/v1/mitras?tahun=2026&bulan=3&available_only=1&compact=1`
-- Query Params: `q`, `ids` (comma-separated), `tahun`, `bulan`, `with_sbml`, `available_only`, `aktif_only`, `compact`, `per_page`.
+- Query Params: `q` (nama/NIK/Sobat/email/telp), `ids` (comma-separated), `tahun`, `bulan`, `status` (AKTIF/dll), `aktif_only`, `kecamatan`, `desa`, `jenis_kelamin` (L/P), `posisi` (PCL/PML), `has_allocations` (0/1), `with_sbml`, `available_only`, `sort_by` (nama/id/sobat/nik/created_at), `sort_order` (asc/desc), `compact`, `per_page`.
 
 ### C. Pre-Flight Check (Dry Run)
 - `POST /api/v1/alokasi/check`
@@ -80,6 +80,9 @@ Skill ini memberikan instruksi lengkap bagi AI Coding Agent untuk berinteraksi d
 - `GET /api/v1/kontrak?tahun=2026&bulan=3&compact=1`
 - `GET /api/v1/bast?tahun=2026&bulan=3&compact=1`
 - Query Params: `q`, `mitra_id`, `id_sobat`, `kegiatan_id`, `tahun`, `bulan`, `compact`, `page`, `per_page`.
+- **Kaidah URL Cetak Dokumen (SOP URL Cetak)**:
+  - **SPK Bulanan**: Format tautan resmi adalah `https://<domain>/cetak/kontrak?tahun={tahun}&bulan={bulan}&mitra_id={mitra_id}` (TANPA parameter `id_kegiatan_manmit`, agar semua lampiran kegiatan survei mitra di bulan kalender tersebut terkonsolidasi penuh).
+  - **BAST**: Format tautan menyertakan `id_kegiatan_manmit` (`https://<domain>/cetak/bast?tahun={tahun}&bulan={bulan}&id_kegiatan_manmit={id_kegiatan}&mitra_id={mitra_id}`) karena BAST bersifat spesifik per alokasi/kegiatan.
 
 ### F. Audit Log & Rollback
 - `GET /api/v1/audit-logs?only_rollbackable=1&compact=1`: Temukan mutasi yang bisa dibatalkan.

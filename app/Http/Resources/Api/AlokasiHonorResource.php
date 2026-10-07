@@ -50,7 +50,7 @@ class AlokasiHonorResource extends JsonResource
                 'id' => $this->surat_perjanjian_kerja_id,
                 'nomor_surat' => $this->kontrak?->nomor_surat_perjanjian_kerja,
                 'tanggal_nomor' => $this->kontrak?->tanggal_nomor,
-                'url_cetak' => url("/cetak/kontrak?tahun={$tahun}&bulan={$bulan}&id_kegiatan_manmit={$kegiatanId}&mitra_id={$this->mitra_id}"),
+                'url_cetak' => url("/cetak/kontrak?tahun={$tahun}&bulan={$bulan}&mitra_id={$this->mitra_id}"),
             ] : null,
             'bast' => $this->surat_bast_id ? [
                 'id' => $this->surat_bast_id,

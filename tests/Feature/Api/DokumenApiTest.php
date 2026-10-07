@@ -102,6 +102,10 @@ class DokumenApiTest extends TestCase
             ]);
 
         $this->assertStringContainsString('/cetak/kontrak', $response->json('data.0.url_cetak_pdf'));
+        $this->assertStringNotContainsString('id_kegiatan_manmit', $response->json('data.0.url_cetak_pdf'));
+        $this->assertStringContainsString('tahun=2026', $response->json('data.0.url_cetak_pdf'));
+        $this->assertStringContainsString('bulan=5', $response->json('data.0.url_cetak_pdf'));
+        $this->assertStringContainsString('mitra_id=' . $mitra->id, $response->json('data.0.url_cetak_pdf'));
     }
 
     public function test_get_bast_list_returns_bast_metadata_and_print_urls(): void
@@ -158,5 +162,71 @@ class DokumenApiTest extends TestCase
         $mitraResponse->assertStatus(200)
             ->assertJsonPath('status', 'success')
             ->assertJsonStructure(['data', 'meta']);
+    }
+
+    public function test_mitra_endpoint_advanced_search_and_filters(): void
+    {
+        $mitra1 = Mitra::create([
+            'id_sobat' => '61042099',
+            'nama_1' => 'Agus Setiawan',
+            'nik' => '6104209900000001',
+            'email' => 'agus@bps.go.id',
+            'no_telp' => '08123456789',
+            'kecamatan_domisili' => 'Delta Pawan',
+            'desa_domisili' => 'Kantor',
+            'jenis_kelamin' => 'L',
+            'posisi' => 'PCL',
+        ]);
+        Kemitraan::create([
+            'mitra_id' => $mitra1->id,
+            'tahun' => 2026,
+            'status' => 'AKTIF',
+        ]);
+
+        $mitra2 = Mitra::create([
+            'id_sobat' => '61042088',
+            'nama_1' => 'Siti Aminah',
+            'nik' => '6104208800000002',
+            'email' => 'siti@bps.go.id',
+            'no_telp' => '08987654321',
+            'kecamatan_domisili' => 'Benua Kayong',
+            'desa_domisili' => 'Tuan-tuan',
+            'jenis_kelamin' => 'P',
+            'posisi' => 'PML',
+        ]);
+        Kemitraan::create([
+            'mitra_id' => $mitra2->id,
+            'tahun' => 2026,
+            'status' => 'AKTIF',
+        ]);
+
+        // 1. Search by email
+        $resSearch = $this->withHeaders(['X-API-KEY' => $this->apiKey])
+            ->getJson('/api/v1/mitras?tahun=2026&q=agus@bps.go.id');
+        $resSearch->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.nama', 'Agus Setiawan');
+
+        // 2. Filter by kecamatan
+        $resKec = $this->withHeaders(['X-API-KEY' => $this->apiKey])
+            ->getJson('/api/v1/mitras?tahun=2026&kecamatan=Delta+Pawan');
+        $resKec->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.nama', 'Agus Setiawan');
+
+        // 3. Filter by jenis kelamin & posisi
+        $resJk = $this->withHeaders(['X-API-KEY' => $this->apiKey])
+            ->getJson('/api/v1/mitras?tahun=2026&jenis_kelamin=P&posisi=PML');
+        $resJk->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.nama', 'Siti Aminah');
+
+        // 4. Non-compact response returns enriched fields
+        $resFull = $this->withHeaders(['X-API-KEY' => $this->apiKey])
+            ->getJson('/api/v1/mitras?tahun=2026&q=Siti');
+        $resFull->assertStatus(200)
+            ->assertJsonPath('data.0.kecamatan', 'Benua Kayong')
+            ->assertJsonPath('data.0.desa', 'Tuan-tuan')
+            ->assertJsonPath('data.0.posisi', 'PML');
     }
 }

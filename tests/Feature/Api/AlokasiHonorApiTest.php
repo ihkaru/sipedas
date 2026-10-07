@@ -172,7 +172,9 @@ class AlokasiHonorApiTest extends TestCase
 
         // Response contains printable URL metadata
         $this->assertNotNull($response->json('data.kontrak.url_cetak'));
+        $this->assertStringNotContainsString('id_kegiatan_manmit', $response->json('data.kontrak.url_cetak'));
         $this->assertNotNull($response->json('data.bast.url_cetak'));
+        $this->assertStringContainsString('id_kegiatan_manmit', $response->json('data.bast.url_cetak'));
     }
 
     public function test_store_alokasi_validation_failure_when_sbml_exceeded(): void

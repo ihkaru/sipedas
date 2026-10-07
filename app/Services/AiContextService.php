@@ -68,6 +68,12 @@ Pahami hubungan antar-entitas di SIPEDAS sebelum memanggil endpoint mutasi:
    - Saat Anda membuat `AlokasiHonor`, sistem secara otomatis menerbitkan dokumen SPK dan BAST serta menyematkan nomor resminya.
    - **SPK Survei Terkonsolidasi**: Jika jenis kegiatan adalah `SURVEI`, sistem akan menggunakan kembali (*reuse*) nomor SPK yang sudah ada untuk mitra tersebut di bulan yang sama (1 SPK per bulan per jenis survei).
    - **BAST Individual**: BAST selalu dibuat unik per transaksi alokasi honor.
+6. **Kaidah Tautan Cetak Dokumen (SOP URL Cetak)**:
+   - **Tautan Cetak SPK (Kontrak Bulanan)**: Gunakan tautan bersih TANPA parameter `id_kegiatan_manmit`:
+     `https://<domain>/cetak/kontrak?tahun={tahun}&bulan={bulan}&mitra_id={mitra_id}`
+     *(Alasan: 1 SPK adalah konsolidasi seluruh kegiatan survei mitra di bulan tersebut. Jika ditambahkan filter kegiatan, lampiran kegiatan lain mitra di bulan yang sama akan terpotong).*
+   - **Tautan Cetak BAST**: Menggunakan filter kegiatan karena BAST bersifat spesifik per alokasi/kegiatan:
+     `https://<domain>/cetak/bast?tahun={tahun}&bulan={bulan}&id_kegiatan_manmit={id_kegiatan}&mitra_id={mitra_id}`
 
 ### 4 Aturan Validasi Ketat (Penyebab Error 422 jika Dilanggar):
 1. **Keaktifan Kemitraan Tahunan (Active Status Constraint)**:
@@ -93,107 +99,108 @@ Untuk menghemat context window, mempercepat reasoning, dan menghindari payload b
    - Seluruh endpoint GET (`/kegiatan-manmit`, `/mitras`, `/alokasi`, `/kontrak`, `/bast`, `/audit-logs`) mendukung parameter `compact=1`.
    - Menghemat hingga **80% token** dengan memangkas metadata timestamps dan relasi berulang yang tidak esensial.
 2. **Lakukan Filtering di Server (Server-Side Heavy Lifting)**:
-   - Jangan pernah mengambil seluruh data lalu memfilter di dalam prompt. Gunakan query parameters:
-     - `bulan={1..12}`: Menyaring data hanya pada bulan yang sedang Anda proses.
-     - `q={keyword}` atau `search={keyword}`: Pencarian instan (nama, ID Sobat, NIK, nama kegiatan, no surat).
-     - `has_honors=1`: Pada kegiatan, hanya ambil kegiatan yang sudah memiliki slot honor.
-     - `ids={id1,id2,...}`: Pada mitra, lakukan batch lookup sekaligus (*Fetch-Once, Process-Locally*).
-     - `with_sbml=1` & `available_only=1`: Pada mitra, server langsung menghitung dan menyaring mitra yang sisa pagu SBML-nya masih cukup.
+- Jangan pernah mengambil seluruh data lalu memfilter di dalam prompt. Gunakan query parameters:
+- `bulan={1..12}`: Menyaring data hanya pada bulan yang sedang Anda proses.
+- `q={keyword}` atau `search={keyword}`: Pencarian instan (nama, ID Sobat, NIK, email, no telp, nama kegiatan, no surat).
+- `kecamatan={nama/kode}` & `desa={nama/kode}`: Menyaring mitra berdasarkan domisili tugas di lapangan.
+- `jenis_kelamin={L|P}` & `posisi={PCL|PML}`: Menyaring profil demografis & kualifikasi mitra.
+- `has_allocations={0|1}`: Menyaring mitra yang belum memiliki penugasan di bulan tersebut (`has_allocations=0`) agar beban kerja merata.
+- `has_honors=1`: Pada kegiatan, hanya ambil kegiatan yang sudah memiliki slot honor.
+- `ids={id1,id2,...}`: Pada mitra, lakukan batch lookup sekaligus (*Fetch-Once, Process-Locally*).
+- `with_sbml=1` & `available_only=1`: Pada mitra, server langsung menghitung dan menyaring mitra yang sisa pagu SBML-nya masih cukup.
 3. **Paginasi Terukur**:
-   - Gunakan `per_page=10` atau `limit=10` jika hanya membutuhkan sampel verifikasi.
+- Gunakan `per_page=10` atau `limit=10` jika hanya membutuhkan sampel verifikasi.
 4. **Audit Trail Pruning**:
-   - Gunakan `only_rollbackable=1` untuk langsung menemukan mutasi yang dapat di-undo tanpa membanjiri konteks dengan log lawas.
-
+- Gunakan `only_rollbackable=1` untuk langsung menemukan mutasi yang dapat di-undo tanpa membanjiri konteks dengan log lawas.
 ---
-
 ## 4. ALUR KERJA STANDAR AGENT (RECOMMENDED AGENTIC PIPELINE)
-
 Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
-
 ```
 [Phase 1: Token-Efficient Discovery]
-   │──► GET /kegiatan-manmit?tahun={$currentYear}&bulan=3&has_honors=1&compact=1
-   └──► GET /mitras?tahun={$currentYear}&bulan=3&available_only=1&compact=1
-         │
+│──► GET /kegiatan-manmit?tahun={$currentYear}&bulan=3&has_honors=1&compact=1
+└──► GET /mitras?tahun={$currentYear}&bulan=3&available_only=1&compact=1
+│
 [Phase 2: Pre-Flight Simulation]
-   └──► POST /alokasi/check (Simulasi Dry-Run: Cek bentrok jadwal & sisa pagu SBML)
-         │
-         ├─── Jika eligible == false ──► AI evaluasi alasan penolakan & sesuaikan input
-         │
-         └─── Jika eligible == true
-               │
+└──► POST /alokasi/check (Simulasi Dry-Run: Cek bentrok jadwal & sisa pagu SBML)
+│
+├─── Jika eligible == false ──► AI evaluasi alasan penolakan & sesuaikan input
+│
+└─── Jika eligible == true
+│
 [Phase 3: Execution]
-   └──► POST /alokasi (Atomic Write: Buat AlokasiHonor + Otomatis Terbitkan SPK & BAST)
-         │
+└──► POST /alokasi (Atomic Write: Buat AlokasiHonor + Otomatis Terbitkan SPK & BAST)
+│
 [Phase 4: Document Verification]
-   │──► GET /kontrak?mitra_id={id}&bulan=3&compact=1 (Ambil nomor SPK & link PDF cetak)
-   └──► GET /bast?mitra_id={id}&bulan=3&compact=1 (Ambil nomor BAST & link PDF cetak)
-         │
+│──► GET /kontrak?mitra_id={id}&bulan=3&compact=1 (Ambil nomor SPK & link PDF cetak)
+└──► GET /bast?mitra_id={id}&bulan=3&compact=1 (Ambil nomor BAST & link PDF cetak)
+│
 [Phase 5: Self-Correction / Undo (Opsional)]
-   │──► GET /audit-logs?only_rollbackable=1&compact=1 (Cari ID mutasi yang ingin dibatalkan)
-   └──► POST /audit-logs/{id}/rollback (Kembalikan data jika AI mendeteksi kekeliruan)
+│──► GET /audit-logs?only_rollbackable=1&compact=1 (Cari ID mutasi yang ingin dibatalkan)
+└──► POST /audit-logs/{id}/rollback (Kembalikan data jika AI mendeteksi kekeliruan)
 ```
-
 ---
-
 ## 5. KATALOG REST API ENDPOINTS & SPESIFIKASI TEKNIS
-
 ### Endpoint 1: Lookup Kegiatan & Rincian Honor
 - **Method & Path**: `GET /api/v1/kegiatan-manmit`
 - **Query Parameters**:
-  - `q` / `search` (string) - Cari nama atau kode ID kegiatan
-  - `tahun` (integer, default: {$currentYear}) - Filter tahun anggaran
-  - `bulan` (integer 1-12) - **Sangat disarankan**: Hanya tampilkan kegiatan aktif di bulan target
-  - `jenis` (string: `SURVEI` atau `SENSUS`) - Filter jenis kegiatan
-  - `has_honors` (boolean: `1` atau `0`) - **Sangat disarankan**: Hanya kegiatan yang memiliki rincian honor
-  - `compact` (boolean: `1` atau `0`) - **Mode hemat token (~80% lebih kecil)**
-  - `sort_by` (`tgl_mulai_pelaksanaan`, `nama`, `id`) & `sort_order` (`asc`/`desc`)
-  - `per_page` / `limit` (integer 1-100, default: 20)
+- `q` / `search` (string) - Cari nama atau kode ID kegiatan
+- `tahun` (integer, default: {$currentYear}) - Filter tahun anggaran
+- `bulan` (integer 1-12) - **Sangat disarankan**: Hanya tampilkan kegiatan aktif di bulan target
+- `jenis` (string: `SURVEI` atau `SENSUS`) - Filter jenis kegiatan
+- `has_honors` (boolean: `1` atau `0`) - **Sangat disarankan**: Hanya kegiatan yang memiliki rincian honor
+- `compact` (boolean: `1` atau `0`) - **Mode hemat token (~80% lebih kecil)**
+- `sort_by` (`tgl_mulai_pelaksanaan`, `nama`, `id`) & `sort_order` (`asc`/`desc`)
+- `per_page` / `limit` (integer 1-100, default: 20)
 - **Contoh Compact Response (200 OK)**:
 ```json
 {
-  "status": "success",
-  "data": [
-    {
-      "id": "KEG-2026-001",
-      "nama": "Survei Biaya Hidup Triwulan I",
-      "jenis": "SURVEI",
-      "tgl_mulai": "{$currentYear}-03-01",
-      "tgl_akhir": "{$currentYear}-03-31",
-      "honors": [
-        {
-          "id": "HON-2026-001",
-          "jabatan": "Pencacah Lapangan",
-          "harga": 65000,
-          "satuan": "Dokumen"
-        }
-      ]
-    }
-  ],
-  "meta": {
-    "current_page": 1,
-    "last_page": 1,
-    "per_page": 20,
-    "total": 1,
-    "has_more": false
-  }
+"status": "success",
+"data": [
+{
+"id": "KEG-2026-001",
+"nama": "Survei Biaya Hidup Triwulan I",
+"jenis": "SURVEI",
+"tgl_mulai": "{$currentYear}-03-01",
+"tgl_akhir": "{$currentYear}-03-31",
+"honors": [
+{
+"id": "HON-2026-001",
+"jabatan": "Pencacah Lapangan",
+"harga": 65000,
+"satuan": "Dokumen"
+}
+]
+}
+],
+"meta": {
+"current_page": 1,
+"last_page": 1,
+"per_page": 20,
+"total": 1,
+"has_more": false
+}
 }
 ```
-
 ---
-
 ### Endpoint 2: Lookup Mitra Statistik
 - **Method & Path**: `GET /api/v1/mitras`
 - **Query Parameters**:
-  - `q` / `search` (string) - Cari nama, NIK, atau ID Sobat
-  - `ids` (string) - Batch lookup ID atau ID Sobat dipisah koma (contoh: `ids=105,108,61041001`)
-  - `tahun` (integer, default: {$currentYear})
-  - `bulan` (integer 1-12) - Sertakan jika ingin kalkulasi sisa plafon SBML
-  - `with_sbml` (boolean: `1` atau `0`) - Lampirkan objek kalkulasi sisa SBML bulan target
-  - `available_only` (boolean: `1` atau `0`) - Hanya mitra yang sisa pagu SBML-nya > 0 di bulan target
-  - `aktif_only` (boolean: `1` atau `0`, default: `1`)
-  - `compact` (boolean: `1` atau `0`, default: `0`)
-  - `per_page` / `limit` (integer 1-100, default: 20)
+- `q` / `search` (string) - Cari instan nama, NIK, ID Sobat, email, atau no telp
+- `ids` (string) - Batch lookup ID atau ID Sobat dipisah koma (contoh: `ids=105,108,61041001`)
+- `tahun` (integer, default: {$currentYear}) - Filter tahun kemitraan
+- `bulan` (integer 1-12) - Sertakan jika ingin kalkulasi sisa plafon SBML dan filter penugasan
+- `status` (string) - Filter status kemitraan spesifik (`AKTIF`, `TIDAK_AKTIF`, `BLACKLISTED`)
+- `aktif_only` (boolean: `1` atau `0`, default: `1`) - Hanya mitra kemitraan aktif
+- `kecamatan` (string) - Filter wilayah kecamatan domisili
+- `desa` (string) - Filter desa/kelurahan domisili
+- `jenis_kelamin` (string: `L` atau `P`) - Filter jenis kelamin
+- `posisi` (string) - Filter posisi/peran mitra (PCL, PML, dll)
+- `has_allocations` (boolean: `1` atau `0`) - Filter jika mitra sudah/belum memiliki alokasi di bulan target
+- `with_sbml` (boolean: `1` atau `0`) - Lampirkan objek kalkulasi sisa SBML bulan target
+- `available_only` (boolean: `1` atau `0`) - Hanya mitra yang sisa pagu SBML-nya > 0 di bulan target
+- `sort_by` (`nama`, `nama_1`, `id`, `id_sobat`, `nik`, `created_at`) & `sort_order` (`asc`/`desc`)
+- `compact` (boolean: `1` atau `0`, default: `0`) - Mode hemat token (hanya id, sobat, nik, nama, status, sisa sbml)
+- `per_page` / `limit` (integer 1-100, default: 20)
 - **Contoh Response (200 OK)**:
 ```json
 {
