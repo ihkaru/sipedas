@@ -98,64 +98,11 @@ class AlokasiHonor extends Model
     }
 
     /**
-     * Metode terpusat untuk mempersiapkan instance AlokasiHonor.
+     * Metode terpusat untuk mempersiapkan/menyimpan instance AlokasiHonor.
+     * Didelegasikan ke HonorAllocationService untuk memastikan konsistensi validasi dan transaksi atomik.
      */
     public static function createWithRelations(string $idSobat, string $honorId, float $target): self
     {
-        $mitra = Mitra::where('id_sobat', $idSobat)->first();
-        if (!$mitra) {
-            throw new \Exception("Mitra dengan ID Sobat '{$idSobat}' tidak ditemukan.");
-        }
-
-        $honor = Honor::with('kegiatanManmit')->find($honorId);
-        if (!$honor || !$honor->tanggal_akhir_kegiatan) {
-            throw new \Exception("Data tanggal_akhir_kegiatan pada Honor ID {$honorId} tidak lengkap atau tidak ditemukan.");
-        }
-
-        // --- SUMBER KEBENARAN: honor.tanggal_akhir_kegiatan ---
-        // Kontrak selalu mencakup satu bulan penuh sesuai bulan dari tanggal_akhir_kegiatan.
-        // Ini konsisten dengan logika blade template SPK (Pasal 3: startOfMonth s/d endOfMonth).
-        // tgl_mulai/akhir_pelaksanaan dari kegiatan_manmits TIDAK digunakan untuk kontrak.
-        $tanggalMulaiKontrak = Carbon::parse($honor->tanggal_akhir_kegiatan)->startOfMonth();
-        $tanggalAkhirKontrak = Carbon::parse($honor->tanggal_akhir_kegiatan)->endOfMonth();
-
-        // Tanggal administrasi SPK/BAST
-        $tanggalPengajuanSpk  = TanggalMerah::getNextWorkDay($tanggalMulaiKontrak->copy(), -1);
-        // BAST: tanggal_nomor maksimal = tanggal_akhir_kegiatan (jika hari kerja),
-        // atau hari kerja sebelumnya jika jatuh di hari libur/weekend.
-        $tanggalAkhirKegiatan = Carbon::parse($honor->tanggal_akhir_kegiatan);
-        $tanggalPengajuanBast = TanggalMerah::getNextWorkDay($tanggalAkhirKegiatan->copy(), -1);
-
-        $totalHonor = $honor->harga_per_satuan * $target;
-
-        // Cek apakah SPK sudah ada untuk mitra di bulan yang sama (untuk nomor surat yang sama)
-        $existingSpkId = self::where('mitra_id', $mitra->id)
-            ->where(function($q) use ($tanggalMulaiKontrak) {
-                $q->whereYear('tanggal_mulai_perjanjian', $tanggalMulaiKontrak->year)
-                  ->whereMonth('tanggal_mulai_perjanjian', $tanggalMulaiKontrak->month);
-            })
-            ->whereNotNull('surat_perjanjian_kerja_id')
-            ->value('surat_perjanjian_kerja_id');
-
-        $suratPerjanjianKerjaId = $existingSpkId ?: NomorSurat::generateNomorSuratPerjanjianKerja($tanggalPengajuanSpk)->id;
-
-        $existingBastId = self::where('mitra_id', $mitra->id)
-            ->where('honor_id', $honor->id)
-            ->whereNotNull('surat_bast_id')
-            ->value('surat_bast_id');
-
-        $suratBastId = $existingBastId ?: NomorSurat::generateNomorSuratBast($tanggalPengajuanBast)->id;
-
-        return new self([
-            'honor_id' => $honorId,
-            'mitra_id' => $mitra->id,
-            'target_per_satuan_honor' => $target,
-            'total_honor' => $totalHonor,
-            'surat_perjanjian_kerja_id' => $suratPerjanjianKerjaId,
-            'surat_bast_id' => $suratBastId,
-            'tanggal_penanda_tanganan_spk_oleh_petugas' => $tanggalPengajuanSpk,
-            'tanggal_mulai_perjanjian' => $tanggalMulaiKontrak,
-            'tanggal_akhir_perjanjian' => $tanggalAkhirKontrak,
-        ]);
+        return \App\Services\HonorAllocationService::allocate($idSobat, $honorId, $target);
     }
 }

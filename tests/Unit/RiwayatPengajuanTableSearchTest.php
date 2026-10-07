@@ -10,11 +10,12 @@ use App\Models\RiwayatPengajuan;
 use App\Models\User;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class RiwayatPengajuanTableSearchTest extends TestCase
 {
+    use RefreshDatabase;
     public function test_riwayat_pengajuan_table_location_column_is_searchable(): void
     {
         $widget = new RiwayatPengajuanTable();
