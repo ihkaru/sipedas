@@ -82,8 +82,7 @@ class PenugasanResource extends Resource
                 ->label('Mitra')
                 ->relationship('mitra', 'nama_1')
                 ->multiple()
-                ->searchable()
-                ->preload(),
+                ->searchable(),
             DateRangeFilter::make("tgl_pengajuan_tugas")
                 ->label("Tanggal Pengajuan"),
             DateRangeFilter::make("tgl_mulai_tugas")
