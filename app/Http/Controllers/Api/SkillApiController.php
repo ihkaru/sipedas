@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\ApiKey;
+use App\Services\AiContextService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -16,7 +18,13 @@ class SkillApiController extends Controller
         $baseUrl = url('/api/v1');
         $format = $request->query('format', 'markdown');
 
-        $markdownSkill = <<<MARKDOWN
+        $keyString = $request->header('X-API-KEY') ?? $request->bearerToken() ?? $request->query('key');
+        $apiKey = $keyString ? ApiKey::where('key', $keyString)->first() : null;
+
+        if ($apiKey) {
+            $markdownSkill = AiContextService::generateContextForApiKey($apiKey);
+        } else {
+            $markdownSkill = <<<MARKDOWN
 ---
 name: sipedas-contract-bast-agent
 description: REST API skill untuk pembuatan alokasi honor mitra, penerbitan kontrak/SPK, dan BAST otomatis di SIPEDAS BPS.
@@ -104,6 +112,7 @@ Sebelum membuat alokasi, pahami 4 aturan validasi:
 - `GET /audit-logs`: Lihat riwayat perubahan yang dilakukan melalui API.
 - `POST /audit-logs/{id}/rollback`: Batalkan perubahan sebelumnya dan pulihkan database ke state semula.
 MARKDOWN;
+        }
 
         if ($format === 'json' || $request->wantsJson()) {
             return response()->json([

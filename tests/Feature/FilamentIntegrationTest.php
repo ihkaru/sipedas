@@ -79,4 +79,41 @@ class FilamentIntegrationTest extends TestCase
 
         $this->assertFalse(AuditLogResource::canCreate());
     }
+
+    public function test_ai_context_service_generates_detailed_prompt(): void
+    {
+        $apiKey = ApiKey::create([
+            'user_id' => $this->superAdmin->id,
+            'name' => 'Agent Context Test',
+            'key' => 'spk_test_1234567890abcdef',
+            'is_active' => true,
+        ]);
+
+        $context = \App\Services\AiContextService::generateContextForApiKey($apiKey);
+
+        $this->assertStringContainsString('spk_test_1234567890abcdef', $context);
+        $this->assertStringContainsString('Agent Context Test', $context);
+        $this->assertStringContainsString('SIPEDAS BPS INTEGRATION PROTOCOL', $context);
+        $this->assertStringContainsString('/api/v1/alokasi/check', $context);
+        $this->assertStringContainsString('/api/v1/audit-logs', $context);
+        $this->assertGreaterThan(100, substr_count($context, "\n")); // Over 100 lines
+    }
+
+    public function test_skill_endpoint_injects_dynamic_api_key_when_requested(): void
+    {
+        $apiKey = ApiKey::create([
+            'user_id' => $this->superAdmin->id,
+            'name' => 'Dynamic Key Skill Test',
+            'key' => 'spk_dynamic_test_key_abc',
+            'is_active' => true,
+        ]);
+
+        $response = $this->withHeaders([
+            'X-API-KEY' => 'spk_dynamic_test_key_abc',
+        ])->get('/api/v1/skill.md');
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('spk_dynamic_test_key_abc', $response->getContent());
+        $this->assertStringContainsString('Dynamic Key Skill Test', $response->getContent());
+    }
 }

@@ -163,6 +163,20 @@ class ApiKeyResource extends Resource
                     ->label('Status Aktif'),
             ])
             ->actions([
+                \Filament\Actions\Action::make('copy_ai_context')
+                    ->label('Copy AI Context')
+                    ->icon('heroicon-o-sparkles')
+                    ->color('info')
+                    ->tooltip('Salin panduan lengkap, aturan bisnis, dan API key untuk Coding Agent')
+                    ->modalHeading(fn (ApiKey $record) => "Konteks AI & Kunci API: {$record->name}")
+                    ->modalDescription('Prompt sistem lengkap yang siap ditempelkan langsung ke coding agent (Claude, Cursor, Windsurf, ChatGPT, dll).')
+                    ->modalWidth('7xl')
+                    ->modalContent(fn (ApiKey $record) => view('filament.resources.api-key-resource.modals.ai-context', [
+                        'record' => $record,
+                        'context' => \App\Services\AiContextService::generateContextForApiKey($record),
+                    ]))
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Tutup'),
                 \Filament\Actions\EditAction::make(),
                 \Filament\Actions\DeleteAction::make(),
             ])
