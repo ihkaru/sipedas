@@ -137,14 +137,15 @@ class KegiatanManmitApiController extends Controller
             }
         }
 
-        // 2. Keyword Search (Nama, ID Sobat, NIK, Email, atau No Telp)
+        // 2. Keyword Search (Nama, ID Sobat, NIK, Email, No Telp, atau No WA)
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nama_1', 'like', "%{$search}%")
                   ->orWhere('id_sobat', 'like', "%{$search}%")
                   ->orWhere('nik', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('no_telp', 'like', "%{$search}%");
+                  ->orWhere('no_telp', 'like', "%{$search}%")
+                  ->orWhere('nomor_wa', 'like', "%{$search}%");
             });
         }
 
@@ -264,6 +265,9 @@ class KegiatanManmitApiController extends Controller
             if (!$isCompact) {
                 $row['email'] = $mitra->email;
                 $row['no_telp'] = $mitra->no_telp;
+                $row['nomor_wa'] = $mitra->nomor_wa;
+                $row['whatsapp_target'] = $mitra->whatsapp_target;
+                $row['whatsapp_url'] = $mitra->whatsapp_url;
                 $row['kecamatan'] = $mitra->kecamatan_domisili;
                 $row['desa'] = $mitra->desa_domisili;
                 $row['jenis_kelamin'] = $mitra->jenis_kelamin;

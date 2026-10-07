@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AuditLogApiController;
 use App\Http\Controllers\Api\DokumenApiController;
 use App\Http\Controllers\Api\KegiatanManmitApiController;
 use App\Http\Controllers\Api\MicrositeController;
+use App\Http\Controllers\Api\MitraApiController;
 use App\Http\Controllers\Api\SkillApiController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,7 +21,9 @@ Route::prefix('v1')->middleware('api.key')->group(function () {
     // 1. Discovery & Management Endpoints (Lookup Kegiatan, Honor, Mitra, Migration)
     Route::get('/kegiatan-manmit', [KegiatanManmitApiController::class, 'index']);
     Route::post('/kegiatan-manmit/{id}/rename-id', [KegiatanManmitApiController::class, 'renameId']);
-    Route::get('/mitras', [KegiatanManmitApiController::class, 'mitras']);
+    Route::get('/mitras', [MitraApiController::class, 'index']);
+    Route::get('/mitras/{id}', [MitraApiController::class, 'show']);
+    Route::match(['put', 'patch', 'post'], '/mitras/{id}', [MitraApiController::class, 'update']);
 
     // 2. Alokasi Honor & Automatic SPK/BAST Trigger
     Route::post('/alokasi/check', [AlokasiHonorApiController::class, 'check']);

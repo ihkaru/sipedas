@@ -64,9 +64,13 @@ Skill ini memberikan instruksi lengkap bagi AI Coding Agent untuk berinteraksi d
   - Body: `{"new_id": "SERUTI26-TW3", "new_nama": "Opsional Nama Baru", "cascade_honor_ids": true}`
   - Fitur: Migrasi PK ID kegiatan secara atomik dan meng-cascade referensi di `honors`, `alokasi_honors`, dan `kegiatans`. 100% aman menjaga keutuhan nomor SPK dan BAST tanpa mereset nomor surat!
 
-### B. Lookup Mitra Statistik
+### B. Lookup & Manajemen Mitra Statistik
 - `GET /api/v1/mitras?tahun=2026&bulan=3&available_only=1&compact=1`
-- Query Params: `q` (nama/NIK/Sobat/email/telp), `ids` (comma-separated), `tahun`, `bulan`, `status` (AKTIF/dll), `aktif_only`, `kecamatan`, `desa`, `jenis_kelamin` (L/P), `posisi` (PCL/PML), `has_allocations` (0/1), `with_sbml`, `available_only`, `sort_by` (nama/id/sobat/nik/created_at), `sort_order` (asc/desc), `compact`, `per_page`.
+- Query Params: `q` (nama/NIK/Sobat/email/telp/WA), `ids` (comma-separated), `tahun`, `bulan`, `status` (AKTIF/dll), `aktif_only`, `kecamatan`, `desa`, `jenis_kelamin` (L/P), `posisi` (PCL/PML), `has_allocations` (0/1), `with_sbml`, `available_only`, `sort_by` (nama/id/sobat/nik/created_at), `sort_order` (asc/desc), `compact`, `per_page`.
+- `GET /api/v1/mitras/{id}`: Detail profil mitra (identifikasi via ID, ID Sobat, atau NIK) lengkap dengan kontak, WhatsApp, dan riwayat kemitraan.
+- `PATCH /api/v1/mitras/{id}` (atau `PUT` / `POST`): Update informasi mitra.
+  - Body: `{"nomor_wa": "081258306655", "no_telp": "...", "email": "...", "alamat_detail": "...", "catatan": "...", "status_kemitraan": "AKTIF", "tahun": 2026}`
+  - Kolom Khusus: `nomor_wa` tersimpan di kolom fisik tersendiri (terpisah dari `no_telp` impor SOBAT), dinormalisasi otomatis, tercatat di `ApiAuditLog`, dan 100% reversible via rollback.
 
 ### C. Pre-Flight Check (Dry Run)
 - `POST /api/v1/alokasi/check`

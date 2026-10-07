@@ -110,6 +110,13 @@ class MitraResource extends Resource {
                     ->tel()
                     ->maxLength(255)
                     ->default(null),
+                Forms\Components\TextInput::make('nomor_wa')
+                    ->label('Nomor WhatsApp (Terbaru)')
+                    ->tel()
+                    ->prefixIcon('heroicon-m-chat-bubble-left-right')
+                    ->maxLength(25)
+                    ->helperText('Nomor WhatsApp aktif untuk koordinasi. Sistem mengutamakan nomor ini sebelum no_telp.')
+                    ->default(null),
                 Forms\Components\TextInput::make('mengikuti_pendataan_bps')
                     ->maxLength(255)
                     ->default(null),
@@ -209,6 +216,13 @@ class MitraResource extends Resource {
                     ->searchable(),
                 Tables\Columns\TextColumn::make('no_telp')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('nomor_wa')
+                    ->label('No WA')
+                    ->searchable()
+                    ->copyable()
+                    ->icon('heroicon-m-chat-bubble-left-right')
+                    ->color('success')
+                    ->placeholder('-'),
                 Tables\Columns\TextColumn::make('mengikuti_pendataan_bps')->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('sp')->toggleable(isToggledHiddenByDefault: true)

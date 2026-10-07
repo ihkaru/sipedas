@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany; // <-- Import ini
  * @property string|null $nik
  * @property string|null $email
  * @property string|null $no_telp
+ * @property string|null $nomor_wa
  * @property string|null $kabupaten_domisili
  * @property string|null $kecamatan_domisili
  * @property string|null $desa_domisili
@@ -37,6 +38,37 @@ class Mitra extends Model
     public function alokasiHonors()
     {
         return $this->hasMany(AlokasiHonor::class);
+    }
+
+    /**
+     * Target nomor WhatsApp aktif mitra (mengutamakan nomor_wa terbaru, fallback ke no_telp).
+     */
+    protected function whatsappTarget(): Attribute
+    {
+        return Attribute::make(get: function () {
+            $raw = $this->nomor_wa ?: $this->no_telp;
+            if (!$raw) return null;
+
+            $cleaned = preg_replace('/[^0-9]/', '', (string)$raw);
+            if (empty($cleaned)) return null;
+
+            if (str_starts_with($cleaned, '08')) {
+                $cleaned = '62' . substr($cleaned, 1);
+            }
+
+            return $cleaned;
+        });
+    }
+
+    /**
+     * Tautan instan WhatsApp web / app (wa.me)
+     */
+    protected function whatsappUrl(): Attribute
+    {
+        return Attribute::make(get: function () {
+            $target = $this->whatsapp_target;
+            return $target ? "https://wa.me/{$target}" : null;
+        });
     }
     /**
      * Accessor untuk mendapatkan nama Kabupaten Domisili, dioptimalkan dengan indeks.

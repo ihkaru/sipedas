@@ -200,6 +200,41 @@ class ApiAuditLog extends Model
                 ];
             }
 
+            if ($this->action === 'UPDATE_MITRA') {
+                $mitraId = $this->target_id;
+                $mitra = Mitra::find($mitraId);
+                if (!$mitra) {
+                    throw new \RuntimeException("Mitra #{$mitraId} tidak ditemukan untuk di-rollback.");
+                }
+
+                $stateBefore = $this->state_before;
+
+                if (isset($stateBefore['kemitraan_status'])) {
+                    $tahun = $stateBefore['kemitraan_tahun'] ?? now()->year;
+                    Kemitraan::updateOrCreate(
+                        ['mitra_id' => $mitra->id, 'tahun' => $tahun],
+                        ['status' => $stateBefore['kemitraan_status']]
+                    );
+                    unset($stateBefore['kemitraan_status'], $stateBefore['kemitraan_tahun']);
+                }
+
+                if (!empty($stateBefore)) {
+                    $mitra->update($stateBefore);
+                }
+
+                $this->update([
+                    'is_rolled_back' => true,
+                    'rolled_back_at' => now(),
+                    'rolled_back_by_user_id' => $byUser?->id,
+                    'rollback_reason' => $reason ?? 'Rollback pembaruan data mitra via audit log',
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => "Informasi mitra #{$mitraId} ({$mitra->nama_1}) berhasil dikembalikan ke kondisi sebelumnya.",
+                ];
+            }
+
             throw new \RuntimeException("Handler rollback belum diimplementasikan untuk aksi '{$this->action}'.");
         });
     }

@@ -241,6 +241,30 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
 }
 ```
 
+#### Endpoint Detail & Update Profil Mitra:
+- **Method & Path**: `GET /api/v1/mitras/{id}`
+  - Identifier `{id}` mendukung: Primary ID database, `id_sobat`, atau `nik`.
+  - Mengembalikan data lengkap mitra termasuk `nomor_wa`, `whatsapp_target`, `whatsapp_url`, riwayat kemitraan, domisili, dan opsi `with_allocations=1`.
+
+- **Method & Path**: `PATCH /api/v1/mitras/{id}` (atau `PUT` / `POST`)
+  - **Tujuan**: Memperbarui informasi kontak mitra, khususnya **Nomor WhatsApp Terbaru** (`nomor_wa`), nomor telepon, email, alamat, catatan, atau status kemitraan.
+  - **Kolom Khusus WhatsApp**: Tersedia kolom khusus `nomor_wa` terpisah dari `no_telp` (data impor SOBAT asli) sehingga riwayat asli tetap aman dan nomor aktif lapangan tersimpan rapi.
+  - **Request Body (JSON)**:
+```json
+{
+  "nomor_wa": "081258306655",
+  "no_telp": "081258306655",
+  "email": "mitra@example.com",
+  "alamat_detail": "Jl. Merdeka No. 45, RT 02/RW 01",
+  "catatan": "Mitra aktif responsif lapangan",
+  "status_kemitraan": "AKTIF",
+  "tahun": {$currentYear}
+}
+```
+  - **Karakteristik**:
+    - Nomor WhatsApp otomatis dinormalisasi ke standar angka bersih (contoh `0812...` -> `62812...`).
+    - Tercatat di `ApiAuditLog` (`action: UPDATE_MITRA`) dan **100% reversible** (dapat di-rollback kapan pun).
+
 ---
 
 ### Endpoint 3: Pre-Flight Check / Dry-Run (Simulasi Kelayakan)
