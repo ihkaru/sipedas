@@ -44,7 +44,7 @@ class DokumenApiController extends Controller
                       ->orWhere('nik', 'like', "%{$search}%");
                 })
                 ->orWhereHas('kontrak', function ($ns) use ($search) {
-                    $ns->where('nomor_surat_tugas', 'like', "%{$search}%");
+                    $ns->searchNomor($search);
                 })
                 ->orWhereHas('honor.kegiatanManmit', function ($k) use ($search) {
                     $k->where('nama', 'like', "%{$search}%");
@@ -183,7 +183,7 @@ class DokumenApiController extends Controller
                       ->orWhere('nik', 'like', "%{$search}%");
                 })
                 ->orWhereHas('bast', function ($ns) use ($search) {
-                    $ns->where('nomor_surat_tugas', 'like', "%{$search}%");
+                    $ns->searchNomor($search);
                 })
                 ->orWhereHas('honor.kegiatanManmit', function ($k) use ($search) {
                     $k->where('nama', 'like', "%{$search}%");

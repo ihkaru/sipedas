@@ -198,6 +198,23 @@ class NomorSurat extends Model
         $query->where('jenis', Constants::JENIS_NOMOR_SURAT_BAST);
     }
 
+    /**
+     * Scope query untuk pencarian nomor surat berdasarkan keyword tanpa bergantung kolom virtual.
+     */
+    public function scopeSearchNomor(Builder $query, string $search): Builder
+    {
+        return $query->where(function ($q) use ($search) {
+            $q->where('nomor', 'like', "%{$search}%")
+              ->orWhere('sub_nomor', 'like', "%{$search}%")
+              ->orWhere('tahun', 'like', "%{$search}%");
+
+            $cleanNumeric = preg_replace('/[^0-9]/', '', $search);
+            if (!empty($cleanNumeric) && is_numeric($cleanNumeric)) {
+                $q->orWhere('nomor', (int) $cleanNumeric);
+            }
+        });
+    }
+
     public static function generateNomorSuratBast(Carbon $tanggal_pengajuan)
     {
         $nomorSuratTerakhir = self::where("tahun", $tanggal_pengajuan->year)

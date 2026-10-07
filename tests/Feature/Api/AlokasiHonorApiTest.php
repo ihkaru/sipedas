@@ -253,4 +253,38 @@ class AlokasiHonorApiTest extends TestCase
 
         $this->assertEquals(0, AlokasiHonor::count());
     }
+
+    public function test_get_alokasi_search_by_keyword_without_sql_error(): void
+    {
+        $mitra = $this->createMitra('61041009', 'Siti Susenas', 2026);
+        $honor = $this->createKegiatanAndHonor('KEG-SUSENAS-1', 'HON-SUSENAS-1', 50000);
+
+        $this->withHeaders([
+            'X-API-KEY' => $this->apiKey,
+        ])->postJson('/api/v1/alokasi', [
+            'mitra_id' => $mitra->id,
+            'honor_id' => $honor->id,
+            'target' => 5,
+        ])->assertStatus(201);
+
+        // Pencarian dengan keyword q=SUSENAS (sebelumnya memicu 500 karena Unknown column 'nomor_surat_tugas')
+        $response = $this->withHeaders([
+            'X-API-KEY' => $this->apiKey,
+        ])->getJson('/api/v1/alokasi?q=SUSENAS');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('status', 'success');
+        $this->assertCount(1, $response->json('data'));
+
+        // Pastikan dokumen kontrak dan BAST juga tidak melempar error saat di-query dengan q
+        $resKontrak = $this->withHeaders([
+            'X-API-KEY' => $this->apiKey,
+        ])->getJson('/api/v1/kontrak?q=SUSENAS');
+        $resKontrak->assertStatus(200);
+
+        $resBast = $this->withHeaders([
+            'X-API-KEY' => $this->apiKey,
+        ])->getJson('/api/v1/bast?q=SUSENAS');
+        $resBast->assertStatus(200);
+    }
 }
