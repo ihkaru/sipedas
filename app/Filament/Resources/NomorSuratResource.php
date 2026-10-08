@@ -66,7 +66,9 @@ class NomorSuratResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('nomor_surat_tugas')
                     ->label("Nomor Surat Tugas")
-                    ->searchable(),
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->searchNomor($search);
+                    }),
                 Tables\Columns\TextColumn::make('jenis')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tanggal_nomor')
