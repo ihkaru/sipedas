@@ -334,6 +334,119 @@ class ApiAuditLog extends Model
                 ];
             }
 
+            if ($this->action === 'CREATE_KEGIATAN_MANMIT') {
+                $kegiatanId = $this->state_after['id'] ?? null;
+                $kegiatan = KegiatanManmit::with('honors')->find($kegiatanId);
+                if (!$kegiatan) {
+                    throw new \RuntimeException("Kegiatan Manmit '{$kegiatanId}' tidak ditemukan untuk di-rollback.");
+                }
+
+                if ($kegiatan->alokasiHonors()->exists()) {
+                    throw new \RuntimeException("Tidak dapat me-rollback pembuatan Kegiatan '{$kegiatanId}' karena sudah memiliki alokasi mitra aktif.");
+                }
+
+                $kegiatan->honors()->delete();
+                $kegiatan->delete();
+
+                $this->update([
+                    'is_rolled_back' => true,
+                    'rolled_back_at' => now(),
+                    'rolled_back_by_user_id' => $byUser?->id,
+                    'rollback_reason' => $reason ?? 'Rollback pendaftaran master kegiatan manmit via audit log',
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => "Master Kegiatan Manmit '{$kegiatanId}' (dan honor terkait) berhasil dihapus (rollback penambahan data).",
+                ];
+            }
+
+            if ($this->action === 'DELETE_KEGIATAN_MANMIT') {
+                $kegiatanData = $this->state_before['kegiatan'] ?? null;
+                if (!$kegiatanData) {
+                    throw new \RuntimeException("Data kegiatan sebelumnya tidak ditemukan dalam log audit.");
+                }
+
+                $kegiatanId = $kegiatanData['id'];
+                if (KegiatanManmit::where('id', $kegiatanId)->exists()) {
+                    throw new \RuntimeException("Kegiatan dengan ID '{$kegiatanId}' sudah ada di sistem.");
+                }
+
+                unset($kegiatanData['created_at'], $kegiatanData['updated_at']);
+                KegiatanManmit::create($kegiatanData);
+
+                $honorsData = $this->state_before['honors'] ?? [];
+                foreach ($honorsData as $hData) {
+                    unset($hData['created_at'], $hData['updated_at']);
+                    Honor::create($hData);
+                }
+
+                $this->update([
+                    'is_rolled_back' => true,
+                    'rolled_back_at' => now(),
+                    'rolled_back_by_user_id' => $byUser?->id,
+                    'rollback_reason' => $reason ?? 'Rollback penghapusan kegiatan manmit via audit log',
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => "Master Kegiatan Manmit '{$kegiatanId}' beserta " . count($honorsData) . " pos honor berhasil dipulihkan.",
+                ];
+            }
+
+            if ($this->action === 'CREATE_HONOR') {
+                $honorId = $this->state_after['id'] ?? null;
+                $honor = Honor::find($honorId);
+                if (!$honor) {
+                    throw new \RuntimeException("Honor '{$honorId}' tidak ditemukan untuk di-rollback.");
+                }
+
+                if ($honor->alokasiHonors()->exists()) {
+                    throw new \RuntimeException("Tidak dapat me-rollback pembuatan Honor '{$honorId}' karena sudah memiliki alokasi mitra.");
+                }
+
+                $honor->delete();
+
+                $this->update([
+                    'is_rolled_back' => true,
+                    'rolled_back_at' => now(),
+                    'rolled_back_by_user_id' => $byUser?->id,
+                    'rollback_reason' => $reason ?? 'Rollback penambahan master honor via audit log',
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => "Master Pos Honor '{$honorId}' berhasil dihapus (rollback penambahan data).",
+                ];
+            }
+
+            if ($this->action === 'DELETE_HONOR') {
+                $honorData = $this->state_before;
+                if (!$honorData) {
+                    throw new \RuntimeException("Data honor sebelumnya tidak ditemukan dalam log audit.");
+                }
+
+                $honorId = $honorData['id'];
+                if (Honor::where('id', $honorId)->exists()) {
+                    throw new \RuntimeException("Honor dengan ID '{$honorId}' sudah ada di sistem.");
+                }
+
+                unset($honorData['created_at'], $honorData['updated_at']);
+                Honor::create($honorData);
+
+                $this->update([
+                    'is_rolled_back' => true,
+                    'rolled_back_at' => now(),
+                    'rolled_back_by_user_id' => $byUser?->id,
+                    'rollback_reason' => $reason ?? 'Rollback penghapusan master honor via audit log',
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => "Master Pos Honor '{$honorId}' berhasil dipulihkan kembali.",
+                ];
+            }
+
             throw new \RuntimeException("Handler rollback belum diimplementasikan untuk aksi '{$this->action}'.");
         });
     }

@@ -22,13 +22,17 @@ Route::get('/v1/skill.md', [SkillApiController::class, 'show']);
 Route::prefix('v1')->middleware('api.key')->group(function () {
     // 1. Discovery & Management Endpoints (Lookup Kegiatan, Honor, Mitra, Pegawai, Migration)
     Route::get('/kegiatan-manmit', [KegiatanManmitApiController::class, 'index']);
+    Route::post('/kegiatan-manmit', [KegiatanManmitApiController::class, 'store']);
     Route::get('/kegiatan-manmit/{id}', [KegiatanManmitApiController::class, 'show']);
     Route::match(['put', 'patch', 'post'], '/kegiatan-manmit/{id}', [KegiatanManmitApiController::class, 'update']);
+    Route::delete('/kegiatan-manmit/{id}', [KegiatanManmitApiController::class, 'destroy']);
     Route::post('/kegiatan-manmit/{id}/rename-id', [KegiatanManmitApiController::class, 'renameId']);
 
     Route::get('/honors', [HonorApiController::class, 'index']);
+    Route::post('/honors', [HonorApiController::class, 'store']);
     Route::get('/honors/{id}', [HonorApiController::class, 'show']);
     Route::match(['put', 'patch', 'post'], '/honors/{id}', [HonorApiController::class, 'update']);
+    Route::delete('/honors/{id}', [HonorApiController::class, 'destroy']);
 
     Route::get('/mitras', [MitraApiController::class, 'index']);
     Route::get('/mitras/{id}', [MitraApiController::class, 'show']);

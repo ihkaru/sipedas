@@ -116,9 +116,13 @@ Untuk menghemat context window, mempercepat reasoning, dan menghindari payload b
 ## 4. ALUR KERJA STANDAR AGENT (RECOMMENDED AGENTIC PIPELINE)
 Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
 ```
-[Phase 1: Token-Efficient Discovery]
+[Phase 1: Token-Efficient Discovery & Auto-Creation]
 │──► GET /kegiatan-manmit?tahun={$currentYear}&bulan=3&has_honors=1&compact=1
-└──► GET /mitras?tahun={$currentYear}&bulan=3&available_only=1&compact=1
+│──► GET /mitras?tahun={$currentYear}&bulan=3&available_only=1&compact=1
+│
+├─── Jika Master Kegiatan / Pos Honor belum ada di sistem:
+│    └──► POST /kegiatan-manmit (Daftarkan master kegiatan baru + pos honor secara atomik)
+│         atau POST /honors (Daftarkan pos honor baru di bawah kegiatan induk)
 │
 [Phase 2: Pre-Flight Simulation]
 └──► POST /alokasi/check (Simulasi Dry-Run: Cek bentrok jadwal & sisa pagu SBML)
@@ -182,6 +186,40 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
 }
 ```
 
+#### Endpoint Pendaftaran Master Kegiatan Baru (Single Atomic Request):
+- **Method & Path**: `POST /api/v1/kegiatan-manmit`
+- **Tujuan**: Mendaftarkan Master Kegiatan Manmit baru dari nol beserta pos-pos honornya sekaligus secara atomik (contoh kasus: *Updating DPP 2026*, *Updating DUTL 2026*).
+- **Request Body (JSON)**:
+```json
+{
+  "id": "DPP26",
+  "nama": "(DPP26) Updating Direktori Perusahaan Pertanian 2026",
+  "tgl_mulai_pelaksanaan": "2026-07-01",
+  "tgl_akhir_pelaksanaan": "2026-09-30",
+  "jenis_kegiatan": "SURVEI",
+  "frekuensi_kegiatan": "TAHUNAN",
+  "honors": [
+    {
+      "jabatan": "PPL",
+      "jenis_honor": "PENDATAAN",
+      "satuan_honor": "DOKUMEN",
+      "harga_per_satuan": 53000,
+      "tanggal_akhir_kegiatan": "2026-09-30"
+    }
+  ]
+}
+```
+- **Karakteristik & Fitur Otomatis**:
+  - `id`: Opsional. Jika kosong, sistem otomatis mengekstrak kode dalam tanda kurung nama kegiatan (misal `DPP26`) atau membuat ID slug kapital.
+  - `honors`: Array pos honor opsional. Jika disertakan, sistem membuat master kegiatan dan seluruh pos honornya dalam 1 transaksi DB atomik.
+  - Tercatat di `ApiAuditLog` (`action: CREATE_KEGIATAN_MANMIT`) dan **100% reversible** (bisa di-rollback).
+
+#### Endpoint Penghapusan Master Kegiatan:
+- **Method & Path**: `DELETE /api/v1/kegiatan-manmit/{id}`
+- **Tujuan**: Menghapus master kegiatan (dan pos honor kosong anaknya) jika salah dibuat.
+- **Keamanan**: Hanya diizinkan jika kegiatan belum memiliki alokasi honor mitra (`alokasi_honors_count == 0`).
+- **Reversibilitas**: Tercatat di `ApiAuditLog` (`action: DELETE_KEGIATAN_MANMIT`) dan dapat di-rollback.
+
 #### Endpoint Khusus: Rename / Migrasi ID Kegiatan (Cascade Safe)
 - **Method & Path**: `POST /api/v1/kegiatan-manmit/{id}/rename-id`
 - **Tujuan**: Memperbaiki / menstandarisasi ID kegiatan (contoh: `SERUTI26` menjadi `SERUTI26-TW3`) secara aman tanpa merusak dokumen yang sudah terbit.
@@ -243,6 +281,32 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
     - **Auto Recalculate Batas Pencairan**: Otomatis memperbarui `tanggal_pembayaran_maksimal = tanggal_akhir_kegiatan + 20 hari`.
     - **Propagasi Otomatis SPK & BAST**: Otomatis menghitung ulang awal/akhir bulan perjanjian di seluruh `alokasi_honors` dan memperbarui tanggal nomor surat SPK serta BAST di `nomor_surats` secara atomik via `HonorTanggalService`.
     - **Reversibel**: Tercatat di `ApiAuditLog` (`action: UPDATE_HONOR`) dan dapat di-rollback kapan pun.
+
+#### Endpoint Pendaftaran Master Pos Honor Baru:
+- **Method & Path**: `POST /api/v1/honors`
+- **Tujuan**: Mendaftarkan pos honor baru di bawah suatu Kegiatan Manmit yang sudah ada (contoh: PPL Pendataan Rp 53.000/dokumen).
+- **Request Body (JSON)**:
+```json
+{
+  "kegiatan_manmit_id": "DPP26",
+  "jabatan": "PPL",
+  "jenis_honor": "PENDATAAN",
+  "satuan_honor": "DOKUMEN",
+  "harga_per_satuan": 53000,
+  "tanggal_akhir_kegiatan": "2026-09-30"
+}
+```
+- **Karakteristik & Fitur Otomatis**:
+  - `tanggal_akhir_kegiatan` wajib berada di dalam rentang kegiatan induk.
+  - Otomatis menghitung `tanggal_pembayaran_maksimal = tanggal_akhir_kegiatan + 20 hari`.
+  - ID Honor otomatis di-generate dengan format standar: `{kegiatan_id}-{jabatan}-{jenis_honor}` (misal: `DPP26-PPL-PENDATAAN`).
+  - Tercatat di `ApiAuditLog` (`action: CREATE_HONOR`) dan **100% reversible** (bisa di-rollback).
+
+#### Endpoint Penghapusan Master Pos Honor:
+- **Method & Path**: `DELETE /api/v1/honors/{id}`
+- **Tujuan**: Menghapus pos honor kosong jika salah input.
+- **Keamanan**: Ditolak (422) jika pos honor sudah memiliki alokasi mitra (`alokasi_honors_count > 0`).
+- **Reversibilitas**: Tercatat di `ApiAuditLog` (`action: DELETE_HONOR`) dan dapat di-rollback.
 
 #### SOP Prosedur 2 Langkah Penyesuaian Tanggal Honor Lapangan:
 Jika di lapangan jadwal kegiatan diperpanjang (misalnya dari September ke Oktober):
@@ -541,6 +605,10 @@ Sistem memiliki mekanisme **Reversibilitas Universal**. Setiap aksi mutasi terca
    - Body: `{"reason": "Dibatalkan oleh AI Agent karena koreksi data"}`
 
 #### Cakupan Aksi yang 100% Didukung Rollback:
+- `CREATE_KEGIATAN_MANMIT`: Menghapus kegiatan manmit dan pos honor yang baru didaftarkan secara bersih.
+- `DELETE_KEGIATAN_MANMIT`: Memulihkan kembali data kegiatan manmit beserta pos-pos honornya.
+- `CREATE_HONOR`: Menghapus pos honor yang baru didaftarkan secara bersih.
+- `DELETE_HONOR`: Memulihkan kembali data pos honor yang dihapus.
 - `ALLOCATE_HONOR` / `BATCH_ALLOCATE`: Menghapus alokasi dan membersihkan nomor surat SPK/BAST terkait jika tidak lagi dipakai.
 - `DELETE_ALLOCATION`: Memulihkan record alokasi yang dihapus beserta relasi suratnya.
 - `RENAME_KEGIATAN_ID`: Mengembalikan Primary Key ID kegiatan dan meng-cascade seluruh anak honor kembali ke prefix ID asal.

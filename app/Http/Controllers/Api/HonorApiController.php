@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class HonorApiController extends Controller
 {
@@ -279,6 +280,157 @@ class HonorApiController extends Controller
                 'updated_fields' => array_keys($updates),
                 'propagated_alokasi_count' => $propagatedCount,
                 'note' => 'Perubahan tanggal_akhir_kegiatan telah otomatis dipropagasikan ke seluruh alokasi honor dan nomor surat SPK/BAST terkait.',
+            ],
+        ]);
+    }
+
+    /**
+     * Daftarkan Master Pos Honor baru di bawah suatu Kegiatan Manmit.
+     * Terintegrasi dengan ApiAuditLog dan 100% reversible (dapat di-rollback).
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $request->validate([
+            'kegiatan_manmit_id' => ['required', 'string', 'exists:kegiatan_manmits,id'],
+            'jabatan' => ['required', 'string', 'max:100'],
+            'jenis_honor' => ['required', 'string', 'max:100'],
+            'satuan_honor' => ['required', 'string', 'max:100'],
+            'harga_per_satuan' => ['required', 'numeric', 'min:0'],
+            'tanggal_akhir_kegiatan' => ['required', 'date'],
+            'id' => ['nullable', 'string', 'max:255', 'unique:honors,id'],
+        ], [
+            'kegiatan_manmit_id.required' => 'Parameter kegiatan_manmit_id wajib disertakan.',
+            'kegiatan_manmit_id.exists' => 'Kegiatan Manmit dengan ID tersebut tidak ditemukan.',
+            'id.unique' => 'Honor dengan ID tersebut sudah terdaftar di sistem.',
+        ]);
+
+        $kegiatan = KegiatanManmit::find($request->input('kegiatan_manmit_id'));
+        $targetDate = Carbon::parse($request->input('tanggal_akhir_kegiatan'));
+
+        // Validasi rentang tanggal terhadap kegiatan induk
+        if ($kegiatan->tgl_mulai_pelaksanaan && $kegiatan->tgl_akhir_pelaksanaan) {
+            $start = Carbon::parse($kegiatan->tgl_mulai_pelaksanaan);
+            $end = Carbon::parse($kegiatan->tgl_akhir_pelaksanaan);
+
+            if ($targetDate->lt($start) || $targetDate->gt($end)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => "Tanggal akhir kegiatan ({$targetDate->format('d M Y')}) harus berada dalam rentang pelaksanaan kegiatan utama '{$kegiatan->nama}' ({$start->format('d M Y')} s/d {$end->format('d M Y')}). Silakan perpanjang rentang kegiatan utama terlebih dahulu via PATCH /api/v1/kegiatan-manmit/{$kegiatan->id}.",
+                    'data' => [
+                        'kegiatan_id' => $kegiatan->id,
+                        'kegiatan_tgl_mulai' => $kegiatan->tgl_mulai_pelaksanaan,
+                        'kegiatan_tgl_akhir' => $kegiatan->tgl_akhir_pelaksanaan,
+                        'requested_tanggal_akhir_kegiatan' => $targetDate->toDateString(),
+                    ],
+                ], 422);
+            }
+        }
+
+        // Tentukan ID honor
+        $customId = $request->input('id');
+        $jabatan = trim($request->input('jabatan'));
+        $jenisHonor = Str::upper(trim($request->input('jenis_honor')));
+
+        $generatedId = $customId ?: Str::upper($kegiatan->id . '-' . $jabatan . '-' . $jenisHonor);
+
+        if (Honor::where('id', $generatedId)->exists()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Honor dengan ID '{$generatedId}' sudah terdaftar di sistem. Gunakan kombinasi jabatan/jenis honor lain atau tentukan custom 'id'.",
+            ], 422);
+        }
+
+        $honor = Honor::create([
+            'id' => $generatedId,
+            'kegiatan_manmit_id' => $kegiatan->id,
+            'jabatan' => $jabatan,
+            'jenis_honor' => $jenisHonor,
+            'satuan_honor' => $request->input('satuan_honor'),
+            'harga_per_satuan' => $request->input('harga_per_satuan'),
+            'tanggal_akhir_kegiatan' => $targetDate->toDateString(),
+        ]);
+
+        $fresh = $honor->fresh(['kegiatanManmit']);
+
+        ApiAuditService::record(
+            request: $request,
+            action: 'CREATE_HONOR',
+            targetModel: Honor::class,
+            targetId: null,
+            stateBefore: null,
+            stateAfter: [
+                'id' => $fresh->id,
+                'kegiatan_manmit_id' => $fresh->kegiatan_manmit_id,
+                'jabatan' => $fresh->jabatan,
+                'jenis_honor' => $fresh->jenis_honor,
+                'satuan_honor' => $fresh->satuan_honor,
+                'harga_per_satuan' => (float)$fresh->harga_per_satuan,
+                'tanggal_akhir_kegiatan' => $fresh->tanggal_akhir_kegiatan?->toDateString(),
+                'tanggal_pembayaran_maksimal' => $fresh->tanggal_pembayaran_maksimal?->toDateString(),
+            ],
+            statusCode: 201,
+            isReversible: true,
+        );
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Master Pos Honor '{$fresh->id}' berhasil didaftarkan di bawah kegiatan '{$kegiatan->nama}'.",
+            'data' => [
+                'id' => $fresh->id,
+                'kegiatan_manmit_id' => $fresh->kegiatan_manmit_id,
+                'kegiatan_nama' => $fresh->kegiatanManmit?->nama,
+                'jabatan' => $fresh->jabatan,
+                'jenis_honor' => $fresh->jenis_honor,
+                'satuan_honor' => $fresh->satuan_honor,
+                'harga_per_satuan' => (float)$fresh->harga_per_satuan,
+                'tanggal_akhir_kegiatan' => $fresh->tanggal_akhir_kegiatan?->toDateString(),
+                'tanggal_pembayaran_maksimal' => $fresh->tanggal_pembayaran_maksimal?->toDateString(),
+                'created_at' => $fresh->created_at,
+            ],
+        ], 201);
+    }
+
+    /**
+     * Hapus Master Pos Honor (hanya jika belum memiliki alokasi mitra).
+     * Terintegrasi dengan ApiAuditLog dan 100% reversible (dapat di-rollback).
+     */
+    public function destroy(string $id, Request $request): JsonResponse
+    {
+        $honor = Honor::withCount('alokasiHonors')->find($id);
+
+        if (!$honor) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Honor dengan ID '{$id}' tidak ditemukan.",
+            ], 404);
+        }
+
+        if ($honor->alokasi_honors_count > 0) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Tidak dapat menghapus Pos Honor '{$id}' karena sudah memiliki {$honor->alokasi_honors_count} alokasi mitra terkait. Hapus atau batalkan alokasi terlebih dahulu.",
+            ], 422);
+        }
+
+        $honorAttributes = $honor->getAttributes();
+        $honor->delete();
+
+        ApiAuditService::record(
+            request: $request,
+            action: 'DELETE_HONOR',
+            targetModel: Honor::class,
+            targetId: null,
+            stateBefore: $honorAttributes,
+            stateAfter: null,
+            statusCode: 200,
+            isReversible: true,
+        );
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Pos Honor '{$id}' berhasil dihapus dari sistem.",
+            'data' => [
+                'deleted_id' => $id,
             ],
         ]);
     }

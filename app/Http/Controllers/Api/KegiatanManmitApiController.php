@@ -601,4 +601,232 @@ class KegiatanManmitApiController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Buat Master Kegiatan Manmit baru (beserta rincian honor opsional secara atomik).
+     * Terintegrasi dengan ApiAuditLog dan 100% reversible (dapat di-rollback).
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $request->validate([
+            'nama' => ['required', 'string', 'max:255'],
+            'id' => ['nullable', 'string', 'max:255', 'unique:kegiatan_manmits,id'],
+            'tgl_mulai_pelaksanaan' => ['required', 'date'],
+            'tgl_akhir_pelaksanaan' => ['required', 'date', 'after_or_equal:tgl_mulai_pelaksanaan'],
+            'tgl_mulai_penawaran' => ['nullable', 'date'],
+            'tgl_akhir_penawaran' => ['nullable', 'date'],
+            'jenis_kegiatan' => ['nullable', 'string', 'in:SURVEI,SENSUS'],
+            'frekuensi_kegiatan' => ['nullable', 'string', 'max:100'],
+            'template_kontrak' => ['nullable', 'string'],
+            'honors' => ['nullable', 'array'],
+            'honors.*.jabatan' => ['required_with:honors', 'string', 'max:100'],
+            'honors.*.jenis_honor' => ['required_with:honors', 'string', 'max:100'],
+            'honors.*.satuan_honor' => ['required_with:honors', 'string', 'max:100'],
+            'honors.*.harga_per_satuan' => ['required_with:honors', 'numeric', 'min:0'],
+            'honors.*.tanggal_akhir_kegiatan' => ['nullable', 'date'],
+            'honors.*.id' => ['nullable', 'string', 'max:255'],
+        ], [
+            'nama.required' => 'Nama kegiatan wajib diisi.',
+            'id.unique' => 'Kegiatan dengan ID tersebut sudah terdaftar.',
+            'tgl_akhir_pelaksanaan.after_or_equal' => 'Tanggal akhir pelaksanaan tidak boleh sebelum tanggal mulai pelaksanaan.',
+        ]);
+
+        // Tentukan ID kegiatan
+        $id = $request->input('id');
+        if (empty($id)) {
+            $extracted = \App\Supports\Constants::getTextInParentheses($request->input('nama'));
+            if (!empty(trim($extracted))) {
+                $id = trim($extracted);
+            } else {
+                $id = Str::upper(Str::slug($request->input('nama')));
+            }
+        }
+
+        // Cek kembali keunikan ID setelah proses auto-generation
+        if (KegiatanManmit::where('id', $id)->exists()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Kegiatan dengan ID '{$id}' sudah terdaftar di sistem. Gunakan ID lain atau tentukan parameter 'id' yang unik.",
+            ], 422);
+        }
+
+        $honorsInput = $request->input('honors', []);
+        $startDate = Carbon::parse($request->input('tgl_mulai_pelaksanaan'));
+        $endDate = Carbon::parse($request->input('tgl_akhir_pelaksanaan'));
+
+        // Validasi tanggal_akhir_kegiatan untuk honor-honor jika disediakan
+        if (!empty($honorsInput)) {
+            foreach ($honorsInput as $idx => $hInput) {
+                $hDate = isset($hInput['tanggal_akhir_kegiatan']) ? Carbon::parse($hInput['tanggal_akhir_kegiatan']) : $endDate;
+                if ($hDate->lt($startDate) || $hDate->gt($endDate)) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => "Honor ke-" . ($idx + 1) . " ({$hInput['jabatan']}) memiliki tanggal akhir kegiatan ({$hDate->format('d M Y')}) di luar rentang pelaksanaan kegiatan utama ({$startDate->format('d M Y')} s/d {$endDate->format('d M Y')}).",
+                    ], 422);
+                }
+            }
+        }
+
+        DB::beginTransaction();
+        try {
+            $kegiatan = KegiatanManmit::create([
+                'id' => $id,
+                'nama' => $request->input('nama'),
+                'tgl_mulai_pelaksanaan' => $request->input('tgl_mulai_pelaksanaan'),
+                'tgl_akhir_pelaksanaan' => $request->input('tgl_akhir_pelaksanaan'),
+                'tgl_mulai_penawaran' => $request->input('tgl_mulai_penawaran'),
+                'tgl_akhir_penawaran' => $request->input('tgl_akhir_penawaran'),
+                'jenis_kegiatan' => strtoupper($request->input('jenis_kegiatan', 'SURVEI')),
+                'frekuensi_kegiatan' => $request->input('frekuensi_kegiatan', \App\Supports\Constants::FREKUENSI_TAHUNAN),
+                'template_kontrak' => $request->input('template_kontrak'),
+            ]);
+
+            $createdHonors = [];
+            if (!empty($honorsInput)) {
+                foreach ($honorsInput as $hInput) {
+                    $jabatan = trim($hInput['jabatan']);
+                    $jenisHonor = Str::upper(trim($hInput['jenis_honor']));
+                    $customHonorId = $hInput['id'] ?? null;
+                    $hTanggalAkhir = $hInput['tanggal_akhir_kegiatan'] ?? $request->input('tgl_akhir_pelaksanaan');
+
+                    $honor = Honor::create([
+                        'id' => $customHonorId,
+                        'kegiatan_manmit_id' => $id,
+                        'jabatan' => $jabatan,
+                        'jenis_honor' => $jenisHonor,
+                        'satuan_honor' => $hInput['satuan_honor'],
+                        'harga_per_satuan' => $hInput['harga_per_satuan'],
+                        'tanggal_akhir_kegiatan' => $hTanggalAkhir,
+                    ]);
+
+                    $createdHonors[] = [
+                        'id' => $honor->id,
+                        'jabatan' => $honor->jabatan,
+                        'jenis_honor' => $honor->jenis_honor,
+                        'satuan_honor' => $honor->satuan_honor,
+                        'harga_per_satuan' => (float)$honor->harga_per_satuan,
+                        'tanggal_akhir_kegiatan' => $honor->tanggal_akhir_kegiatan?->toDateString(),
+                        'tanggal_pembayaran_maksimal' => $honor->tanggal_pembayaran_maksimal?->toDateString(),
+                    ];
+                }
+            }
+
+            // Catat audit log
+            \App\Services\ApiAuditService::record(
+                request: $request,
+                action: 'CREATE_KEGIATAN_MANMIT',
+                targetModel: KegiatanManmit::class,
+                targetId: null,
+                stateBefore: null,
+                stateAfter: [
+                    'id' => $kegiatan->id,
+                    'nama' => $kegiatan->nama,
+                    'tgl_mulai_pelaksanaan' => $kegiatan->tgl_mulai_pelaksanaan,
+                    'tgl_akhir_pelaksanaan' => $kegiatan->tgl_akhir_pelaksanaan,
+                    'tgl_mulai_penawaran' => $kegiatan->tgl_mulai_penawaran,
+                    'tgl_akhir_penawaran' => $kegiatan->tgl_akhir_penawaran,
+                    'jenis_kegiatan' => $kegiatan->jenis_kegiatan,
+                    'frekuensi_kegiatan' => $kegiatan->frekuensi_kegiatan,
+                    'template_kontrak' => $kegiatan->template_kontrak,
+                    'honors' => collect($createdHonors)->pluck('id')->toArray(),
+                ],
+                statusCode: 201,
+                isReversible: true,
+            );
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Master Kegiatan Manmit '{$kegiatan->nama}' (ID: {$kegiatan->id}) berhasil didaftarkan.",
+            'data' => [
+                'id' => $kegiatan->id,
+                'nama' => $kegiatan->nama,
+                'jenis_kegiatan' => $kegiatan->jenis_kegiatan,
+                'frekuensi_kegiatan' => $kegiatan->frekuensi_kegiatan,
+                'tgl_mulai_pelaksanaan' => $kegiatan->tgl_mulai_pelaksanaan,
+                'tgl_akhir_pelaksanaan' => $kegiatan->tgl_akhir_pelaksanaan,
+                'tgl_mulai_penawaran' => $kegiatan->tgl_mulai_penawaran,
+                'tgl_akhir_penawaran' => $kegiatan->tgl_akhir_penawaran,
+                'honors_count' => count($createdHonors),
+                'honors' => $createdHonors,
+                'created_at' => $kegiatan->created_at,
+            ],
+        ], 201);
+    }
+
+    /**
+     * Hapus Master Kegiatan Manmit (hanya jika belum memiliki alokasi mitra).
+     * Tercatat di ApiAuditLog dan 100% reversible (dapat di-rollback).
+     */
+    public function destroy(string $id, Request $request): JsonResponse
+    {
+        $kegiatan = KegiatanManmit::with(['honors.alokasiHonors'])->find($id);
+
+        if (!$kegiatan) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Kegiatan Manmit dengan ID '{$id}' tidak ditemukan.",
+            ], 404);
+        }
+
+        // Cek apakah ada alokasi mitra yang terhubung
+        $alokasiCount = $kegiatan->alokasiHonors()->count();
+        if ($alokasiCount > 0) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Tidak dapat menghapus Kegiatan Manmit '{$id}' karena sudah memiliki {$alokasiCount} alokasi honor mitra. Hapus atau batalkan alokasi terlebih dahulu.",
+            ], 422);
+        }
+
+        // Cek apakah ada relasi di tabel kegiatans
+        if ($kegiatan->kegiatans()->exists()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Tidak dapat menghapus Kegiatan Manmit '{$id}' karena masih terikat dengan sub-kegiatan di sistem.",
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $honorsData = $kegiatan->honors->map(fn($h) => $h->getAttributes())->toArray();
+            $kegiatanData = $kegiatan->getAttributes();
+
+            // Hapus honor-honor anak terlebih dahulu
+            $kegiatan->honors()->delete();
+            $kegiatan->delete();
+
+            \App\Services\ApiAuditService::record(
+                request: $request,
+                action: 'DELETE_KEGIATAN_MANMIT',
+                targetModel: KegiatanManmit::class,
+                targetId: null,
+                stateBefore: [
+                    'kegiatan' => $kegiatanData,
+                    'honors' => $honorsData,
+                ],
+                stateAfter: null,
+                statusCode: 200,
+                isReversible: true,
+            );
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Kegiatan Manmit '{$id}' berhasil dihapus dari sistem.",
+            'data' => [
+                'deleted_id' => $id,
+                'deleted_honors_count' => count($honorsData),
+            ],
+        ]);
+    }
 }

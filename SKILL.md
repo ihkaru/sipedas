@@ -1,7 +1,7 @@
 ---
 name: dokter-v-contract-bast-agent
 description: REST API skill untuk pembuatan alokasi honor mitra, penerbitan kontrak/SPK, dan BAST otomatis di Dokter V BPS dengan optimasi efisiensi token AI.
-version: 1.2.0
+version: 1.3.0
 auth_header: X-API-KEY <your_api_key>
 ---
 
@@ -40,6 +40,10 @@ Skill ini memberikan instruksi lengkap bagi AI Coding Agent untuk berinteraksi d
 ```
 [Step 1: Lookup Kegiatan Hemat Token] ──► GET /api/v1/kegiatan-manmit?tahun=2026&bulan=3&has_honors=1&compact=1
                  │
+                 ├─── [Auto-Create]: Jika kegiatan/honor belum terdaftar:
+                 │    └──► POST /api/v1/kegiatan-manmit (Buat master kegiatan + pos honor atomik)
+                 │    └──► POST /api/v1/honors (Buat pos honor di bawah kegiatan induk)
+                 ▼
 [Step 2: Lookup Mitra Tersedia]       ──► GET /api/v1/mitras?tahun=2026&bulan=3&available_only=1&compact=1
                  │
 [Step 3: Pre-Flight Check]             ──► POST /api/v1/alokasi/check (Dry-Run: Cek bentrok & sisa SBML)
@@ -60,6 +64,9 @@ Skill ini memberikan instruksi lengkap bagi AI Coding Agent untuk berinteraksi d
 ### A. Lookup & Manajemen Kegiatan Manmit
 - `GET /api/v1/kegiatan-manmit?tahun=2026&bulan=3&has_honors=1&compact=1`
 - Query Params: `q`, `tahun`, `bulan`, `jenis` (SURVEI/SENSUS), `has_honors`, `compact`, `sort_by`, `sort_order`, `per_page`.
+- `POST /api/v1/kegiatan-manmit`: Daftarkan Master Kegiatan Manmit baru dari nol (bisa menyertakan pos honor awal dalam array `honors` secara atomik). Reversible via rollback!
+  - Body: `{"id": "DPP26", "nama": "(DPP26) Updating DPP 2026", "tgl_mulai_pelaksanaan": "2026-07-01", "tgl_akhir_pelaksanaan": "2026-09-30", "jenis_kegiatan": "SURVEI", "honors": [{"jabatan": "PPL", "jenis_honor": "PENDATAAN", "satuan_honor": "DOKUMEN", "harga_per_satuan": 53000, "tanggal_akhir_kegiatan": "2026-09-30"}]}`
+- `DELETE /api/v1/kegiatan-manmit/{id}`: Hapus kegiatan jika belum ada alokasi mitra (`alokasi_honors_count == 0`). Reversible via rollback!
 - `GET /api/v1/kegiatan-manmit/{id}`: Detail satu kegiatan dan seluruh rincian honor anak.
 - `PATCH /api/v1/kegiatan-manmit/{id}`: Perpanjang/ubah rentang jadwal kegiatan (`tgl_mulai_pelaksanaan`, `tgl_akhir_pelaksanaan`) dan nama kegiatan. Reversible via audit log rollback.
 - `POST /api/v1/kegiatan-manmit/{id}/rename-id` (Rename / Migrasi ID Kegiatan):
@@ -69,6 +76,9 @@ Skill ini memberikan instruksi lengkap bagi AI Coding Agent untuk berinteraksi d
 ### B. Manajemen Master Honor & Penyesuaian Tanggal
 - `GET /api/v1/honors?kegiatan_id=SERUTI26-TW3&compact=1`
 - Query Params: `q`, `kegiatan_id`, `tahun`, `bulan`, `jabatan`, `compact`, `sort_by`, `sort_order`, `per_page`.
+- `POST /api/v1/honors`: Daftarkan Master Pos Honor baru di bawah kegiatan yang sudah ada. Reversible via rollback!
+  - Body: `{"kegiatan_manmit_id": "DUTL26", "jabatan": "PPL", "jenis_honor": "PENDATAAN", "satuan_honor": "DOKUMEN", "harga_per_satuan": 53000, "tanggal_akhir_kegiatan": "2026-09-30"}`
+- `DELETE /api/v1/honors/{id}`: Hapus pos honor jika belum ada alokasi mitra. Reversible via rollback!
 - `GET /api/v1/honors/{id}`: Detail satu entitas honor beserta relasi kegiatan induk dan jumlah alokasi terkait.
 - `PATCH /api/v1/honors/{id}` (atau `PUT` / `POST`): Update atribut honor (`tanggal_akhir_kegiatan`, `harga_per_satuan`, `satuan_honor`, `jabatan`, `jenis_honor`).
   - Fitur: Memvalidasi rentang tanggal terhadap kegiatan induk, otomatis menghitung `tanggal_pembayaran_maksimal` (+20 hari), dan **memicu propagasi otomatis** ke seluruh alokasi honor dan nomor SPK/BAST terkait via `HonorTanggalService`. Reversible via rollback!
@@ -114,4 +124,4 @@ Skill ini memberikan instruksi lengkap bagi AI Coding Agent untuk berinteraksi d
 - `GET /api/v1/audit-logs?only_rollbackable=1&compact=1`: Temukan mutasi yang bisa dibatalkan.
 - `GET /api/v1/audit-logs/{id}`: Detail state diff sebelum dan sesudah.
 - `POST /api/v1/audit-logs/{id}/rollback`: Batalkan perubahan secara atomik.
-- **Aksi yang Didukung Rollback 100%**: `ALLOCATE_HONOR`, `BATCH_ALLOCATE`, `DELETE_ALLOCATION`, `RENAME_KEGIATAN_ID`, `UPDATE_MITRA`, `UPDATE_KEGIATAN_MANMIT`, `UPDATE_HONOR`, `CREATE_PEGAWAI`, `UPDATE_PEGAWAI`.
+- **Aksi yang Didukung Rollback 100%**: `CREATE_KEGIATAN_MANMIT`, `DELETE_KEGIATAN_MANMIT`, `CREATE_HONOR`, `DELETE_HONOR`, `ALLOCATE_HONOR`, `BATCH_ALLOCATE`, `DELETE_ALLOCATION`, `RENAME_KEGIATAN_ID`, `UPDATE_MITRA`, `UPDATE_KEGIATAN_MANMIT`, `UPDATE_HONOR`, `CREATE_PEGAWAI`, `UPDATE_PEGAWAI`.
