@@ -132,4 +132,30 @@ Skill ini memberikan instruksi lengkap bagi AI Coding Agent untuk berinteraksi d
 - `GET /api/v1/audit-logs?only_rollbackable=1&compact=1`: Temukan mutasi yang bisa dibatalkan.
 - `GET /api/v1/audit-logs/{id}`: Detail state diff sebelum dan sesudah.
 - `POST /api/v1/audit-logs/{id}/rollback`: Batalkan perubahan secara atomik.
-- **Aksi yang Didukung Rollback 100%**: `CREATE_KEGIATAN_MANMIT`, `DELETE_KEGIATAN_MANMIT`, `UPDATE_KEGIATAN_MANMIT`, `RENAME_KEGIATAN_ID`, `CREATE_HONOR`, `DELETE_HONOR`, `UPDATE_HONOR`, `CREATE_MITRA`, `UPDATE_MITRA`, `DELETE_MITRA`, `CREATE_PEGAWAI`, `UPDATE_PEGAWAI`, `DELETE_PEGAWAI`, `ALLOCATE_HONOR`, `BATCH_ALLOCATE`, `UPDATE_ALOKASI`, `DELETE_ALLOCATION`, `UPDATE_KONTRAK`, `UPDATE_BAST`.
+- **Aksi yang Didukung Rollback 100%**: `CREATE_KEGIATAN_MANMIT`, `DELETE_KEGIATAN_MANMIT`, `UPDATE_KEGIATAN_MANMIT`, `RENAME_KEGIATAN_ID`, `CREATE_HONOR`, `DELETE_HONOR`, `UPDATE_HONOR`, `CREATE_MITRA`, `UPDATE_MITRA`, `DELETE_MITRA`, `CREATE_PEGAWAI`, `UPDATE_PEGAWAI`, `DELETE_PEGAWAI`, `ALLOCATE_HONOR`, `BATCH_ALLOCATE`, `UPDATE_ALOKASI`, `DELETE_ALLOCATION`, `UPDATE_KONTRAK`, `UPDATE_BAST`, `CREATE_PENUGASAN`, `UPDATE_PENUGASAN`, `BATALKAN_PENUGASAN`, `TRANSITION_PENUGASAN`.
+
+### I. Manajemen Surat Tugas & SPD (Surat Perjalanan Dinas)
+- `POST /api/v1/penugasan/check` (Pre-Flight Dry Run):
+  - Mensimulasikan kelayakan penerbitan surat tugas tanpa mutasi database. Memvalidasi rentang tanggal terhadap kegiatan, mendeteksi jadwal bentrok SPPD antar-pegawai, memverifikasi izin hari libur/weekend, dan memberikan rekomendasi aksi self-healing jika terdapat error.
+  - Body: `{"jenis_surat_tugas": "PERJALAN_DINAS_DALAM_KOTA", "kegiatan_id": "SERUTI26", "nips": ["199501012020121001"], "tgl_mulai_tugas": "2026-10-12", "tgl_akhir_tugas": "2026-10-14", "level_tujuan_penugasan": "LEVEL_PENUGASAN_NAMA_TEMPAT", "nama_tempat_tujuan": "Kecamatan Sungai Raya", "transportasi": "TRANSPORTASI_KENDARAAN_DINAS"}`
+- `GET /api/v1/penugasan?compact=1`:
+  - Query Params: `q` (NIP/Sobat/nama/kegiatan/no surat), `status` (dikirim, disetujui, perlu_revisi, dicetak, dikumpulkan, dicairkan, ditolak, dibatalkan), `jenis_surat_tugas` (`NON_SPPD`, `PERJALAN_DINAS_DALAM_KOTA`, `PERJALANAN_DINAS_LUAR_KOTA`, `PERJALANAN_DINAS_PAKET_MEETING`), `kegiatan_id`, `nip`, `id_sobat`, `grup_id`, `tahun`, `bulan`, `compact=1`, `page`, `per_page`.
+- `GET /api/v1/penugasan/{id}`:
+  - Detail lengkap penugasan personil, riwayat status, nomor resmi Surat Tugas & SPD, penyetuju (Plh), dan tautan cetak dokumen resmi (`url_cetak`, `url_cetak_bersama`).
+- `POST /api/v1/penugasan` (Penerbitan Atomik & Idempoten):
+  - Menerbitkan surat tugas mandiri atau tim secara atomik. Jika personil lebih dari 1 orang (kombinasi pegawai dan mitra), sistem otomatis membentuk grup pengajuan (`grup_id`) dan men-share nomor resmi yang sama. Mendukung header `Idempotency-Key` untuk mencegah duplikasi.
+  - Khusus `NON_SPPD`: langsung disetujui otomatis (*auto-approved*) dan menerbitkan Nomor Surat Tugas tanpa lembar SPD.
+- `PATCH /api/v1/penugasan/{id}`:
+  - Perbarui tanggal, tujuan, nama lokasi, atau transportasi pada penugasan yang berstatus draf/dikirim/perlu revisi. Reversible via rollback!
+- `DELETE /api/v1/penugasan/{id}`:
+  - Batalkan penugasan dan bersihkan nomor surat terkait jika tidak digunakan oleh personil lain. Reversible via rollback!
+- `POST /api/v1/penugasan/{id}/action`:
+  - Eksekusi transisi status penugasan secara deterministik:
+    - `action: "setujui"`: Menyetujui pengajuan, meng-assign Nomor Surat Tugas & SPD secara atomik.
+    - `action: "tolak"`: Menolak pengajuan.
+    - `action: "revisi"`: Mengarahkan perbaikan dengan catatan (`catatan_butuh_perbaikan`).
+    - `action: "ajukan_revisi"`: Mengirim ulang revisi setelah perbaikan.
+    - `action: "cetak"`: Menandai status dicetak.
+    - `action: "kumpulkan"`: Menandai berkas telah dikumpulkan.
+    - `action: "batalkan_pengumpulan"`: Membatalkan pengumpulan kembali ke status dicetak.
+    - `action: "cairkan"`: Menandai dana perjadin telah dicairkan.

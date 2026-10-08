@@ -128,10 +128,13 @@ class Penugasan extends Model {
     }
     protected function tujuanPenugasan(): Attribute {
         $masterSls = self::$masterSls ??= MasterSls::get();
-        $tujuanSuratTugas = $this->tujuanSuratTugas;
-        return Attribute::make(get: function (mixed $value, array $attributes) use ($masterSls, $tujuanSuratTugas) {
-            if ($attributes['level_tujuan_penugasan'] == Constants::LEVEL_PENUGASAN_NAMA_TEMPAT) return ucwords(strtolower($tujuanSuratTugas->first()->nama_tempat_tujuan));
-            return TujuanSuratTugas::combinerTujuan($tujuanSuratTugas, $masterSls);
+        return Attribute::make(get: function (mixed $value, array $attributes) use ($masterSls) {
+            $tujuanSuratTugas = $this->tujuanSuratTugas;
+            if (($attributes['level_tujuan_penugasan'] ?? null) == Constants::LEVEL_PENUGASAN_NAMA_TEMPAT) {
+                $nama = $tujuanSuratTugas?->first()?->nama_tempat_tujuan ?? $attributes['nama_tempat_tujuan'] ?? null;
+                return $nama ? ucwords(strtolower($nama)) : '-';
+            }
+            return ($tujuanSuratTugas && $tujuanSuratTugas->isNotEmpty()) ? TujuanSuratTugas::combinerTujuan($tujuanSuratTugas, $masterSls) : '-';
         });
     }
     protected function tertugas(): Attribute {
@@ -225,63 +228,16 @@ class Penugasan extends Model {
         return $this->hasMany(Penugasan::class, "grup_id", "grup_id");
     }
     public static function ajukan(array $data) {
-        $now = now()->toDateTimeString();
-        $res = 0;
-        $pegawaiPlh = Plh::getApprover($data["nips"] ?? null, Carbon::parse($data["tgl_mulai_tugas"])->toDateTimeString(), true);
-        $grupId = self::getGrupId();
-        $data["mitras"] = $data["mitras"] ?? [];
-        $data["nips"] = $data["nips"] ?? [];
-        $data["prov_ids"] = self::dataToArray($data, "prov_ids");
-        $data["kabkot_ids"] = self::dataToArray($data, "kabkot_ids");
-        $data["kecamatan_ids"] = self::dataToArray($data, "kecamatan_ids");
-        $data["desa_kel_ids"] = self::dataToArray($data, "desa_kel_ids");
-        foreach ($data["nips"] as $n) {
-            $pengajuan = self::create([
-                "nip" => $n,
-                "kegiatan_id" => $data["kegiatan_id"],
-                "nip_pengaju" => auth()?->user()?->pegawai?->nip ?? $data["nip_pengaju"],
-                "level_tujuan_penugasan" => $data["level_tujuan_penugasan"],
-                "tgl_mulai_tugas" => Carbon::parse($data["tgl_mulai_tugas"])->toDateTimeString(),
-                "tgl_akhir_tugas" => Carbon::parse($data["tgl_akhir_tugas"])->toDateTimeString(),
-                "tbh_hari_jalan_awal" => $data["tbh_hari_jalan_awal"] ?? null,
-                "tbh_hari_jalan_akhir" => $data["tbh_hari_jalan_akhir"] ?? null,
-                "tgl_pengajuan_tugas" => $data["tgl_pengajuan_tugas"] ?? self::getNearestPemberiTugasDate(now() >= Carbon::parse($data["tgl_mulai_tugas"]) ? Carbon::parse($data["tgl_mulai_tugas"])->toDateString() : now(), Carbon::parse($data["tgl_mulai_tugas"])->toDateString(), $data["nips"]),
-                "jenis_peserta" => $data["jenis_peserta"] ?? null,
-                "grup_id" => $grupId,
-                "jenis_surat_tugas" => $data["jenis_surat_tugas"],
-                "plh_id" => $pegawaiPlh->nip,
-                "transportasi" => $data["transportasi"] ?? null,
+        try {
+            $created = app(\App\Services\SuratTugas\SuratTugasService::class)->create($data);
+            return !empty($created) ? true : null;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Gagal mengajukan penugasan: ' . $e->getMessage(), [
+                'exception' => $e,
+                'data' => $data,
             ]);
-            RiwayatPengajuan::kirim([$pengajuan->id]);
-            TujuanSuratTugas::ajukan($data, $pengajuan->id);
-            if ($pengajuan) $res += 1;
-            if ($pengajuan->jenis_surat_tugas == Constants::NON_SPPD) $pengajuan->setujui(checkRole: false);
+            return null;
         }
-        foreach ($data["mitras"] as $n) {
-            $pengajuan = self::create([
-                "id_sobat" => $n,
-                "kegiatan_id" => $data["kegiatan_id"],
-                "level_tujuan_penugasan" => $data["level_tujuan_penugasan"],
-                "nip_pengaju" => auth()?->user()?->pegawai?->nip ?? $data["nip_pengaju"],
-                "tgl_mulai_tugas" => Carbon::parse($data["tgl_mulai_tugas"])->toDateTimeString(),
-                "tgl_akhir_tugas" => Carbon::parse($data["tgl_akhir_tugas"])->toDateTimeString(),
-                "nama_tempat_tujuan" => $data["nama_tempat_tujuan"] ?? null,
-                "tbh_hari_jalan_awal" => $data["tbh_hari_jalan_awal"] ?? null,
-                "tbh_hari_jalan_akhir" => $data["tbh_hari_jalan_akhir"] ?? null,
-                "tgl_pengajuan_tugas" => $data["tgl_pengajuan_tugas"] ?? self::getNearestPemberiTugasDate(now() >= Carbon::parse($data["tgl_mulai_tugas"]) ? Carbon::parse($data["tgl_mulai_tugas"])->toDateString() : now(), Carbon::parse($data["tgl_mulai_tugas"])->toDateString(), $data["nips"]),
-                "grup_id" => $grupId,
-                "jenis_peserta" => $data["jenis_peserta"] ?? null,
-                "jenis_surat_tugas" => $data["jenis_surat_tugas"],
-                "plh_id" => $pegawaiPlh?->nip ?? null,
-                "transportasi" => $data["transportasi"] ?? null,
-            ]);
-            RiwayatPengajuan::kirim([$pengajuan->id]);
-            TujuanSuratTugas::ajukan($data, $pengajuan->id);
-            if ($pengajuan) $res += 1;
-            if ($pengajuan->jenis_surat_tugas == Constants::NON_SPPD) $pengajuan->setujui(checkRole: false);
-        }
-        if ($res == count($data["nips"]) + count($data["mitras"])) return true;
-        return null;
     }
 
     public static function perluPerbaikan($data, bool $checkRole = false) {

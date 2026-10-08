@@ -634,6 +634,199 @@ class ApiAuditLog extends Model
                 ];
             }
 
+            if ($this->action === 'CREATE_PENUGASAN') {
+                $createdIds = $this->state_after['created_ids'] ?? [];
+                if (empty($createdIds) && $this->target_id) {
+                    $createdIds = [$this->target_id];
+                }
+
+                $deletedCount = 0;
+                foreach ($createdIds as $penugasanId) {
+                    $penugasan = Penugasan::find($penugasanId);
+                    if ($penugasan) {
+                        $stId = $penugasan->surat_tugas_id;
+                        $spdId = $penugasan->surat_perjadin_id;
+
+                        // Detach nomor surat
+                        $penugasan->surat_tugas_id = null;
+                        $penugasan->surat_perjadin_id = null;
+                        $penugasan->save();
+
+                        // Hapus nomor surat jika tidak lagi dipakai penugasan lain
+                        if ($stId && !Penugasan::where('surat_tugas_id', $stId)->exists()) {
+                            NomorSurat::where('id', $stId)->delete();
+                        }
+                        if ($spdId && !Penugasan::where('surat_perjadin_id', $spdId)->exists()) {
+                            NomorSurat::where('id', $spdId)->delete();
+                        }
+
+                        // Hapus tujuan dan riwayat
+                        TujuanSuratTugas::where('penugasan_id', $penugasanId)->delete();
+                        RiwayatPengajuan::where('penugasan_id', $penugasanId)->delete();
+                        $penugasan->delete();
+                        $deletedCount++;
+                    }
+                }
+
+                $this->update([
+                    'is_rolled_back' => true,
+                    'rolled_back_at' => now(),
+                    'rolled_back_by_user_id' => $byUser?->id,
+                    'rollback_reason' => $reason ?? 'Rollback pembuatan surat tugas via audit log',
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => "Pembuatan {$deletedCount} data surat tugas berhasil dibatalkan (di-rollback).",
+                ];
+            }
+
+            if ($this->action === 'UPDATE_PENUGASAN') {
+                $id = $this->target_id;
+                $penugasan = Penugasan::find($id);
+                if (!$penugasan) {
+                    throw new \RuntimeException("Penugasan #{$id} tidak ditemukan untuk di-rollback.");
+                }
+
+                $stateBefore = $this->state_before;
+                $fillable = [
+                    'kegiatan_id',
+                    'level_tujuan_penugasan',
+                    'nama_tempat_tujuan',
+                    'tgl_mulai_tugas',
+                    'tgl_akhir_tugas',
+                    'tbh_hari_jalan_awal',
+                    'tbh_hari_jalan_akhir',
+                    'tgl_pengajuan_tugas',
+                    'transportasi',
+                    'jenis_surat_tugas',
+                ];
+                $updates = array_intersect_key($stateBefore, array_flip($fillable));
+                $penugasan->update($updates);
+
+                $this->update([
+                    'is_rolled_back' => true,
+                    'rolled_back_at' => now(),
+                    'rolled_back_by_user_id' => $byUser?->id,
+                    'rollback_reason' => $reason ?? 'Rollback pembaruan penugasan via audit log',
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => "Penugasan #{$id} berhasil dikembalikan ke kondisi sebelumnya.",
+                ];
+            }
+
+            if ($this->action === 'BATALKAN_PENUGASAN') {
+                $stateBefore = $this->state_before;
+                $pData = $stateBefore['penugasan'] ?? null;
+                if (!$pData) {
+                    throw new \RuntimeException("Data penugasan sebelum pembatalan tidak ditemukan dalam audit log.");
+                }
+
+                // Filter hanya kolom-kolom tabel penugasans
+                $penugasanColumns = [
+                    'id', 'nip', 'id_sobat', 'kegiatan_id', 'tgl_pengajuan_tugas',
+                    'tgl_mulai_tugas', 'tgl_akhir_tugas', 'tbh_hari_jalan_awal',
+                    'tbh_hari_jalan_akhir', 'level_tujuan_penugasan', 'nama_tempat_tujuan',
+                    'prov_id', 'nip_pengaju', 'prov_ids', 'kabkot_ids', 'kecamatan_ids',
+                    'desa_kel_ids', 'jenis_surat_tugas', 'jenis_peserta', 'grup_id',
+                    'surat_tugas_id', 'surat_perjadin_id', 'plh_id', 'transportasi',
+                ];
+                $cleanPData = array_intersect_key($pData, array_flip($penugasanColumns));
+                $restored = Penugasan::create($cleanPData);
+
+                // Pulihkan status riwayat pengajuan
+                if (!empty($stateBefore['riwayat'])) {
+                    $rData = $stateBefore['riwayat'];
+                    $riwayatColumns = [
+                        'status', 'catatan_ditolak', 'catatan_butuh_perbaikan',
+                        'last_status_timestamp', 'tgl_dibatalkan', 'tgl_arahan_revisi',
+                        'tgl_dikirim', 'tgl_diterima', 'tgl_dibuat', 'tgl_dikumpulkan',
+                        'tgl_ditolak', 'tgl_pencairan'
+                    ];
+                    $cleanRData = array_intersect_key($rData, array_flip($riwayatColumns));
+                    RiwayatPengajuan::updateOrCreate(
+                        ['penugasan_id' => $restored->id],
+                        $cleanRData
+                    );
+                }
+
+                // Pulihkan tujuan penugasan jika belum ada
+                if (!empty($stateBefore['tujuan']) && is_array($stateBefore['tujuan'])) {
+                    if (!TujuanSuratTugas::where('penugasan_id', $restored->id)->exists()) {
+                        $tujuanColumns = [
+                            'level_tujuan_penugasan', 'prov_id', 'kabkot_id',
+                            'kecamatan_id', 'desa_kel_id', 'nama_tempat_tujuan'
+                        ];
+                        foreach ($stateBefore['tujuan'] as $tItem) {
+                            $cleanTItem = array_intersect_key($tItem, array_flip($tujuanColumns));
+                            $cleanTItem['penugasan_id'] = $restored->id;
+                            TujuanSuratTugas::create($cleanTItem);
+                        }
+                    }
+                }
+
+                $this->update([
+                    'is_rolled_back' => true,
+                    'rolled_back_at' => now(),
+                    'rolled_back_by_user_id' => $byUser?->id,
+                    'rollback_reason' => $reason ?? 'Rollback pembatalan penugasan via audit log',
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => "Penugasan #{$restored->id} berhasil dipulihkan kembali.",
+                ];
+            }
+
+            if ($this->action === 'TRANSITION_PENUGASAN') {
+                $id = $this->target_id;
+                $penugasan = Penugasan::with('riwayatPengajuan')->find($id);
+                if (!$penugasan) {
+                    throw new \RuntimeException("Penugasan #{$id} tidak ditemukan untuk di-rollback.");
+                }
+
+                $stateBefore = $this->state_before;
+                if (isset($stateBefore['status'])) {
+                    $penugasan->riwayatPengajuan?->update([
+                        'status' => $stateBefore['status'],
+                        'last_status_timestamp' => $stateBefore['last_status_timestamp'] ?? now(),
+                    ]);
+                }
+
+                // Jika nomor surat terbentuk saat transisi, bersihkan jika sebelumnya null
+                if (array_key_exists('surat_tugas_id', $stateBefore) && $stateBefore['surat_tugas_id'] === null && $penugasan->surat_tugas_id) {
+                    $stId = $penugasan->surat_tugas_id;
+                    $penugasan->surat_tugas_id = null;
+                    $penugasan->save();
+                    if (!Penugasan::where('surat_tugas_id', $stId)->exists()) {
+                        NomorSurat::where('id', $stId)->delete();
+                    }
+                }
+
+                if (array_key_exists('surat_perjadin_id', $stateBefore) && $stateBefore['surat_perjadin_id'] === null && $penugasan->surat_perjadin_id) {
+                    $spdId = $penugasan->surat_perjadin_id;
+                    $penugasan->surat_perjadin_id = null;
+                    $penugasan->save();
+                    if (!Penugasan::where('surat_perjadin_id', $spdId)->exists()) {
+                        NomorSurat::where('id', $spdId)->delete();
+                    }
+                }
+
+                $this->update([
+                    'is_rolled_back' => true,
+                    'rolled_back_at' => now(),
+                    'rolled_back_by_user_id' => $byUser?->id,
+                    'rollback_reason' => $reason ?? 'Rollback transisi status penugasan via audit log',
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => "Status penugasan #{$id} berhasil dikembalikan ke '{$stateBefore['status']}'.",
+                ];
+            }
+
             throw new \RuntimeException("Handler rollback belum diimplementasikan untuk aksi '{$this->action}'.");
         });
     }

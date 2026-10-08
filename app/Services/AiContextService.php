@@ -701,6 +701,53 @@ Sistem memiliki mekanisme **Reversibilitas Universal**. Setiap aksi mutasi terca
 - `DELETE_PEGAWAI`: Memulihkan kembali data pegawai yang dihapus ke sistem.
 - `UPDATE_KONTRAK`: Mengembalikan tanggal nomor kontrak SPK dan tanggal tanda tangan alokasi ke kondisi semula.
 - `UPDATE_BAST`: Mengembalikan tanggal nomor BAST ke kondisi semula.
+- `CREATE_PENUGASAN`: Menghapus penugasan yang baru dibuat dan membersihkan nomor surat tugas & SPD jika tidak terbagi dengan personil lain.
+- `UPDATE_PENUGASAN`: Mengembalikan tanggal, lokasi, nama tempat, hari jalan, dan transportasi ke nilai semula.
+- `BATALKAN_PENUGASAN`: Memulihkan kembali data penugasan yang dibatalkan beserta riwayat dan tujuan penugasannya.
+- `TRANSITION_PENUGASAN`: Mengembalikan status penugasan (dan membersihkan nomor surat jika diterbitkan saat approval) ke status sebelumnya.
+
+---
+
+### Endpoint 9: Manajemen Surat Tugas & Surat Perjalanan Dinas (SPD)
+Dokter V menyediakan REST API lengkap untuk mengelola Surat Tugas dan Surat Perjalanan Dinas (SPD) personil (Pegawai BPS & Mitra Statistik):
+
+#### 1. Pre-Flight Dry Run Check (`POST /api/v1/penugasan/check`):
+- **Tujuan**: Memeriksa kelayakan pengajuan surat tugas sebelum persistensi database. Mengetahui apakah ada jadwal bentrok SPPD, pelanggaran hari libur, atau tanggal di luar batas kegiatan, serta memberikan preview dokumen dan approver (Plh).
+- **Request Body (JSON)**:
+```json
+{
+  "jenis_surat_tugas": "PERJALAN_DINAS_DALAM_KOTA",
+  "kegiatan_id": "SERUTI26",
+  "nips": ["199501012020121001"],
+  "tgl_mulai_tugas": "2026-10-12",
+  "tgl_akhir_tugas": "2026-10-14",
+  "level_tujuan_penugasan": "LEVEL_PENUGASAN_NAMA_TEMPAT",
+  "nama_tempat_tujuan": "Kecamatan Sungai Raya",
+  "transportasi": "TRANSPORTASI_KENDARAAN_DINAS"
+}
+```
+- **Response**: `{ "success": true, "data": { "eligible": true, "approver": {...}, "preview": {...} } }`
+
+#### 2. Pencarian & Daftar Penugasan (`GET /api/v1/penugasan?compact=1`):
+- **Query Params**: `q` (NIP/Sobat/Nama/Kegiatan/No Surat), `status` (dikirim, disetujui, perlu_revisi, dicetak, dikumpulkan, dicairkan, ditolak, dibatalkan), `jenis_surat_tugas` (`NON_SPPD`, `PERJALAN_DINAS_DALAM_KOTA`, `PERJALANAN_DINAS_LUAR_KOTA`, `PERJALANAN_DINAS_PAKET_MEETING`), `kegiatan_id`, `nip`, `id_sobat`, `grup_id`, `tahun`, `bulan`, `compact=1`.
+
+#### 3. Detail Lengkap Penugasan (`GET /api/v1/penugasan/{id}`):
+- Mengembalikan detail personil, status riwayat pengajuan, nomor Surat Tugas, nomor SPD, penyetuju (Plh), dan tautan cetak dokumen resmi (`url_cetak`, `url_cetak_bersama`).
+
+#### 4. Pembuatan Penugasan Baru (`POST /api/v1/penugasan`):
+- **Mendukung Header `Idempotency-Key`**: Mencegah duplikasi pengajuan.
+- **Tunggal atau Tim**: Kirim array `nips` (pegawai) dan/atau `mitras` (ID Sobat mitra). Jika lebih dari 1 personil, sistem otomatis membentuk tim (`grup_id` UUID) yang berbagi nomor surat resmi yang sama.
+- **Auto-Approval Non-SPPD**: Untuk `NON_SPPD`, sistem langsung menerbitkan status `Disetujui` dan nomor Surat Tugas tanpa nomor SPD.
+
+#### 5. Pembaruan Penugasan (`PATCH /api/v1/penugasan/{id}`):
+- Memperbarui tanggal tugas, nama tempat tujuan, level lokasi, atau transportasi pada pengajuan yang berstatus draf/dikirim/perlu revisi. Reversible via rollback!
+
+#### 6. Pembatalan Penugasan (`DELETE /api/v1/penugasan/{id}`):
+- Membatalkan penugasan dan membersihkan nomor surat terkait. 100% reversible via rollback!
+
+#### 7. Transisi Status Penugasan (`POST /api/v1/penugasan/{id}/action`):
+- **Request Body**: `{"action": "setujui"}` (Pilihan: `setujui`, `tolak`, `revisi`, `ajukan_revisi`, `cetak`, `kumpulkan`, `batalkan_pengumpulan`, `cairkan`).
+- Pada aksi `setujui`, sistem otomatis meng-generate Nomor Surat Tugas & Nomor SPD resmi (jika bukan Non-SPPD) dan membagikannya ke seluruh anggota grup tim.
 
 ---
 

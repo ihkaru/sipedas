@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\KegiatanManmitApiController;
 use App\Http\Controllers\Api\MicrositeController;
 use App\Http\Controllers\Api\MitraApiController;
 use App\Http\Controllers\Api\PegawaiApiController;
+use App\Http\Controllers\Api\PenugasanApiController;
 use App\Http\Controllers\Api\SkillApiController;
 use Illuminate\Support\Facades\Route;
 
@@ -64,4 +65,13 @@ Route::prefix('v1')->middleware('api.key')->group(function () {
     Route::get('/audit-logs', [AuditLogApiController::class, 'index']);
     Route::get('/audit-logs/{id}', [AuditLogApiController::class, 'show']);
     Route::post('/audit-logs/{id}/rollback', [AuditLogApiController::class, 'rollback']);
+
+    // 5. Surat Tugas & SPD Endpoints (Agent-Native REST Suite)
+    Route::post('/penugasan/check', [PenugasanApiController::class, 'check']);
+    Route::get('/penugasan', [PenugasanApiController::class, 'index']);
+    Route::post('/penugasan', [PenugasanApiController::class, 'store']);
+    Route::get('/penugasan/{id}', [PenugasanApiController::class, 'show']);
+    Route::match(['put', 'patch', 'post'], '/penugasan/{id}', [PenugasanApiController::class, 'update']);
+    Route::delete('/penugasan/{id}', [PenugasanApiController::class, 'destroy']);
+    Route::post('/penugasan/{id}/action', [PenugasanApiController::class, 'action']);
 });
