@@ -26,6 +26,8 @@ class PenugasanTable extends BaseWidget
     protected int | string | array $columnSpan = 'full';
 
 
+    protected static $resource = PenugasanResource::class;
+
     protected function getTableHeaderActions(): array
     {
         return [
@@ -126,7 +128,18 @@ class PenugasanTable extends BaseWidget
     }
     protected function getTableQuery(): Builder
     {
-        return Penugasan::query()->orderBy('tgl_mulai_tugas','desc');
+        return Penugasan::query()
+            ->with([
+                'riwayatPengajuan',
+                'pegawai',
+                'mitra',
+                'pengaju',
+                'kegiatan',
+                'tujuanSuratTugas',
+                'suratTugas',
+                'plh',
+            ])
+            ->orderBy('tgl_mulai_tugas', 'desc');
     }
     public function table(Table $table): Table
     {
@@ -139,12 +152,23 @@ class PenugasanTable extends BaseWidget
                 $this->getTableQuery()->latest('created_at')
             )
             ->columns([
-                TextColumn::make('tertugas'),
+                TextColumn::make('tertugas')
+                    ->label("Tertugas")
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->where(function ($q) use ($search) {
+                            $q->whereHas('pegawai', fn($p) => $p->where('nama', 'like', "%{$search}%"))
+                              ->orWhereHas('mitra', fn($m) => $m->where('nama_1', 'like', "%{$search}%"));
+                        });
+                    }),
                 TextColumn::make('jenisPetugas')
                     ->label("Pegawai/Mitra"),
                 TextColumn::make('pengaju.nama')
+                    ->label("Pengaju")
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('kegiatan.nama')
+                    ->label("Kegiatan")
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('tgl_perjadin')
                     ->badge()
@@ -163,8 +187,8 @@ class PenugasanTable extends BaseWidget
                     })
                     ->badge()
             ])
-
-            ;
+            ->defaultPaginationPageOption(10)
+            ->paginationPageOptions([5, 10, 25]);
 
     }
 }
