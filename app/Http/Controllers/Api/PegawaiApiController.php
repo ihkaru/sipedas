@@ -302,6 +302,44 @@ class PegawaiApiController extends Controller
     }
 
     /**
+     * Hapus Pegawai dari sistem.
+     * Terintegrasi dengan ApiAuditLog dan 100% reversible (dapat di-rollback).
+     */
+    public function destroy(string $nip, Request $request): JsonResponse
+    {
+        $pegawai = $this->findPegawai($nip);
+
+        if (!$pegawai) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Pegawai dengan identifier '{$nip}' tidak ditemukan.",
+            ], 404);
+        }
+
+        $attributes = $pegawai->getAttributes();
+        $pegawai->delete();
+
+        ApiAuditService::record(
+            request: $request,
+            action: 'DELETE_PEGAWAI',
+            targetModel: Pegawai::class,
+            targetId: null,
+            stateBefore: $attributes,
+            stateAfter: null,
+            statusCode: 200,
+            isReversible: true,
+        );
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Pegawai '{$attributes['nama']}' (NIP: {$attributes['nip']}) berhasil dihapus dari sistem.",
+            'data' => [
+                'deleted_nip' => $attributes['nip'],
+            ],
+        ]);
+    }
+
+    /**
      * Cari Pegawai berdasarkan NIP atau NIP9.
      */
     private function findPegawai(string $identifier): ?Pegawai

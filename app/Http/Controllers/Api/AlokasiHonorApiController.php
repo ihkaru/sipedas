@@ -7,6 +7,7 @@ use App\Http\Requests\Api\CheckEligibilityRequest;
 use App\Http\Requests\Api\StoreAlokasiHonorRequest;
 use App\Http\Resources\Api\AlokasiHonorResource;
 use App\Models\AlokasiHonor;
+use App\Models\Honor;
 use App\Services\ApiAuditService;
 use App\Services\HonorAllocationService;
 use Illuminate\Http\JsonResponse;
@@ -264,6 +265,103 @@ class AlokasiHonorApiController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Alokasi honor berhasil dihapus.',
+        ]);
+    }
+
+    /**
+     * Update alokasi honor (target volume, tanggal, status, atau honor_id).
+     * Memvalidasi ulang pagu SBML & bentrok sensus, serta mencatat audit log reversible.
+     */
+    public function update(int $id, Request $request): JsonResponse
+    {
+        $alokasi = AlokasiHonor::with(['mitra', 'honor.kegiatanManmit', 'kontrak', 'bast'])->find($id);
+
+        if (!$alokasi) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Alokasi honor dengan ID #{$id} tidak ditemukan.",
+            ], 404);
+        }
+
+        $request->validate([
+            'target' => ['nullable', 'numeric', 'gt:0'],
+            'target_per_satuan_honor' => ['nullable', 'numeric', 'gt:0'],
+            'honor_id' => ['nullable', 'string', 'exists:honors,id'],
+            'status' => ['nullable', 'string', 'max:50'],
+            'tanggal_mulai_perjanjian' => ['nullable', 'date'],
+            'tanggal_akhir_perjanjian' => ['nullable', 'date', 'after_or_equal:tanggal_mulai_perjanjian'],
+            'tanggal_penanda_tanganan_spk_oleh_petugas' => ['nullable', 'date'],
+        ]);
+
+        $honor = $request->filled('honor_id')
+            ? Honor::with('kegiatanManmit')->find($request->input('honor_id'))
+            : $alokasi->honor;
+
+        $targetInput = $request->input('target') ?? $request->input('target_per_satuan_honor');
+        $newTarget = $targetInput !== null ? (float)$targetInput : (float)$alokasi->target_per_satuan_honor;
+
+        // Jika target atau honor berubah, validasi ulang limit SBML & bentrok sensus
+        if ($targetInput !== null || $request->filled('honor_id')) {
+            $eligibility = HonorAllocationService::validateEligibility(
+                mitra: $alokasi->mitra,
+                honor: $honor,
+                target: $newTarget,
+                excludeAlokasiId: $alokasi->id
+            );
+
+            if (!$eligibility['eligible']) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Pembaruan alokasi gagal validasi bisnis: ' . $eligibility['message'],
+                ], 422);
+            }
+        }
+
+        $stateBefore = $alokasi->toArray();
+
+        $updates = [];
+        if ($targetInput !== null) {
+            $updates['target_per_satuan_honor'] = $newTarget;
+            $updates['total_honor'] = $newTarget * (float)$honor->harga_per_satuan;
+        }
+        if ($request->filled('honor_id')) {
+            $updates['honor_id'] = $request->input('honor_id');
+            if ($targetInput === null) {
+                $updates['total_honor'] = (float)$alokasi->target_per_satuan_honor * (float)$honor->harga_per_satuan;
+            }
+        }
+        if ($request->has('status')) {
+            $updates['status'] = $request->input('status');
+        }
+        if ($request->has('tanggal_mulai_perjanjian')) {
+            $updates['tanggal_mulai_perjanjian'] = $request->input('tanggal_mulai_perjanjian');
+        }
+        if ($request->has('tanggal_akhir_perjanjian')) {
+            $updates['tanggal_akhir_perjanjian'] = $request->input('tanggal_akhir_perjanjian');
+        }
+        if ($request->has('tanggal_penanda_tanganan_spk_oleh_petugas')) {
+            $updates['tanggal_penanda_tanganan_spk_oleh_petugas'] = $request->input('tanggal_penanda_tanganan_spk_oleh_petugas');
+        }
+
+        $alokasi->update($updates);
+
+        $stateAfter = $alokasi->fresh(['mitra', 'honor.kegiatanManmit', 'kontrak', 'bast'])->toArray();
+
+        ApiAuditService::record(
+            request: $request,
+            action: 'UPDATE_ALOKASI',
+            targetModel: AlokasiHonor::class,
+            targetId: $alokasi->id,
+            stateBefore: $stateBefore,
+            stateAfter: $stateAfter,
+            statusCode: 200,
+            isReversible: true
+        );
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Alokasi honor #{$alokasi->id} berhasil diperbarui.",
+            'data' => new AlokasiHonorResource($alokasi->fresh(['mitra', 'honor.kegiatanManmit', 'kontrak', 'bast'])),
         ]);
     }
 }

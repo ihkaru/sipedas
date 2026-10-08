@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\GetDokumenRequest;
 use App\Models\AlokasiHonor;
+use App\Models\NomorSurat;
 use App\Models\Pegawai;
+use App\Services\ApiAuditService;
 use App\Supports\Constants;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 
@@ -293,6 +296,129 @@ class DokumenApiController extends Controller
                 'total_bast' => $total,
                 'total_alokasi' => $records->count(),
                 'has_more' => ($page * $perPage) < $total,
+            ],
+        ]);
+    }
+
+    /**
+     * Update dokumen Kontrak SPK (tanggal nomor surat atau penomoran).
+     * Terintegrasi dengan ApiAuditLog dan 100% reversible (dapat di-rollback).
+     */
+    public function updateKontrak(int $id, Request $request): JsonResponse
+    {
+        $kontrak = NomorSurat::find($id);
+
+        if (!$kontrak || $kontrak->jenis !== Constants::JENIS_NOMOR_SURAT_PERJANJIAN_KERJA) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Dokumen Kontrak SPK dengan ID #{$id} tidak ditemukan.",
+            ], 404);
+        }
+
+        $request->validate([
+            'tanggal_nomor' => ['nullable', 'date'],
+            'nomor' => ['nullable', 'integer'],
+        ]);
+
+        $stateBefore = $kontrak->toArray();
+        $updates = [];
+
+        if ($request->has('tanggal_nomor')) {
+            $updates['tanggal_nomor'] = $request->input('tanggal_nomor');
+            $updates['tahun'] = Carbon::parse($request->input('tanggal_nomor'))->year;
+        }
+        if ($request->has('nomor')) {
+            $updates['nomor'] = $request->input('nomor');
+        }
+
+        $kontrak->update($updates);
+
+        // Jika tanggal nomor berubah, sinkronkan tanggal penandatanganan pada seluruh alokasi terkait
+        if (isset($updates['tanggal_nomor'])) {
+            AlokasiHonor::where('surat_perjanjian_kerja_id', $kontrak->id)
+                ->update(['tanggal_penanda_tanganan_spk_oleh_petugas' => $updates['tanggal_nomor']]);
+        }
+
+        $stateAfter = $kontrak->fresh()->toArray();
+
+        ApiAuditService::record(
+            request: $request,
+            action: 'UPDATE_KONTRAK',
+            targetModel: NomorSurat::class,
+            targetId: $kontrak->id,
+            stateBefore: $stateBefore,
+            stateAfter: $stateAfter,
+            statusCode: 200,
+            isReversible: true,
+        );
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Dokumen Kontrak SPK #{$kontrak->id} berhasil diperbarui.",
+            'data' => [
+                'id' => $kontrak->id,
+                'nomor_spk' => $kontrak->nomor_surat_perjanjian_kerja,
+                'tanggal_nomor' => $kontrak->tanggal_nomor,
+                'tahun' => $kontrak->tahun,
+                'updated_fields' => array_keys($updates),
+            ],
+        ]);
+    }
+
+    /**
+     * Update dokumen BAST (tanggal nomor surat atau penomoran).
+     * Terintegrasi dengan ApiAuditLog dan 100% reversible (dapat di-rollback).
+     */
+    public function updateBast(int $id, Request $request): JsonResponse
+    {
+        $bast = NomorSurat::find($id);
+
+        if (!$bast || $bast->jenis !== Constants::JENIS_NOMOR_SURAT_BAST) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Dokumen BAST dengan ID #{$id} tidak ditemukan.",
+            ], 404);
+        }
+
+        $request->validate([
+            'tanggal_nomor' => ['nullable', 'date'],
+            'nomor' => ['nullable', 'integer'],
+        ]);
+
+        $stateBefore = $bast->toArray();
+        $updates = [];
+
+        if ($request->has('tanggal_nomor')) {
+            $updates['tanggal_nomor'] = $request->input('tanggal_nomor');
+            $updates['tahun'] = Carbon::parse($request->input('tanggal_nomor'))->year;
+        }
+        if ($request->has('nomor')) {
+            $updates['nomor'] = $request->input('nomor');
+        }
+
+        $bast->update($updates);
+        $stateAfter = $bast->fresh()->toArray();
+
+        ApiAuditService::record(
+            request: $request,
+            action: 'UPDATE_BAST',
+            targetModel: NomorSurat::class,
+            targetId: $bast->id,
+            stateBefore: $stateBefore,
+            stateAfter: $stateAfter,
+            statusCode: 200,
+            isReversible: true,
+        );
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Dokumen BAST #{$bast->id} berhasil diperbarui.",
+            'data' => [
+                'id' => $bast->id,
+                'nomor_bast' => $bast->nomor_surat_bast,
+                'tanggal_nomor' => $bast->tanggal_nomor,
+                'tahun' => $bast->tahun,
+                'updated_fields' => array_keys($updates),
             ],
         ]);
     }

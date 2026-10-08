@@ -363,4 +363,154 @@ class MitraApiController extends Controller
 
         return $digits;
     }
+
+    /**
+     * Daftarkan Mitra baru beserta status kemitraan tahunan.
+     * Terintegrasi dengan ApiAuditLog dan 100% reversible (dapat di-rollback).
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $request->validate([
+            'nama' => ['required_without:nama_1', 'string', 'max:255'],
+            'nama_1' => ['required_without:nama', 'string', 'max:255'],
+            'nik' => ['required', 'string', 'max:20', 'unique:mitras,nik'],
+            'id_sobat' => ['nullable', 'string', 'max:50', 'unique:mitras,id_sobat'],
+            'nomor_wa' => ['nullable', 'string', 'max:30'],
+            'no_telp' => ['nullable', 'string', 'max:30'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'posisi' => ['nullable', 'string', 'max:100'],
+            'alamat_detail' => ['nullable', 'string'],
+            'kecamatan' => ['nullable', 'string', 'max:100'],
+            'desa' => ['nullable', 'string', 'max:100'],
+            'jenis_kelamin' => ['nullable', 'string', 'max:20'],
+            'status_kemitraan' => ['nullable', 'string', 'max:50'],
+            'tahun' => ['nullable', 'integer'],
+        ]);
+
+        $nama = $request->input('nama_1') ?? $request->input('nama');
+        $nomorWa = $this->normalizeWhatsappNumber($request->input('nomor_wa'));
+        $tahun = (int)$request->input('tahun', now()->year);
+        $statusKemitraan = strtoupper($request->input('status_kemitraan', 'AKTIF'));
+
+        DB::beginTransaction();
+        try {
+            $mitra = Mitra::create([
+                'nama_1' => $nama,
+                'nama_2' => $nama,
+                'nik' => trim($request->input('nik')),
+                'id_sobat' => $request->input('id_sobat') ? trim($request->input('id_sobat')) : null,
+                'nomor_wa' => $nomorWa,
+                'no_telp' => $request->input('no_telp') ?? $nomorWa,
+                'email' => $request->input('email'),
+                'posisi' => $request->input('posisi', 'Mitra Pendataan'),
+                'alamat_detail' => $request->input('alamat_detail'),
+                'kecamatan_domisili' => $request->input('kecamatan'),
+                'desa_domisili' => $request->input('desa'),
+                'jenis_kelamin' => $request->input('jenis_kelamin'),
+            ]);
+
+            Kemitraan::create([
+                'mitra_id' => $mitra->id,
+                'tahun' => $tahun,
+                'status' => $statusKemitraan,
+            ]);
+
+            ApiAuditService::record(
+                request: $request,
+                action: 'CREATE_MITRA',
+                targetModel: Mitra::class,
+                targetId: $mitra->id,
+                stateBefore: null,
+                stateAfter: [
+                    'id' => $mitra->id,
+                    'nama_1' => $mitra->nama_1,
+                    'nik' => $mitra->nik,
+                    'id_sobat' => $mitra->id_sobat,
+                    'nomor_wa' => $mitra->nomor_wa,
+                    'status_kemitraan' => $statusKemitraan,
+                    'tahun' => $tahun,
+                ],
+                statusCode: 201,
+                isReversible: true,
+            );
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Mitra '{$mitra->nama_1}' (NIK: {$mitra->nik}) berhasil didaftarkan.",
+            'data' => [
+                'id' => $mitra->id,
+                'nama' => $mitra->nama_1,
+                'nik' => $mitra->nik,
+                'id_sobat' => $mitra->id_sobat,
+                'nomor_wa' => $mitra->nomor_wa,
+                'status_kemitraan' => $statusKemitraan,
+                'tahun_kemitraan' => $tahun,
+            ],
+        ], 201);
+    }
+
+    /**
+     * Hapus Mitra (hanya jika belum memiliki riwayat alokasi honor).
+     * Terintegrasi dengan ApiAuditLog dan 100% reversible (dapat di-rollback).
+     */
+    public function destroy(string $id, Request $request): JsonResponse
+    {
+        $mitra = $this->findMitra($id);
+
+        if (!$mitra) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Mitra dengan identifier '{$id}' tidak ditemukan.",
+            ], 404);
+        }
+
+        if ($mitra->alokasiHonors()->exists()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Tidak dapat menghapus Mitra '{$mitra->nama_1}' karena sudah memiliki alokasi honor terkait.",
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $mitraAttributes = $mitra->getAttributes();
+            $kemitraanData = $mitra->kemitraans->map(fn($k) => $k->getAttributes())->toArray();
+
+            $mitra->kemitraans()->delete();
+            $mitra->delete();
+
+            ApiAuditService::record(
+                request: $request,
+                action: 'DELETE_MITRA',
+                targetModel: Mitra::class,
+                targetId: $mitraAttributes['id'],
+                stateBefore: [
+                    'mitra' => $mitraAttributes,
+                    'kemitraans' => $kemitraanData,
+                ],
+                stateAfter: null,
+                statusCode: 200,
+                isReversible: true,
+            );
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Mitra '{$mitraAttributes['nama_1']}' berhasil dihapus dari sistem.",
+            'data' => [
+                'deleted_id' => $mitraAttributes['id'],
+            ],
+        ]);
+    }
 }

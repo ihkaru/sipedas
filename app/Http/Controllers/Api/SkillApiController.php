@@ -28,7 +28,7 @@ class SkillApiController extends Controller
 ---
 name: dokter-v-contract-bast-agent
 description: REST API skill untuk pembuatan alokasi honor mitra, penerbitan kontrak/SPK, dan BAST otomatis di Dokter V BPS.
-version: 1.2.0
+version: 1.4.0
 base_url: {$baseUrl}
 auth_header: X-API-KEY <your_api_key>
 ---

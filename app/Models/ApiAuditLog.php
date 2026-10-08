@@ -447,6 +447,193 @@ class ApiAuditLog extends Model
                 ];
             }
 
+            if ($this->action === 'UPDATE_ALOKASI') {
+                $alokasiId = $this->target_id;
+                $alokasi = AlokasiHonor::find($alokasiId);
+                if (!$alokasi) {
+                    throw new \RuntimeException("Alokasi honor #{$alokasiId} tidak ditemukan untuk di-rollback.");
+                }
+
+                $stateBefore = $this->state_before;
+                $columns = ['target_per_satuan_honor', 'total_honor', 'honor_id', 'status', 'tanggal_mulai_perjanjian', 'tanggal_akhir_perjanjian', 'tanggal_penanda_tanganan_spk_oleh_petugas'];
+                $restoreData = [];
+                foreach ($columns as $col) {
+                    if (array_key_exists($col, $stateBefore)) {
+                        $restoreData[$col] = $stateBefore[$col];
+                    }
+                }
+
+                $alokasi->update($restoreData);
+
+                $this->update([
+                    'is_rolled_back' => true,
+                    'rolled_back_at' => now(),
+                    'rolled_back_by_user_id' => $byUser?->id,
+                    'rollback_reason' => $reason ?? 'Rollback pembaruan alokasi honor via audit log',
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => "Alokasi honor #{$alokasiId} berhasil dikembalikan ke kondisi sebelumnya.",
+                ];
+            }
+
+            if ($this->action === 'CREATE_MITRA') {
+                $mitraId = $this->target_id;
+                $mitra = Mitra::find($mitraId);
+                if (!$mitra) {
+                    throw new \RuntimeException("Mitra #{$mitraId} tidak ditemukan untuk di-rollback.");
+                }
+
+                if ($mitra->alokasiHonors()->exists()) {
+                    throw new \RuntimeException("Tidak dapat me-rollback pembuatan Mitra #{$mitraId} karena sudah memiliki alokasi honor.");
+                }
+
+                $mitra->kemitraans()->delete();
+                $mitra->delete();
+
+                $this->update([
+                    'is_rolled_back' => true,
+                    'rolled_back_at' => now(),
+                    'rolled_back_by_user_id' => $byUser?->id,
+                    'rollback_reason' => $reason ?? 'Rollback pendaftaran mitra baru via audit log',
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => "Mitra #{$mitraId} ({$mitra->nama_1}) berhasil dihapus (rollback pendaftaran).",
+                ];
+            }
+
+            if ($this->action === 'DELETE_MITRA') {
+                $mitraData = $this->state_before['mitra'] ?? null;
+                if (!$mitraData) {
+                    throw new \RuntimeException("Data mitra sebelumnya tidak ditemukan dalam log audit.");
+                }
+
+                $mitraId = $mitraData['id'];
+                if (Mitra::where('id', $mitraId)->exists()) {
+                    throw new \RuntimeException("Mitra dengan ID '{$mitraId}' sudah ada di sistem.");
+                }
+
+                unset($mitraData['created_at'], $mitraData['updated_at']);
+                Mitra::create($mitraData);
+
+                $kemitraans = $this->state_before['kemitraans'] ?? [];
+                foreach ($kemitraans as $kData) {
+                    unset($kData['created_at'], $kData['updated_at']);
+                    Kemitraan::create($kData);
+                }
+
+                $this->update([
+                    'is_rolled_back' => true,
+                    'rolled_back_at' => now(),
+                    'rolled_back_by_user_id' => $byUser?->id,
+                    'rollback_reason' => $reason ?? 'Rollback penghapusan data mitra via audit log',
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => "Data Mitra #{$mitraId} ({$mitraData['nama_1']}) berhasil dipulihkan kembali.",
+                ];
+            }
+
+            if ($this->action === 'DELETE_PEGAWAI') {
+                $pegawaiData = $this->state_before;
+                if (!$pegawaiData) {
+                    throw new \RuntimeException("Data pegawai sebelumnya tidak ditemukan dalam log audit.");
+                }
+
+                $nip = $pegawaiData['nip'] ?? null;
+                if (Pegawai::where('nip', $nip)->exists()) {
+                    throw new \RuntimeException("Pegawai dengan NIP '{$nip}' sudah ada di sistem.");
+                }
+
+                unset($pegawaiData['created_at'], $pegawaiData['updated_at']);
+                Pegawai::create($pegawaiData);
+
+                $this->update([
+                    'is_rolled_back' => true,
+                    'rolled_back_at' => now(),
+                    'rolled_back_by_user_id' => $byUser?->id,
+                    'rollback_reason' => $reason ?? 'Rollback penghapusan pegawai via audit log',
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => "Data Pegawai '{$pegawaiData['nama']}' (NIP: {$nip}) berhasil dipulihkan kembali.",
+                ];
+            }
+
+            if ($this->action === 'UPDATE_KONTRAK') {
+                $id = $this->target_id;
+                $kontrak = NomorSurat::find($id);
+                if (!$kontrak) {
+                    throw new \RuntimeException("Dokumen Kontrak #{$id} tidak ditemukan untuk di-rollback.");
+                }
+
+                $stateBefore = $this->state_before;
+                $updates = [];
+                if (isset($stateBefore['tanggal_nomor'])) {
+                    $updates['tanggal_nomor'] = $stateBefore['tanggal_nomor'];
+                    $updates['tahun'] = $stateBefore['tahun'] ?? \Illuminate\Support\Carbon::parse($stateBefore['tanggal_nomor'])->year;
+                }
+                if (isset($stateBefore['nomor'])) {
+                    $updates['nomor'] = $stateBefore['nomor'];
+                }
+
+                $kontrak->update($updates);
+
+                if (isset($updates['tanggal_nomor'])) {
+                    AlokasiHonor::where('surat_perjanjian_kerja_id', $kontrak->id)
+                        ->update(['tanggal_penanda_tanganan_spk_oleh_petugas' => $updates['tanggal_nomor']]);
+                }
+
+                $this->update([
+                    'is_rolled_back' => true,
+                    'rolled_back_at' => now(),
+                    'rolled_back_by_user_id' => $byUser?->id,
+                    'rollback_reason' => $reason ?? 'Rollback pembaruan dokumen kontrak via audit log',
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => "Dokumen Kontrak #{$id} berhasil dikembalikan ke kondisi sebelumnya.",
+                ];
+            }
+
+            if ($this->action === 'UPDATE_BAST') {
+                $id = $this->target_id;
+                $bast = NomorSurat::find($id);
+                if (!$bast) {
+                    throw new \RuntimeException("Dokumen BAST #{$id} tidak ditemukan untuk di-rollback.");
+                }
+
+                $stateBefore = $this->state_before;
+                $updates = [];
+                if (isset($stateBefore['tanggal_nomor'])) {
+                    $updates['tanggal_nomor'] = $stateBefore['tanggal_nomor'];
+                    $updates['tahun'] = $stateBefore['tahun'] ?? \Illuminate\Support\Carbon::parse($stateBefore['tanggal_nomor'])->year;
+                }
+                if (isset($stateBefore['nomor'])) {
+                    $updates['nomor'] = $stateBefore['nomor'];
+                }
+
+                $bast->update($updates);
+
+                $this->update([
+                    'is_rolled_back' => true,
+                    'rolled_back_at' => now(),
+                    'rolled_back_by_user_id' => $byUser?->id,
+                    'rollback_reason' => $reason ?? 'Rollback pembaruan dokumen BAST via audit log',
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => "Dokumen BAST #{$id} berhasil dikembalikan ke kondisi sebelumnya.",
+                ];
+            }
+
             throw new \RuntimeException("Handler rollback belum diimplementasikan untuk aksi '{$this->action}'.");
         });
     }

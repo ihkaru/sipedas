@@ -513,6 +513,9 @@ class KegiatanManmitApiController extends Controller
             'tgl_akhir_pelaksanaan' => ['nullable', 'date'],
             'tgl_mulai_penawaran' => ['nullable', 'date'],
             'tgl_akhir_penawaran' => ['nullable', 'date'],
+            'jenis_kegiatan' => ['nullable', 'string', 'in:SURVEI,SENSUS'],
+            'frekuensi_kegiatan' => ['nullable', 'string', 'in:SUBROUND,TAHUNAN,TRIWULANAN,BULANAN,SEMESTERAN,ADHOC,PERIODIK'],
+            'template_kontrak' => ['nullable', 'string'],
         ]);
 
         $newStart = $request->input('tgl_mulai_pelaksanaan', $kegiatan->tgl_mulai_pelaksanaan);
@@ -561,6 +564,9 @@ class KegiatanManmitApiController extends Controller
             'tgl_akhir_pelaksanaan' => $kegiatan->tgl_akhir_pelaksanaan ? Carbon::parse($kegiatan->tgl_akhir_pelaksanaan)->toDateString() : null,
             'tgl_mulai_penawaran' => $kegiatan->tgl_mulai_penawaran ? Carbon::parse($kegiatan->tgl_mulai_penawaran)->toDateString() : null,
             'tgl_akhir_penawaran' => $kegiatan->tgl_akhir_penawaran ? Carbon::parse($kegiatan->tgl_akhir_penawaran)->toDateString() : null,
+            'jenis_kegiatan' => $kegiatan->jenis_kegiatan,
+            'frekuensi_kegiatan' => $kegiatan->frekuensi_kegiatan,
+            'template_kontrak' => $kegiatan->template_kontrak,
         ];
 
         $updates = [];
@@ -569,6 +575,9 @@ class KegiatanManmitApiController extends Controller
         if ($request->has('tgl_akhir_pelaksanaan')) $updates['tgl_akhir_pelaksanaan'] = $request->input('tgl_akhir_pelaksanaan');
         if ($request->has('tgl_mulai_penawaran')) $updates['tgl_mulai_penawaran'] = $request->input('tgl_mulai_penawaran');
         if ($request->has('tgl_akhir_penawaran')) $updates['tgl_akhir_penawaran'] = $request->input('tgl_akhir_penawaran');
+        if ($request->has('jenis_kegiatan')) $updates['jenis_kegiatan'] = strtoupper($request->input('jenis_kegiatan'));
+        if ($request->has('frekuensi_kegiatan')) $updates['frekuensi_kegiatan'] = strtoupper($request->input('frekuensi_kegiatan'));
+        if ($request->has('template_kontrak')) $updates['template_kontrak'] = $request->input('template_kontrak');
 
         $kegiatan->update($updates);
 
@@ -593,6 +602,9 @@ class KegiatanManmitApiController extends Controller
             'data' => [
                 'id' => $fresh->id,
                 'nama' => $fresh->nama,
+                'jenis_kegiatan' => $fresh->jenis_kegiatan,
+                'frekuensi_kegiatan' => $fresh->frekuensi_kegiatan,
+                'template_kontrak' => $fresh->template_kontrak,
                 'tgl_mulai_pelaksanaan' => $fresh->tgl_mulai_pelaksanaan,
                 'tgl_akhir_pelaksanaan' => $fresh->tgl_akhir_pelaksanaan,
                 'tgl_mulai_penawaran' => $fresh->tgl_mulai_penawaran,

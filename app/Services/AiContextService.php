@@ -237,16 +237,18 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
   - **100% AMAN**: Nomor surat SPK dan BAST yang sudah terbit TIDAK BERUBAH dan TIDAK DIHAPUS. Tautan cetak SPK bulanan tetap utuh.
   - Tercatat di Audit Log dan dapat di-rollback sewaktu-waktu via endpoint rollback.
 
-#### Endpoint Detail & Update Jadwal Kegiatan Utama:
+#### Endpoint Detail & Update Jadwal/Konfigurasi Kegiatan Utama:
 - **Method & Path**: `GET /api/v1/kegiatan-manmit/{id}`
   - Mengambil detail satu kegiatan manmit beserta rincian seluruh honor anak.
 - **Method & Path**: `PATCH /api/v1/kegiatan-manmit/{id}` (atau `PUT` / `POST`)
-  - **Tujuan**: Memperpanjang rentang jadwal pelaksanaan kegiatan (`tgl_mulai_pelaksanaan`, `tgl_akhir_pelaksanaan`) atau mengubah nama kegiatan.
+  - **Tujuan**: Memperpanjang rentang jadwal pelaksanaan kegiatan (`tgl_mulai_pelaksanaan`, `tgl_akhir_pelaksanaan`), mengubah nama kegiatan, tipe (`jenis_kegiatan`: `SURVEI`/`SENSUS`), `frekuensi_kegiatan` (`SUBROUND`, `TAHUNAN`, `TRIWULANAN`, `BULANAN`, `SEMESTERAN`, `ADHOC`, `PERIODIK`), atau `template_kontrak`.
   - **Request Body (JSON)**:
 ```json
 {
   "tgl_akhir_pelaksanaan": "2026-10-14",
-  "nama": "Survei Ekonomi Rumah Tangga Triwulan III"
+  "nama": "Survei Ekonomi Rumah Tangga Triwulan III",
+  "jenis_kegiatan": "SURVEI",
+  "frekuensi_kegiatan": "TRIWULANAN"
 }
 ```
   - **Karakteristik & Validasi**:
@@ -380,9 +382,35 @@ Jika di lapangan jadwal kegiatan diperpanjang (misalnya dari September ke Oktobe
     - Nomor WhatsApp otomatis dinormalisasi ke standar angka bersih (contoh `0812...` -> `62812...`).
     - Tercatat di `ApiAuditLog` (`action: UPDATE_MITRA`) dan **100% reversible** (dapat di-rollback kapan pun).
 
+#### Endpoint Pendaftaran Mitra Baru:
+- **Method & Path**: `POST /api/v1/mitras`
+- **Tujuan**: Mendaftarkan mitra statistik baru ke dalam sistem beserta inisialisasi status kemitraan tahunan secara atomik.
+- **Request Body (JSON)**:
+```json
+{
+  "nama": "Herri Gustaman",
+  "nik": "6104220200480001",
+  "id_sobat": "610422020048",
+  "nomor_wa": "081258309999",
+  "email": "herri@example.com",
+  "posisi": "Mitra Pendataan",
+  "status_kemitraan": "AKTIF",
+  "tahun": {$currentYear}
+}
+```
+- **Karakteristik Keamanan**:
+  - Otomatis membuat entri `mitras` dan `kemitraans` untuk tahun anggaran aktif.
+  - Tercatat di `ApiAuditLog` (`action: CREATE_MITRA`) dan **100% reversible** (rollback akan menghapus mitra dan kemitraan secara atomik).
+
+#### Endpoint Penghapusan Mitra:
+- **Method & Path**: `DELETE /api/v1/mitras/{id}`
+- **Tujuan**: Menghapus mitra dari sistem (misal salah entri).
+- **Keamanan**: Ditolak (422) jika mitra sudah memiliki riwayat alokasi honor aktif (`alokasi_honors_count > 0`).
+- **Reversibilitas**: Tercatat di `ApiAuditLog` (`action: DELETE_MITRA`) dan **100% reversible** (rollback memulihkan data mitra dan status kemitraan).
+
 ---
 
-### Endpoint Baru: Manajemen Master Pegawai BPS (Lookup, Tambah & Update)
+### Endpoint Baru: Manajemen Master Pegawai BPS (Lookup, Tambah, Update & Hapus)
 - **Method & Path**: `GET /api/v1/pegawais`
   - **Query Parameters**:
     - `q` / `search`: Cari nama, NIP, NIP9, jabatan, email, nomor WA, unit kerja, atau panggilan.
@@ -430,6 +458,11 @@ Jika di lapangan jadwal kegiatan diperpanjang (misalnya dari September ke Oktobe
 ```
   - **Karakteristik Keamanan**:
     - Tercatat di `ApiAuditLog` (`action: UPDATE_PEGAWAI`) dan **100% reversible** (dapat di-rollback kembali ke data semula).
+
+- **Method & Path**: `DELETE /api/v1/pegawais/{nip}`
+  - **Tujuan**: Menghapus data pegawai yang tidak lagi aktif atau salah entri.
+  - **Karakteristik Keamanan**:
+    - Tercatat di `ApiAuditLog` (`action: DELETE_PEGAWAI`) dan **100% reversible** (rollback memulihkan data pegawai kembali ke sistem).
 
 ---
 
@@ -563,9 +596,27 @@ Jika di lapangan jadwal kegiatan diperpanjang (misalnya dari September ke Oktobe
 }
 ```
 
+#### Endpoint Update Alokasi Honor:
+- **Method & Path**: `PATCH /api/v1/alokasi/{id}` (atau `PUT` / `POST`)
+- **Tujuan**: Memperbarui target volume alokasi, posisi honor, tanggal perjanjian, atau status.
+- **Request Body (JSON)**:
+```json
+{
+  "target": 15,
+  "honor_id": "HON-2026-002",
+  "status": "APPROVED",
+  "tanggal_mulai_perjanjian": "2026-07-01",
+  "tanggal_akhir_perjanjian": "2026-07-31"
+}
+```
+- **Fitur Otomatis Backend**:
+  - **Validasi Bisnis Penuh**: Memvalidasi ulang pagu SBML dan bentrok sensus secara deterministik (mengabaikan alokasi yang sedang diubah via parameter `excludeAlokasiId`). Ditolak (422) jika melebihi plafon.
+  - **Auto Recalculate**: Menghitung ulang `total_honor = target * harga_per_satuan` secara atomik.
+  - **Reversibilitas**: Tercatat di `ApiAuditLog` (`action: UPDATE_ALOKASI`) dan **100% reversible** (dapat di-rollback ke target dan nilai semula).
+
 ---
 
-### Endpoint 7: Pencarian Dokumen SPK (Kontrak) & BAST
+### Endpoint 7: Pencarian & Manajemen Dokumen SPK (Kontrak) & BAST
 - **Method & Path**: `GET /api/v1/kontrak` dan `GET /api/v1/bast`
 - **Query Parameters**:
   - `q` / `search` (string) - Cari nomor surat atau nama mitra
@@ -591,6 +642,33 @@ Jika di lapangan jadwal kegiatan diperpanjang (misalnya dari September ke Oktobe
 }
 ```
 
+#### Endpoint Update Dokumen Kontrak SPK:
+- **Method & Path**: `PATCH /api/v1/kontrak/{id}` (atau `PUT` / `POST`)
+- **Tujuan**: Menyesuaikan tanggal penerbitan surat kontrak atau nomor urut SPK.
+- **Request Body (JSON)**:
+```json
+{
+  "tanggal_nomor": "2026-07-05",
+  "nomor": 42
+}
+```
+- **Fitur Otomatis Backend**:
+  - Otomatis men-sinkronisasi kolom `tanggal_penanda_tanganan_spk_oleh_petugas` pada seluruh alokasi mitra yang terikat dengan SPK tersebut.
+  - Tercatat di `ApiAuditLog` (`action: UPDATE_KONTRAK`) dan **100% reversible** (dapat di-rollback ke tanggal semula).
+
+#### Endpoint Update Dokumen BAST:
+- **Method & Path**: `PATCH /api/v1/bast/{id}` (atau `PUT` / `POST`)
+- **Tujuan**: Menyesuaikan tanggal penandatanganan Berita Acara Serah Terima (BAST) atau nomor urut dokumen.
+- **Request Body (JSON)**:
+```json
+{
+  "tanggal_nomor": "2026-07-31",
+  "nomor": 15
+}
+```
+- **Karakteristik Keamanan**:
+  - Tercatat di `ApiAuditLog` (`action: UPDATE_BAST`) dan **100% reversible** (dapat di-rollback ke data semula).
+
 ---
 
 ### Endpoint 8: Audit Log & Self-Correction Rollback (Undo Mechanism)
@@ -611,12 +689,18 @@ Sistem memiliki mekanisme **Reversibilitas Universal**. Setiap aksi mutasi terca
 - `DELETE_HONOR`: Memulihkan kembali data pos honor yang dihapus.
 - `ALLOCATE_HONOR` / `BATCH_ALLOCATE`: Menghapus alokasi dan membersihkan nomor surat SPK/BAST terkait jika tidak lagi dipakai.
 - `DELETE_ALLOCATION`: Memulihkan record alokasi yang dihapus beserta relasi suratnya.
+- `UPDATE_ALOKASI`: Mengembalikan target volume dan total honor alokasi ke nilai semula.
 - `RENAME_KEGIATAN_ID`: Mengembalikan Primary Key ID kegiatan dan meng-cascade seluruh anak honor kembali ke prefix ID asal.
+- `CREATE_MITRA`: Menghapus data mitra dan kemitraan tahunan yang baru didaftarkan secara bersih.
 - `UPDATE_MITRA`: Mengembalikan nomor WA, nomor telepon, alamat, catatan, atau status kemitraan ke nilai semula.
-- `UPDATE_KEGIATAN_MANMIT`: Mengembalikan rentang tanggal pelaksanaan atau nama kegiatan ke nilai semula.
+- `DELETE_MITRA`: Memulihkan kembali data mitra beserta riwayat kemitraan tahunannya.
+- `UPDATE_KEGIATAN_MANMIT`: Mengembalikan rentang tanggal pelaksanaan, nama kegiatan, jenis, frekuensi, atau template ke nilai semula.
 - `UPDATE_HONOR`: Mengembalikan `tanggal_akhir_kegiatan` atau tarif honor ke nilai semula, serta otomatis men-sinkronisasi ulang tanggal kontrak SPK dan BAST ke tanggal awal.
 - `CREATE_PEGAWAI`: Menghapus data pegawai yang baru didaftarkan secara bersih.
 - `UPDATE_PEGAWAI`: Mengembalikan jabatan, nomor WA, unit kerja, pangkat, dan atribut pegawai ke nilai semula.
+- `DELETE_PEGAWAI`: Memulihkan kembali data pegawai yang dihapus ke sistem.
+- `UPDATE_KONTRAK`: Mengembalikan tanggal nomor kontrak SPK dan tanggal tanda tangan alokasi ke kondisi semula.
+- `UPDATE_BAST`: Mengembalikan tanggal nomor BAST ke kondisi semula.
 
 ---
 

@@ -35,24 +35,30 @@ Route::prefix('v1')->middleware('api.key')->group(function () {
     Route::delete('/honors/{id}', [HonorApiController::class, 'destroy']);
 
     Route::get('/mitras', [MitraApiController::class, 'index']);
+    Route::post('/mitras', [MitraApiController::class, 'store']);
     Route::get('/mitras/{id}', [MitraApiController::class, 'show']);
     Route::match(['put', 'patch', 'post'], '/mitras/{id}', [MitraApiController::class, 'update']);
+    Route::delete('/mitras/{id}', [MitraApiController::class, 'destroy']);
 
     Route::get('/pegawais', [PegawaiApiController::class, 'index']);
     Route::post('/pegawais', [PegawaiApiController::class, 'store']);
     Route::get('/pegawais/{nip}', [PegawaiApiController::class, 'show']);
     Route::match(['put', 'patch', 'post'], '/pegawais/{nip}', [PegawaiApiController::class, 'update']);
+    Route::delete('/pegawais/{nip}', [PegawaiApiController::class, 'destroy']);
 
     // 2. Alokasi Honor & Automatic SPK/BAST Trigger
     Route::post('/alokasi/check', [AlokasiHonorApiController::class, 'check']);
     Route::get('/alokasi', [AlokasiHonorApiController::class, 'index']);
     Route::post('/alokasi', [AlokasiHonorApiController::class, 'store']);
     Route::get('/alokasi/{id}', [AlokasiHonorApiController::class, 'show']);
+    Route::match(['put', 'patch', 'post'], '/alokasi/{id}', [AlokasiHonorApiController::class, 'update']);
     Route::delete('/alokasi/{id}', [AlokasiHonorApiController::class, 'destroy']);
 
-    // 3. Dokumen Kontrak & BAST Query Endpoints
+    // 3. Dokumen Kontrak & BAST Endpoints
     Route::get('/kontrak', [DokumenApiController::class, 'kontrak']);
+    Route::match(['put', 'patch', 'post'], '/kontrak/{id}', [DokumenApiController::class, 'updateKontrak']);
     Route::get('/bast', [DokumenApiController::class, 'bast']);
+    Route::match(['put', 'patch', 'post'], '/bast/{id}', [DokumenApiController::class, 'updateBast']);
 
     // 4. Audit Log & Rollback Endpoints
     Route::get('/audit-logs', [AuditLogApiController::class, 'index']);
