@@ -60,11 +60,23 @@ Skill ini memberikan instruksi lengkap bagi AI Coding Agent untuk berinteraksi d
 ### A. Lookup & Manajemen Kegiatan Manmit
 - `GET /api/v1/kegiatan-manmit?tahun=2026&bulan=3&has_honors=1&compact=1`
 - Query Params: `q`, `tahun`, `bulan`, `jenis` (SURVEI/SENSUS), `has_honors`, `compact`, `sort_by`, `sort_order`, `per_page`.
+- `GET /api/v1/kegiatan-manmit/{id}`: Detail satu kegiatan dan seluruh rincian honor anak.
+- `PATCH /api/v1/kegiatan-manmit/{id}`: Perpanjang/ubah rentang jadwal kegiatan (`tgl_mulai_pelaksanaan`, `tgl_akhir_pelaksanaan`) dan nama kegiatan. Reversible via audit log rollback.
 - `POST /api/v1/kegiatan-manmit/{id}/rename-id` (Rename / Migrasi ID Kegiatan):
   - Body: `{"new_id": "SERUTI26-TW3", "new_nama": "Opsional Nama Baru", "cascade_honor_ids": true}`
   - Fitur: Migrasi PK ID kegiatan secara atomik dan meng-cascade referensi di `honors`, `alokasi_honors`, dan `kegiatans`. 100% aman menjaga keutuhan nomor SPK dan BAST tanpa mereset nomor surat!
 
-### B. Lookup & Manajemen Mitra Statistik
+### B. Manajemen Master Honor & Penyesuaian Tanggal
+- `GET /api/v1/honors?kegiatan_id=SERUTI26-TW3&compact=1`
+- Query Params: `q`, `kegiatan_id`, `tahun`, `bulan`, `jabatan`, `compact`, `sort_by`, `sort_order`, `per_page`.
+- `GET /api/v1/honors/{id}`: Detail satu entitas honor beserta relasi kegiatan induk dan jumlah alokasi terkait.
+- `PATCH /api/v1/honors/{id}` (atau `PUT` / `POST`): Update atribut honor (`tanggal_akhir_kegiatan`, `harga_per_satuan`, `satuan_honor`, `jabatan`, `jenis_honor`).
+  - Fitur: Memvalidasi rentang tanggal terhadap kegiatan induk, otomatis menghitung `tanggal_pembayaran_maksimal` (+20 hari), dan **memicu propagasi otomatis** ke seluruh alokasi honor dan nomor SPK/BAST terkait via `HonorTanggalService`. Reversible via rollback!
+- **SOP 2 Langkah Perpanjangan Tanggal Honor**:
+  1. *Langkah 1*: Jika rentang kegiatan utama belum mencakup tanggal baru, perpanjang kegiatan via `PATCH /api/v1/kegiatan-manmit/{id}` (`{"tgl_akhir_pelaksanaan": "YYYY-MM-DD"}`).
+  2. *Langkah 2*: Sesuaikan tanggal honor via `PATCH /api/v1/honors/{id}` (`{"tanggal_akhir_kegiatan": "YYYY-MM-DD"}`).
+
+### C. Lookup & Manajemen Mitra Statistik
 - `GET /api/v1/mitras?tahun=2026&bulan=3&available_only=1&compact=1`
 - Query Params: `q` (nama/NIK/Sobat/email/telp/WA), `ids` (comma-separated), `tahun`, `bulan`, `status` (AKTIF/dll), `aktif_only`, `kecamatan`, `desa`, `jenis_kelamin` (L/P), `posisi` (PCL/PML), `has_allocations` (0/1), `with_sbml`, `available_only`, `sort_by` (nama/id/sobat/nik/created_at), `sort_order` (asc/desc), `compact`, `per_page`.
 - `GET /api/v1/mitras/{id}`: Detail profil mitra (identifikasi via ID, ID Sobat, atau NIK) lengkap dengan kontak, WhatsApp, dan riwayat kemitraan.
@@ -72,18 +84,25 @@ Skill ini memberikan instruksi lengkap bagi AI Coding Agent untuk berinteraksi d
   - Body: `{"nomor_wa": "081258306655", "no_telp": "...", "email": "...", "alamat_detail": "...", "catatan": "...", "status_kemitraan": "AKTIF", "tahun": 2026}`
   - Kolom Khusus: `nomor_wa` tersimpan di kolom fisik tersendiri (terpisah dari `no_telp` impor SOBAT), dinormalisasi otomatis, tercatat di `ApiAuditLog`, dan 100% reversible via rollback.
 
-### C. Pre-Flight Check (Dry Run)
+### D. Lookup & Manajemen Pegawai BPS
+- `GET /api/v1/pegawais?q=Ihza&compact=1`
+- Query Params: `q`, `unit_kerja`, `jabatan`, `golongan`, `is_magang`, `compact`, `sort_by`, `sort_order`, `per_page`.
+- `GET /api/v1/pegawais/{nip}`: Detail satu pegawai (bisa lookup via 18-digit NIP atau 9-digit NIP9) dan relasi atasan langsung.
+- `POST /api/v1/pegawais`: Daftarkan pegawai baru. Auto-normalisasi nomor WA (`628xxx`), tercatat di audit log, dan reversible (rollback akan menghapus pegawai baru tersebut).
+- `PATCH /api/v1/pegawais/{nip}`: Update data pegawai (jabatan, nomor WA, unit kerja, email, pangkat, golongan, dll). Reversible via rollback.
+
+### E. Pre-Flight Check (Dry Run)
 - `POST /api/v1/alokasi/check`
 - Body: `{"honor_id": "HON-1", "mitra_id": 123, "target": 10.0}`
 - Response: `{ "status": "success", "data": { "eligible": true|false, "reason": "...", ... } }`
 
-### D. Buat Alokasi (Single / Batch)
+### F. Buat Alokasi (Single / Batch)
 - `POST /api/v1/alokasi`
 - Single Body: `{"honor_id": "HON-1", "mitra_id": 123, "target": 10.0}`
 - Batch Body: `{"allocations": [{"honor_id": "HON-1", "mitra_id": 123, "target": 10}]}`
 - Response: ID alokasi, nomor SPK, nomor BAST, dan URL cetak PDF.
 
-### E. Dokumen Kontrak & BAST
+### G. Dokumen Kontrak & BAST
 - `GET /api/v1/kontrak?tahun=2026&bulan=3&compact=1`
 - `GET /api/v1/bast?tahun=2026&bulan=3&compact=1`
 - Query Params: `q`, `mitra_id`, `id_sobat`, `kegiatan_id`, `tahun`, `bulan`, `compact`, `page`, `per_page`.
@@ -91,7 +110,8 @@ Skill ini memberikan instruksi lengkap bagi AI Coding Agent untuk berinteraksi d
   - **SPK Bulanan**: Format tautan resmi adalah `https://<domain>/cetak/kontrak?tahun={tahun}&bulan={bulan}&mitra_id={mitra_id}` (TANPA parameter `id_kegiatan_manmit`, agar semua lampiran kegiatan survei mitra di bulan kalender tersebut terkonsolidasi penuh).
   - **BAST**: Format tautan menyertakan `id_kegiatan_manmit` (`https://<domain>/cetak/bast?tahun={tahun}&bulan={bulan}&id_kegiatan_manmit={id_kegiatan}&mitra_id={mitra_id}`) karena BAST bersifat spesifik per alokasi/kegiatan.
 
-### F. Audit Log & Rollback
+### H. Audit Log & Self-Correction Rollback
 - `GET /api/v1/audit-logs?only_rollbackable=1&compact=1`: Temukan mutasi yang bisa dibatalkan.
 - `GET /api/v1/audit-logs/{id}`: Detail state diff sebelum dan sesudah.
-- `POST /api/v1/audit-logs/{id}/rollback`: Batalkan perubahan dan bersihkan nomor dokumen terkait secara atomik.
+- `POST /api/v1/audit-logs/{id}/rollback`: Batalkan perubahan secara atomik.
+- **Aksi yang Didukung Rollback 100%**: `ALLOCATE_HONOR`, `BATCH_ALLOCATE`, `DELETE_ALLOCATION`, `RENAME_KEGIATAN_ID`, `UPDATE_MITRA`, `UPDATE_KEGIATAN_MANMIT`, `UPDATE_HONOR`, `CREATE_PEGAWAI`, `UPDATE_PEGAWAI`.

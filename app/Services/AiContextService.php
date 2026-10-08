@@ -199,7 +199,58 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
   - **100% AMAN**: Nomor surat SPK dan BAST yang sudah terbit TIDAK BERUBAH dan TIDAK DIHAPUS. Tautan cetak SPK bulanan tetap utuh.
   - Tercatat di Audit Log dan dapat di-rollback sewaktu-waktu via endpoint rollback.
 
+#### Endpoint Detail & Update Jadwal Kegiatan Utama:
+- **Method & Path**: `GET /api/v1/kegiatan-manmit/{id}`
+  - Mengambil detail satu kegiatan manmit beserta rincian seluruh honor anak.
+- **Method & Path**: `PATCH /api/v1/kegiatan-manmit/{id}` (atau `PUT` / `POST`)
+  - **Tujuan**: Memperpanjang rentang jadwal pelaksanaan kegiatan (`tgl_mulai_pelaksanaan`, `tgl_akhir_pelaksanaan`) atau mengubah nama kegiatan.
+  - **Request Body (JSON)**:
+```json
+{
+  "tgl_akhir_pelaksanaan": "2026-10-14",
+  "nama": "Survei Ekonomi Rumah Tangga Triwulan III"
+}
+```
+  - **Karakteristik & Validasi**:
+    - Memvalidasi bahwa rentang baru tidak mengorbankan honor-honor yang sudah ada di bawahnya.
+    - Tercatat di `ApiAuditLog` (`action: UPDATE_KEGIATAN_MANMIT`) dan **100% reversible** (dapat di-rollback).
+
 ---
+
+### Endpoint Baru: Manajemen Master Honor & Penyesuaian Tanggal
+- **Method & Path**: `GET /api/v1/honors`
+  - **Query Parameters**:
+    - `q` / `search`: Cari kode honor, jabatan, jenis honor, atau nama kegiatan induk.
+    - `kegiatan_id`: Saring berdasarkan ID Kegiatan Manmit.
+    - `tahun` & `bulan`: Saring berdasarkan tahun dan bulan pelaksanaan.
+    - `compact`: `1` untuk mode hemat token (~80% lebih kecil).
+    - `sort_by`, `sort_order`, `per_page`, `page`.
+
+- **Method & Path**: `GET /api/v1/honors/{id}`
+  - Mengambil detail master honor beserta informasi kegiatan induk dan jumlah alokasi terkait.
+
+- **Method & Path**: `PATCH /api/v1/honors/{id}` (atau `PUT` / `POST`)
+  - **Tujuan**: Mengubah `tanggal_akhir_kegiatan`, `harga_per_satuan`, `satuan_honor`, `jabatan`, atau `jenis_honor`.
+  - **Request Body (JSON)**:
+```json
+{
+  "tanggal_akhir_kegiatan": "2026-10-14",
+  "harga_per_satuan": 65000
+}
+```
+  - **Fitur Otomatis Backend**:
+    - **Validasi Rentang**: Memastikan `tanggal_akhir_kegiatan` berada di dalam rentang `tgl_mulai_pelaksanaan` s/d `tgl_akhir_pelaksanaan` kegiatan induk. (Jika di luar rentang, API mengembalikan error 422 informatif yang menyarankan untuk memperpanjang kegiatan utama terlebih dahulu).
+    - **Auto Recalculate Batas Pencairan**: Otomatis memperbarui `tanggal_pembayaran_maksimal = tanggal_akhir_kegiatan + 20 hari`.
+    - **Propagasi Otomatis SPK & BAST**: Otomatis menghitung ulang awal/akhir bulan perjanjian di seluruh `alokasi_honors` dan memperbarui tanggal nomor surat SPK serta BAST di `nomor_surats` secara atomik via `HonorTanggalService`.
+    - **Reversibel**: Tercatat di `ApiAuditLog` (`action: UPDATE_HONOR`) dan dapat di-rollback kapan pun.
+
+#### SOP Prosedur 2 Langkah Penyesuaian Tanggal Honor Lapangan:
+Jika di lapangan jadwal kegiatan diperpanjang (misalnya dari September ke Oktober):
+1. **Langkah 1**: Periksa rentang kegiatan via `GET /kegiatan-manmit/{id}`. Jika `tgl_akhir_pelaksanaan` masih di September, perpanjang terlebih dahulu ke tanggal target via `PATCH /kegiatan-manmit/{id}` (`{"tgl_akhir_pelaksanaan": "YYYY-MM-DD"}`).
+2. **Langkah 2**: Ubah tanggal honor via `PATCH /honors/{id}` (`{"tanggal_akhir_kegiatan": "YYYY-MM-DD"}`). Seluruh alokasi mitra, nomor SPK, dan BAST akan otomatis tersinkronisasi tanpa merusak dokumen.
+
+---
+
 ### Endpoint 2: Lookup Mitra Statistik
 - **Method & Path**: `GET /api/v1/mitras`
 - **Query Parameters**:
@@ -264,6 +315,57 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
   - **Karakteristik**:
     - Nomor WhatsApp otomatis dinormalisasi ke standar angka bersih (contoh `0812...` -> `62812...`).
     - Tercatat di `ApiAuditLog` (`action: UPDATE_MITRA`) dan **100% reversible** (dapat di-rollback kapan pun).
+
+---
+
+### Endpoint Baru: Manajemen Master Pegawai BPS (Lookup, Tambah & Update)
+- **Method & Path**: `GET /api/v1/pegawais`
+  - **Query Parameters**:
+    - `q` / `search`: Cari nama, NIP, NIP9, jabatan, email, nomor WA, unit kerja, atau panggilan.
+    - `unit_kerja`: Saring berdasarkan unit kerja.
+    - `jabatan`: Saring berdasarkan jabatan.
+    - `golongan`: Saring berdasarkan golongan (`III/a`, `IV/b`, dll).
+    - `is_magang`: `1` (pegawai magang) atau `0` (pegawai organik).
+    - `compact`: `1` untuk mode hemat token (hanya nip, nip9, nama, panggilan, jabatan, unit_kerja, nomor_wa, email).
+    - `sort_by`, `sort_order`, `per_page`, `page`.
+
+- **Method & Path**: `GET /api/v1/pegawais/{nip}`
+  - Mengambil detail satu pegawai (mendukung NIP 18-digit atau NIP9) beserta profil atasan langsung.
+
+- **Method & Path**: `POST /api/v1/pegawais`
+  - **Tujuan**: Mendaftarkan pegawai baru ke dalam sistem.
+  - **Request Body (JSON)**:
+```json
+{
+  "nama": "Ahmad Fauzan",
+  "nip": "199803032023011003",
+  "nip9": "199803031",
+  "panggilan": "Fauzan",
+  "golongan": "III/a",
+  "pangkat": "Penata Muda",
+  "jabatan": "Pranata Komputer",
+  "email": "fauzan@bps.go.id",
+  "unit_kerja": "BPS Kabupaten",
+  "nomor_wa": "081299887766",
+  "atasan_langsung_id": "199001012015021001"
+}
+```
+  - **Karakteristik Keamanan**:
+    - Nomor WhatsApp otomatis dinormalisasi ke standar `628xxx`.
+    - Tercatat di `ApiAuditLog` (`action: CREATE_PEGAWAI`) dan **100% reversible** (dapat di-rollback, otomatis menghapus pegawai yang dibuat).
+
+- **Method & Path**: `PATCH /api/v1/pegawais/{nip}` (atau `PUT` / `POST`)
+  - **Tujuan**: Memperbarui atribut pegawai (jabatan, nomor WA, email, unit kerja, pangkat, golongan, atasan langsung).
+  - **Request Body (JSON)**:
+```json
+{
+  "jabatan": "Statistisi Ahli Pertama",
+  "nomor_wa": "081234567890",
+  "unit_kerja": "Tim Nerwilis"
+}
+```
+  - **Karakteristik Keamanan**:
+    - Tercatat di `ApiAuditLog` (`action: UPDATE_PEGAWAI`) dan **100% reversible** (dapat di-rollback kembali ke data semula).
 
 ---
 
@@ -428,6 +530,7 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
 ---
 
 ### Endpoint 8: Audit Log & Self-Correction Rollback (Undo Mechanism)
+Sistem memiliki mekanisme **Reversibilitas Universal**. Setiap aksi mutasi tercatat lengkap dengan `state_before` dan `state_after`, serta dapat dikembalikan (*undo*) secara atomik:
 1. **Cari Mutasi yang Ingin Di-Undo**:
    - `GET /api/v1/audit-logs?only_rollbackable=1&compact=1`
    - Ambil `id` audit log.
@@ -435,8 +538,17 @@ Ikuti siklus kerja 5 tahap ini untuk memastikan eksekusi yang bebas kegagalan:
    - `GET /api/v1/audit-logs/{id}`
 3. **Eksekusi Rollback**:
    - `POST /api/v1/audit-logs/{id}/rollback`
-   - Body: `{"reason": "Dibatalkan oleh AI Agent karena salah target"}`
-   - Efek: Record alokasi dihapus dan nomor dokumen yang tidak lagi terpakai dibersihkan secara atomik.
+   - Body: `{"reason": "Dibatalkan oleh AI Agent karena koreksi data"}`
+
+#### Cakupan Aksi yang 100% Didukung Rollback:
+- `ALLOCATE_HONOR` / `BATCH_ALLOCATE`: Menghapus alokasi dan membersihkan nomor surat SPK/BAST terkait jika tidak lagi dipakai.
+- `DELETE_ALLOCATION`: Memulihkan record alokasi yang dihapus beserta relasi suratnya.
+- `RENAME_KEGIATAN_ID`: Mengembalikan Primary Key ID kegiatan dan meng-cascade seluruh anak honor kembali ke prefix ID asal.
+- `UPDATE_MITRA`: Mengembalikan nomor WA, nomor telepon, alamat, catatan, atau status kemitraan ke nilai semula.
+- `UPDATE_KEGIATAN_MANMIT`: Mengembalikan rentang tanggal pelaksanaan atau nama kegiatan ke nilai semula.
+- `UPDATE_HONOR`: Mengembalikan `tanggal_akhir_kegiatan` atau tarif honor ke nilai semula, serta otomatis men-sinkronisasi ulang tanggal kontrak SPK dan BAST ke tanggal awal.
+- `CREATE_PEGAWAI`: Menghapus data pegawai yang baru didaftarkan secara bersih.
+- `UPDATE_PEGAWAI`: Mengembalikan jabatan, nomor WA, unit kerja, pangkat, dan atribut pegawai ke nilai semula.
 
 ---
 

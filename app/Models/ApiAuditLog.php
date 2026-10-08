@@ -235,6 +235,105 @@ class ApiAuditLog extends Model
                 ];
             }
 
+            if ($this->action === 'UPDATE_KEGIATAN_MANMIT') {
+                $id = $this->state_before['id'] ?? null;
+                $kegiatan = KegiatanManmit::find($id);
+                if (!$kegiatan) {
+                    throw new \RuntimeException("Kegiatan Manmit '{$id}' tidak ditemukan untuk di-rollback.");
+                }
+
+                $stateBefore = $this->state_before;
+                unset($stateBefore['id']);
+                $kegiatan->update($stateBefore);
+
+                $this->update([
+                    'is_rolled_back' => true,
+                    'rolled_back_at' => now(),
+                    'rolled_back_by_user_id' => $byUser?->id,
+                    'rollback_reason' => $reason ?? 'Rollback pembaruan kegiatan manmit via audit log',
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => "Data Kegiatan Manmit '{$id}' berhasil dikembalikan ke kondisi sebelumnya.",
+                ];
+            }
+
+            if ($this->action === 'UPDATE_HONOR') {
+                $id = $this->state_before['id'] ?? null;
+                $honor = Honor::find($id);
+                if (!$honor) {
+                    throw new \RuntimeException("Honor '{$id}' tidak ditemukan untuk di-rollback.");
+                }
+
+                $stateBefore = $this->state_before;
+                unset($stateBefore['id']);
+                $honor->update($stateBefore);
+
+                // Jika tanggal_akhir_kegiatan dikembalikan, re-propagate ke alokasi dan nomor surat
+                if (isset($stateBefore['tanggal_akhir_kegiatan'])) {
+                    \App\Services\HonorTanggalService::propagate($honor);
+                }
+
+                $this->update([
+                    'is_rolled_back' => true,
+                    'rolled_back_at' => now(),
+                    'rolled_back_by_user_id' => $byUser?->id,
+                    'rollback_reason' => $reason ?? 'Rollback pembaruan honor via audit log',
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => "Master Honor '{$id}' berhasil dikembalikan ke kondisi sebelumnya dan tanggal SPK/BAST telah disinkronkan ulang.",
+                ];
+            }
+
+            if ($this->action === 'CREATE_PEGAWAI') {
+                $nip = $this->state_after['nip'] ?? null;
+                $pegawai = Pegawai::where('nip', $nip)->first();
+                if (!$pegawai) {
+                    throw new \RuntimeException("Pegawai NIP '{$nip}' tidak ditemukan untuk di-rollback.");
+                }
+
+                $pegawai->delete();
+
+                $this->update([
+                    'is_rolled_back' => true,
+                    'rolled_back_at' => now(),
+                    'rolled_back_by_user_id' => $byUser?->id,
+                    'rollback_reason' => $reason ?? 'Rollback penambahan pegawai via audit log',
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => "Pegawai NIP '{$nip}' berhasil dihapus (rollback penambahan data).",
+                ];
+            }
+
+            if ($this->action === 'UPDATE_PEGAWAI') {
+                $nip = $this->state_before['nip'] ?? null;
+                $pegawai = Pegawai::where('nip', $nip)->first();
+                if (!$pegawai) {
+                    throw new \RuntimeException("Pegawai NIP '{$nip}' tidak ditemukan untuk di-rollback.");
+                }
+
+                $stateBefore = $this->state_before;
+                unset($stateBefore['nip']);
+                $pegawai->update($stateBefore);
+
+                $this->update([
+                    'is_rolled_back' => true,
+                    'rolled_back_at' => now(),
+                    'rolled_back_by_user_id' => $byUser?->id,
+                    'rollback_reason' => $reason ?? 'Rollback pembaruan pegawai via audit log',
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => "Data Pegawai '{$pegawai->nama}' (NIP: {$nip}) berhasil dikembalikan ke kondisi sebelumnya.",
+                ];
+            }
+
             throw new \RuntimeException("Handler rollback belum diimplementasikan untuk aksi '{$this->action}'.");
         });
     }

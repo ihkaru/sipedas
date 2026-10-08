@@ -450,4 +450,155 @@ class KegiatanManmitApiController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Detail satu Kegiatan Manmit beserta rincian honor.
+     */
+    public function show(string $id): JsonResponse
+    {
+        $kegiatan = KegiatanManmit::with('honors')->find($id);
+
+        if (!$kegiatan) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Kegiatan Manmit dengan ID '{$id}' tidak ditemukan.",
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'id' => $kegiatan->id,
+                'nama' => $kegiatan->nama,
+                'jenis_kegiatan' => $kegiatan->jenis_kegiatan,
+                'frekuensi_kegiatan' => $kegiatan->frekuensi_kegiatan,
+                'tgl_mulai_pelaksanaan' => $kegiatan->tgl_mulai_pelaksanaan,
+                'tgl_akhir_pelaksanaan' => $kegiatan->tgl_akhir_pelaksanaan,
+                'tgl_mulai_penawaran' => $kegiatan->tgl_mulai_penawaran,
+                'tgl_akhir_penawaran' => $kegiatan->tgl_akhir_penawaran,
+                'honors' => $kegiatan->honors->map(fn($h) => [
+                    'id' => $h->id,
+                    'jabatan' => $h->jabatan,
+                    'jenis_honor' => $h->jenis_honor,
+                    'harga_per_satuan' => (float)$h->harga_per_satuan,
+                    'satuan_honor' => $h->satuan_honor,
+                    'tanggal_akhir_kegiatan' => $h->tanggal_akhir_kegiatan?->toDateString(),
+                    'tanggal_pembayaran_maksimal' => $h->tanggal_pembayaran_maksimal?->toDateString(),
+                ]),
+                'created_at' => $kegiatan->created_at,
+                'updated_at' => $kegiatan->updated_at,
+            ],
+        ]);
+    }
+
+    /**
+     * Update Kegiatan Manmit (perpanjang/ubah tanggal pelaksanaan, nama, tanggal penawaran).
+     * Memvalidasi bahwa rentang pelaksanaan baru tetap mencakup seluruh tanggal akhir honor anak.
+     * Tercatat di ApiAuditLog dan 100% reversible (dapat di-rollback).
+     */
+    public function update(string $id, Request $request): JsonResponse
+    {
+        $kegiatan = KegiatanManmit::with('honors')->find($id);
+
+        if (!$kegiatan) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Kegiatan Manmit dengan ID '{$id}' tidak ditemukan.",
+            ], 404);
+        }
+
+        $request->validate([
+            'nama' => ['nullable', 'string', 'max:255'],
+            'tgl_mulai_pelaksanaan' => ['nullable', 'date'],
+            'tgl_akhir_pelaksanaan' => ['nullable', 'date'],
+            'tgl_mulai_penawaran' => ['nullable', 'date'],
+            'tgl_akhir_penawaran' => ['nullable', 'date'],
+        ]);
+
+        $newStart = $request->input('tgl_mulai_pelaksanaan', $kegiatan->tgl_mulai_pelaksanaan);
+        $newEnd = $request->input('tgl_akhir_pelaksanaan', $kegiatan->tgl_akhir_pelaksanaan);
+
+        if ($newStart && $newEnd && Carbon::parse($newStart)->gt(Carbon::parse($newEnd))) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Tanggal mulai pelaksanaan ({$newStart}) tidak boleh lebih akhir dari tanggal selesai ({$newEnd}).",
+            ], 422);
+        }
+
+        // Cek apakah ada honor yang tanggal akhirnya berada di luar rentang baru
+        if ($newStart && $newEnd) {
+            $startCarbon = Carbon::parse($newStart);
+            $endCarbon = Carbon::parse($newEnd);
+
+            $outOfRangeHonors = $kegiatan->honors()
+                ->whereNotNull('tanggal_akhir_kegiatan')
+                ->where(function ($query) use ($startCarbon, $endCarbon) {
+                    $query->where('tanggal_akhir_kegiatan', '<', $startCarbon->toDateString())
+                          ->orWhere('tanggal_akhir_kegiatan', '>', $endCarbon->toDateString());
+                })
+                ->get();
+
+            if ($outOfRangeHonors->isNotEmpty()) {
+                $roles = $outOfRangeHonors->map(fn($h) => "{$h->jabatan} (" . Carbon::parse($h->tanggal_akhir_kegiatan)->format('d M Y') . ")")->implode(', ');
+                return response()->json([
+                    'status' => 'error',
+                    'message' => "Rentang pelaksanaan baru ({$startCarbon->format('d M Y')} s/d {$endCarbon->format('d M Y')}) tidak mencakup tanggal akhir kegiatan dari honor: {$roles}. Harap sesuaikan tanggal honor terlebih dahulu atau perluas rentang kegiatan.",
+                    'data' => [
+                        'conflicting_honors' => $outOfRangeHonors->map(fn($h) => [
+                            'id' => $h->id,
+                            'jabatan' => $h->jabatan,
+                            'tanggal_akhir_kegiatan' => $h->tanggal_akhir_kegiatan?->toDateString(),
+                        ]),
+                    ],
+                ], 422);
+            }
+        }
+
+        $stateBefore = [
+            'id' => $kegiatan->id,
+            'nama' => $kegiatan->nama,
+            'tgl_mulai_pelaksanaan' => $kegiatan->tgl_mulai_pelaksanaan ? Carbon::parse($kegiatan->tgl_mulai_pelaksanaan)->toDateString() : null,
+            'tgl_akhir_pelaksanaan' => $kegiatan->tgl_akhir_pelaksanaan ? Carbon::parse($kegiatan->tgl_akhir_pelaksanaan)->toDateString() : null,
+            'tgl_mulai_penawaran' => $kegiatan->tgl_mulai_penawaran ? Carbon::parse($kegiatan->tgl_mulai_penawaran)->toDateString() : null,
+            'tgl_akhir_penawaran' => $kegiatan->tgl_akhir_penawaran ? Carbon::parse($kegiatan->tgl_akhir_penawaran)->toDateString() : null,
+        ];
+
+        $updates = [];
+        if ($request->has('nama')) $updates['nama'] = $request->input('nama');
+        if ($request->has('tgl_mulai_pelaksanaan')) $updates['tgl_mulai_pelaksanaan'] = $request->input('tgl_mulai_pelaksanaan');
+        if ($request->has('tgl_akhir_pelaksanaan')) $updates['tgl_akhir_pelaksanaan'] = $request->input('tgl_akhir_pelaksanaan');
+        if ($request->has('tgl_mulai_penawaran')) $updates['tgl_mulai_penawaran'] = $request->input('tgl_mulai_penawaran');
+        if ($request->has('tgl_akhir_penawaran')) $updates['tgl_akhir_penawaran'] = $request->input('tgl_akhir_penawaran');
+
+        $kegiatan->update($updates);
+
+        $stateAfter = array_merge($stateBefore, $updates);
+
+        \App\Services\ApiAuditService::record(
+            request: $request,
+            action: 'UPDATE_KEGIATAN_MANMIT',
+            targetModel: KegiatanManmit::class,
+            targetId: null,
+            stateBefore: $stateBefore,
+            stateAfter: $stateAfter,
+            statusCode: 200,
+            isReversible: true,
+        );
+
+        $fresh = $kegiatan->fresh(['honors']);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "Data Kegiatan Manmit '{$id}' berhasil diperbarui.",
+            'data' => [
+                'id' => $fresh->id,
+                'nama' => $fresh->nama,
+                'tgl_mulai_pelaksanaan' => $fresh->tgl_mulai_pelaksanaan,
+                'tgl_akhir_pelaksanaan' => $fresh->tgl_akhir_pelaksanaan,
+                'tgl_mulai_penawaran' => $fresh->tgl_mulai_penawaran,
+                'tgl_akhir_penawaran' => $fresh->tgl_akhir_penawaran,
+                'updated_fields' => array_keys($updates),
+            ],
+        ]);
+    }
 }

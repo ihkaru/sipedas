@@ -3,9 +3,11 @@
 use App\Http\Controllers\Api\AlokasiHonorApiController;
 use App\Http\Controllers\Api\AuditLogApiController;
 use App\Http\Controllers\Api\DokumenApiController;
+use App\Http\Controllers\Api\HonorApiController;
 use App\Http\Controllers\Api\KegiatanManmitApiController;
 use App\Http\Controllers\Api\MicrositeController;
 use App\Http\Controllers\Api\MitraApiController;
+use App\Http\Controllers\Api\PegawaiApiController;
 use App\Http\Controllers\Api\SkillApiController;
 use Illuminate\Support\Facades\Route;
 
@@ -18,12 +20,24 @@ Route::get('/v1/skill.md', [SkillApiController::class, 'show']);
 
 // Protected REST API routes for Coding Agents & Integrations (Requires API Key)
 Route::prefix('v1')->middleware('api.key')->group(function () {
-    // 1. Discovery & Management Endpoints (Lookup Kegiatan, Honor, Mitra, Migration)
+    // 1. Discovery & Management Endpoints (Lookup Kegiatan, Honor, Mitra, Pegawai, Migration)
     Route::get('/kegiatan-manmit', [KegiatanManmitApiController::class, 'index']);
+    Route::get('/kegiatan-manmit/{id}', [KegiatanManmitApiController::class, 'show']);
+    Route::match(['put', 'patch', 'post'], '/kegiatan-manmit/{id}', [KegiatanManmitApiController::class, 'update']);
     Route::post('/kegiatan-manmit/{id}/rename-id', [KegiatanManmitApiController::class, 'renameId']);
+
+    Route::get('/honors', [HonorApiController::class, 'index']);
+    Route::get('/honors/{id}', [HonorApiController::class, 'show']);
+    Route::match(['put', 'patch', 'post'], '/honors/{id}', [HonorApiController::class, 'update']);
+
     Route::get('/mitras', [MitraApiController::class, 'index']);
     Route::get('/mitras/{id}', [MitraApiController::class, 'show']);
     Route::match(['put', 'patch', 'post'], '/mitras/{id}', [MitraApiController::class, 'update']);
+
+    Route::get('/pegawais', [PegawaiApiController::class, 'index']);
+    Route::post('/pegawais', [PegawaiApiController::class, 'store']);
+    Route::get('/pegawais/{nip}', [PegawaiApiController::class, 'show']);
+    Route::match(['put', 'patch', 'post'], '/pegawais/{nip}', [PegawaiApiController::class, 'update']);
 
     // 2. Alokasi Honor & Automatic SPK/BAST Trigger
     Route::post('/alokasi/check', [AlokasiHonorApiController::class, 'check']);
