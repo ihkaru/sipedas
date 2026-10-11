@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/saml/login', [SamlController::class, 'login'])->name('saml.login');
 Route::match(['get', 'post'], '/saml/acs', [SamlController::class, 'acs'])->name('saml.acs');
 Route::get('/saml/metadata', [SamlController::class, 'metadata'])->name('saml.metadata');
+Route::match(['get', 'post'], '/saml/logout', [SamlController::class, 'logout'])->name('saml.logout');
 Route::match(['get', 'post'], '/saml/sls', [SamlController::class, 'sls'])->name('saml.sls');
 
 Route::get("/run", [ArtisanController::class, "run"]);

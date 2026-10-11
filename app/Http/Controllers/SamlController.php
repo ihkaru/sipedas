@@ -85,6 +85,9 @@ class SamlController extends Controller
             // Login user ke sesi Laravel
             Auth::login($user, remember: true);
             $request->session()->regenerate();
+            $request->session()->put('saml_name_id', $nameId);
+            $request->session()->put('saml_session_index', $auth->getSessionIndex());
+            $request->session()->put('saml_name_id_format', $auth->getNameIdFormat());
 
             // Handle RelayState jika ada
             $relayState = $request->input('RelayState');
@@ -124,6 +127,40 @@ class SamlController extends Controller
     }
 
     /**
+     * Memulai proses Single Logout (SLO) ke rIDM.
+     */
+    public function logout(Request $request)
+    {
+        try {
+            $nameId = $request->session()->get('saml_name_id');
+            $sessionIndex = $request->session()->get('saml_session_index');
+            $nameIdFormat = $request->session()->get('saml_name_id_format');
+
+            $auth = $this->getSamlAuth();
+
+            // Bersihkan sesi lokal Laravel
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            $returnTo = url('/a/login?logged_out=1');
+            $logoutUrl = $auth->logout($returnTo, [], $nameId, $sessionIndex, true, $nameIdFormat);
+            
+            if (!empty($logoutUrl)) {
+                return redirect()->away($logoutUrl);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('SAML Logout Exception: ' . $e->getMessage());
+        }
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/a/login?logged_out=1');
+    }
+
+    /**
      * Single Logout Service (SLS).
      */
     public function sls(Request $request)
@@ -139,6 +176,11 @@ class SamlController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/a/login');
+        $relayState = $request->input('RelayState');
+        if (!empty($relayState) && !str_contains($relayState, '/saml/')) {
+            return redirect()->to($relayState);
+        }
+
+        return redirect('/a/login?logged_out=1');
     }
 }
