@@ -31,7 +31,14 @@ class APanelProvider extends PanelProvider {
             ->id('a')
             ->spa()
             ->path('a')
-            ->login()
+            ->login(\App\Filament\Pages\Auth\Login::class)
+            ->userMenuItems([
+                'security' => \Filament\Navigation\MenuItem::make()
+                    ->label('Keamanan & Ganti Password (SSO)')
+                    ->url('https://auth.dvlpid.my.id/account/security?tenant=bps')
+                    ->icon('heroicon-o-shield-check')
+                    ->openUrlInNewTab(),
+            ])
             // ->font('Inter', provider: SpatieGoogleFontProvider::class)
             ->favicon(asset('favicon.ico'))
             // ->brandLogo(env('APP_URL')."/logo.svg")

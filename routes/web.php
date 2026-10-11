@@ -22,7 +22,7 @@ Route::match(['get', 'post'], '/saml/sls', [SamlController::class, 'sls'])->name
 Route::get("/run", [ArtisanController::class, "run"]);
 Route::get('/clear-all-cache', [ArtisanController::class, 'clearAllCache']);
 Route::view('/', 'welcome');
-Route::get('/login', fn () => redirect('/a/login'))->name('login');
+Route::get('/login', fn () => redirect()->route('saml.login'))->name('login');
 Route::get('/cetak/penugasan/{id}', [PdfController::class, 'cetakPenugasan'])->name("cetak.penugasan");
 Route::get('/cetak/penugasan-bersama/{id}', [PdfController::class, 'cetakPenugasanBersama'])->name("cetak.penugasan-bersama");
 Route::get('/cetak/kontrak', [PdfController::class, 'cetakKontrak'])->name("cetak.kontrak");
