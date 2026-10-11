@@ -115,14 +115,23 @@ class UserResource extends Resource
                             ->title('Gagal melepaskan role kepala satker dari ' . $record->pegawai->nama)
                             ->success();
                     }),
+                Action::make('kelolaKeamananSso')
+                    ->label('Keamanan SSO (rIDM)')
+                    ->icon('heroicon-o-shield-check')
+                    ->color('teal')
+                    ->url('https://auth.dvlpid.my.id/account/security?tenant=bps')
+                    ->openUrlInNewTab()
+                    ->tooltip('Kelola kata sandi terpusat, Passkey, dan 2FA di portal rIDM yang berlaku untuk seluruh aplikasi'),
                 Action::make('gantiPassword')
-                    ->label('Ganti Password')
+                    ->label('Ganti Password Lokal')
+                    ->icon('heroicon-o-key')
                     ->hidden(function (User $record) {
                         return !(auth()->user()->email == $record->email || (auth()->user()->hasRole('operator_umum') && auth()->user()->hasRole('kepala_satker') || auth()->user()->hasRole('super_admin')));
                     })
                     ->form([
                         TextInput::make('password_lama')
                             ->label('Password Lama')
+                            ->helperText('Untuk mengganti password SSO terpadu di semua aplikasi BPS, gunakan portal SSO rIDM.')
                             ->required(),
                         TextInput::make('password_baru')
                             ->label('Password Baru')

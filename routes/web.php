@@ -6,11 +6,18 @@ use App\Http\Controllers\ExcelExportController;
 use App\Http\Controllers\HonorTemplateController;
 use App\Http\Controllers\MitraTemplateController;
 use App\Http\Controllers\PdfController;
+use App\Http\Controllers\SamlController;
 use App\Providers\Filament\APanelProvider;
 use Filament\Http\Middleware\Authenticate;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
+
+// SAML 2.0 SSO Routes (rIDM)
+Route::get('/saml/login', [SamlController::class, 'login'])->name('saml.login');
+Route::match(['get', 'post'], '/saml/acs', [SamlController::class, 'acs'])->name('saml.acs');
+Route::get('/saml/metadata', [SamlController::class, 'metadata'])->name('saml.metadata');
+Route::match(['get', 'post'], '/saml/sls', [SamlController::class, 'sls'])->name('saml.sls');
 
 Route::get("/run", [ArtisanController::class, "run"]);
 Route::get('/clear-all-cache', [ArtisanController::class, 'clearAllCache']);

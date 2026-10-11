@@ -74,6 +74,22 @@ class APanelProvider extends PanelProvider {
                 fn (): string => \Illuminate\Support\Facades\Blade::render("@vite(['resources/css/app.css', 'resources/js/filament-chart-js-plugins.js'])")
             )
             ->renderHook(
+                \Filament\View\PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
+                fn (): string => '
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; text-align: center;">
+                        <div style="margin-bottom: 0.75rem; font-size: 0.75rem; text-transform: uppercase; color: #6b7280; font-weight: 500;">
+                            Atau Masuk Terpadu
+                        </div>
+                        <a href="' . route('saml.login') . '" style="display: flex; align-items: center; justify-content: center; width: 100%; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 600; color: #ffffff; background-color: #0f766e; border-radius: 0.5rem; text-decoration: none; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: background-color 0.2s;" onmouseover="this.style.backgroundColor=\'#115e59\'" onmouseout="this.style.backgroundColor=\'#0f766e\'">
+                            <svg style="width: 1.25rem; height: 1.25rem; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                            </svg>
+                            Masuk dengan SSO BPS (SAML 2.0)
+                        </a>
+                    </div>
+                '
+            )
+            ->renderHook(
                 \Filament\View\PanelsRenderHook::SCRIPTS_AFTER,
                 fn (): string => '<script>
                     if (window.location.protocol === "https:" && window.livewireScriptConfig) {

@@ -29,6 +29,7 @@
         "malzariey/filament-daterangepicker-filter": "^5.0",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.0|^9.0",
+        "onelogin/php-saml": "^4.3",
         "phpunit/phpunit": "^11.3|^12.0",
         "revolution/laravel-google-sheets": "^7.0",
         "riskihajar/terbilang": "^2.0",
