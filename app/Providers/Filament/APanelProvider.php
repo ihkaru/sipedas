@@ -30,6 +30,11 @@ class APanelProvider extends PanelProvider {
             ->default()
             ->id('a')
             ->spa()
+            ->spaUrlExceptions([
+                '*/saml/*',
+                '*/cetak/*',
+                '*/download/*',
+            ])
             ->path('a')
             ->login(\App\Filament\Pages\Auth\Login::class)
             ->userMenuItems([
