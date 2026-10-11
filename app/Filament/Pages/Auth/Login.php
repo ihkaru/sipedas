@@ -48,7 +48,7 @@ class Login extends BaseLogin
         if (request()->has('local')) {
             return new HtmlString(
                 'Mode darurat menggunakan akun database lokal.<br>' .
-                '<span class="text-xs text-gray-500 dark:text-gray-400"><a href="' . route('saml.login') . '" class="underline text-primary-600 dark:text-primary-400">&larr; Masuk via SSO BPS</a></span>'
+                '<span class="text-xs text-gray-500 dark:text-gray-400"><a href="' . route('saml.login') . '" class="underline text-primary-600 dark:text-primary-400">&larr; Masuk via SSO BPS Mempawah</a></span>'
             );
         }
 
@@ -70,7 +70,7 @@ class Login extends BaseLogin
         if (!request()->has('local')) {
             return [
                 Action::make('saml_login')
-                    ->label('Masuk dengan SSO BPS (SAML 2.0)')
+                    ->label('Masuk dengan SSO BPS Mempawah (SAML 2.0)')
                     ->icon('heroicon-o-arrow-right-end-on-rectangle')
                     ->url(route('saml.login'))
                     ->button()
