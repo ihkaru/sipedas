@@ -70,7 +70,7 @@ class Login extends BaseLogin
         if (!request()->has('local')) {
             return [
                 Action::make('saml_login')
-                    ->label('Masuk dengan Akun BPS (SSO)')
+                    ->label('Masuk dengan SSO BPS (SAML 2.0)')
                     ->icon('heroicon-o-arrow-right-end-on-rectangle')
                     ->url(route('saml.login'))
                     ->button()
