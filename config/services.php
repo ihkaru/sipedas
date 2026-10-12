@@ -39,4 +39,16 @@ return [
         'execution_time_limit' => (int) env('AI_EXECUTION_TIME_LIMIT', 120),
     ],
 
+    'whatsapp' => [
+        'provider' => env('WHATSAPP_PROVIDER', 'aina'),
+        'aina' => [
+            'base_url' => env('WHATSMEOW_BASE_URL', 'https://aina-wa.dvlpid.my.id'),
+            'api_key' => env('WHATSMEOW_API_KEY'),
+        ],
+        'fonnte' => [
+            'token' => env('FONNTE_TOKEN'),
+        ],
+    ],
+
 ];
+
