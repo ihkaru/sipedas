@@ -30,8 +30,20 @@ class APanelProvider extends PanelProvider {
             ->default()
             ->id('a')
             ->spa()
+            ->spaUrlExceptions([
+                '*/saml/*',
+                '*/cetak/*',
+                '*/download/*',
+            ])
             ->path('a')
-            ->login()
+            ->login(\App\Filament\Pages\Auth\Login::class)
+            ->userMenuItems([
+                'security' => \Filament\Navigation\MenuItem::make()
+                    ->label('Keamanan & Ganti Password (SSO)')
+                    ->url('https://auth.dvlpid.my.id/account/security?tenant=bps')
+                    ->icon('heroicon-o-shield-check')
+                    ->openUrlInNewTab(),
+            ])
             // ->font('Inter', provider: SpatieGoogleFontProvider::class)
             ->favicon(asset('favicon.ico'))
             // ->brandLogo(env('APP_URL')."/logo.svg")
@@ -73,6 +85,7 @@ class APanelProvider extends PanelProvider {
                 \Filament\View\PanelsRenderHook::HEAD_END,
                 fn (): string => \Illuminate\Support\Facades\Blade::render("@vite(['resources/css/app.css', 'resources/js/filament-chart-js-plugins.js'])")
             )
+
             ->renderHook(
                 \Filament\View\PanelsRenderHook::SCRIPTS_AFTER,
                 fn (): string => '<script>

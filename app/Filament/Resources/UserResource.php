@@ -115,34 +115,13 @@ class UserResource extends Resource
                             ->title('Gagal melepaskan role kepala satker dari ' . $record->pegawai->nama)
                             ->success();
                     }),
-                Action::make('gantiPassword')
-                    ->label('Ganti Password')
-                    ->hidden(function (User $record) {
-                        return !(auth()->user()->email == $record->email || (auth()->user()->hasRole('operator_umum') && auth()->user()->hasRole('kepala_satker') || auth()->user()->hasRole('super_admin')));
-                    })
-                    ->form([
-                        TextInput::make('password_lama')
-                            ->label('Password Lama')
-                            ->required(),
-                        TextInput::make('password_baru')
-                            ->label('Password Baru')
-                            ->required(),
-                        TextInput::make('konfirmasi_password_baru')
-                            ->label('Konfirmasi Password Baru')
-                            ->lazy()
-                            ->required()
-                    ])
-                    ->action(function (User $record, array $data) {
-
-                        if ($data['password_baru'] == $data["konfirmasi_password_baru"] && $record->updatePassword($data['password_lama'], $data['password_baru'])) {
-                            Notification::make()
-                                ->title('Sukses mengganti password user ' . $record->pegawai->nama)
-                                ->success();
-                        };
-                        Notification::make()
-                            ->title('Gagal mengganti password. Silakan cek kembali password yang diinput')
-                            ->danger();
-                    }),
+                Action::make('kelolaKeamananSso')
+                    ->label('Ganti Password di SSO')
+                    ->icon('heroicon-o-shield-check')
+                    ->color('teal')
+                    ->url('https://auth.dvlpid.my.id/account/security?tenant=bps')
+                    ->openUrlInNewTab()
+                    ->tooltip('Ganti kata sandi terpusat, Passkey, dan 2FA di portal rIDM yang berlaku untuk seluruh aplikasi BPS'),
 
             ])
             ->bulkActions([

@@ -28,6 +28,12 @@ class AppServiceProvider extends ServiceProvider
         if (!enum_exists('Filament\Tables\Enums\RecordActionsPosition') && enum_exists('Filament\Tables\Enums\ActionsPosition')) {
             class_alias('Filament\Tables\Enums\ActionsPosition', 'Filament\Tables\Enums\RecordActionsPosition');
         }
+
+        // Custom Filament Logout Response -> Arahkan ke SAML Single Logout (rIDM)
+        $this->app->singleton(
+            \Filament\Auth\Http\Responses\Contracts\LogoutResponse::class,
+            \App\Http\Responses\LogoutResponse::class
+        );
     }
 
     /**
