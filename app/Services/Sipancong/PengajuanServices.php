@@ -463,7 +463,7 @@ class PengajuanServices {
 
         $targetWa = self::getWhatsappTargetNumber($userPpk->pegawai?->nomor_wa);
         if ($targetWa) {
-            WhatsappNotifier::send($targetWa, $message);
+            WhatsappNotifier::send($targetWa, $message, 'whatsapp_notify_pengajuan_baru');
         }
     }
 
@@ -532,7 +532,7 @@ class PengajuanServices {
         $targetWa = self::getWhatsappTargetNumber($originalTargetWa);
         if ($targetWa) {
             $message = "*Tanggapan Pengaju | DOKTER-V* \n\nHalo, *$pemeriksa*,\nPengajuan dengan uraian '{$record->uraian_pengajuan}' sudah ditanggapi oleh *$pengaju*.\n\nHasil pemeriksaanmu sebelumnya:\n\"*$catatanSebelumnya*\"\n\nTanggapan dari *$pengaju*:\n\"*$tanggapanPengaju*\"\n\nSilakan periksa kembali dan lanjutkan proses dengan *Aksi $jabatan* di link berikut:\n\n$link\n\nSemangat!";
-            WhatsappNotifier::send($targetWa, $message);
+            WhatsappNotifier::send($targetWa, $message, 'whatsapp_notify_tanggapan_pengaju');
         }
     }
 
@@ -637,7 +637,7 @@ class PengajuanServices {
 
         $targetWa = self::getWhatsappTargetNumber($originalTargetWa);
         if ($targetWa && $message) {
-            WhatsappNotifier::send($targetWa, $message);
+            WhatsappNotifier::send($targetWa, $message, 'whatsapp_notify_hasil_pemeriksaan');
         }
     }
 
@@ -676,7 +676,7 @@ class PengajuanServices {
         $targetWa = self::getWhatsappTargetNumber($originalTargetWa);
         if ($targetWa) {
             $message = "*Pengajuan Cair! | DOKTER-V* \n \nHalo, *$namaPengaju*,\nPengajuanmu dengan uraian '$uraian' sebesar *$nominal* sudah dicairkan oleh Bendahara!\n\nTerima kasih sudah menggunakan Dokter-V untuk memperlancar proses pembayaran ini.\n\nSemangat!!";
-            WhatsappNotifier::send($targetWa, $message);
+            WhatsappNotifier::send($targetWa, $message, 'whatsapp_notify_pencairan');
         }
     }
 

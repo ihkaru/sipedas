@@ -2,12 +2,15 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\Pegawai;
 use App\Models\Setting;
 use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -27,19 +30,72 @@ class Pengaturan extends Page implements HasForms
     public function mount(): void
     {
         $settings = Setting::pluck('value', 'key')->all();
+        $rawOptOut = $settings['whatsapp_opt_out_numbers'] ?? '[]';
+        $optOutNumbers = is_array($rawOptOut) ? $rawOptOut : (json_decode($rawOptOut, true) ?? []);
+
         // Pastikan nilai default ada jika key belum ada di DB
         $this->form->fill([
-            'ppk_instant_auto_approve' => $settings['ppk_instant_auto_approve'] ?? false,
+            'ppk_instant_auto_approve' => (bool) ($settings['ppk_instant_auto_approve'] ?? false),
             'ppk_auto_approve_days' => $settings['ppk_auto_approve_days'] ?? 0,
             'STANDAR_BIAYA_MASUKAN_LAINNYA_NON_PNS_OB_PETUGAS_PENDATAAN_LAPANGAN_SENSUS' => $settings['STANDAR_BIAYA_MASUKAN_LAINNYA_NON_PNS_OB_PETUGAS_PENDATAAN_LAPANGAN_SENSUS'] ?? 4694000,
             'STANDAR_BIAYA_MASUKAN_LAINNYA_NON_PNS_OB_PETUGAS_PENDATAAN_LAPANGAN_SURVEI' => $settings['STANDAR_BIAYA_MASUKAN_LAINNYA_NON_PNS_OB_PETUGAS_PENDATAAN_LAPANGAN_SURVEI'] ?? 3353000,
             'allow_weekend_travel' => (bool) ($settings['allow_weekend_travel'] ?? false),
+            'whatsapp_notification_enabled' => isset($settings['whatsapp_notification_enabled']) ? (bool) $settings['whatsapp_notification_enabled'] : true,
+            'whatsapp_notify_pengajuan_baru' => isset($settings['whatsapp_notify_pengajuan_baru']) ? (bool) $settings['whatsapp_notify_pengajuan_baru'] : true,
+            'whatsapp_notify_tanggapan_pengaju' => isset($settings['whatsapp_notify_tanggapan_pengaju']) ? (bool) $settings['whatsapp_notify_tanggapan_pengaju'] : true,
+            'whatsapp_notify_hasil_pemeriksaan' => isset($settings['whatsapp_notify_hasil_pemeriksaan']) ? (bool) $settings['whatsapp_notify_hasil_pemeriksaan'] : true,
+            'whatsapp_notify_pencairan' => isset($settings['whatsapp_notify_pencairan']) ? (bool) $settings['whatsapp_notify_pencairan'] : true,
+            'whatsapp_opt_out_numbers' => $optOutNumbers,
         ]);
     }
 
     public function form(Schema $schema): Schema
     {
         return $schema->schema([
+                Section::make('Notifikasi WhatsApp')
+                    ->description('Pengaturan notifikasi pesan otomatis ke WhatsApp pegawai melalui Gateway Aina.')
+                    ->schema([
+                        Toggle::make('whatsapp_notification_enabled')
+                            ->label('Aktifkan Notifikasi WhatsApp (Master Switch)')
+                            ->helperText('Jika dinonaktifkan, seluruh pengiriman notifikasi WhatsApp dari sistem Dokter V akan dihentikan.')
+                            ->live(),
+
+                        Select::make('whatsapp_opt_out_numbers')
+                            ->label('Daftar Pegawai yang Opt-Out (Mengecualikan Notifikasi)')
+                            ->helperText('Pilih pegawai yang tidak ingin menerima pesan notifikasi WhatsApp dari sistem Dokter V.')
+                            ->multiple()
+                            ->searchable()
+                            ->preload()
+                            ->options(fn () => Pegawai::whereNotNull('nomor_wa')->orderBy('nama')->pluck('nama', 'nomor_wa')->toArray())
+                            ->visible(fn (Get $get) => (bool) $get('whatsapp_notification_enabled'))
+                            ->live(),
+
+                        Section::make('Filter Jenis Notifikasi')
+                            ->description('Atur jenis event pengajuan yang memicu pengiriman pesan WhatsApp.')
+                            ->compact()
+                            ->schema([
+                                Toggle::make('whatsapp_notify_pengajuan_baru')
+                                    ->label('Pengajuan Baru (ke PPK)')
+                                    ->helperText('Kirim WhatsApp ke PPK saat ada pengajuan baru diajukan.')
+                                    ->live(),
+
+                                Toggle::make('whatsapp_notify_tanggapan_pengaju')
+                                    ->label('Tanggapan Pengaju (ke Pemeriksa)')
+                                    ->helperText('Kirim WhatsApp ke pemeriksa saat pengaju menanggapi revisi.')
+                                    ->live(),
+
+                                Toggle::make('whatsapp_notify_hasil_pemeriksaan')
+                                    ->label('Hasil Pemeriksaan / Aksi Pejabat')
+                                    ->helperText('Kirim WhatsApp status disetujui / ditolak ke pihak terkait.')
+                                    ->live(),
+
+                                Toggle::make('whatsapp_notify_pencairan')
+                                    ->label('Pencairan Dana (oleh Bendahara)')
+                                    ->helperText('Kirim WhatsApp ke pengaju saat pembayaran berhasil dicairkan.')
+                                    ->live(),
+                            ])
+                            ->visible(fn (Get $get) => (bool) $get('whatsapp_notification_enabled')),
+                    ]),
                 Section::make('Otomatisasi PPK')
                     ->description('Perubahan pada pengaturan ini akan langsung disimpan secara otomatis.')
                     ->schema([
@@ -92,11 +148,12 @@ class Pengaturan extends Page implements HasForms
      */
     public function updatedData($value, string $key): void
     {
-        // $key akan menjadi 'ppk_instant_auto_approve' atau 'ppk_auto_approve_days'
         // Simpan hanya satu key yang berubah untuk efisiensi.
+        $storedValue = is_array($value) ? json_encode(array_values($value)) : $value;
+
         Setting::updateOrCreate(
             ['key' => $key],
-            ['value' => $value]
+            ['value' => $storedValue]
         );
 
         // Beri notifikasi visual bahwa data sudah tersimpan
