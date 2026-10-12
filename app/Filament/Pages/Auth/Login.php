@@ -7,9 +7,13 @@ use Filament\Auth\Pages\Login as BaseLogin;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\HtmlString;
+use Livewire\Attributes\Layout;
 
+#[Layout('filament-panels::components.layout.simple')]
 class Login extends BaseLogin
 {
+    protected static string $layout = 'filament-panels::components.layout.simple';
+
     public function mount(): void
     {
         parent::mount();
