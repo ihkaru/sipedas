@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class Honor extends Model
 {
@@ -48,6 +49,13 @@ class Honor extends Model
             // Generate composite ID jika belum ada
             if (empty($model->id)) {
                 $model->id = Str::upper($model->kegiatan_manmit_id . '-' . $model->jabatan . '-' . $model->jenis_honor);
+            }
+
+            // Validasi duplikasi primary key sebelum insert ke database
+            if (static::where('id', $model->id)->exists()) {
+                throw ValidationException::withMessages([
+                    'jenis_honor' => ["Honor dengan ID '{$model->id}' sudah terdaftar di sistem."],
+                ]);
             }
         });
 
