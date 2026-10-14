@@ -23,6 +23,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification; // Untuk notifikasi
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Support\Str;
 
 class HonorResource extends Resource
 {
@@ -54,7 +55,26 @@ class HonorResource extends Resource
 
                         TextInput::make('jenis_honor')
                             ->datalist(Constants::JENIS_HONOR_OPTIONS)
-                            ->required(),
+                            ->required()
+                            ->live(onBlur: true)
+                            ->rules([
+                                function (Get $get, ?Honor $record) {
+                                    return function (string $attribute, $value, \Closure $fail) use ($get, $record) {
+                                        $kegiatanId = $get('kegiatan_manmit_id');
+                                        $jabatan = $get('jabatan');
+                                        if (!$kegiatanId || !$jabatan || !$value) return;
+
+                                        $computedId = Str::upper(trim($kegiatanId) . '-' . trim($jabatan) . '-' . trim($value));
+                                        $query = Honor::where('id', $computedId);
+                                        if ($record) {
+                                            $query->where('id', '!=', $record->id);
+                                        }
+                                        if ($query->exists()) {
+                                            $fail("Honor dengan ID '{$computedId}' sudah terdaftar di sistem. Gunakan kombinasi kegiatan, jabatan, atau jenis honor yang berbeda.");
+                                        }
+                                    };
+                                }
+                            ]),
 
                         Select::make('satuan_honor')
                             ->options(Constants::SATUAN_HONOR_OPTIONS)
