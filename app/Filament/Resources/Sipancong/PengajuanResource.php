@@ -314,6 +314,19 @@ class PengajuanResource extends Resource
         ];
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with([
+            'posisiDokumen',
+            'penanggungJawab',
+            'pegawai',
+            'statusPengajuanPpk',
+            'statusPengajuanPpspm',
+            'statusPengajuanBendahara',
+            'statusPembayaran',
+        ]);
+    }
+
     public static function getRelations(): array
     {
         return [];

@@ -273,6 +273,7 @@ class ListPengajuans extends ListRecords {
                 ->icon("heroicon-o-check-badge")
                 ->color("warning")
                 ->button()
+                ->visible(fn(): bool => auth()->user()?->hasAnyRole(["super_admin", "Admin", "ppk", "ppspm", "bendahara"]))
         ];
     }
 
