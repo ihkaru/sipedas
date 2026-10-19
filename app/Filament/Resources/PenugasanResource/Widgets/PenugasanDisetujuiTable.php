@@ -32,8 +32,8 @@ class PenugasanDisetujuiTable extends BaseWidget
     protected int | string | array $columnSpan = 'full';
     protected static $resource = PenugasanResource::class;
 
-
-    public function canViewAny(): bool {
+    public function canViewAny(): bool
+    {
         return true;
     }
 
@@ -48,13 +48,29 @@ class PenugasanDisetujuiTable extends BaseWidget
                     Constants::STATUS_PENGAJUAN_DICAIRKAN,
                 ]);
             })
-            ->with(['riwayatPengajuan', 'pegawai', 'mitra', 'kegiatan', 'suratTugas'])
+            ->with([
+                'riwayatPengajuan',
+                'pegawai',
+                'mitra',
+                'kegiatan',
+                'suratTugas',
+                'tujuanSuratTugas.provinsi',
+                'tujuanSuratTugas.kabkot',
+                'tujuanSuratTugas.kecamatan',
+                'tujuanSuratTugas.desa',
+                'satuSurat.riwayatPengajuan',
+            ])
             ->orderBy('tgl_mulai_tugas', 'desc');
     }
+
     public function table(Table $table): Table
     {
-        $table = PenugasanResource::table($table);
         return $table
+            ->query(
+                $this->getTableQuery()->latest('penugasans.created_at')
+            )
+            ->defaultPaginationPageOption(10)
+            ->paginationPageOptions([5, 10, 25])
             ->headerActions([
                 Action::make('export_excel')
                     ->label('Export Excel')
@@ -69,9 +85,6 @@ class PenugasanDisetujuiTable extends BaseWidget
                         );
                     }),
             ])
-            ->query(
-                $this->getTableQuery()->latest('penugasans.created_at')
-            )
             ->columns([
                 TextColumn::make('tertugas')
                     ->label("Tertugas")
@@ -103,11 +116,21 @@ class PenugasanDisetujuiTable extends BaseWidget
                     ->color('success')
                     ->icon('fluentui-arrow-download-48')
                     ->url(function (Penugasan $record) {
-                        $record->cetak();
-                        if($record->suratTugasBersamaDisetujui()->count()>1){
-                            return route("cetak.penugasan-bersama",['id'=>$record->id]);
+                        $isBersama = $record->surat_tugas_id && (
+                            $record->relationLoaded('satuSurat')
+                                ? $record->satuSurat->filter(fn ($p) => in_array($p->riwayatPengajuan?->status, [
+                                    Constants::STATUS_PENGAJUAN_DISETUJUI,
+                                    Constants::STATUS_PENGAJUAN_DICETAK,
+                                    Constants::STATUS_PENGAJUAN_DIKUMPULKAN,
+                                    Constants::STATUS_PENGAJUAN_DICAIRKAN,
+                                ]))->count() > 1
+                                : $record->isSuratTugasBersama()
+                        );
+
+                        if ($isBersama) {
+                            return route("cetak.penugasan-bersama", ['id' => $record->id]);
                         }
-                        return route("cetak.penugasan",['id'=>$record->id]);
+                        return route("cetak.penugasan", ['id' => $record->id]);
                     })
                     ->openUrlInNewTab(),
                 Action::make("lihat")
@@ -115,27 +138,28 @@ class PenugasanDisetujuiTable extends BaseWidget
                     ->disabledForm()
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel("Close")
-                    ->mountUsing(function ($form, Penugasan $record){
-                        // dd($record->jenis_peserta);
-                        $pegawais = Pegawai::whereIn('nip',Penugasan::find($record->id)->satuSurat()->whereHas('riwayatPengajuan',function($query){$query->where('status',Constants::STATUS_PENGAJUAN_DISETUJUI);})->pluck('nip'));
-                        $mitras = Mitra::whereIn('id_sobat',Penugasan::find($record->id)->satuSurat()->whereHas('riwayatPengajuan',function($query){$query->where('status',Constants::STATUS_PENGAJUAN_DISETUJUI);})->pluck('id_sobat'));
+                    ->mountUsing(function ($form, Penugasan $record) {
+                        $pegawais = Pegawai::whereIn('nip', $record->satuSurat()->whereHas('riwayatPengajuan', function ($query) {
+                            $query->where('status', Constants::STATUS_PENGAJUAN_DISETUJUI);
+                        })->pluck('nip'));
+                        $mitras = Mitra::whereIn('id_sobat', $record->satuSurat()->whereHas('riwayatPengajuan', function ($query) {
+                            $query->where('status', Constants::STATUS_PENGAJUAN_DISETUJUI);
+                        })->pluck('id_sobat'));
                         $form->fill([
                             ...$record->toArray(),
                             ...[
-                                "nama_pegawai"=>$pegawais->pluck('nip'),
-                                "nama_mitra"=>$mitras->pluck('id_sobat'),
-                                "prov_ids"=>$record->tujuanSuratTugas->pluck('prov_id'),
-                                "kabkot_ids"=>$record->tujuanSuratTugas->pluck('kabkot_id'),
-                                "kecamatan_ids"=>$record->tujuanSuratTugas->pluck('kecamatan_id'),
-                                "desa_kel_ids"=>$record->tujuanSuratTugas->pluck('desa_kel_id'),
-                                "id"=>$record->id,
-                                // "jenis_peserta"=>$record->jenis_peserta,
-                                "catatan_butuh_perbaikan"=>$record->riwayatPengajuan?->catatan_butuh_perbaikan
-                                ]
+                                "nama_pegawai" => $pegawais->pluck('nip'),
+                                "nama_mitra" => $mitras->pluck('id_sobat'),
+                                "prov_ids" => $record->tujuanSuratTugas->pluck('prov_id'),
+                                "kabkot_ids" => $record->tujuanSuratTugas->pluck('kabkot_id'),
+                                "kecamatan_ids" => $record->tujuanSuratTugas->pluck('kecamatan_id'),
+                                "desa_kel_ids" => $record->tujuanSuratTugas->pluck('desa_kel_id'),
+                                "id" => $record->id,
+                                "catatan_butuh_perbaikan" => $record->riwayatPengajuan?->catatan_butuh_perbaikan,
+                            ],
                         ]);
                     })
-                    ->form(self::$resource::formLihatPengajuan())
-                ,
+                    ->form(self::$resource::formLihatPengajuan()),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
@@ -153,8 +177,5 @@ class PenugasanDisetujuiTable extends BaseWidget
                         ->deselectRecordsAfterCompletion(),
                 ]),
             ]);
-
-            ;
-
     }
 }
