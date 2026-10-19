@@ -916,31 +916,27 @@ class PenugasanResource extends Resource
                         Select::make("prov_id")
                             ->label("Provinsi")
                             ->disabled()
-                            ->relationship('provinsi', 'prov_id')
+                            ->options(fn () => MasterSls::pluck('provinsi', 'prov_id'))
                             ->searchDebounce(100)
-                            ->getOptionLabelFromRecordUsing(fn(MasterSls $record) => $record->provinsi)
-                            ->searchable(['provinsi']),
+                            ->searchable(),
                         Select::make("kabkot_id")
                             ->disabled()
                             ->label("Kabupaten/Kota")
-                            ->relationship('kabkot', 'kabkot_id')
+                            ->options(fn () => MasterSls::pluck('kabkot', 'kabkot_id'))
                             ->searchDebounce(100)
-                            ->getOptionLabelFromRecordUsing(fn(MasterSls $record) => $record->kabkot)
-                            ->searchable(['kabkot']),
+                            ->searchable(),
                         Select::make("kecamatan_id")
                             ->disabled()
                             ->label("Kecamatan")
-                            ->relationship('kecamatan', 'kec_id')
+                            ->options(fn () => MasterSls::pluck('kecamatan', 'kec_id'))
                             ->searchDebounce(100)
-                            ->getOptionLabelFromRecordUsing(fn(MasterSls $record) => $record->kecamatan)
-                            ->searchable(['kecamatan']),
+                            ->searchable(),
                         Select::make("desa_kel_id")
                             ->label("Desa/Kelurahan")
                             ->disabled()
-                            ->relationship('desa', 'desa_kel_id')
+                            ->options(fn () => MasterSls::pluck('desa_kel', 'desa_kel_id'))
                             ->searchDebounce(100)
-                            ->getOptionLabelFromRecordUsing(fn(MasterSls $record) => $record->desa_kel)
-                            ->searchable(['desa_kel']),
+                            ->searchable(),
                         Select::make("transportasi")
                             ->options(
                                 Constants::JENIS_TRANSPORTASI_OPTIONS
@@ -1012,30 +1008,50 @@ class PenugasanResource extends Resource
                         Select::make("prov_id")
                             ->label("Provinsi")
                             ->required()
-                            ->relationship('provinsi', 'prov_id')
+                            ->live()
+                            ->afterStateUpdated(function (Set $set) {
+                                $set('kabkot_id', null);
+                                $set('kecamatan_id', null);
+                                $set('desa_kel_id', null);
+                            })
+                            ->options(fn () => MasterSls::pluck('provinsi', 'prov_id'))
                             ->searchDebounce(100)
-                            ->getOptionLabelFromRecordUsing(fn(MasterSls $record) => $record->provinsi)
-                            ->searchable(['provinsi']),
+                            ->searchable(),
                         Select::make("kabkot_id")
                             ->required()
                             ->label("Kabupaten/Kota")
-                            ->relationship('kabkot', 'kabkot_id')
+                            ->live()
+                            ->afterStateUpdated(function (Set $set) {
+                                $set('kecamatan_id', null);
+                                $set('desa_kel_id', null);
+                            })
+                            ->options(function (Get $get) {
+                                return MasterSls::when($get('prov_id'), fn ($q, $prov) => $q->where('prov_id', $prov))
+                                    ->pluck('kabkot', 'kabkot_id');
+                            })
                             ->searchDebounce(100)
-                            ->getOptionLabelFromRecordUsing(fn(MasterSls $record) => $record->kabkot)
-                            ->searchable(['kabkot']),
+                            ->searchable(),
                         Select::make("kecamatan_id")
                             ->required()
                             ->label("Kecamatan")
-                            ->relationship('kecamatan', 'kec_id')
+                            ->live()
+                            ->afterStateUpdated(function (Set $set) {
+                                $set('desa_kel_id', null);
+                            })
+                            ->options(function (Get $get) {
+                                return MasterSls::when($get('kabkot_id'), fn ($q, $kabkot) => $q->where('kabkot_id', $kabkot))
+                                    ->pluck('kecamatan', 'kec_id');
+                            })
                             ->searchDebounce(100)
-                            ->getOptionLabelFromRecordUsing(fn(MasterSls $record) => $record->kecamatan)
-                            ->searchable(['kecamatan']),
+                            ->searchable(),
                         Select::make("desa_kel_id")
                             ->label("Desa/Kelurahan")
-                            ->relationship('desa', 'desa_kel_id')
+                            ->options(function (Get $get) {
+                                return MasterSls::when($get('kecamatan_id'), fn ($q, $kec) => $q->where('kec_id', $kec))
+                                    ->pluck('desa_kel', 'desa_kel_id');
+                            })
                             ->searchDebounce(100)
-                            ->getOptionLabelFromRecordUsing(fn(MasterSls $record) => $record->desa_kel)
-                            ->searchable(['desa_kel']),
+                            ->searchable(),
                         Select::make("transportasi")
                             ->options(
                                 Constants::JENIS_TRANSPORTASI_OPTIONS
