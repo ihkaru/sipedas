@@ -74,4 +74,41 @@ class PenugasanDisetujuiTableOptimizationTest extends TestCase
             'PDF action URL generator must never call $record->cetak() because it runs on every row render and mutates database'
         );
     }
+
+    public function test_penugasan_disetujui_export_implements_column_widths_and_not_autosize(): void
+    {
+        $export = new \App\Exports\PenugasanDisetujuiExport();
+
+        $this->assertInstanceOf(\Maatwebsite\Excel\Concerns\WithColumnWidths::class, $export);
+        $this->assertNotInstanceOf(\Maatwebsite\Excel\Concerns\ShouldAutoSize::class, $export);
+
+        $widths = $export->columnWidths();
+        $this->assertArrayHasKey('A', $widths);
+        $this->assertArrayHasKey('G', $widths);
+        $this->assertArrayHasKey('Q', $widths);
+    }
+
+    public function test_penugasan_disetujui_export_has_comprehensive_eager_loading_and_timeout_protection(): void
+    {
+        $fileContent = file_get_contents(app_path('Exports/PenugasanDisetujuiExport.php'));
+
+        $this->assertStringContainsString('tujuanSuratTugas.desa', $fileContent);
+        $this->assertStringContainsString('tujuanSuratTugas.kecamatan', $fileContent);
+        $this->assertStringContainsString('tujuanSuratTugas.kabkot', $fileContent);
+        $this->assertStringContainsString('tujuanSuratTugas.provinsi', $fileContent);
+        $this->assertStringContainsString('set_time_limit(300)', $fileContent);
+    }
+
+    public function test_combiner_tujuan_does_not_execute_unindexed_collection_where(): void
+    {
+        $fileContent = file_get_contents(app_path('Models/TujuanSuratTugas.php'));
+
+        $this->assertStringNotContainsString(
+            '$masterSls->where(',
+            $fileContent,
+            'combinerTujuan must not perform O(N) unindexed $masterSls->where() scans that cause 30s timeout'
+        );
+        $this->assertStringContainsString('relationLoaded', $fileContent);
+        $this->assertStringContainsString('keyBy', $fileContent);
+    }
 }
