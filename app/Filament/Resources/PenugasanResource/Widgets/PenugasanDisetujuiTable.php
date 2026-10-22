@@ -77,6 +77,8 @@ class PenugasanDisetujuiTable extends BaseWidget
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('success')
                     ->action(function () {
+                        @ini_set('max_execution_time', '300');
+                        @set_time_limit(300);
                         $query = $this->getFilteredTableQuery();
                         $filename = 'Surat_Tugas_Disetujui_' . date('Y-m-d_His') . '.xlsx';
                         return Excel::download(

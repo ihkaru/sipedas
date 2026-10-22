@@ -93,14 +93,64 @@ class TujuanSuratTugas extends Model
 
 
     }
-    public static function combinerTujuan($data,$masterSls){
+    public static function combinerTujuan($data, $masterSls = null){
+        static $cachedByKabkot = null;
+        static $cachedByKec = null;
+        static $cachedByDesa = null;
+
         $res = "";
         foreach ($data as $d) {
-            if($d['level_tujuan_penugasan'] == Constants::LEVEL_PENUGASAN_NAMA_TEMPAT) return ucwords(strtolower($d->nama_tempat_tujuan));
-            if($d['level_tujuan_penugasan'] == Constants::LEVEL_PENUGASAN_KABUPATEN_KOTA) $res=$res.", ".ucwords(strtolower($masterSls->where('kabkot_id',$d['kabkot_id'])->first()->kabkot));
-            if($d['level_tujuan_penugasan'] == Constants::LEVEL_PENUGASAN_KECAMATAN) $res=$res.", ".ucwords(strtolower($masterSls->where('kec_id',$d['kecamatan_id'])->first()->kecamatan));
-            if($d['level_tujuan_penugasan'] == Constants::LEVEL_PENUGASAN_DESA_KELURAHAN) $res=$res.", ".ucwords(strtolower($masterSls->where('desa_kel_id',$d['desa_kel_id'])->first()->desa_kel));
+            $level = is_array($d) ? ($d['level_tujuan_penugasan'] ?? null) : ($d->level_tujuan_penugasan ?? null);
+
+            if ($level == Constants::LEVEL_PENUGASAN_NAMA_TEMPAT) {
+                $nama = is_array($d) ? ($d['nama_tempat_tujuan'] ?? '') : ($d->nama_tempat_tujuan ?? '');
+                return ucwords(strtolower((string) $nama));
+            }
+
+            if ($level == Constants::LEVEL_PENUGASAN_KABUPATEN_KOTA) {
+                $kabkotId = is_array($d) ? ($d['kabkot_id'] ?? null) : ($d->kabkot_id ?? null);
+                $kabkotName = null;
+                if (!is_array($d) && $d->relationLoaded('kabkot') && $d->kabkot) {
+                    $kabkotName = $d->kabkot->kabkot;
+                } elseif ($masterSls) {
+                    if ($cachedByKabkot === null) {
+                        $cachedByKabkot = $masterSls->keyBy('kabkot_id');
+                    }
+                    $kabkotName = $cachedByKabkot[$kabkotId]->kabkot ?? null;
+                }
+                if ($kabkotName) {
+                    $res .= ", " . ucwords(strtolower((string) $kabkotName));
+                }
+            } elseif ($level == Constants::LEVEL_PENUGASAN_KECAMATAN) {
+                $kecId = is_array($d) ? ($d['kecamatan_id'] ?? null) : ($d->kecamatan_id ?? null);
+                $kecName = null;
+                if (!is_array($d) && $d->relationLoaded('kecamatan') && $d->kecamatan) {
+                    $kecName = $d->kecamatan->kecamatan;
+                } elseif ($masterSls) {
+                    if ($cachedByKec === null) {
+                        $cachedByKec = $masterSls->keyBy('kec_id');
+                    }
+                    $kecName = $cachedByKec[$kecId]->kecamatan ?? null;
+                }
+                if ($kecName) {
+                    $res .= ", " . ucwords(strtolower((string) $kecName));
+                }
+            } elseif ($level == Constants::LEVEL_PENUGASAN_DESA_KELURAHAN) {
+                $desaId = is_array($d) ? ($d['desa_kel_id'] ?? null) : ($d->desa_kel_id ?? null);
+                $desaName = null;
+                if (!is_array($d) && $d->relationLoaded('desa') && $d->desa) {
+                    $desaName = $d->desa->desa_kel;
+                } elseif ($masterSls) {
+                    if ($cachedByDesa === null) {
+                        $cachedByDesa = $masterSls->keyBy('desa_kel_id');
+                    }
+                    $desaName = $cachedByDesa[$desaId]->desa_kel ?? null;
+                }
+                if ($desaName) {
+                    $res .= ", " . ucwords(strtolower((string) $desaName));
+                }
+            }
         }
-        return ltrim($res,", ");
+        return ltrim($res, ", ");
     }
 }
