@@ -8,32 +8,50 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class PenugasanDisetujuiExport implements FromCollection, WithHeadings, ShouldAutoSize, WithMapping, WithStyles, WithTitle
+class PenugasanDisetujuiExport implements FromCollection, WithHeadings, WithColumnWidths, WithMapping, WithStyles, WithTitle
 {
     protected Builder|Collection|null $queryOrRecords;
     protected int $rowNumber = 0;
 
     public function __construct(Builder|Collection|null $queryOrRecords = null)
     {
+        @ini_set('max_execution_time', '300');
+        @set_time_limit(300);
         $this->queryOrRecords = $queryOrRecords;
     }
 
     public function collection(): Collection
     {
+        @ini_set('max_execution_time', '300');
+        @set_time_limit(300);
+
+        $eagerLoads = [
+            'pegawai',
+            'mitra',
+            'kegiatan',
+            'riwayatPengajuan',
+            'suratTugas',
+            'tujuanSuratTugas.provinsi',
+            'tujuanSuratTugas.kabkot',
+            'tujuanSuratTugas.kecamatan',
+            'tujuanSuratTugas.desa',
+            'plh',
+        ];
+
         if ($this->queryOrRecords instanceof Collection) {
             return $this->queryOrRecords;
         }
 
         if ($this->queryOrRecords instanceof Builder) {
             return (clone $this->queryOrRecords)
-                ->with(['pegawai', 'mitra', 'kegiatan', 'riwayatPengajuan', 'suratTugas', 'tujuanSuratTugas', 'plh'])
+                ->with($eagerLoads)
                 ->get();
         }
 
@@ -46,7 +64,7 @@ class PenugasanDisetujuiExport implements FromCollection, WithHeadings, ShouldAu
                     Constants::STATUS_PENGAJUAN_DICAIRKAN,
                 ]);
             })
-            ->with(['pegawai', 'mitra', 'kegiatan', 'riwayatPengajuan', 'suratTugas', 'tujuanSuratTugas', 'plh'])
+            ->with($eagerLoads)
             ->orderBy('tgl_mulai_tugas', 'desc')
             ->get();
     }
@@ -79,6 +97,29 @@ class PenugasanDisetujuiExport implements FromCollection, WithHeadings, ShouldAu
         ];
     }
 
+    public function columnWidths(): array
+    {
+        return [
+            'A' => 6,
+            'B' => 25,
+            'C' => 30,
+            'D' => 15,
+            'E' => 22,
+            'F' => 35,
+            'G' => 30,
+            'H' => 15,
+            'I' => 15,
+            'J' => 15,
+            'K' => 25,
+            'L' => 12,
+            'M' => 20,
+            'N' => 20,
+            'O' => 25,
+            'P' => 30,
+            'Q' => 18,
+        ];
+    }
+
     public function map($record): array
     {
         $this->rowNumber++;
@@ -90,6 +131,9 @@ class PenugasanDisetujuiExport implements FromCollection, WithHeadings, ShouldAu
         $tglMulai = $record->tgl_mulai_tugas ? Carbon::parse($record->tgl_mulai_tugas)->format('d/m/Y') : '-';
         $tglAkhir = $record->tgl_akhir_tugas ? Carbon::parse($record->tgl_akhir_tugas)->format('d/m/Y') : '-';
         $tglDibuat = $record->created_at ? Carbon::parse($record->created_at)->format('d/m/Y H:i') : '-';
+
+        $statusRaw = $record->riwayatPengajuan?->status;
+        $statusLabel = Constants::STATUS_PENGAJUAN_OPTIONS[$statusRaw] ?? $statusRaw ?? '-';
 
         return [
             $this->rowNumber,
@@ -106,7 +150,7 @@ class PenugasanDisetujuiExport implements FromCollection, WithHeadings, ShouldAu
             $record->lama_perjadin ?? 1,
             $record->jenis_surat ?? '-',
             $record->jenis_transportasi ?? '-',
-            $record->riwayatPengajuan->last_status ?? '-',
+            $statusLabel,
             $record->plh->nama ?? '-',
             $tglDibuat,
         ];
