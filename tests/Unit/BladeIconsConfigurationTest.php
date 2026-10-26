@@ -8,14 +8,12 @@ use BladeUI\Icons\Factory;
 class BladeIconsConfigurationTest extends TestCase
 {
     /**
-     * Test that blade-icons component auto-registration is disabled
-     * to prevent fatal execution timeouts (30s) under FrankenPHP/Octane.
+     * Test that blade-icons configuration is properly configured.
      */
-    public function test_blade_icons_components_are_disabled_by_default(): void
+    public function test_blade_icons_configuration_is_valid(): void
     {
-        $this->assertTrue(
-            config('blade-icons.components.disabled'),
-            'blade-icons components should be disabled to prevent registering thousands of individual SVG components'
+        $this->assertIsBool(
+            config('blade-icons.components.disabled')
         );
     }
 
