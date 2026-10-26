@@ -51,6 +51,7 @@
         }
     },
     "scripts": {
+        "pre-autoload-dump": "Google\\Task\\Composer::cleanup",
         "recache": [
             "@php artisan optimize",
             "@php artisan filament:optimize",
@@ -80,11 +81,16 @@
         ]
     },
     "extra": {
+        "google/apiclient-services": [
+            "Sheets",
+            "Drive"
+        ],
         "laravel": {
             "dont-discover": []
         }
     },
     "config": {
+        "process-timeout": 1800,
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true,

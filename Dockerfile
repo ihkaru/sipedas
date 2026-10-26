@@ -3,6 +3,7 @@
 # Stage 1: Build PHP dependencies (Production Lean & Cached)
 FROM composer:2 AS composer-builder
 WORKDIR /app
+ENV COMPOSER_PROCESS_TIMEOUT=1800
 COPY composer.json composer.lock ./
 RUN --mount=type=cache,target=/tmp/cache \
     composer install \
