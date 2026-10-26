@@ -164,7 +164,7 @@ return [
         |
         */
 
-        'disabled' => false,
+        'disabled' => env('BLADE_ICONS_COMPONENTS_DISABLED', true),
 
         /*
         |----------------------------------------------------------------------

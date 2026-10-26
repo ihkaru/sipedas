@@ -36,6 +36,9 @@
         "sentry/sentry-laravel": "^4.28"
     },
     "autoload": {
+        "files": [
+            "app/Support/IntlPolyfill.php"
+        ],
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
