@@ -22,6 +22,15 @@ class AppServiceProvider extends ServiceProvider
             require_once app_path('Support/IntlPolyfill.php');
         }
 
+        // Graceful driver fallback when pdo_mysql is not installed in current runtime/CLI
+        if (config('database.default') === 'mysql' && !extension_loaded('pdo_mysql')) {
+            config(['database.default' => 'sqlite']);
+            $sqliteDb = config('database.connections.sqlite.database');
+            if (!$sqliteDb || (!file_exists($sqliteDb) && $sqliteDb !== ':memory:')) {
+                config(['database.connections.sqlite.database' => database_path('database.sqlite')]);
+            }
+        }
+
         // Backward compatibility fallback for older Filament vendor environments
         if (!class_exists('Filament\Schemas\Components\Tabs\Tab')) {
             if (class_exists('Filament\Resources\Components\Tab')) {
