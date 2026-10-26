@@ -482,8 +482,15 @@ class PengajuanServices {
                 $data["posisi_dokumen_id"] = Constants::POSISI_BENDAHARA;
             }
 
-            $record->update($data);
-            self::tanggapiNotifier($record, $data); // $data dibutuhkan untuk tanggapan terbaru
+            $allowedAttributes = [
+                'posisi_dokumen_id',
+                'tanggapan_pengaju_ke_ppk',
+                'tanggapan_pengaju_ke_ppspm',
+                'tanggapan_pengaju_ke_bendahara',
+            ];
+            $cleanData = array_intersect_key($data, array_flip($allowedAttributes));
+            $record->update($cleanData);
+            self::tanggapiNotifier($record, $cleanData); // $data dibutuhkan untuk tanggapan terbaru
 
             Notification::make()->success()->title("Berhasil memberi tanggapan")->send();
         } catch (Throwable $th) {
@@ -552,7 +559,13 @@ class PengajuanServices {
                 $data['posisi_dokumen_id'] = Constants::POSISI_PENGAJU;
             }
 
-            $record->update($data);
+            $allowedAttributes = [
+                'posisi_dokumen_id',
+                $statusField,
+                "catatan_{$role}",
+            ];
+            $cleanData = array_intersect_key($data, array_flip($allowedAttributes));
+            $record->update($cleanData);
             self::pemeriksaanNotifier($role, $record);
 
             Notification::make()->success()->title("Hasil pemeriksaan berhasil disimpan")->send();
@@ -654,7 +667,17 @@ class PengajuanServices {
                 $data['posisi_dokumen_id'] = Constants::POSISI_BENDAHARA;
             }
 
-            $record->update($data);
+            $allowedAttributes = [
+                'status_pembayaran_id',
+                'posisi_dokumen_id',
+                'nominal_dibayarkan',
+                'nominal_dikembalikan',
+                'jenis_dokumen_id',
+                'nomor_dokumen',
+                'tanggal_pembayaran',
+            ];
+            $cleanData = array_intersect_key($data, array_flip($allowedAttributes));
+            $record->update($cleanData);
 
             if (Constants::isSelesaiDibayar($statusPembayaranId)) {
                 self::pemrosesanBendaharaNotifier($record);
@@ -687,7 +710,18 @@ class PengajuanServices {
     // ... (Sisa kode dari ubahPengajuan sampai akhir tidak perlu diubah) ...
     public static function ubahPengajuan(array $data, Pengajuan $record) {
         try {
-            $record->update($data);
+            $allowedAttributes = [
+                'nip_penanggung_jawab',
+                'sub_fungsi_id',
+                'uraian_pengajuan',
+                'nomor_form_pembayaran',
+                'nomor_detail_fa',
+                'nominal_pengajuan',
+                'tanggal_pengajuan',
+                'link_folder_dokumen',
+            ];
+            $cleanData = array_intersect_key($data, array_flip($allowedAttributes));
+            $record->update($cleanData);
             Notification::make()->success()->title("Berhasil menyimpan perubahan")->send();
         } catch (Throwable $th) {
             Notification::make()->danger()->title("Gagal menyimpan perubahan: " . $th->getMessage())->send();

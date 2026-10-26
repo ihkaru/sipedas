@@ -76,7 +76,7 @@ class PengajuanResource extends Resource
                         ->form(PengajuanForms::pengajuanPembayaran())
                         // -- TAMBAHKAN BLOK INI --
                         ->mountUsing(function (Schema $form, Pengajuan $record) {
-                            $form->fill($record->toArray());
+                            $form->fill($record->attributesToArray());
                         })
                         // ------------------------
                         ->action(fn(array $data, Pengajuan $record) => PengajuanServices::ubahPengajuan($data, $record))
@@ -87,7 +87,7 @@ class PengajuanResource extends Resource
                         ->form(PengajuanForms::tanggapanPengaju())
                         // -- TAMBAHKAN BLOK INI --
                         ->mountUsing(function (Schema $form, Pengajuan $record) {
-                            $form->fill($record->toArray());
+                            $form->fill($record->attributesToArray());
                         })
                         // ------------------------
                         ->action(fn(array $data, Pengajuan $record) => PengajuanServices::tanggapi($data, $record))
@@ -100,7 +100,7 @@ class PengajuanResource extends Resource
                         ->form(PengajuanForms::pemeriksaanPpk())
                         // -- TAMBAHKAN BLOK INI --
                         ->mountUsing(function (Schema $form, Pengajuan $record) {
-                            $form->fill($record->toArray());
+                            $form->fill($record->attributesToArray());
                         })
                         // ------------------------
                         ->action(fn(array $data, Pengajuan $record) => PengajuanServices::pemeriksaanPpk($data, $record))
@@ -112,7 +112,7 @@ class PengajuanResource extends Resource
                         ->form(PengajuanForms::pemeriksaanPpspm())
                         // -- TAMBAHKAN BLOK INI --
                         ->mountUsing(function (Schema $form, Pengajuan $record) {
-                            $form->fill($record->toArray());
+                            $form->fill($record->attributesToArray());
                         })
                         // ------------------------
                         ->action(fn(array $data, Pengajuan $record) => PengajuanServices::pemeriksaanPpspm($data, $record))
@@ -126,7 +126,7 @@ class PengajuanResource extends Resource
                         ->form(PengajuanForms::pemeriksaanBendahara())
                         // -- TAMBAHKAN BLOK INI --
                         ->mountUsing(function (Schema $form, Pengajuan $record) {
-                            $form->fill($record->toArray());
+                            $form->fill($record->attributesToArray());
                         })
                         // ------------------------
                         ->action(fn(array $data, Pengajuan $record) => PengajuanServices::pemeriksaanBendahara($data, $record))
@@ -139,7 +139,7 @@ class PengajuanResource extends Resource
                         ->form(PengajuanForms::pemrosesanBendahara())
                         // -- TAMBAHKAN BLOK INI --
                         ->mountUsing(function (Schema $form, Pengajuan $record) {
-                            $form->fill($record->toArray());
+                            $form->fill($record->attributesToArray());
                         })
                         // ------------------------
                         ->action(fn(array $data, Pengajuan $record) => PengajuanServices::pemrosesanBendahara($data, $record))

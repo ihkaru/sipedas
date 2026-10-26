@@ -17,7 +17,7 @@ class Pengajuan extends Model implements HasMedia
 
     public function pegawai()
     {
-        return $this->hasOne(Pegawai::class, "nip", "nip_pengaju");
+        return $this->belongsTo(Pegawai::class, "nip_pengaju", "nip");
     }
     public function pengaju()
     {
@@ -25,35 +25,35 @@ class Pengajuan extends Model implements HasMedia
     }
     public function penanggungJawab()
     {
-        return $this->hasOne(Pegawai::class, "nip", "nip_penanggung_jawab");
+        return $this->belongsTo(Pegawai::class, "nip_penanggung_jawab", "nip");
     }
     public function posisiDokumen()
     {
-        return $this->hasOne(PosisiDokumen::class, "id", "posisi_dokumen_id");
+        return $this->belongsTo(PosisiDokumen::class, "posisi_dokumen_id", "id");
     }
     public function subfungsi()
     {
-        return $this->hasOne(Subfungsi::class, "id", "sub_fungsi_id");
+        return $this->belongsTo(Subfungsi::class, "sub_fungsi_id", "id");
     }
     public function statusPembayaran()
     {
-        return $this->hasOne(StatusPembayaran::class, "id", "status_pembayaran_id");
+        return $this->belongsTo(StatusPembayaran::class, "status_pembayaran_id", "id");
     }
     public function jenisDokumen()
     {
-        return $this->hasOne(JenisDokumen::class, "id", "jenis_dokumen_id");
+        return $this->belongsTo(JenisDokumen::class, "jenis_dokumen_id", "id");
     }
     public function statusPengajuanPpk()
     {
-        return $this->hasOne(StatusPengajuan::class, "id", "status_pengajuan_ppk_id");
+        return $this->belongsTo(StatusPengajuan::class, "status_pengajuan_ppk_id", "id");
     }
     public function statusPengajuanPpspm()
     {
-        return $this->hasOne(StatusPengajuan::class, "id", "status_pengajuan_ppspm_id");
+        return $this->belongsTo(StatusPengajuan::class, "status_pengajuan_ppspm_id", "id");
     }
     public function statusPengajuanBendahara()
     {
-        return $this->hasOne(StatusPengajuan::class, "id", "status_pengajuan_bendahara_id");
+        return $this->belongsTo(StatusPengajuan::class, "status_pengajuan_bendahara_id", "id");
     }
     public function getRowClassAttribute()
     {
