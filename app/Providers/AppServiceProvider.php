@@ -17,6 +17,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Polyfill intl extension and NumberFormatter if missing
+        if (file_exists(app_path('Support/IntlPolyfill.php'))) {
+            require_once app_path('Support/IntlPolyfill.php');
+        }
+
         // Backward compatibility fallback for older Filament vendor environments
         if (!class_exists('Filament\Schemas\Components\Tabs\Tab')) {
             if (class_exists('Filament\Resources\Components\Tab')) {
