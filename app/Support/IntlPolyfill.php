@@ -113,4 +113,9 @@ namespace {
             }
         }
     }
+
+    // Ensure Guzzle curl handler classes are pre-resolved to prevent ClassNotFound during error reporting
+    if (class_exists(\GuzzleHttp\Handler\CurlMultiHandler::class, true)) {
+        class_exists(\GuzzleHttp\Handler\CurlFactory::class, true);
+    }
 }

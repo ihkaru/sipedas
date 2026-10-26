@@ -80,7 +80,7 @@
 
     <div class="spk-info-banner">
         <div class="spk-info-title">
-            <x-heroicon-o-information-circle class="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />
+            <x-icon name="heroicon-o-information-circle" class="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />
             <span>Aturan Cetak Dokumen Administratif:</span>
         </div>
         <ul class="spk-info-list space-y-1.5">
