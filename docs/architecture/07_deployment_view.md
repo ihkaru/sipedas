@@ -1,4 +1,4 @@
-# 7. Tinjauan Penerapan / Deployment (Deployment View)
+# 7. Tempat Berjalan Sistem (Deployment View)
 
 > [!INFO] **Architecture Provenance & Freshness**
 > - **Verified Commit**: `9cc0f0e` (branch: `main`)
@@ -6,29 +6,29 @@
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
-Seksi ini memetakan infrastruktur fisik, virtual, kontainerisasi, dan distribusi penempatan modul sistem SiPEDAS pada lingkungan produksi.
+Seksi ini menjelaskan di mana sistem SiPEDAS dipasang, bagaimana komputer server kantor menjalankannya, dan bagaimana komponen aplikasi bekerja di lingkungan nyata.
 
 ---
 
-## 7.1 Infrastruktur Produksi (Production Infrastructure Overview)
+## 7.1 Gambar Susunan Server Kantor
 
-Sistem SiPEDAS dikontainerisasi secara modern dan diorkestrasi melalui Coolify PaaS yang berjalan di atas server ThinkStation P320 pada klaster intranet/cloud BPS:
+Sistem SiPEDAS dijalankan di dalam server kantor ThinkStation P320 menggunakan teknologi wadah (*container Docker*) yang diatur otomatis melalui Coolify:
 
 ```mermaid
 graph TD
-    subgraph Client_Tier["Lapisan Klien / Akses Luar"]
-        Browser["Peramban Web Klien (Desktop / Ponsel)"]
-        WhatsAppUser["Aplikasi WhatsApp Pengguna"]
+    subgraph Pengguna["Pengguna Luar"]
+        Browser["Pegawai Buka Web dari Laptop / Ponsel"]
+        WhatsAppUser["Pimpinan Klik Link di WhatsApp"]
     end
 
-    subgraph Host_Server["ThinkStation P320 (Ubuntu Linux)"]
-        subgraph Traefik_Proxy["Reverse Proxy & Gateway"]
-            Traefik["Traefik Reverse Proxy (SSL/TLS Let's Encrypt)"]
+    subgraph ServerKantor["Komputer Server Kantor (ThinkStation P320)"]
+        subgraph GerbangAman["Gerbang Pengaman (Traefik)"]
+            Traefik["Pengatur Lalu Lintas Web (Traefik) - Otomatis HTTPS"]
         end
 
-        subgraph Docker_Network["Docker Bridge Network: coolify"]
-            subgraph App_Container["Kontainer Aplikasi: sipedas-app (FrankenPHP)"]
-                FrankenPHP["FrankenPHP Server / Octane Engine"]
+        subgraph LingkunganWadah["Jaringan Internal Kontainer"]
+            subgraph WadahAplikasi["Kontainer Aplikasi Utama (FrankenPHP)"]
+                FrankenPHP["Mesin Aplikasi Web (FrankenPHP)"]
                 Mod1["SiPEDAS Core"]
                 Mod2["Dokter V Engine"]
                 Mod3["Sipancong Finance"]
@@ -37,28 +37,28 @@ graph TD
                 Mod6["SAML & Agent Auth API"]
             end
 
-            subgraph DB_Container["Kontainer Database: mysql-server"]
-                MySQL["MySQL 8.0 Engine"]
+            subgraph WadahDatabase["Kontainer Database (MySQL 8.0)"]
+                MySQL["Mesin Database MySQL"]
                 Mod7["Relational Persistence"]
             end
         end
 
-        subgraph Storage_Volumes["Docker Persistent Volumes"]
-            AppStorage["/var/www/html/storage/app"]
-            DBData["/var/lib/mysql"]
+        subgraph Harddisk["Penyimpanan Permanen di Harddisk Server"]
+            AppStorage["Penyimpanan Berkas PDF / Foto Kegiatan"]
+            DBData["Penyimpanan Seluruh Data Tabel MySQL"]
         end
     end
 
-    subgraph External_Mesh["Layanan Pendukung Terdistribusi"]
-        AinaService["Aina Whatsmeow Service (aina-wa.dvlpid.my.id)"]
-        GeminiService["Gemini AI Gateway Proxy (ai.dvlpid.my.id)"]
-        SSOIdP["rIDM BPS Identity Provider"]
-        GoogleCloud["Google Sheets Cloud v4 API"]
+    subgraph LayananLuar["Layanan Luar yang Membantu"]
+        AinaService["Server WhatsApp Kantor (Aina Whatsmeow)"]
+        GeminiService["Server AI Google Gemini (Bantu Laporan)"]
+        SSOIdP["Server Masuk Akun Tunggal BPS (rIDM)"]
+        GoogleCloud["Google Sheets (Data Mitra Sobat)"]
     end
 
-    Browser -->|HTTPS :443| Traefik
-    WhatsAppUser -->|Tautan Approval HTTPS| Traefik
-    Traefik -->|HTTP :80 / Reverse Proxy| FrankenPHP
+    Browser -->|Buka Web HTTPS| Traefik
+    WhatsAppUser -->|Klik Tautan Persetujuan| Traefik
+    Traefik -->|Kirim ke Aplikasi| FrankenPHP
 
     FrankenPHP --- Mod1
     FrankenPHP --- Mod2
@@ -67,41 +67,43 @@ graph TD
     FrankenPHP --- Mod5
     FrankenPHP --- Mod6
 
-    FrankenPHP -->|TCP :3306| MySQL
+    FrankenPHP -->|Simpan Data| MySQL
     MySQL --- Mod7
 
-    FrankenPHP -->|Mount Storage| AppStorage
-    MySQL -->|Mount Database Data| DBData
+    FrankenPHP -->|Tulis Berkas| AppStorage
+    MySQL -->|Tulis Data| DBData
 
-    Mod5 -->|HTTP REST| AinaService
-    Mod4 -->|HTTPS REST| GeminiService
-    Mod6 <-->|HTTPS SAML| SSOIdP
-    Mod2 <-->|HTTPS API| GoogleCloud
+    Mod5 -->|Kirim Pesan| AinaService
+    Mod4 -->|Minta Bantuan Kalimat| GeminiService
+    Mod6 <-->|Cek Akun Login| SSOIdP
+    Mod2 <-->|Tarik Data Mitra| GoogleCloud
 ```
 
 ---
 
-## 7.2 Pemetaan Komponen ke Node Infrastruktur (Building Block Deployment Coverage)
+## 7.2 Di Mana Masing-Masing Bagian Dijalankan?
 
-Tabel berikut menunjukkan pemetaan menyeluruh seluruh blok pembangun dari Seksi 5 ke node kontainer dan infrastruktur fisik (memenuhi syarat cakupan penerapan arsitektur):
+Tabel berikut menunjukkan di mana masing-masing bagian sistem dari Seksi 5 ditaruh dan dijalankan di server:
 
-| Building Block (Seksi 5) | Node Penerapan (Deployment Node) | Lingkungan Eksekusi & Konfigurasi |
+| Bagian Sistem (Seksi 5) | Dijalankan di Kontainer Mana? | Penjelasan Kerja di Lapangan |
 |:---|:---|:---|
-| **SiPEDAS Core** | `sipedas-app` (FrankenPHP Container) | Modul penugasan, cetak PDF, dan deteksi bentrok berjalan di dalam proses PHP 8.4 FrankenPHP worker mode di bawah alokasi memori kontainer 512MB. |
-| **Dokter V Engine** | `sipedas-app` (FrankenPHP Container) | Layanan perhitungan honor, validasi SBM 2026, SPK, dan BAST dieksekusi di runtime aplikasi utama dengan sinkronisasi terjadwal. |
-| **Sipancong Finance** | `sipedas-app` (FrankenPHP Container) | Subsistem verifikasi tagihan bertingkat dan audit trail keuangan berjalan di dalam kontainer web aplikasi. |
-| **LPD AI Engine** | `sipedas-app` (FrankenPHP Container) | Klien orkestrasi LPD berjalan di kontainer aplikasi dan mendelegasikan komputasi berat AI ke `Gemini AI Gateway Proxy` eksternal. |
-| **WhatsApp Gateway Client** | `sipedas-app` (FrankenPHP Container) | Pengirim pesan antrean dan pengelola opt-out terintegrasi di kontainer aplikasi dengan koneksi jaringan ke daemon `Aina Whatsmeow Service`. |
-| **SAML & Agent Auth API** | `sipedas-app` (FrankenPHP Container) | Endpoint autentikasi SAML 2.0 dan REST API key guard dieksekusi langsung oleh route engine Laravel di kontainer aplikasi. |
-| **Relational Persistence** | `mysql-server` (MySQL Container) | Skema database relasional disimpan dalam kontainer MySQL 8.0 dengan volume persisten host yang terlindungi pencadangan berkala (*automated WAL/dump backup*). |
+| **SiPEDAS Core** | `sipedas-app` (Wadah Aplikasi FrankenPHP) | Mengatur surat tugas, mengecek jadwal bentrok, dan membuat nomor surat di dalam memori server agar prosesnya cepat. |
+| **Dokter V Engine** | `sipedas-app` (Wadah Aplikasi FrankenPHP) | Menghitung akumulasi honor mitra, memeriksa batas SBM, dan membuat berkas cetak kontrak SPK/BAST di server utama. |
+| **Sipancong Finance** | `sipedas-app` (Wadah Aplikasi FrankenPHP) | Mengatur tahapan persetujuan berkas tagihan belanja dinas dan honor mitra di server utama. |
+| **LPD AI Engine** | `sipedas-app` (Wadah Aplikasi FrankenPHP) | Mengirimkan catatan lapangan ke server AI Google Gemini tanpa membuat server kantor menjadi berat atau panas. |
+| **WhatsApp Gateway Client** | `sipedas-app` (Wadah Aplikasi FrankenPHP) | Mengirimkan pesan WhatsApp ke nomor HP tujuan dan mengalihkan ke jalur cadangan jika pengirim utama sedang bermasalah. |
+| **SAML & Agent Auth API** | `sipedas-app` (Wadah Aplikasi FrankenPHP) | Menangani autentikasi login satu akun resmi BPS (rIDM) serta pintu masuk aman untuk program otomatis. |
+| **Relational Persistence** | `mysql-server` (Wadah Database MySQL) | Menyimpan seluruh data tabel penugasan, nomor surat, dan pembayaran ke dalam harddisk server agar data tidak hilang. |
 
 ---
 
-## 7.3 Konfigurasi Sumber Daya & Jaringan (Resource Sizing & Network Policies)
+## 7.3 Kebutuhan Sumber Daya Server yang Ringan
 
-| Node | Sumber Daya CPU | Batas RAM | Volume Disk | Kebijakan Jaringan |
+Sistem dirancang hemat sumber daya sehingga komputer kantor standar sudah sangat cukup untuk menjalankannya dengan lancar:
+
+| Bagian Server | Kebutuhan Prosesor (CPU) | Kebutuhan Memori (RAM) | Ukuran Penyimpanan | Catatan Keamanan |
 |:---|:---|:---|:---|:---|
-| **Traefik Reverse Proxy** | 0.5 Core | 256 MB | Ephemeral | Menerima port 80/443 publik, mengalihkan seluruh HTTP ke HTTPS secara otomatis. |
-| **sipedas-app Container** | 2.0 Core | 1024 MB | 10 GB SSD Persistent | Terisolasi di jaringan internal Docker bridge, hanya menerima koneksi via Traefik. |
-| **mysql-server Container** | 2.0 Core | 2048 MB | 50 GB SSD Persistent | Port 3306 tidak diekspos ke internet publik; hanya dapat diakses oleh kontainer aplikasi di jaringan bridge yang sama. |
-| **Aina Whatsmeow Gateway** | 1.0 Core | 512 MB | 5 GB SSD Persistent | Berjalan di node terpisah dalam jaringan mesh intranet dengan autentikasi API token. |
+| **Pengatur Web (Traefik)** | Cukup 0.5 Inti | 256 MB | Sangat kecil (sementara) | Menjaga semua jalur masuk aman dengan enkripsi HTTPS resmi. |
+| **Aplikasi Utama (sipedas-app)** | 1.0 – 2.0 Inti | 1024 MB (1 GB) | 10 GB SSD | Terisolasi di jaringan internal, hanya bisa diakses lewat jalur Traefik. |
+| **Database (mysql-server)** | 1.0 – 2.0 Inti | 2048 MB (2 GB) | 50 GB SSD | Terkunci di dalam server, orang luar tidak bisa mengakses database secara langsung. |
+| **Layanan WhatsApp (Aina)** | 0.5 – 1.0 Inti | 512 MB | 5 GB SSD | Menjaga koneksi WhatsApp kantor tetap stabil sepanjang hari. |

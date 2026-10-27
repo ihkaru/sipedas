@@ -1,4 +1,4 @@
-# 8. Konsep Lintas Komponen (Cross-Cutting Concepts)
+# 8. Konsep Perlindungan dan Keamanan Sistem (Cross-Cutting Concepts)
 
 > [!INFO] **Architecture Provenance & Freshness**
 > - **Verified Commit**: `9cc0f0e` (branch: `main`)
@@ -6,100 +6,86 @@
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
-Seksi ini menguraikan arsitektur dan pola penanganan aspek-aspek yang melintasi berbagai subsistem (*cross-cutting concerns*) dalam platform SiPEDAS.
+Seksi ini menjelaskan aturan-aturan penting yang berlaku menyeluruh di semua menu sistem, seperti keamanan akun, pembagian hak akses, keamanan penyimpanan data, dan penanganan pesan.
 
 ---
 
-## 8.1 Keamanan & Autentikasi Terintegrasi (Security & Authentication)
+## 8.1 Cara Pengguna Masuk ke Sistem (Keamanan Akun)
 
 ```mermaid
 graph TD
-    User["Klien / Pengguna"] --> Decision{"Jenis Akses?"}
-    Decision -->|Aparatur ASN Web| SAML["SAML 2.0 SSO (/saml/login)"]
-    Decision -->|Pimpinan via WhatsApp| TokenSign["HMAC SHA-256 Token (/approve/{token})"]
-    Decision -->|AI Agent / Script CLI| APIKey["Header X-API-KEY (/v1/*)"]
+    Pengguna["Orang yang Ingin Akses"] --> Pilihan{"Cara Mengakses?"}
+    Pilihan -->|Pegawai Buka Web| SAML["Login Satu Akun BPS (/saml/login)"]
+    Pilihan -->|Pimpinan Lewat WhatsApp| TokenSign["Tautan Rahasia Unik (/approve/{token})"]
+    Pilihan -->|Program Bot Otomatis| APIKey["Kunci Rahasia API (/v1/*)"]
 
-    SAML --> rIDM["rIDM BPS Identity Provider"]
-    TokenSign --> AppTokenVerify["Verifikasi Tanda Tangan & Expired"]
-    APIKey --> HashVerify["Lookup SHA-256 Hashed Key"]
+    SAML --> rIDM["Dicek ke Akun Resmi BPS (rIDM)"]
+    TokenSign --> CekToken["Pastikan Tautan Asli dan Belum Kedaluwarsa"]
+    APIKey --> CekKey["Pastikan Kunci Terdaftar"]
 
-    rIDM --> Session["Bentuk Sesi Laravel Web & Peran Shield"]
-    AppTokenVerify --> ExecuteApproval["Eksekusi Aksi Otorisasi Tugas"]
-    HashVerify --> ApiScope["Otorisasi Endpoint API Terbatas"]
+    rIDM --> MasukMenu["Masuk ke Menu Sesuai Jabatan"]
+    CekToken --> SahkanTugas["Langsung Sahkan Surat Tugas"]
+    CekKey --> BeriData["Berikan Data yang Diminta"]
 ```
 
-1. **SAML 2.0 Single Sign-On (rIDM Integration)**:
-   - Akses web aparatur BPS dialihkan ke penyedia identitas tunggal rIDM (`/saml/*`) dengan protokol SAML 2.0 HTTP-POST binding.
-   - Sesi terenkripsi, sinkronisasi NIP dan nama pegawai otomatis saat *login claim*, dan logout terkoordinasi (*Single Logout*).
-2. **One-Click Signed Approval Tokens**:
-   - Tautan otorisasi persetujuan surat tugas dibuat menggunakan token yang ditandatangani secara kriptografis (`hash_hmac('sha256', ...)`) dengan masa kedaluwarsa ketat (7 hari).
-   - Mencegah manipulasi URL (*tampering*); sekali digunakan, token langsung hangus (*one-time use* / idempotent).
-3. **Agent-Native API Key Guard**:
-   - Akses terprogram untuk agen AI atau skrip otomatisasi menggunakan header `X-API-KEY`. Kunci disimpan dalam database dalam format ter-hash SHA-256, membatasi lingkup akses hanya pada modul yang diizinkan.
+1. **Masuk Satu Akun Resmi BPS (Single Sign-On / rIDM)**:
+   - Pegawai tidak perlu membuat kata sandi baru. Cukup gunakan email/NIP resmi BPS untuk masuk. Nama, jabatan, dan NIP otomatis disinkronkan ke sistem.
+2. **Tautan Rahasia WhatsApp untuk Pimpinan**:
+   - Tautan persetujuan surat tugas dibuat menggunakan kode rahasia yang unik (*token HMAC SHA-256*) dan hanya berlaku selama 7 hari. Tautan ini tidak bisa ditebak atau diubah-ubah oleh orang lain. Sekali ditekan dan disetujui, tautan tersebut tidak bisa dipakai lagi.
+3. **Kunci API untuk Integrasi Otomatis**:
+   - Jika ada bot atau program lain yang butuh data, akses hanya diberikan jika menyertakan kunci rahasia (*API Key*). Kunci ini disimpan dalam bentuk acak terenkripsi di database kantor.
 
 ---
 
-## 8.2 Otorisasi & Kontrol Akses Berbasis Peran (RBAC via Filament Shield)
+## 8.2 Pembagian Wewenang Pengguna (Siapa Boleh Buka Apa?)
 
-Sistem menggunakan matriks peran (Role-Based Access Control) yang ditegakkan di level navigasi, formulir, dan query database:
+Agar administrasi tertib, setiap orang hanya bisa membuka menu sesuai tugas fungsinya di kantor:
 
-| Peran | Ruang Lingkup Otorisasi | Batasan Akses |
+| Peran Jabatan | Apa Saja yang Boleh Dilakukan? | Apa yang Tidak Boleh? |
 |:---|:---|:---|
-| **super_admin** | Akses penuh seluruh modul, konfigurasi sistem, dan manajemen hak akses. | Hak superuser terbatas untuk pengelola IT. |
-| **kepala_satker** | Otorisasi surat tugas, penetapan Plh, pengesahan SPK mitra, dan tinjauan LPD. | Tidak dapat mengubah data bukti transfer bank. |
-| **kasubbag_tu** | Verifikasi administrasi surat tugas, validasi ketersediaan MAK, dan delegasi Plh. | Penguji administrasi awal. |
-| **ppk** | Pengesahan SPK, validasi kesesuaian output mitra terhadap BAST, dan persetujuan bayar. | Pemegang komitmen keuangan negara. |
-| **ppspm** | Pengujian Surat Perintah Membayar (SPM) dan pembebanan akun anggaran. | Independen dari fungsi bendahara pengeluaran. |
-| **bendahara** | Pencatatan verifikasi tagihan, pemotongan pajak PPh 21/23, dan pencatatan nomor SP2D/transfer. | Tidak dapat mengubah nominal alokasi honor. |
-| **pegawai** | Pengajuan surat tugas mandiri, pelaporan draft LPD AI, dan pemantauan status persetujuan. | Terisolasi hanya pada penugasan dirinya sendiri. |
+| **super_admin** | Mengatur aplikasi, mengelola akun pengguna, dan mencadangkan data. | Terbatas untuk pengelola teknis IT kantor. |
+| **kepala_satker** | Menyetujui surat tugas dinas, menunjuk Pelaksana Harian (Plh), mengesahkan kontrak SPK mitra, dan melihat laporan dinas. | Tidak bisa mencatat bukti transfer uang bank. |
+| **kasubbag_tu** | Memeriksa kelayakan administrasi tugas, mengecek ketersediaan pagu anggaran, dan mengesahkan penugasan jika ditunjuk sebagai Plh. | Penguji kelayakan persuratan awal. |
+| **ppk** | Menandatangani kontrak kerja sama mitra (SPK), memastikan hasil kerja lapangan sudah selesai lewat BAST, dan menyetujui perintah bayar. | Pemegang komitmen keuangan dinas. |
+| **ppspm** | Menguji kelayakan Surat Perintah Membayar (SPM) dan pembebanan anggaran negara. | Terpisah penuh dari bendahara pengeluaran. |
+| **bendahara** | Memeriksa kuitansi, menghitung pajak PPh 21/23 mitra, dan mencatat nomor bukti transfer bank setelah dana cair. | Tidak bisa mengubah nominal honor yang sudah disepakati di awal. |
+| **pegawai** | Mengajukan surat tugas untuk dirinya/timnya, membuat draf laporan dinas dibantu AI, dan memantau apakah tugasnya sudah disetujui pimpinan. | Hanya bisa melihat data tugas miliknya sendiri. |
 
 ---
 
-## 8.3 Manajemen Transaksi & Konsistensi Data (Transaction & Locking)
+## 8.3 Penyimpanan Data yang Aman dan Menyeluruh
 
-1. **ACID Transaction Boundary**:
-   - Seluruh mutasi yang melibatkan multi-tabel (misalnya: penomoran surat tugas otomatis, kalkulasi bundling SPK survei, dan persetujuan pembayaran) wajib dijalankan di dalam blok penutupan:
-     ```php
-     DB::transaction(function () {
-         // Evaluasi SBM, penguncian baris, dan penulisan berkas
-     });
-     ```
-2. **Pessimistic Concurrency Locking**:
-   - Pada saat verifikasi alokasi honor mitra, sistem melakukan query dengan klausa `lockForUpdate()` pada baris akumulasi honor mitra bulan berjalan. Hal ini mencegah dua admin satker memasukkan kegiatan berbeda secara bersamaan yang dapat menyebabkan total honor melompati plafon SBM (*race condition*).
+1. **Penyimpanan Serempak (Semua Berhasil atau Semua Batal)**:
+   - Saat membuat surat tugas, sistem harus menyimpan data tugas sekaligus mengambil nomor surat resmi berikutnya. Jika salah satu langkah gagal (misalnya koneksi terputus saat nomor surat diambil), sistem otomatis membatalkan seluruh proses agar nomor surat tidak terbuang atau meloncat.
+2. **Mencegah Dua Orang Berebut Mitra yang Sama**:
+   - Ketika ada admin yang sedang mengalokasikan honor pada seorang mitra, sistem mengunci data mitra tersebut sesaat selama proses simpan berlangsung. Ini mencegah dua admin secara tidak sengaja menginput honor untuk orang yang sama pada detik yang sama hingga melebihi batas SBM.
 
 ---
 
-## 8.4 Normalisasi Nomor Telepon & Hierarki Opt-Out WhatsApp
+## 8.4 Penanganan Nomor Telepon dan Privasi Notifikasi
 
-Pengiriman pesan transaksional melalui `WhatsappNotifier` mematuhi aturan sanitasi nomor dan privasi:
+Pengiriman pesan otomatis ke nomor WhatsApp mematuhi aturan berikut:
 
 ```mermaid
 flowchart TD
-    Start["Request Notifikasi WhatsApp"] --> Clean["Sanitasi Nomor: E.164 (628xxx)"]
-    Clean --> GlobalCheck{"Global Opt-Out Aktif?"}
-    GlobalCheck -->|Ya| Drop["Batalkan Pengiriman (Log: Global Muted)"]
-    GlobalCheck -->|Tidak| EventCheck{"Jenis Event Ter-Opt-Out?"}
-    EventCheck -->|Ya| Drop
-    EventCheck -->|Tidak| UserCheck{"Nomor Pegawai Masuk Daftar Opt-Out?"}
-    UserCheck -->|Ya| Drop
-    UserCheck -->|Tidak| SendGateway["Kirim via Aina Whatsmeow Gateway"]
-    SendGateway --> ResCheck{"Respon Gateway 200 OK?"}
-    ResCheck -->|Gagal/Timeout| Failover["Alihkan ke Saluran Cadangan (Fonnte)"]
-    ResCheck -->|Sukses| Success["Pesan Terkirim (Audit Log Tercatat)"]
-    Failover --> Success
+    Mulai["Ada Pemberitahuan Baru"] --> Bersihkan["Ubah Nomor Menjadi Standar: 628xxx"]
+    Bersihkan --> CekMatiSemua{"Apakah Notifikasi Kantor Sedang Dimatikan?"}
+    CekMatiSemua -->|Ya| JanganKirim["Batalkan Pengiriman"]
+    CekMatiSemua -->|Tidak| CekJenis{"Apakah Jenis Pesan Ini Dimatikan Pengguna?"}
+    CekJenis -->|Ya| JanganKirim
+    CekJenis -->|Tidak| CekOrang{"Apakah Nomor Ini Memilih Tidak Mau Dikirimi Pesan?"}
+    CekOrang -->|Ya| JanganKirim
+    CekOrang -->|Tidak| KirimUtama["Kirim Lewat Server WhatsApp Kantor"]
+    KirimUtama --> CekHasil{"Apakah Pesan Berhasil Terkirim?"}
+    CekHasil -->|Gagal / Macet| KirimCadangan["Kirim Lewat Saluran Cadangan (Fonnte)"]
+    CekHasil -->|Berhasil| Selesai["Pesan Diterima di HP Pegawai"]
+    KirimCadangan --> Selesai
 ```
 
 ---
 
-## 8.5 Idempotent Seeding & Pelestarian Konfigurasi Produksi
+## 8.5 Pembaruan Aplikasi Tanpa Menghapus Pengaturan Pengguna
 
-Untuk mencegah hilangnya data konfigurasi pengguna (seperti pengaturan opt-out notifikasi) saat redeploy di server Coolify:
-- Seluruh database seeder dilarang keras menggunakan metode destruktif seperti `truncate()` atau `delete()`.
-- Seeder wajib menggunakan pola idempotensi berbasis kunci unik:
-  ```php
-  WhatsappOptOut::updateOrCreate(
-      ['user_id' => $user->id, 'channel' => 'honor_payment'],
-      ['is_active' => true]
-  );
-  ```
-- Menjamin data kustomisasi pengguna di lingkungan produksi tetap utuh setelah migrasi dan seeder otomatis dijalankan.
+Ketika pengembang memperbarui aplikasi atau memperbarui versi sistem di server:
+- Sistem menggunakan perintah pembaruan yang cerdas (*updateOrCreate*).
+- Pengaturan yang sudah diisi oleh pegawai (misalnya pengaturan mematikan notifikasi pesan tertentu) tetap terjaga aman dan **tidak akan terhapus** saat aplikasi diperbarui.

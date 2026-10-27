@@ -1,4 +1,4 @@
-# 3. Konteks dan Cakupan (Context and Scope)
+# 3. Konteks dan Cakupan Sistem (Context and Scope)
 
 > [!INFO] **Architecture Provenance & Freshness**
 > - **Verified Commit**: `9cc0f0e` (branch: `main`)
@@ -6,94 +6,94 @@
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
-Seksi ini memetakan batasan sistem SiPEDAS terhadap sistem eksternal, aktor pengguna, serta antarmuka komunikasi data (antarmuka teknis dan bisnis).
+Seksi ini memetakan siapa saja yang menggunakan sistem SiPEDAS, dengan sistem apa saja SiPEDAS terhubung, dan lewat jalur mana data mengalir.
 
 ---
 
-## 3.1 Konteks Bisnis (Business Context)
+## 3.1 Hubungan Pengguna dan Sistem Sekitar
 
-SiPEDAS beroperasi di tengah ekosistem manajemen aparatur, perbendaharaan daerah, dan tata kelola mitra sensus/survei Badan Pusat Statistik (BPS).
+Secara garis besar, SiPEDAS menghubungkan pegawai, pimpinan, pengelola keuangan, dan mitra kerja dengan database kantor serta layanan eksternal:
 
 ```mermaid
 flowchart TD
-    subgraph Pengguna["Aktor Pengguna"]
-        Pegawai["Pegawai ASN / Pemohon"]
-        Pimpinan["Kepala Satker & PPSPM / Plh"]
-        Keuangan["PPK & Bendahara Pengeluaran"]
-        Mitra["Mitra Statistik"]
+    subgraph Pengguna["Orang yang Menggunakan Sistem"]
+        Pegawai["Pegawai ASN (Pemohon Tugas & Pembuat Laporan)"]
+        Pimpinan["Kepala Satker / Plh (Pemberi Izin Penugasan)"]
+        Keuangan["PPK & Bendahara (Pemeriksa Berkas Pembayaran)"]
+        Mitra["Mitra Statistik (Penerima Honor & BAST)"]
     end
 
-    subgraph SiPEDAS_System["Batas Sistem: SiPEDAS Platform"]
-        Core["SiPEDAS (Surat Tugas & SPPD)"]
-        DokterV["Dokter V (Honor Mitra & SPK)"]
-        Sipancong["Sipancong (Verifikasi Finansial)"]
-        LPDAI["LPD AI (Penyusun Laporan)"]
+    subgraph SiPEDAS_System["Aplikasi SiPEDAS"]
+        Core["SiPEDAS (Surat Tugas & Cek Jadwal Bentrok)"]
+        DokterV["Dokter V (Hitung Honor Mitra & Cetak SPK/BAST)"]
+        Sipancong["Sipancong (Pantau Proses Bayar)"]
+        LPDAI["LPD AI (Bantu Tulis Laporan Perjalanan)"]
     end
 
-    subgraph Eksternal["Sistem & Layanan Eksternal"]
-        RIDM["rIDM SSO (SAML 2.0 IdP)"]
-        AinaWA["Aina Whatsmeow Gateway"]
-        AIGw["Google Gemini AI Gateway"]
-        GSheets["Google Sheets Cloud (Sobat)"]
-        DB["MySQL 8.0 Database"]
+    subgraph LayananLuar["Layanan Luar yang Terhubung"]
+        RIDM["rIDM SSO (Login Akun BPS)"]
+        AinaWA["Gateway WhatsApp (Kirim Pesan & Tautan Approval)"]
+        AIGw["Layanan AI Google Gemini (Bantu Tulis Narasi)"]
+        GSheets["Google Sheets (Data Calon Mitra Sobat)"]
+        DB["Database MySQL Kantor (Simpan Data Transaksi)"]
     end
 
-    Pegawai -->|1. Ajukan Surat Tugas & Draft LPD| Core
-    Pimpinan -->|2. Otorisasi Penugasan & SPK| Core
-    Keuangan -->|3. Verifikasi Berkas Tagihan| Sipancong
-    Mitra -->|4. Penandatanganan BAST & Output| DokterV
+    Pegawai -->|1. Mengajukan surat tugas & draf laporan| Core
+    Pimpinan -->|2. Menyetujui surat tugas via web / WhatsApp| Core
+    Keuangan -->|3. Memeriksa tagihan honor dan bayar| Sipancong
+    Mitra -->|4. Tanda tangan kontrak SPK & serah terima BAST| DokterV
 
-    Core <-->|SAML 2.0 Single Sign-On| RIDM
-    Core -->|Notifikasi & Token Approval| AinaWA
-    DokterV <-->|Sinkronisasi Data Mitra & Sobat| GSheets
-    LPDAI <-->|Sintesis Narasi LPD| AIGw
-    SiPEDAS_System <-->|Penyimpanan Transaksional| DB
+    Core <-->|Login satu akun BPS| RIDM
+    Core -->|Kirim pesan WhatsApp| AinaWA
+    DokterV <-->|Tarik data mitra lapangan| GSheets
+    LPDAI <-->|Minta bantuan draf narasi| AIGw
+    SiPEDAS_System <-->|Simpan dan ambil data| DB
 ```
 
 ---
 
-## 3.2 Konteks Teknis & Antarmuka Eksternal (Technical Context & Interfaces)
+## 3.2 Daftar Jalur Komunikasi Data (Antarmuka Sistem)
 
-Tabel berikut mendefinisikan seluruh antarmuka integrasi eksternal (`IF-xx`) yang dipertukarkan oleh batas sistem SiPEDAS:
+Tabel berikut mencantumkan seluruh jalur masuk dan keluar data pada sistem SiPEDAS:
 
-| Antarmuka | Nama Antarmuka | Protokol / Format | Deskripsi & Arah Pertukaran Data |
+| Antarmuka | Nama Jalur | Cara Berkomunikasi | Apa yang Dilakukan Jalur Ini? |
 |:---|:---|:---|:---|
-| IF-01 | Filament Web UI | HTTPS / HTML & Livewire | Antarmuka pengguna interaktif bagi ASN, verifikator keuangan, dan pimpinan untuk manajemen tugas, verifikasi honor, dan monitoring. |
-| IF-02 | SAML 2.0 Identity Provider | HTTPS / SAML 2.0 XML Post-Binding | Autentikasi Single Sign-On terpusat via rIDM BPS (`/saml/*`) untuk verifikasi identitas aparatur sipil negara. |
-| IF-03 | Agent-Native REST API | HTTPS / JSON REST (`/v1/*`) | Antarmuka terprogram untuk agen AI dan klien otomasi dengan autentikasi API Key (`X-API-KEY`) dan spesifikasi OpenAPI/Skill.md. |
-| IF-04 | WhatsApp Gateway | HTTPS / JSON REST API | Saluran notifikasi pesan instan transaksional ke pegawai/mitra melalui Aina Whatsmeow Gateway dengan failover otomatis ke Fonnte. |
-| IF-05 | Generative AI Gateway | HTTPS / JSON OpenAI-Compatible | Integrasi pemrosesan bahasa alami (LLM Google Gemini) via AI gateway proxy (`ai.dvlpid.my.id/v1/chat/completions`) untuk penulisan LPD. |
-| IF-06 | Google Sheets Cloud Integration | HTTPS / Google Sheets v4 API | Integrasi dua arah dengan Google Spreadsheet master mitra/honor untuk impor/ekspor data massal dan integrasi data rekrutmen Sobat BPS. |
-| IF-07 | Relational Database Persistence | TCP / MySQL Wire Protocol | Penyimpanan data persisten transaksional (ACID) untuk seluruh relasi data penugasan, honor, bukti potong pajak, dan log audit. |
-| IF-08 | One-Click Approval Token Webhook | HTTPS / Signed Token GET Endpoint | Endpoint publik aman (`/approve/{token}`) yang memvalidasi token SHA-256 berbatas waktu untuk persetujuan surat tugas langsung dari tautan WhatsApp. |
+| IF-01 | Filament Web UI | Halaman Web HTTPS | Halaman web utama yang dibuka oleh pegawai, bendahara, dan pimpinan untuk mengisi formulir, melihat data tabel, dan mengunduh berkas PDF/Excel. |
+| IF-02 | SAML 2.0 Identity Provider | Jalur Masuk Akun Tunggal (SSO) | Mengarahkan pegawai untuk masuk menggunakan akun resmi BPS (rIDM) tanpa perlu menghafal kata sandi baru khusus aplikasi ini. |
+| IF-03 | Agent-Native REST API | Jalur API Data Terprogram | Pintu khusus yang aman (menggunakan kunci rahasia API Key) jika ada program otomatis atau bot asisten yang membutuhkan data penugasan/mitra. |
+| IF-04 | WhatsApp Gateway | Pengiriman Pesan WhatsApp | Mengirimkan pesan pemberitahuan otomatis ke nomor HP pegawai atau pimpinan melalui mesin Whatsmeow kantor, dengan cadangan otomatis ke Fonnte. |
+| IF-05 | Generative AI Gateway | Layanan Kecerdasan Buatan | Mengirimkan catatan kasar dan foto dari lapangan ke AI Google Gemini untuk dibantu disusun menjadi draf laporan dinas resmi yang rapi. |
+| IF-06 | Google Sheets Cloud Integration | Sinkronisasi Lembar Kerja Google | Menghubungkan sistem ke Google Spreadsheet agar koordinator sensus/survei bisa menarik data mitra dari pangkalan data Sobat BPS dengan mudah. |
+| IF-07 | Relational Database Persistence | Jalur Penyimpanan Database MySQL | Tempat penyimpanan permanen seluruh data penugasan, nomor surat, nominal honor, bukti potong pajak, dan catatan riwayat perubahan. |
+| IF-08 | One-Click Approval Token Webhook | Tautan Persetujuan Kilat di WhatsApp | Tautan aman berbatas waktu yang ada di pesan WA pimpinan (`/approve/{token}`). Pimpinan cukup klik tautan ini dari HP untuk mengesahkan tugas dinas. |
 
 ---
 
-## 3.3 Diagram Konteks C4 (C4Context)
+## 3.3 Gambaran Konteks Sistem Keseluruhan (Diagram C4Context)
 
 ```mermaid
 C4Context
-    title C4 Context Diagram - SiPEDAS Platform
+    title Peta Konteks Sistem SiPEDAS
 
-    Person(pegawai, "Pegawai ASN", "Pemohon surat tugas & pelapor LPD")
-    Person(pimpinan, "Pimpinan Satker / Plh", "Pemberi otorisasi surat tugas & pengesahan SPK")
-    Person(keuangan, "Pengelola Keuangan", "PPK & Bendahara pemverifikasi berkas pembayaran")
+    Person(pegawai, "Pegawai ASN", "Mengajukan surat tugas dan membuat laporan dinas")
+    Person(pimpinan, "Kepala Satker / Plh", "Mengesahkan penugasan dan memeriksa hasil kerja")
+    Person(keuangan, "Pengelola Keuangan", "Memverifikasi berkas pembayaran dan mencatat transfer bank")
     
-    System(sipedas, "SiPEDAS Enterprise", "Sistem penugasan, LPD AI, tata kelola mitra Dokter V, dan pemantauan keuangan Sipancong")
+    System(sipedas, "Sistem SiPEDAS", "Mengelola surat tugas, honor mitra Dokter V, keuangan Sipancong, dan laporan LPD AI")
 
-    System_Ext(ridm, "rIDM SSO IdP", "Identity Provider BPS berbasis SAML 2.0")
-    System_Ext(ainawa, "Aina Whatsmeow Gateway", "Gateway pengirim pesan WhatsApp transaksional")
-    System_Ext(aigateway, "Gemini AI Gateway", "Layanan LLM Generative AI untuk sintesis narasi LPD")
-    System_Ext(gsheets, "Google Sheets Cloud", "Spreadsheet penyimpanan dan sinkronisasi data mitra lapangan")
-    SystemDb_Ext(mysqldb, "MySQL 8.0 DB", "Database relasional utama penyimpan seluruh transaksi")
+    System_Ext(ridm, "rIDM SSO BPS", "Layanan masuk akun tunggal resmi aparatur BPS")
+    System_Ext(ainawa, "Gateway WhatsApp Aina", "Pengirim pesan WhatsApp otomatis ke ponsel")
+    System_Ext(aigateway, "AI Google Gemini", "Membantu merapikan catatan lapangan menjadi laporan resmi")
+    System_Ext(gsheets, "Google Sheets Sobat", "Penyimpanan data calon mitra sensus dan survei")
+    SystemDb_Ext(mysqldb, "Database MySQL", "Penyimpan seluruh data penugasan dan bukti pembayaran")
 
-    Rel(pegawai, sipedas, "Mengakses portal mandiri, mengajukan tugas, & mengisi LPD", "IF-01")
-    Rel(pimpinan, sipedas, "Mengesahkan penugasan via portal atau pesan instan", "IF-01, IF-08")
-    Rel(keuangan, sipedas, "Memverifikasi tagihan honor dan mencatat pencairan", "IF-01")
+    Rel(pegawai, sipedas, "Buka web untuk buat tugas dan laporan", "IF-01")
+    Rel(pimpinan, sipedas, "Setujui tugas lewat web atau pesan WA", "IF-01, IF-08")
+    Rel(keuangan, sipedas, "Periksa tagihan dan bayar honor", "IF-01")
 
-    Rel(sipedas, ridm, "Autentikasi Single Sign-On pengguna", "IF-02")
-    Rel(sipedas, ainawa, "Mengirim notifikasi & token persetujuan", "IF-04")
-    Rel(sipedas, aigateway, "Memproses catatan lapangan mentah menjadi LPD resmi", "IF-05")
-    Rel(sipedas, gsheets, "Sinkronisasi alokasi honor dan database mitra", "IF-06")
-    Rel(sipedas, mysqldb, "Membaca dan menulis data transaksional", "IF-07")
+    Rel(sipedas, ridm, "Periksa akun pegawai saat login", "IF-02")
+    Rel(sipedas, ainawa, "Kirim pemberitahuan dan link persetujuan", "IF-04")
+    Rel(sipedas, aigateway, "Minta draf laporan perjalanan dinas", "IF-05")
+    Rel(sipedas, gsheets, "Tarik data mitra dan volume kegiatan", "IF-06")
+    Rel(sipedas, mysqldb, "Baca dan simpan rekaman transaksi", "IF-07")
 ```

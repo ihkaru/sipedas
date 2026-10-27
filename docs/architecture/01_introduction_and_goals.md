@@ -6,63 +6,61 @@
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
-Dokumen ini mendefinisikan arsitektur sistem **SiPEDAS** (Sistem Informasi Penugasan dan Administrasi Surat) yang mencakup sub-sistem **Dokter V** (Verifikasi Honor Mitra & SPK), **Sipancong** (Pemantauan Keuangan & Pembayaran), serta modul **LPD AI** (Laporan Perjalanan Dinas Berbasis Generative AI) pada Badan Pusat Statistik (BPS).
+Dokumen ini menjelaskan rancangan dan cara kerja sistem **SiPEDAS** (Sistem Informasi Penugasan dan Administrasi Surat). Sistem ini menyatukan pengelolaan surat tugas pegawai, pengelolaan honor mitra statistik (**Dokter V**), pemantauan berkas pembayaran (**Sipancong**), dan pembuatan laporan perjalanan dinas yang dibantu kecerdasan buatan (**LPD AI**) di lingkungan Badan Pusat Statistik (BPS).
 
 ---
 
-## 1.1 Gambaran Kebutuhan (Requirements Overview)
+## 1.1 Masalah Nyata yang Diselesaikan Sistem
 
-SiPEDAS dirancang untuk menyelesaikan friksi birokrasi, fragmentasi data, dan risiko temuan audit pada operasional kantor pemerintah dengan kebutuhan inti:
+Sistem ini dibuat untuk mengatasi masalah operasional harian di kantor:
 
-1. **Otomasi Surat Tugas & SPPD (SiPEDAS Core)**:
-   - Manajemen siklus hidup surat tugas dinas dari permohonan, penomoran otomatis, deteksi konflik jadwal antar pegawai, hingga penerbitan cetak PDF resmi.
-   - Pendelegasian persetujuan berjenjang (Kepala Satuan Kerja, Kasubbag Tata Usaha, Pejabat Penandatangan Surat Perintah Membayar / PPSPM, dan Pelaksana Harian / Plh).
-   - Akselerasi persetujuan instan tanpa login manual melalui token persetujuan aman via WhatsApp (*One-Click Approval*).
+1. **Surat Tugas dan Perjalanan Dinas (SiPEDAS Core)**:
+   - **Mencegah jadwal bertabrakan**: Sistem otomatis menolak jika ada pegawai yang ditugaskan ke dua tempat berbeda pada hari yang sama.
+   - **Persetujuan cepat lewat WhatsApp**: Pimpinan yang sedang rapat atau dinas luar tidak perlu repot membuka laptop dan login ke aplikasi web. Cukup klik tautan persetujuan di pesan WhatsApp dari HP, surat tugas langsung sah dan terbit nomornya.
+   - **Pendelegasian pejabat**: Jika pimpinan definitif sedang cuti atau dinas, kewenangan penandatanganan otomatis bisa dialihkan ke Pelaksana Harian (Plh).
 
-2. **Tata Kelola Mitra Statistik & Honorarium (Dokter V / SIKENDIS)**:
-   - Standar Sumber Kebenaran Tunggal (*Single Source of Truth*) tanggal kontrak dan honor mitra berbasis `honors.tanggal_akhir_kegiatan`.
-   - Penerapan batas Standar Biaya Masukan (SBM 2026): batas maksimum akumulasi honor bulanan Rp 4.694.000 untuk kegiatan Sensus dan Rp 3.353.000 untuk kegiatan Survei.
-   - Mekanisme *bundling* kontrak bulanan untuk survei reguler vs kontrak tunggal berbasis volume untuk kegiatan sensus.
-   - Pembuatan otomatis Surat Perjanjian Kerja (SPK), Berita Acara Serah Terima (BAST), dan lembar verifikasi honor.
-   - Monitoring kesiapan alokasi mitra (Siap Ditugaskan, Berlebih, Kosong, Overload) dengan ekspor laporan multi-sheet Excel untuk perencanaan lapangan.
+2. **Pengelolaan Mitra Statistik & Pembayaran Honor (Dokter V)**:
+   - **Satu patokan tanggal yang pasti**: Tanggal selesai kegiatan survei/sensus (`tanggal_akhir_kegiatan`) menjadi satu-satunya acuan untuk menentukan bulan honor, tanggal kontrak (SPK), dan tanggal serah terima hasil kerja (BAST). Ini mencegah tanggal yang tidak sinkron saat diperiksa auditor.
+   - **Pencegahan otomatis batas honor (SBM 2026)**: Sistem otomatis memblokir jika total honor mitra dalam satu bulan melebihi batas aturan pemerintah (maksimal Rp 3.353.000 untuk kegiatan survei dan Rp 4.694.000 untuk kegiatan sensus).
+   - **Penggabungan kontrak bulanan**: Kegiatan survei dalam bulan yang sama otomatis digabung ke dalam 1 kontrak bulanan, sedangkan kegiatan sensus dibuatkan kontrak per kegiatan.
+   - **Pemantauan beban kerja mitra**: Membantu koordinator lapangan melihat mana mitra yang masih kosong jadwalnya, mana yang pas, dan mana yang sudah penuh agar pembagian tugas merata.
 
-3. **Verifikasi Keuangan Multi-Tahap (Sipancong)**:
-   - Jalur persetujuan berkas tagihan dan pembayaran berjenjang: Bendahara Pengeluaran $\rightarrow$ PPSPM $\rightarrow$ Pejabat Pembuat Komitmen (PPK) $\rightarrow$ Realisasi Pencairan.
-   - Penegakan Service Level Agreement (SLA) verifikasi dan riwayat audit (*audit trail*) yang transparan.
+3. **Pemeriksaan Berkas Keuangan (Sipancong)**:
+   - **Alur verifikasi yang jelas**: Berkas tagihan diperiksa berurutan dari Bendahara Pengeluaran $\rightarrow$ Penguji SPM (PPSPM) $\rightarrow$ Pembuat Komitmen (PPK) $\rightarrow$ Pencairan ke rekening bank.
+   - **Mencegah berkas tertahan**: Riwayat pemeriksaan tercatat jelas sehingga pegawai tahu di meja mana berkas mereka sedang diproses.
 
-4. **Sintesis Laporan Perjalanan Dinas Cerdas (LPD AI)**:
-   - Transformasi catatan lapangan mentah, koordinat GPS, dan dokumentasi foto menjadi narasi formal berstandar Pedoman Umum Ejaan Bahasa Indonesia (PUEBI/EYD).
-   - Interaksi asinkron melalui gateway AI LLM berkinerja tinggi (*zero local CPU load*).
+4. **Penyusunan Laporan Perjalanan Dinas (LPD AI)**:
+   - **Mengurangi beban mengetik**: Pegawai cukup memasukkan poin-poin penting hasil lapangan dan foto kegiatan. AI akan membantu merapikannya menjadi naskah laporan dinas resmi yang rapi sesuai tata bahasa baku pemerintah (PUEBI).
 
-5. **Notifikasi Tersentralisasi & Kepatuhan Privasi**:
-   - Pengiriman pesan WhatsApp transaksional melalui gateway Whatsmeow mandiri dengan saluran cadangan Fonnte.
-   - Fitur *opt-out* bertingkat (global, per-kegiatan, per-nomor pegawai) untuk menghormati preferensi komunikasi aparatur.
+5. **Pengiriman Notifikasi WhatsApp yang Tertib**:
+   - Notifikasi dikirim otomatis ke nomor pegawai atau mitra yang bersangkutan.
+   - Pegawai yang tidak ingin menerima pesan tertentu bisa mengatur preferensinya sendiri (*opt-out*), dan nomor HP otomatis diseragamkan ke format standar (diawali 628).
 
 ---
 
-## 1.2 Sasaran Mutu (Quality Goals)
+## 1.2 Sasaran Mutu Utama
 
-Sasaran mutu arsitektur diprioritaskan berdasarkan model kualitas Q42:
+Sasaran mutu sistem dirancang agar sistem benar-benar bermanfaat dan aman digunakan:
 
-| Prioritas | Tag Mutu | Sasaran Mutu | Motivasi & Dampak Bisnis |
+| Prioritas | Tag Mutu | Sasaran Mutu | Arti Nyata bagi Pengguna |
 |:---:|:---|:---|:---|
-| 1 | #integrity | Integritas Jadwal & Rekonsiliasi Finansial | Mencegah penugasan tumpang-tindih (*zero conflict scheduling*) dan mengeliminasi risiko kelebihan/duplikasi pembayaran honor mitra statistik. |
-| 2 | #compliance | Kepatuhan Regulasi SBM & Standar Perbendaharaan | Mematuhi PMK Standar Biaya Masukan (SBM) 2026, aturan perpajakan PPh 21/23 mitra, serta alur otorisasi keuangan negara. |
-| 3 | #usability | Efisiensi Kerja & Kemudahan Akses | Mempercepat *turnaround time* persetujuan pimpinan melalui One-Click WhatsApp dan menyediakan antarmuka Filament yang responsif di desktop maupun mobile. |
-| 4 | #interoperability | Keterhubungan Ekosistem & Ekstensibilitas Agen | Menghubungkan sistem secara mulus dengan rIDM (SAML 2.0 SSO), Gateway WhatsApp Aina, Google Sheets Cloud, dan REST API ramah LLM/AI-Agent. |
-| 5 | #performance | Kecepatan Transaksi & Skalabilitas Dataset | Waktu respon sub-detik untuk rendering ribuan data alokasi honor dan ekspor streaming berkas spreadsheet berukuran besar tanpa *memory exhaustion*. |
+| 1 | #integrity | Jadwal Tidak Bentrok & Data Honor Tepat | Tidak ada pegawai yang ditugaskan ganda di tanggal yang sama, dan tidak ada mitra yang dibayar dobel. |
+| 2 | #compliance | Taat Aturan Batas Honor Pemerintah | Menjamin nominal honor mitra tidak pernah melanggar batas resmi Kementerian Keuangan (SBM 2026). |
+| 3 | #usability | Mudah & Cepat Digunakan di HP Maupun Laptop | Pimpinan bisa menyetujui tugas dalam hitungan detik lewat WhatsApp; tampilan web rapi dan nyaman dibuka dari layar HP. |
+| 4 | #interoperability | Terhubung Aman dengan Layanan Lain | Masuk cukup pakai akun SSO BPS (rIDM), pesan terkirim lancar lewat WhatsApp, dan laporan dibantu AI secara aman. |
+| 5 | #performance | Cepat dan Ringan saat Mengunduh Data | Membuka ribuan data mitra dan mengunduh berkas Excel laporan tetap cepat tanpa membuat komputer kantor lemot atau macet. |
 
 ---
 
-## 1.3 Pemangku Kepentingan (Stakeholders)
+## 1.3 Pengguna dan Pemangku Kepentingan
 
-| Peran | Harapan Utama terhadap Sistem | Pengaruh & Keterlibatan |
+| Peran | Kebutuhan Utama | Manfaat yang Dirasakan |
 |:---|:---|:---|
-| **Kepala Satker / KPA** | Visibilitas penugasan dinas, otorisasi cepat via mobile/WA, kepatuhan pagu anggaran. | Otoritas penandatangan tertinggi. |
-| **Kasubbag TU / PPSPM** | Validasi ketersediaan anggaran, mitigasi konflik personel, pengawasan administrasi persuratan. | Verifikator administratif utama. |
-| **PPK (Pejabat Pembuat Komitmen)** | Verifikasi kesesuaian output kerja mitra terhadap kontrak SPK dan keabsahan BAST sebelum pembayaran. | Penanggung jawab komitmen belanja. |
-| **Bendahara Pengeluaran** | Pemantauan alur kas, bukti potong pajak, dan ekspor daftar pembayaran bank yang akurat. | Eksekutor pencairan dana. |
-| **Ketua Tim Teknis / Koordinator Lapangan** | Kemudahan merekrut mitra, memantau batas sisa alokasi honor, dan membuat SPK otomatis. | Pengguna operasional harian. |
-| **Pegawai ASN** | Pengajuan surat tugas mandiri, notifikasi status persetujuan instan, dan pembuatan draft LPD otomatis via AI. | Pemohon perjalanan dinas. |
-| **Mitra Statistik** | Transparansi besaran honor, kepastian jadwal survei, dan kemudahan penerimaan BAST. | Penerima manfaat eksternal. |
-| **Auditor Eksternal (BPK / Itwil)** | Jejak rekam digital (*audit trail*) utuh, tidak ada manipulasi tanggal berlaku surut, kepatuhan batas SBM. | Pemeriksa kepatuhan hukum. |
+| **Kepala Satker / KPA** | Bisa melihat semua penugasan dinas kantor dan menyetujui tugas mendesak secara cepat dari HP. | Pengesahan tugas tidak tertunda meski sedang berada di luar kantor. |
+| **Kasubbag Tata Usaha / Plh** | Memastikan anggaran perjalanan dinas tersedia dan tidak ada pegawai yang jadwalnya bentrok. | Administrasi persuratan tertib dan otomatis bernomor. |
+| **PPK (Pejabat Pembuat Komitmen)** | Memastikan hasil kerja mitra sesuai sebelum honor dibayarkan. | Kontrak SPK dan BAST tercetak rapi sesuai aturan audit. |
+| **Bendahara Pengeluaran** | Menghitung potongan pajak dengan benar dan mencatat bukti pembayaran bank. | Laporan pencairan dana akurat dan bebas salah hitung. |
+| **Ketua Tim / Koordinator Lapangan** | Mengetahui mitra mana yang siap ditugaskan dan berapa sisa batas honor mereka. | Perencanaan survei lapangan berjalan lancar dan adil. |
+| **Pegawai ASN** | Mengajukan surat tugas sendiri, menerima pemberitahuan via WA, dan membuat laporan dinas dengan cepat. | Laporan perjalanan dinas selesai tepat waktu tanpa stres mengetik ulang. |
+| **Mitra Statistik** | Mendapat kepastian jadwal kerja dan kejelasan besaran honor yang akan diterima. | Menerima kontrak kerja dan bukti serah terima kerja yang jelas. |
+| **Pemeriksa / Auditor (BPK / Itwil)** | Mengetahui riwayat pengajuan, tanggal kegiatan, dan dasar pembayaran yang tidak dimanipulasi. | Pemeriksaan keuangan mudah dibuktikan dengan data yang runtut. |

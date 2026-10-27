@@ -1,4 +1,4 @@
-# 11. Risiko dan Utang Teknis (Risks and Technical Debt)
+# 11. Risiko dan Catatan Perbaikan (Risks and Technical Debt)
 
 > [!INFO] **Architecture Provenance & Freshness**
 > - **Verified Commit**: `9cc0f0e` (branch: `main`)
@@ -6,25 +6,27 @@
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
-Seksi ini memetakan matriks risiko arsitektur (termasuk risiko turunan dari ADR di Seksi 9) serta daftar utang teknis (*technical debt ledger*) yang wajib dikelola secara aktif.
+Seksi ini mencatat potensi kendala yang perlu diwaspadai dalam pengoperasian sistem SiPEDAS serta daftar bagian program yang dijadwalkan untuk dirapikan lebih lanjut.
 
 ---
 
-## 11.1 Matriks Risiko Arsitektur (Architectural Risk Matrix)
+## 11.1 Matriks Risiko Operasional dan Solusinya
 
-| ID | Deskripsi Risiko | Dampak & Probabilitas | Strategi Mitigasi & Pengendalian |
+| ID | Potensi Masalah / Risiko | Seberapa Besar & Dampaknya? | Cara Mencegah & Mengatasinya |
 |:---|:---|:---|:---|
-| RISK-01 | Kebocoran Memori & Kontaminasi State Antar Request pada FrankenPHP Worker Mode | Dampak: Sedang<br>Probabilitas: Rendah | Menghindari penggunaan properti kelas statis (`static $state`) untuk menyimpan data per-request. Mengonfigurasi `OCTANE_MAX_REQUESTS=500` di Coolify agar worker di-recycle secara berkala untuk melepaskan memori yang tertahan. |
-| RISK-02 | Inkonsistensi Data Historis Honor Sebelum Penegakan SSoT `tanggal_akhir_kegiatan` | Dampak: Tinggi<br>Probabilitas: Sedang | Menjalankan skrip migrasi data idempotent yang memverifikasi seluruh rekaman `honors` lama, mengisi `tanggal_akhir_kegiatan` dari tanggal kegiatan survei terkait, dan menandai anomali data untuk diverifikasi manual oleh admin satker. |
-| RISK-03 | Latensi Jaringan atau Batas Kuota (Rate Limit) pada Upstream AI Gateway | Dampak: Sedang<br>Probabilitas: Sedang | Menerapkan timeout HTTP 15 detik pada `AIService`, penyediaan mekanisme retry eksponensial (maksimal 2x percobaan), serta fallback formulir manual di UI Filament jika AI Gateway sedang tidak merespon. |
-| RISK-04 | Perbedaan Perilaku Sintaks Antara SQLite In-Memory (Uji) dan MySQL 8.0 (Produksi) | Dampak: Sedang<br>Probabilitas: Rendah | Menghindari penggunaan fungsi bawaan SQL yang spesifik mesin (seperti `REGEXP` non-standar atau JSON operator khusus) di dalam logika query Eloquent. Semua query kompleks dibungkus dalam repository/scope yang kompatibel lintas dialek SQL. |
+| RISK-01 | Penggunaan Memori Server yang Terus Bertambah Jika Aplikasi Dibiarkan Menyala Terus | Dampak: Sedang<br>Kemungkinan: Rendah | Menghindari penyimpanan data sementara di variabel global. Server Coolify diatur agar otomatis me-refresh aplikasi setiap 500 permintaan agar sisa memori yang tidak terpakai selalu dibersihkan secara berkala. |
+| RISK-02 | Data Honor Lama Sebelum Ada Aturan Satu Patokan Tanggal Belum Lengkap | Dampak: Tinggi<br>Kemungkinan: Sedang | Menjalankan program pembersih data otomatis yang melengkapi kolom tanggal selesai kegiatan dari arsip kegiatan survei lama, serta menandai data anomali agar dicek ulang oleh petugas kantor. |
+| RISK-03 | Server AI Google Gemini Sedang Mengalami Gangguan atau Lambat Merespons | Dampak: Sedang<br>Kemungkinan: Sedang | Memberikan batas tunggu maksimal 15 detik pada modul laporan. Jika AI sedang tidak merespons, sistem tetap menyediakan formulir manual di layar agar pegawai tetap bisa mengetik dan menyimpan laporannya tanpa terhambat. |
+| RISK-04 | Perbedaan Karakteristik Antara Database Pengujian di Memori dan Database Asli Kantor | Dampak: Sedang<br>Kemungkinan: Rendah | Menggunakan perintah query database yang standar dan seragam yang dipahami oleh semua jenis database, sehingga apa yang berhasil di pengujian dipastikan berjalan sama di server kantor. |
 
 ---
 
-## 11.2 Buku Besar Utang Teknis (Technical Debt Ledger)
+## 11.2 Catatan Bagian Program yang Perlu Dirapikan (Technical Debt)
 
-| ID Utang | Komponen Terdampak | Deskripsi Masalah & Batasan Saat Ini | Rencana Remediasi / Target Solusi |
+Daftar ini adalah pekerjaan rumah pengembang untuk menjaga sistem tetap bersih dan mudah dirawat:
+
+| ID Catatan | Bagian Program | Apa yang Perlu Ditingkatkan? | Rencana Perbaikan ke Depan |
 |:---|:---|:---|:---|
-| **DEBT-01** | `app/Filament/Pages/MonitorHonorMitra.php` | Penggunaan subquery SQL mentah (`addSelect`) untuk kalkulasi akumulasi honor per mitra bulanan dapat melambat saat jumlah rekaman mitra mencapai puluhan ribu. | Memigrasikan kalkulasi akumulasi honor bulanan ke tabel agregasi terindeks (*materialized summary table*) yang diperbarui secara asinkron via event listener domain saat transaksi honor baru disimpan. |
-| **DEBT-02** | `app/Models/Penugasan.php` | Model `Penugasan` memiliki ukuran baris kode mendekati ambang batas batas modularitas (banyak relasi, scope, accessor, dan helper penomoran surat tugas dalam satu berkas). | Melakukan refaktorisasi ke dalam trait/concern modular (misal: `HasApprovalWorkflow`, `HasDocumentConflictDetection`, `HasNumberingSequence`) untuk menjaga SRP (Single Responsibility Principle). |
-| **DEBT-03** | `app/Services/WhatsappNotifier.php` | Format pesan WhatsApp masih menggunakan string concatenation di dalam service, belum sepenuhnya memanfaatkan template blade terpisah. | Memindahkan seluruh draf format pesan ke file Blade view khusus (`resources/views/whatsapp/*.blade.php`) agar teks pesan mudah disesuaikan tanpa menyentuh logika kelas service. |
+| **DEBT-01** | Halaman Pemantauan Honor Mitra (`MonitorHonorMitra.php`) | Perhitungan total honor per mitra saat ini dihitung langsung dari seluruh rekaman database setiap kali halaman dibuka. Jika mitra bertambah hingga puluhan ribu, proses hitung bisa memakan waktu beberapa detik. | Membuat tabel ringkasan tersendiri yang otomatis diperbarui setiap kali ada transaksi honor baru, sehingga membuka halaman pemantauan selalu instan. |
+| **DEBT-02** | Berkas Pengelola Surat Tugas (`app/Models/Penugasan.php`) | Berkas kode penugasan saat ini berukuran cukup panjang karena memuat logika surat, nomor otomatis, dan deteksi bentrok sekaligus dalam satu berkas. | Memecah fungsi-fungsi tersebut ke dalam modul pembantu kecil terpisah agar kode program lebih rapi dan lebih mudah dipelajari oleh pengembang baru. |
+| **DEBT-03** | Format Pesan WhatsApp (`app/Services/WhatsappNotifier.php`) | Kalimat pesan pemberitahuan WhatsApp saat ini masih dirangkai langsung di dalam baris kode program PHP. | Memindahkan kalimat pesan ke berkas cetakan terpisah (`resources/views/whatsapp/`) agar admin kantor bisa mengubah kata-kata pesan WhatsApp tanpa harus mengubah logika kode program. |

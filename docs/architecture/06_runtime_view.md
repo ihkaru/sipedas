@@ -1,4 +1,4 @@
-# 6. Tinjauan Runtime (Runtime View)
+# 6. Alur Kerja Sistem (Runtime View)
 
 > [!INFO] **Architecture Provenance & Freshness**
 > - **Verified Commit**: `9cc0f0e` (branch: `main`)
@@ -6,140 +6,140 @@
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
-Seksi ini memvisualisasikan interaksi dinamis antar komponen sistem dan entitas eksternal selama eksekusi skenario bisnis kritis.
+Seksi ini menceritakan urutan kejadian langkah demi langkah saat pengguna menggunakan fitur-fitur penting dalam sistem SiPEDAS.
 
 ---
 
-## 6.1 Skenario 1: Pengajuan Surat Tugas, Deteksi Bentrok & One-Click WhatsApp Approval
+## 6.1 Alur 1: Mengajukan Surat Tugas, Cek Jadwal Bentrok, dan Setuju via WhatsApp
 
-Skenario ini menggambarkan alur dari saat pegawai mengajukan surat tugas perjalanan dinas hingga pengesahan instan oleh pimpinan melalui tautan WhatsApp:
+Alur ini menjelaskan bagaimana pegawai mengajukan tugas dinas hingga disahkan oleh pimpinan lewat pesan WhatsApp:
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Pegawai as Pegawai ASN
-    participant UI as Filament Web UI (IF-01)
+    participant UI as Halaman Web (IF-01)
     participant Core as SiPEDAS Core
-    participant DB as MySQL DB (IF-07)
-    participant WAClient as WhatsApp Gateway Client (IF-04)
-    actor Pimpinan as Pimpinan Satker
-    participant Webhook as Approval Webhook (IF-08)
+    participant DB as Database MySQL (IF-07)
+    participant WAClient as Pengirim WhatsApp (IF-04)
+    actor Pimpinan as Kepala Satker / Plh
+    participant Webhook as Tautan Persetujuan (IF-08)
 
-    Pegawai->>UI: Input form Surat Tugas (Tanggal, Tujuan, Pegawai)
-    UI->>Core: Validasi request & cek tumpang-tindih tanggal
-    Core->>DB: Query jadwal penugasan aktif pegawai terkait
-    alt Terdeteksi Konflik Jadwal
-        Core-->>UI: Blokir pengajuan & kembalikan pesan bentrok
-        UI-->>Pegawai: Tampilkan peringatan konflik jadwal dinas
-    else Jadwal Bersih (Zero-Conflict)
-        Core->>DB: Simpan Penugasan (Status: Menunggu Persetujuan)
-        Core->>Core: Generate HMAC SHA-256 Token berbatas waktu
-        Core->>WAClient: Kirim notifikasi tugas + tautan /approve/{token}
-        WAClient-->>Pimpinan: Pesan WA: "Permohonan Surat Tugas baru. Klik tautan untuk menyetujui."
+    Pegawai->>UI: Buka form Surat Tugas, isi tujuan, tanggal, dan nama anggota tim
+    UI->>Core: Periksa apakah ada jadwal yang bertabrakan
+    Core->>DB: Cek jadwal dinas seluruh anggota tim pada tanggal tersebut
+    alt Jika Ada Pegawai yang Sudah Punya Tugas di Tanggal Sama
+        Core-->>UI: Tolak penyimpanan & sebutkan nama pegawai yang bentrok
+        UI-->>Pegawai: Muncul peringatan: "Pegawai X sudah ada tugas dinas di tanggal ini"
+    else Jika Jadwal Semua Pegawai Kosong
+        Core->>DB: Simpan Surat Tugas (Status: Menunggu Persetujuan)
+        Core->>Core: Buat tautan persetujuan rahasia berbatas waktu
+        Core->>WAClient: Kirim pesan ringkasan tugas + tautan persetujuan ke WhatsApp pimpinan
+        WAClient-->>Pimpinan: Pesan WA masuk: "Ada permohonan surat tugas baru. Klik tautan ini untuk menyetujui."
         
-        Pimpinan->>Webhook: Klik tautan /approve/{token} dari ponsel
-        Webhook->>Core: Validasi integritas token & masa berlaku
-        Core->>DB: Update Penugasan (Status: Disetujui, Tanggal Approval, Pejabat)
-        Core->>WAClient: Kirim notifikasi pengesahan ke pemohon
-        Webhook-->>Pimpinan: Tampilan halaman sukses persetujuan resmi
-        WAClient-->>Pegawai: Pesan WA: "Surat Tugas Anda telah disahkan. PDF siap dicetak."
+        Pimpinan->>Webhook: Buka pesan WA dari HP, lalu sentuh tautan persetujuan
+        Webhook->>Core: Cocokkan keaslian tautan dan pastikan belum kedaluwarsa
+        Core->>DB: Ubah status menjadi: Disetujui & terbitkan nomor surat resmi
+        Core->>WAClient: Kirim kabar ke pemohon bahwa tugas sudah disahkan
+        Webhook-->>Pimpinan: Layar HP menampilkan: "Surat Tugas Berhasil Disahkan"
+        WAClient-->>Pegawai: Pesan WA masuk: "Surat tugas Anda sudah disahkan pimpinan. Silakan cetak PDF."
     end
 ```
 
 ---
 
-## 6.2 Skenario 2: Sintesis Laporan Perjalanan Dinas via LPD AI
+## 6.2 Alur 2: Menyusun Laporan Perjalanan Dinas Dibantu AI (LPD AI)
 
-Skenario penyusunan LPD otomatis dari catatan lapangan kasar menggunakan LLM Google Gemini:
+Alur ketika pegawai pulang dari dinas luar dan ingin membuat draf laporan resmi dengan bantuan AI:
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Pegawai as Pegawai ASN
-    participant UI as Filament Web UI (IF-01)
+    participant UI as Halaman Web (IF-01)
     participant LPDAI as LPD AI Engine
-    participant AIGw as Gemini AI Gateway (IF-05)
-    participant DB as MySQL DB (IF-07)
+    participant AIGw as AI Google Gemini (IF-05)
+    participant DB as Database MySQL (IF-07)
 
-    Pegawai->>UI: Buka form LPD, input poin-poin kegiatan, unggah foto, GPS
-    UI->>LPDAI: Request generate laporan naratif
-    LPDAI->>LPDAI: Rakit system prompt PUEBI & schema JSON mode
-    LPDAI->>AIGw: POST /v1/chat/completions (model: gemini-3-flash, json_object)
-    Note over AIGw: Pemrosesan NLP, restrukturisasi kalimat resmi, penyusunan bab
-    AIGw-->>LPDAI: Kembalikan JSON (Latar Belakang, Maksud, Hasil, Rekomendasi)
-    LPDAI->>LPDAI: Parse dan validasi kelengkapan atribut laporan
-    LPDAI-->>UI: Render draft formulir LPD di layar editor
-    Pegawai->>UI: Review & penyesuaian minor narasi
-    Pegawai->>UI: Tekan tombol Simpan & Cetak LPD
-    UI->>DB: Simpan rekaman LPD terverifikasi
-    UI-->>Pegawai: Unduh berkas PDF LPD resmi berstandar BPS
+    Pegawai->>UI: Buka menu LPD, ketik poin ringkas kegiatan, unggah foto dan lokasi
+    UI->>LPDAI: Minta bantuan AI untuk merapikan laporan
+    LPDAI->>LPDAI: Siapkan instruksi format laporan resmi pemerintah (PUEBI)
+    LPDAI->>AIGw: Kirim catatan ke server AI Google Gemini
+    Note over AIGw: AI merapikan kalimat, memperbaiki tata bahasa, dan membagi ke bab resmi
+    AIGw-->>LPDAI: Kirim balik hasil dalam bentuk isian bab yang rapi
+    LPDAI->>LPDAI: Periksa agar semua poin terisi lengkap
+    LPDAI-->>UI: Tampilkan draf laporan di layar komputer pegawai
+    Pegawai->>UI: Baca dan perbaiki kata-kata bila ada yang kurang pas
+    Pegawai->>UI: Klik tombol Simpan dan Unduh PDF
+    UI->>DB: Simpan naskah akhir laporan ke database kantor
+    UI-->>Pegawai: Berkas PDF laporan resmi siap dicetak dan ditandatangani
 ```
 
 ---
 
-## 6.3 Skenario 3: Verifikasi Honor Mitra Dokter V, Batas SBM & SPK/BAST
+## 6.3 Alur 3: Menginput Honor Mitra, Cek Batas Honor SBM, dan Terbitkan SPK/BAST
 
-Alur pengalokasian honor mitra statistik dengan penegakan Single Source of Truth dan plafon SBM:
+Alur bagaimana koordinator tim mengalokasikan kegiatan kepada mitra tanpa melanggar batas aturan pemerintah:
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Admin as Admin Satker / Ketua Tim
-    participant UI as Filament Web UI (IF-01)
+    participant UI as Halaman Web (IF-01)
     participant DokterV as Dokter V Engine
-    participant DB as MySQL DB (IF-07)
+    participant DB as Database MySQL (IF-07)
 
-    Admin->>UI: Input alokasi honor mitra (Mitra ID, Kegiatan, Volume, tanggal_akhir_kegiatan)
-    UI->>DokterV: Evaluasi aturan bisnis honorarium
-    DokterV->>DokterV: Ekstrak bulan alokasi dari SSoT tanggal_akhir_kegiatan
-    DokterV->>DB: SELECT SUM(honor) mitra pada bulan tersebut
+    Admin->>UI: Pilih nama mitra, jenis survei, volume kerja, dan tanggal selesai kegiatan
+    UI->>DokterV: Periksa aturan batas honor
+    DokterV->>DokterV: Ambil bulan honor dari tanggal_akhir_kegiatan
+    DokterV->>DB: Hitung total honor yang sudah diterima mitra tersebut di bulan itu
     
-    alt Akumulasi Honor > Batas SBM (Survei: Rp 3.353.000 / Sensus: Rp 4.694.000)
-        DokterV-->>UI: Lempar BusinessRuleException (Plafon SBM Terlampaui)
-        UI-->>Admin: Peringatan merah: Alokasi melebihi batas SBM bulan terkait
-    else Dalam Batas Toleransi SBM
-        DokterV->>DB: INSERT into honors (Simpan alokasi terverifikasi)
-        alt Kegiatan Survei (Bulanan)
-            DokterV->>DokterV: Lakukan bundling seluruh alokasi survei pada bulan terkait
-            DokterV->>DB: Terbitkan SPK Gabungan Bulanan & draf BAST
-        else Kegiatan Sensus (Single Activity)
-            DokterV->>DB: Terbitkan SPK Mandiri Berbasis Volume
+    alt Jika Total Honor Melebihi Batas Resmi (Survei > Rp 3.353.000 / Sensus > Rp 4.694.000)
+        DokterV-->>UI: Tolak simpan karena melanggar aturan SBM
+        UI-->>Admin: Peringatan merah: "Alokasi honor bulan ini melebihi batas SBM"
+    else Jika Masih Aman di Bawah Batas
+        DokterV->>DB: Simpan alokasi honor ke database
+        alt Jika Kegiatan Survei Bulanan
+            DokterV->>DokterV: Gabungkan semua survei di bulan yang sama menjadi 1 kontrak kerja
+            DokterV->>DB: Terbitkan draf kontrak SPK gabungan dan lembar serah terima (BAST)
+        else Jika Kegiatan Sensus
+            DokterV->>DB: Terbitkan kontrak SPK per kegiatan sensus
         end
-        DokterV-->>UI: Sukses disimpan & tampilkan tombol cetak SPK/BAST
-        UI-->>Admin: Unduh berkas kontrak SPK dan lembar BAST digital
+        DokterV-->>UI: Alokasi berhasil disimpan
+        UI-->>Admin: Tombol cetak berkas kontrak (SPK) dan BAST langsung aktif
     end
 ```
 
 ---
 
-## 6.4 Skenario 4: Alur Verifikasi Keuangan Sipancong Multi-Tahap
+## 6.4 Alur 4: Tahapan Pemeriksaan Berkas Keuangan (Sipancong)
 
-Alur verifikasi pembayaran honorarium atau biaya perjalanan dinas oleh aparatur perbendaharaan:
+Alur pemeriksaan berkas pembayaran oleh petugas keuangan kantor sampai dana dicairkan:
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Bendahara as Bendahara Pengeluaran
-    participant UI as Filament Web UI (IF-01)
+    participant UI as Halaman Web (IF-01)
     participant Sipancong as Sipancong Finance
-    participant DB as MySQL DB (IF-07)
-    actor PPSPM as PPSPM (Penguji SPM)
-    actor PPK as PPK (Pembuat Komitmen)
+    participant DB as Database MySQL (IF-07)
+    actor PPSPM as Penguji SPM (PPSPM)
+    actor PPK as Pejabat Pembuat Komitmen (PPK)
 
-    Bendahara->>UI: Periksa berkas tagihan & kelengkapan bukti pengeluaran
-    UI->>Sipancong: Submit verifikasi kelayakan awal
-    Sipancong->>DB: Update status: Terverifikasi Bendahara -> Menunggu PPSPM
+    Bendahara->>UI: Periksa kelengkapan kuitansi dan bukti pengeluaran
+    UI->>Sipancong: Berkas dinyatakan lengkap tahap awal
+    Sipancong->>DB: Ubah status berkas: Menunggu Uji PPSPM
     
-    PPSPM->>UI: Uji keabsahan pembebanan anggaran & MAK
-    UI->>Sipancong: Otorisasi penerbitan SPM
-    Sipancong->>DB: Update status: Terverifikasi PPSPM -> Menunggu PPK
+    PPSPM->>UI: Periksa kecukupan pagu anggaran dan nomor mata anggaran (MAK)
+    UI->>Sipancong: Sahkan pengujian surat perintah membayar
+    Sipancong->>DB: Ubah status berkas: Menunggu Persetujuan PPK
     
-    PPK->>UI: Validasi kesesuaian output fisik terhadap kontrak
-    UI->>Sipancong: Setujui Perintah Pembayaran (SPP/SPM disahkan)
-    Sipancong->>DB: Update status: Disetujui PPK -> Siap Dicairkan
+    PPK->>UI: Pastikan hasil kerja lapangan sudah selesai dan BAST sudah diteken
+    UI->>Sipancong: Setujui perintah bayar
+    Sipancong->>DB: Ubah status berkas: Siap Dicairkan ke Rekening
     
-    Bendahara->>UI: Catat nomor referensi transfer bank / SP2D
-    UI->>Sipancong: Eksekusi penutupan pembayaran
-    Sipancong->>DB: Update status: Selesai Dicairkan (Audit Log Tercatat)
-    UI-->>Bendahara: Tampilkan kwitansi pelunasan sah
+    Bendahara->>UI: Lakukan transfer bank dan masukkan nomor referensi transfer/SP2D
+    UI->>Sipancong: Tutup proses pembayaran
+    Sipancong->>DB: Ubah status berkas: Selesai Dibayarkan
+    UI-->>Bendahara: Bukti pelunasan pembayaran tersimpan rapi di riwayat
 ```
