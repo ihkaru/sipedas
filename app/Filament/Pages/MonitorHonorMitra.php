@@ -235,14 +235,14 @@ class MonitorHonorMitra extends Page implements HasTable
                         'mendekati_limit' => 'Mendekati Batas (>= 80% Kuota)',
                         'over_limit' => 'Tidak Bisa (Over Limit)',
                     ])
-                    ->query(function (Builder $query, array $data) use ($limitSensus, $limitSurvei): Builder {
+                    ->baseQuery(function (Builder $query, array $data) use ($limitSensus, $limitSurvei): Builder {
                         if (empty($data['value'])) {
                             return $query;
                         }
 
                         return match ($data['value']) {
                             'bebas' => $query->havingRaw('total_honor_survei = 0 AND total_honor_sensus = 0'),
-                            'ada_kuota' => $query->havingRaw('(total_honor_survei < ? AND total_honor_sensus < ?)', [$limitSurvei, $limitSensus]),
+                            'ada_kuota' => $query->havingRaw('(total_honor_survei > 0 OR total_honor_sensus > 0) AND total_honor_survei < ? AND total_honor_sensus < ?', [$limitSurvei * 0.8, $limitSensus * 0.8]),
                             'mendekati_limit' => $query->havingRaw('((total_honor_survei >= ? OR total_honor_sensus >= ?) AND (total_honor_survei <= ? AND total_honor_sensus <= ?))', [$limitSurvei * 0.8, $limitSensus * 0.8, $limitSurvei, $limitSensus]),
                             'over_limit' => $query->havingRaw('(total_honor_survei > ? OR total_honor_sensus > ?)', [$limitSurvei, $limitSensus]),
                             default => $query,

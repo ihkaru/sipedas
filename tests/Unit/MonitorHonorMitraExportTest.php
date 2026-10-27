@@ -5,12 +5,14 @@ namespace Tests\Unit;
 use App\Exports\MonitorHonorMitraExport;
 use App\Exports\Sheets\MonitorHonorMitraDetailSheet;
 use App\Exports\Sheets\MonitorHonorMitraSummarySheet;
+use App\Filament\Pages\MonitorHonorMitra;
 use App\Models\AlokasiHonor;
 use App\Models\Honor;
 use App\Models\KegiatanManmit;
 use App\Models\Kemitraan;
 use App\Models\Mitra;
 use App\Models\Setting;
+use Filament\Tables\Table;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Maatwebsite\Excel\Facades\Excel;
 use Tests\TestCase;
@@ -202,5 +204,38 @@ class MonitorHonorMitraExportTest extends TestCase
         Excel::store($export, 'test_perencanaan.xlsx');
 
         Excel::assertStored('test_perencanaan.xlsx');
+    }
+
+    public function test_status_ketersediaan_filter_applies_base_query_havings(): void
+    {
+        $page = new MonitorHonorMitra;
+        $table = $page->table(new Table($page));
+        $filter = $table->getFilter('status_ketersediaan');
+
+        $this->assertNotNull($filter);
+
+        // Test filter 'bebas'
+        $q1 = Mitra::query();
+        $filter->applyToBaseQuery($q1, ['value' => 'bebas']);
+        $this->assertCount(1, $q1->getQuery()->havings ?? []);
+        $this->assertStringContainsString('total_honor_survei = 0', $q1->getQuery()->havings[0]['sql']);
+
+        // Test filter 'ada_kuota'
+        $q2 = Mitra::query();
+        $filter->applyToBaseQuery($q2, ['value' => 'ada_kuota']);
+        $this->assertCount(1, $q2->getQuery()->havings ?? []);
+        $this->assertStringContainsString('total_honor_survei < ?', $q2->getQuery()->havings[0]['sql']);
+
+        // Test filter 'mendekati_limit'
+        $q3 = Mitra::query();
+        $filter->applyToBaseQuery($q3, ['value' => 'mendekati_limit']);
+        $this->assertCount(1, $q3->getQuery()->havings ?? []);
+        $this->assertStringContainsString('total_honor_survei >= ?', $q3->getQuery()->havings[0]['sql']);
+
+        // Test filter 'over_limit'
+        $q4 = Mitra::query();
+        $filter->applyToBaseQuery($q4, ['value' => 'over_limit']);
+        $this->assertCount(1, $q4->getQuery()->havings ?? []);
+        $this->assertStringContainsString('total_honor_survei > ?', $q4->getQuery()->havings[0]['sql']);
     }
 }
