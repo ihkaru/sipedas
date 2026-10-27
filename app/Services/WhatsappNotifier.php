@@ -3,9 +3,11 @@
 namespace App\Services;
 
 use App\Models\Setting;
+use App\Models\User;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Client\RequestException;
 use Throwable;
 
 class WhatsappNotifier
@@ -14,10 +16,10 @@ class WhatsappNotifier
      * Mengirim pesan WhatsApp menggunakan Aina Whatsmeow Gateway (default) atau Fonnte API dengan logging terpusat.
      * Mendukung opt-out notifikasi secara global, per jenis event, atau per nomor pegawai melalui menu Pengaturan.
      *
-     * @param string|null $targetNumber Nomor tujuan (contoh: '6281234567890', '081234567890', atau '628xxx@s.whatsapp.net')
-     * @param string $message Isi pesan yang akan dikirim
-     * @param string|null $event Kategori event pengajuan ('whatsapp_notify_pengajuan_baru', 'whatsapp_notify_tanggapan_pengaju', 'whatsapp_notify_hasil_pemeriksaan', 'whatsapp_notify_pencairan')
-     * @return \Illuminate\Http\Client\Response|null Respons dari HTTP client atau null jika gagal/opt-out.
+     * @param  string|null  $targetNumber  Nomor tujuan (contoh: '6281234567890', '081234567890', atau '628xxx@s.whatsapp.net')
+     * @param  string  $message  Isi pesan yang akan dikirim
+     * @param  string|null  $event  Kategori event pengajuan ('whatsapp_notify_pengajuan_baru', 'whatsapp_notify_tanggapan_pengaju', 'whatsapp_notify_hasil_pemeriksaan', 'whatsapp_notify_pencairan')
+     * @return Response|null Respons dari HTTP client atau null jika gagal/opt-out.
      */
     public static function send($targetNumber, $message, ?string $event = null)
     {
@@ -27,24 +29,27 @@ class WhatsappNotifier
             Log::warning('WhatsappNotifier: Attempted to send message to an empty target number.', [
                 'message' => $message,
             ]);
+
             return null;
         }
 
         // 1. Cek Master Opt-Out: apakah notifikasi WhatsApp aktif secara global di Setting
-        if (!self::isNotificationEnabled()) {
+        if (! self::isNotificationEnabled()) {
             Log::info('WhatsappNotifier: Notification suppressed because WhatsApp notifications are disabled globally in settings.', [
                 'target' => $targetNumber,
                 'event' => $event,
             ]);
+
             return null;
         }
 
         // 2. Cek Event Opt-Out: apakah kategori event ini dinonaktifkan di Setting
-        if ($event && !self::isEventEnabled($event)) {
+        if ($event && ! self::isEventEnabled($event)) {
             Log::info("WhatsappNotifier: Notification suppressed because event '{$event}' is disabled in settings.", [
                 'target' => $targetNumber,
                 'event' => $event,
             ]);
+
             return null;
         }
 
@@ -54,6 +59,7 @@ class WhatsappNotifier
                 'target' => $targetNumber,
                 'event' => $event,
             ]);
+
             return null;
         }
 
@@ -77,7 +83,7 @@ class WhatsappNotifier
                 return filter_var($setting, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? ($setting !== '0');
             }
         } catch (Throwable $e) {
-            Log::warning('WhatsappNotifier: Failed to read whatsapp_notification_enabled from settings: ' . $e->getMessage());
+            Log::warning('WhatsappNotifier: Failed to read whatsapp_notification_enabled from settings: '.$e->getMessage());
         }
 
         return true;
@@ -98,7 +104,7 @@ class WhatsappNotifier
                 return filter_var($setting, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? ($setting !== '0');
             }
         } catch (Throwable $e) {
-            Log::warning("WhatsappNotifier: Failed to read event setting '{$eventKey}': " . $e->getMessage());
+            Log::warning("WhatsappNotifier: Failed to read event setting '{$eventKey}': ".$e->getMessage());
         }
 
         return true;
@@ -123,34 +129,23 @@ class WhatsappNotifier
                 ? $rawSetting
                 : (json_decode($rawSetting, true) ?? array_map('trim', explode(',', $rawSetting)));
 
-            if (!is_array($optedOutList) || empty($optedOutList)) {
+            if (! is_array($optedOutList) || empty($optedOutList)) {
                 return false;
             }
 
-            $targetDigits = preg_replace('/[^0-9]/', '', $targetNumber);
-            if (empty($targetDigits)) {
-                return false;
-            }
+            $normalizedTarget = self::normalizeAinaRecipient($targetNumber);
 
             foreach ($optedOutList as $opted) {
-                $optedDigits = preg_replace('/[^0-9]/', '', (string) $opted);
-                if (empty($optedDigits)) {
+                if (empty($opted)) {
                     continue;
                 }
 
-                // Cek nomor sama persis
-                if ($targetDigits === $optedDigits) {
-                    return true;
-                }
-
-                // Cek sufiks 8-9 digit terakhir (mengakomodasi awalan 08 vs 628)
-                $suffixLen = min(9, min(strlen($targetDigits), strlen($optedDigits)));
-                if ($suffixLen >= 7 && substr($targetDigits, -$suffixLen) === substr($optedDigits, -$suffixLen)) {
+                if (self::normalizeAinaRecipient((string) $opted) === $normalizedTarget) {
                     return true;
                 }
             }
         } catch (Throwable $e) {
-            Log::warning('WhatsappNotifier: Failed to evaluate opt-out setting: ' . $e->getMessage());
+            Log::warning('WhatsappNotifier: Failed to evaluate opt-out setting: '.$e->getMessage());
         }
 
         return false;
@@ -163,10 +158,11 @@ class WhatsappNotifier
     public static function resolveTargetNumber(?string $originalTargetNumber): ?string
     {
         if (config('app.whatsapp_test_mode')) {
-            $testUser = \App\Models\User::getTestUser();
+            $testUser = User::getTestUser();
             if ($testUser && $testUser->pegawai?->nomor_wa) {
                 return $testUser->pegawai->nomor_wa;
             }
+
             return null;
         }
 
@@ -184,12 +180,14 @@ class WhatsappNotifier
         // Jika API Key Aina belum diset tapi Fonnte token tersedia, fallback otomatis ke Fonnte
         if (empty($apiKey)) {
             $fonnteToken = config('services.whatsapp.fonnte.token');
-            if (!empty($fonnteToken)) {
+            if (! empty($fonnteToken)) {
                 Log::warning('WhatsappNotifier: WHATSMEOW_API_KEY is empty. Falling back to Fonnte provider.');
+
                 return self::sendViaFonnte($targetNumber, $message);
             }
 
             Log::critical('WhatsappNotifier: WHATSMEOW_API_KEY is not configured in .env file.');
+
             return null;
         }
 
@@ -247,6 +245,7 @@ class WhatsappNotifier
                 'target' => $recipient,
                 'error_message' => $e->getMessage(),
             ]);
+
             return null;
         } catch (Throwable $e) {
             Log::critical('An unexpected error occurred in WhatsappNotifier (Aina).', [
@@ -254,6 +253,7 @@ class WhatsappNotifier
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return null;
         }
     }
@@ -267,6 +267,7 @@ class WhatsappNotifier
 
         if (empty($token)) {
             Log::critical('FONNTE_TOKEN is not set in .env file.');
+
             return null;
         }
 
@@ -305,6 +306,7 @@ class WhatsappNotifier
                 'target' => $cleanTarget,
                 'error_message' => $e->getMessage(),
             ]);
+
             return null;
         } catch (Throwable $e) {
             Log::critical('An unexpected error occurred in WhatsappNotifier (Fonnte).', [
@@ -312,6 +314,7 @@ class WhatsappNotifier
                 'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return null;
         }
     }
@@ -333,11 +336,11 @@ class WhatsappNotifier
 
         // Format angka lokal Indonesia ke standar internasional
         if (str_starts_with($digits, '08')) {
-            $digits = '628' . substr($digits, 2);
+            $digits = '628'.substr($digits, 2);
         } elseif (str_starts_with($digits, '8')) {
-            $digits = '62' . $digits;
+            $digits = '62'.$digits;
         }
 
-        return $digits . '@s.whatsapp.net';
+        return $digits.'@s.whatsapp.net';
     }
 }
