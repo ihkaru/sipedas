@@ -60,13 +60,14 @@ class SuratTugasService
     {
         $data = $this->validator->validate($rawData);
 
-        return DB::transaction(function () use ($data, $pengajuNip) {
+        $createdPenugasans = DB::transaction(function () use ($data, $pengajuNip) {
             // Tentukan NIP Pengaju
+            $user = auth()->user();
             $effectivePengajuNip = $pengajuNip 
-                ?? auth()?->user()?->pegawai?->nip 
+                ?? ($user && $user->pegawai ? $user->pegawai->nip : null)
                 ?? $data['nip_pengaju'] 
                 ?? (!empty($data['nips']) ? $data['nips'][0] : null)
-                ?? Pengaturan::key('ID_PLH_DEFAULT')?->nilai
+                ?? (Pengaturan::key('ID_PLH_DEFAULT') ? Pengaturan::key('ID_PLH_DEFAULT')->nilai : null)
                 ?? '198008112005021004';
 
             $tglMulai = Carbon::parse($data['tgl_mulai_tugas'])->toDateTimeString();
@@ -74,7 +75,7 @@ class SuratTugasService
 
             // Selesaikan Approver / Plh
             $pegawaiPlh = Plh::getApprover($data['nips'] ?? null, $tglMulai, true);
-            $plhNip = $pegawaiPlh?->nip ?? Pengaturan::key('ID_PLH_DEFAULT')?->nilai;
+            $plhNip = $pegawaiPlh ? $pegawaiPlh->nip : (Pengaturan::key('ID_PLH_DEFAULT') ? Pengaturan::key('ID_PLH_DEFAULT')->nilai : null);
 
             $grupId = Penugasan::getGrupId();
             $createdPenugasans = [];
@@ -108,8 +109,11 @@ class SuratTugasService
                 RiwayatPengajuan::kirim([$pengajuan->id]);
                 TujuanSuratTugas::ajukan($data, $pengajuan->id);
 
-                // Jika Non-SPPD, langsung otomatis disetujui (auto-approved)
-                if ($pengajuan->jenis_surat_tugas === Constants::NON_SPPD) {
+                // Jika Non-SPPD atau mode auto-approve aktif, langsung otomatis disetujui (auto-approved)
+                $isAutoApprove = ($pengajuan->jenis_surat_tugas === Constants::NON_SPPD) 
+                    || (\App\Models\Setting::where('key', 'st_approval_mode')->value('value') === 'auto_approve');
+
+                if ($isAutoApprove) {
                     $pengajuan->setujui(checkRole: false);
                 }
 
@@ -145,8 +149,11 @@ class SuratTugasService
                 RiwayatPengajuan::kirim([$pengajuan->id]);
                 TujuanSuratTugas::ajukan($data, $pengajuan->id);
 
-                // Jika Non-SPPD, langsung otomatis disetujui (auto-approved)
-                if ($pengajuan->jenis_surat_tugas === Constants::NON_SPPD) {
+                // Jika Non-SPPD atau mode auto-approve aktif, langsung otomatis disetujui (auto-approved)
+                $isAutoApprove = ($pengajuan->jenis_surat_tugas === Constants::NON_SPPD) 
+                    || (\App\Models\Setting::where('key', 'st_approval_mode')->value('value') === 'auto_approve');
+
+                if ($isAutoApprove) {
                     $pengajuan->setujui(checkRole: false);
                 }
 
@@ -155,6 +162,18 @@ class SuratTugasService
 
             return $createdPenugasans;
         });
+
+        // Kirim notifikasi WhatsApp pengajuan baru jika ada penugasan yang masih menunggu persetujuan (DIKIRIM)
+        if (!empty($createdPenugasans)) {
+            $hasPendingApproval = collect($createdPenugasans)->contains(
+                fn($p) => $p->riwayatPengajuan?->status === Constants::STATUS_PENGAJUAN_DIKIRIM
+            );
+            if ($hasPendingApproval) {
+                \App\Services\SuratTugas\SuratTugasNotificationService::notifyPengajuanBaru($createdPenugasans);
+            }
+        }
+
+        return $createdPenugasans;
     }
 
     /**

@@ -21,6 +21,8 @@ class WhatsappNotifier
      */
     public static function send($targetNumber, $message, ?string $event = null)
     {
+        $targetNumber = self::resolveTargetNumber($targetNumber);
+
         if (empty($targetNumber)) {
             Log::warning('WhatsappNotifier: Attempted to send message to an empty target number.', [
                 'message' => $message,
@@ -55,7 +57,7 @@ class WhatsappNotifier
             return null;
         }
 
-        $provider = strtolower((string) config('services.whatsapp.provider', env('WHATSAPP_PROVIDER', 'aina')));
+        $provider = strtolower((string) config('services.whatsapp.provider', 'aina'));
 
         if ($provider === 'aina' || $provider === 'whatsmeow') {
             return self::sendViaAina($targetNumber, $message);
@@ -155,16 +157,33 @@ class WhatsappNotifier
     }
 
     /**
+     * Menyelesaikan nomor target berdasarkan mode testing di .env
+     * Jika WHATSAPP_TEST_MODE aktif, arahkan ke nomor WA milik test user.
+     */
+    public static function resolveTargetNumber(?string $originalTargetNumber): ?string
+    {
+        if (config('app.whatsapp_test_mode')) {
+            $testUser = \App\Models\User::getTestUser();
+            if ($testUser && $testUser->pegawai?->nomor_wa) {
+                return $testUser->pegawai->nomor_wa;
+            }
+            return null;
+        }
+
+        return $originalTargetNumber;
+    }
+
+    /**
      * Mengirim pesan via Gateway Whatsmeow (Nomor Bot Aina).
      */
     protected static function sendViaAina(string $targetNumber, string $message)
     {
-        $baseUrl = rtrim((string) config('services.whatsapp.aina.base_url', env('WHATSMEOW_BASE_URL', 'https://aina-wa.dvlpid.my.id')), '/');
-        $apiKey = (string) config('services.whatsapp.aina.api_key', env('WHATSMEOW_API_KEY', ''));
+        $baseUrl = rtrim((string) config('services.whatsapp.aina.base_url', 'https://aina-wa.dvlpid.my.id'), '/');
+        $apiKey = (string) config('services.whatsapp.aina.api_key', '');
 
         // Jika API Key Aina belum diset tapi Fonnte token tersedia, fallback otomatis ke Fonnte
         if (empty($apiKey)) {
-            $fonnteToken = config('services.whatsapp.fonnte.token', env('FONNTE_TOKEN'));
+            $fonnteToken = config('services.whatsapp.fonnte.token');
             if (!empty($fonnteToken)) {
                 Log::warning('WhatsappNotifier: WHATSMEOW_API_KEY is empty. Falling back to Fonnte provider.');
                 return self::sendViaFonnte($targetNumber, $message);
@@ -244,7 +263,7 @@ class WhatsappNotifier
      */
     protected static function sendViaFonnte(string $targetNumber, string $message)
     {
-        $token = (string) config('services.whatsapp.fonnte.token', env('FONNTE_TOKEN'));
+        $token = (string) config('services.whatsapp.fonnte.token', '');
 
         if (empty($token)) {
             Log::critical('FONNTE_TOKEN is not set in .env file.');

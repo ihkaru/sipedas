@@ -1,0 +1,221 @@
+<?php
+
+namespace Tests\Unit;
+
+use App\Models\Kegiatan;
+use App\Models\Pegawai;
+use App\Models\Penugasan;
+use App\Models\RiwayatPengajuan;
+use App\Models\Setting;
+use App\Models\User;
+use App\Services\SuratTugas\SuratTugasNotificationService;
+use App\Services\WhatsappNotifier;
+use App\Supports\Constants;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+use Spatie\Permission\Models\Role;
+use Tests\TestCase;
+
+class SuratTugasApprovalDelegationTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Role::firstOrCreate(['name' => 'kepala_satker', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'ppspm', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'pegawai', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
+    }
+
+    public function test_is_user_approver_with_delegasi_ppspm_mode(): void
+    {
+        Setting::updateOrCreate(['key' => 'st_approval_mode'], ['value' => 'delegasi_ppspm']);
+
+        $userKepala = User::factory()->create();
+        $userKepala->assignRole('kepala_satker');
+
+        $userPpspm = User::factory()->create();
+        $userPpspm->assignRole('ppspm');
+
+        $userPegawai = User::factory()->create();
+        $userPegawai->assignRole('pegawai');
+
+        // Dual approval: both Kepala Satker and PPSPM/Kasubbag can approve
+        $this->assertTrue(Penugasan::isUserApprover($userKepala));
+        $this->assertTrue(Penugasan::isUserApprover($userPpspm));
+        $this->assertFalse(Penugasan::isUserApprover($userPegawai));
+    }
+
+    public function test_is_user_approver_with_kepala_only_mode(): void
+    {
+        Setting::updateOrCreate(['key' => 'st_approval_mode'], ['value' => 'kepala_only']);
+
+        $userKepala = User::factory()->create();
+        $userKepala->assignRole('kepala_satker');
+
+        $userPpspm = User::factory()->create();
+        $userPpspm->assignRole('ppspm');
+
+        // In kepala_only mode, PPSPM cannot approve
+        $this->assertTrue(Penugasan::isUserApprover($userKepala));
+        $this->assertFalse(Penugasan::isUserApprover($userPpspm));
+    }
+
+    public function test_is_user_approver_with_ppspm_only_mode(): void
+    {
+        Setting::updateOrCreate(['key' => 'st_approval_mode'], ['value' => 'ppspm_only']);
+
+        $userKepala = User::factory()->create();
+        $userKepala->assignRole('kepala_satker');
+
+        $userPpspm = User::factory()->create();
+        $userPpspm->assignRole('ppspm');
+
+        // In ppspm_only mode, PPSPM can approve, Kepala cannot
+        $this->assertFalse(Penugasan::isUserApprover($userKepala));
+        $this->assertTrue(Penugasan::isUserApprover($userPpspm));
+    }
+
+    public function test_plh_assigned_nip_can_always_approve(): void
+    {
+        Setting::updateOrCreate(['key' => 'st_approval_mode'], ['value' => 'kepala_only']);
+
+        $pegawaiPlh = Pegawai::factory()->create(['nip' => '199001012015011001']);
+        $userPlh = User::factory()->create(['email' => $pegawaiPlh->email]);
+        $userPlh->assignRole('pegawai'); // Only pegawai role
+
+        // When plh_id matches, this user can approve regardless of st_approval_mode
+        $this->assertTrue(Penugasan::isUserApprover($userPlh, '199001012015011001'));
+        $this->assertFalse(Penugasan::isUserApprover($userPlh, '198808082010011002'));
+    }
+
+    public function test_surat_tugas_event_settings_can_suppress_notification(): void
+    {
+        Setting::updateOrCreate(['key' => 'whatsapp_notification_enabled'], ['value' => '1']);
+        Setting::updateOrCreate(['key' => 'whatsapp_notify_st_baru'], ['value' => '0']);
+        Setting::updateOrCreate(['key' => 'whatsapp_notify_st_disetujui'], ['value' => '1']);
+
+        $this->assertFalse(WhatsappNotifier::isEventEnabled('whatsapp_notify_st_baru'));
+        $this->assertTrue(WhatsappNotifier::isEventEnabled('whatsapp_notify_st_disetujui'));
+        $this->assertTrue(WhatsappNotifier::isEventEnabled('whatsapp_notify_st_revisi'));
+        $this->assertTrue(WhatsappNotifier::isEventEnabled('whatsapp_notify_st_ditolak'));
+    }
+
+    public function test_notification_service_dispatches_whatsapp_message(): void
+    {
+        Http::fake([
+            '*' => Http::response(['status' => 'success'], 200),
+        ]);
+
+        config(['services.whatsapp.aina.api_key' => 'test-api-key']);
+        Setting::updateOrCreate(['key' => 'whatsapp_notification_enabled'], ['value' => '1']);
+        Setting::updateOrCreate(['key' => 'st_approval_mode'], ['value' => 'delegasi_ppspm']);
+
+        // Create Pegawai and User for PPSPM
+        $pegawaiPpspm = Pegawai::factory()->create([
+            'nama' => 'Kasubbag PPSPM',
+            'panggilan' => 'Pak Kasubbag',
+            'nomor_wa' => '081234567890',
+        ]);
+        $userPpspm = User::factory()->create(['email' => $pegawaiPpspm->email]);
+        $userPpspm->assignRole('ppspm');
+
+        // Create Pengaju
+        $pegawaiPengaju = Pegawai::factory()->create([
+            'nama' => 'Staff Pengaju',
+            'panggilan' => 'Staff',
+            'nomor_wa' => '089876543210',
+        ]);
+
+        $kegiatan = Kegiatan::factory()->create(['id' => 998877, 'nama' => 'Survei Evaluasi']);
+
+        $penugasan = Penugasan::create([
+            'nip' => $pegawaiPengaju->nip,
+            'kegiatan_id' => $kegiatan->id,
+            'nip_pengaju' => $pegawaiPengaju->nip,
+            'level_tujuan_penugasan' => Constants::LEVEL_PENUGASAN_KECAMATAN,
+            'nama_tempat_tujuan' => 'Kecamatan Mempawah Hilir',
+            'tgl_mulai_tugas' => now()->toDateString(),
+            'tgl_akhir_tugas' => now()->toDateString(),
+            'tgl_pengajuan_tugas' => now()->toDateString(),
+            'jenis_peserta' => Constants::JENIS_PESERTA_SURAT_TUGAS_PEGAWAI,
+            'grup_id' => 12345,
+            'jenis_surat_tugas' => Constants::PERJALAN_DINAS_DALAM_KOTA,
+            'plh_id' => $pegawaiPpspm->nip,
+        ]);
+
+        RiwayatPengajuan::create([
+            'penugasan_id' => $penugasan->id,
+            'status' => Constants::STATUS_PENGAJUAN_DIKIRIM,
+        ]);
+
+        SuratTugasNotificationService::notifyPengajuanBaru($penugasan);
+
+        Http::assertSent(function ($request) {
+            return str_contains($request->body(), 'Pengajuan Surat Tugas Baru') &&
+                   str_contains($request->body(), 'Pak Kasubbag');
+        });
+    }
+
+    public function test_notification_service_dispatches_disetujui_revisi_and_ditolak(): void
+    {
+        Http::fake([
+            '*' => Http::response(['status' => 'success'], 200),
+        ]);
+
+        config(['services.whatsapp.aina.api_key' => 'test-api-key']);
+        Setting::updateOrCreate(['key' => 'whatsapp_notification_enabled'], ['value' => '1']);
+
+        $pegawaiPengaju = Pegawai::factory()->create([
+            'nama' => 'Staff Pengaju',
+            'panggilan' => 'Staff',
+            'nomor_wa' => '089876543210',
+        ]);
+
+        $kegiatan = Kegiatan::factory()->create(['id' => 998878, 'nama' => 'Pelatihan Susenas']);
+
+        $penugasan = Penugasan::create([
+            'nip' => $pegawaiPengaju->nip,
+            'kegiatan_id' => $kegiatan->id,
+            'nip_pengaju' => $pegawaiPengaju->nip,
+            'level_tujuan_penugasan' => Constants::LEVEL_PENUGASAN_KECAMATAN,
+            'nama_tempat_tujuan' => 'Kecamatan Mempawah Timur',
+            'tgl_mulai_tugas' => now()->toDateString(),
+            'tgl_akhir_tugas' => now()->toDateString(),
+            'tgl_pengajuan_tugas' => now()->toDateString(),
+            'jenis_peserta' => Constants::JENIS_PESERTA_SURAT_TUGAS_PEGAWAI,
+            'grup_id' => 12346,
+            'jenis_surat_tugas' => Constants::PERJALAN_DINAS_DALAM_KOTA,
+            'plh_id' => $pegawaiPengaju->nip,
+        ]);
+
+        RiwayatPengajuan::create([
+            'penugasan_id' => $penugasan->id,
+            'status' => Constants::STATUS_PENGAJUAN_DIKIRIM,
+        ]);
+
+        // 1. Test Revisi
+        SuratTugasNotificationService::notifyPerluRevisi($penugasan, 'Mohon ganti lokasi ke kantor desa', 'Kasubbag');
+        Http::assertSent(function ($request) {
+            return str_contains($request->body(), 'Perlu Perbaikan Surat Tugas') &&
+                   str_contains($request->body(), 'Mohon ganti lokasi ke kantor desa');
+        });
+
+        // 2. Test Disetujui
+        SuratTugasNotificationService::notifyDisetujui($penugasan, 'Kasubbag');
+        Http::assertSent(function ($request) {
+            return str_contains($request->body(), 'Surat Tugas Disetujui') &&
+                   str_contains($request->body(), 'Pelatihan Susenas');
+        });
+
+        // 3. Test Ditolak
+        SuratTugasNotificationService::notifyDitolak($penugasan, 'Kasubbag');
+        Http::assertSent(function ($request) {
+            return str_contains($request->body(), 'Surat Tugas Ditolak');
+        });
+    }
+}
+

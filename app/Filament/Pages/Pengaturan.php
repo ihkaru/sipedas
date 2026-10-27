@@ -40,6 +40,12 @@ class Pengaturan extends Page implements HasForms
             'STANDAR_BIAYA_MASUKAN_LAINNYA_NON_PNS_OB_PETUGAS_PENDATAAN_LAPANGAN_SENSUS' => $settings['STANDAR_BIAYA_MASUKAN_LAINNYA_NON_PNS_OB_PETUGAS_PENDATAAN_LAPANGAN_SENSUS'] ?? 4694000,
             'STANDAR_BIAYA_MASUKAN_LAINNYA_NON_PNS_OB_PETUGAS_PENDATAAN_LAPANGAN_SURVEI' => $settings['STANDAR_BIAYA_MASUKAN_LAINNYA_NON_PNS_OB_PETUGAS_PENDATAAN_LAPANGAN_SURVEI'] ?? 3353000,
             'allow_weekend_travel' => (bool) ($settings['allow_weekend_travel'] ?? false),
+            'st_approval_mode' => $settings['st_approval_mode'] ?? 'delegasi_ppspm',
+            'whatsapp_notify_st_baru' => isset($settings['whatsapp_notify_st_baru']) ? (bool) $settings['whatsapp_notify_st_baru'] : true,
+            'whatsapp_notify_st_disetujui' => isset($settings['whatsapp_notify_st_disetujui']) ? (bool) $settings['whatsapp_notify_st_disetujui'] : true,
+            'whatsapp_notify_st_revisi' => isset($settings['whatsapp_notify_st_revisi']) ? (bool) $settings['whatsapp_notify_st_revisi'] : true,
+            'whatsapp_notify_st_ditolak' => isset($settings['whatsapp_notify_st_ditolak']) ? (bool) $settings['whatsapp_notify_st_ditolak'] : true,
+            'whatsapp_notify_st_tembusan_kepala' => isset($settings['whatsapp_notify_st_tembusan_kepala']) ? (bool) $settings['whatsapp_notify_st_tembusan_kepala'] : false,
             'whatsapp_notification_enabled' => isset($settings['whatsapp_notification_enabled']) ? (bool) $settings['whatsapp_notification_enabled'] : true,
             'whatsapp_notify_pengajuan_baru' => isset($settings['whatsapp_notify_pengajuan_baru']) ? (bool) $settings['whatsapp_notify_pengajuan_baru'] : true,
             'whatsapp_notify_tanggapan_pengaju' => isset($settings['whatsapp_notify_tanggapan_pengaju']) ? (bool) $settings['whatsapp_notify_tanggapan_pengaju'] : true,
@@ -52,17 +58,39 @@ class Pengaturan extends Page implements HasForms
     public function form(Schema $schema): Schema
     {
         return $schema->schema([
+                Section::make('Persetujuan (Approval) Surat Tugas')
+                    ->description('Pengaturan delegasi wewenang verifikasi dan persetujuan Surat Tugas.')
+                    ->schema([
+                        Select::make('st_approval_mode')
+                            ->label('Wewenang Persetujuan Surat Tugas')
+                            ->options([
+                                'delegasi_ppspm' => 'Dual Approval: Kepala Satker & Kasubbag TU / PPSPM (Rekomendasi)',
+                                'kepala_only' => 'Kepala Satker Saja',
+                                'ppspm_only' => 'Delegasi Penuh: Kasubbag TU / PPSPM Saja',
+                                'auto_approve' => 'Auto-Approve Instan (Bypass Persetujuan)',
+                            ])
+                            ->default('delegasi_ppspm')
+                            ->helperText('Tentukan siapa yang berhak memeriksa, menyetujui, mengarahkan revisi, atau menolak pengajuan Surat Tugas di sistem.')
+                            ->live(),
+
+                        Toggle::make('whatsapp_notify_st_tembusan_kepala')
+                            ->label('Kirim Tembusan Notifikasi WA ke Kepala Satker')
+                            ->helperText('Jika mode delegasi aktif, tetap kirim pesan WhatsApp pengajuan baru ke nomor Kepala Satker sebagai tembusan/informasi.')
+                            ->visible(fn (Get $get) => in_array($get('st_approval_mode'), ['delegasi_ppspm', 'ppspm_only']))
+                            ->live(),
+                    ]),
+
                 Section::make('Notifikasi WhatsApp')
                     ->description('Pengaturan notifikasi pesan otomatis ke WhatsApp pegawai melalui Gateway Aina.')
                     ->schema([
                         Toggle::make('whatsapp_notification_enabled')
                             ->label('Aktifkan Notifikasi WhatsApp (Master Switch)')
-                            ->helperText('Jika dinonaktifkan, seluruh pengiriman notifikasi WhatsApp dari sistem Dokter V akan dihentikan.')
+                            ->helperText('Jika dinonaktifkan, seluruh pengiriman notifikasi WhatsApp dari sistem Dokter V dan SiPEDAS akan dihentikan.')
                             ->live(),
 
                         Select::make('whatsapp_opt_out_numbers')
                             ->label('Daftar Pegawai yang Opt-Out (Mengecualikan Notifikasi)')
-                            ->helperText('Pilih pegawai yang tidak ingin menerima pesan notifikasi WhatsApp dari sistem Dokter V.')
+                            ->helperText('Pilih pegawai yang tidak ingin menerima pesan notifikasi WhatsApp dari sistem.')
                             ->multiple()
                             ->searchable()
                             ->preload()
@@ -74,25 +102,53 @@ class Pengaturan extends Page implements HasForms
                             ->description('Atur jenis event pengajuan yang memicu pengiriman pesan WhatsApp.')
                             ->compact()
                             ->schema([
-                                Toggle::make('whatsapp_notify_pengajuan_baru')
-                                    ->label('Pengajuan Baru (ke PPK)')
-                                    ->helperText('Kirim WhatsApp ke PPK saat ada pengajuan baru diajukan.')
-                                    ->live(),
+                                Section::make('Pengajuan Surat Tugas (SiPEDAS)')
+                                    ->compact()
+                                    ->schema([
+                                        Toggle::make('whatsapp_notify_st_baru')
+                                            ->label('Pengajuan ST Baru (ke Penyetuju / Delegasi)')
+                                            ->helperText('Kirim WhatsApp ke Penyetuju saat ada surat tugas baru diajukan.')
+                                            ->live(),
 
-                                Toggle::make('whatsapp_notify_tanggapan_pengaju')
-                                    ->label('Tanggapan Pengaju (ke Pemeriksa)')
-                                    ->helperText('Kirim WhatsApp ke pemeriksa saat pengaju menanggapi revisi.')
-                                    ->live(),
+                                        Toggle::make('whatsapp_notify_st_disetujui')
+                                            ->label('Surat Tugas Disetujui (ke Pengaju & Pegawai)')
+                                            ->helperText('Kirim WhatsApp ke pengaju saat surat tugas telah disetujui.')
+                                            ->live(),
 
-                                Toggle::make('whatsapp_notify_hasil_pemeriksaan')
-                                    ->label('Hasil Pemeriksaan / Aksi Pejabat')
-                                    ->helperText('Kirim WhatsApp status disetujui / ditolak ke pihak terkait.')
-                                    ->live(),
+                                        Toggle::make('whatsapp_notify_st_revisi')
+                                            ->label('Arahan Revisi Surat Tugas (ke Pengaju)')
+                                            ->helperText('Kirim WhatsApp catatan revisi ke pengaju saat surat tugas perlu perbaikan.')
+                                            ->live(),
 
-                                Toggle::make('whatsapp_notify_pencairan')
-                                    ->label('Pencairan Dana (oleh Bendahara)')
-                                    ->helperText('Kirim WhatsApp ke pengaju saat pembayaran berhasil dicairkan.')
-                                    ->live(),
+                                        Toggle::make('whatsapp_notify_st_ditolak')
+                                            ->label('Surat Tugas Ditolak (ke Pengaju)')
+                                            ->helperText('Kirim WhatsApp penolakan ke pengaju saat surat tugas ditolak.')
+                                            ->live(),
+                                    ]),
+
+                                Section::make('Pengajuan Pembayaran (Dokter-V)')
+                                    ->compact()
+                                    ->schema([
+                                        Toggle::make('whatsapp_notify_pengajuan_baru')
+                                            ->label('Pengajuan Baru (ke PPK)')
+                                            ->helperText('Kirim WhatsApp ke PPK saat ada pengajuan baru diajukan.')
+                                            ->live(),
+
+                                        Toggle::make('whatsapp_notify_tanggapan_pengaju')
+                                            ->label('Tanggapan Pengaju (ke Pemeriksa)')
+                                            ->helperText('Kirim WhatsApp ke pemeriksa saat pengaju menanggapi revisi.')
+                                            ->live(),
+
+                                        Toggle::make('whatsapp_notify_hasil_pemeriksaan')
+                                            ->label('Hasil Pemeriksaan / Aksi Pejabat')
+                                            ->helperText('Kirim WhatsApp status disetujui / ditolak ke pihak terkait.')
+                                            ->live(),
+
+                                        Toggle::make('whatsapp_notify_pencairan')
+                                            ->label('Pencairan Dana (oleh Bendahara)')
+                                            ->helperText('Kirim WhatsApp ke pengaju saat pembayaran berhasil dicairkan.')
+                                            ->live(),
+                                    ]),
                             ])
                             ->visible(fn (Get $get) => (bool) $get('whatsapp_notification_enabled')),
                     ]),

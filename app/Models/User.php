@@ -11,6 +11,12 @@ use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property-read \App\Models\Pegawai|null $pegawai
+ */
 class User extends Authenticatable implements FilamentUser
 {
     use HasFactory, Notifiable, HasRoles, HasApiTokens;
@@ -85,6 +91,11 @@ class User extends Authenticatable implements FilamentUser
     {
         if ($withPegawai) return self::role('ppk')->with('pegawai')->get();
         return self::role('ppk')->get();
+    }
+    public static function getKepalaSatker($withPegawai = true)
+    {
+        if ($withPegawai) return self::role('kepala_satker')->with('pegawai')->get();
+        return self::role('kepala_satker')->get();
     }
     public static function getTestPegawai($withPegawai = true)
     {

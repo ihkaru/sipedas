@@ -131,7 +131,7 @@ class Penugasan extends Model {
         return Attribute::make(get: function (mixed $value, array $attributes) use ($masterSls) {
             $tujuanSuratTugas = $this->tujuanSuratTugas;
             if (($attributes['level_tujuan_penugasan'] ?? null) == Constants::LEVEL_PENUGASAN_NAMA_TEMPAT) {
-                $nama = $tujuanSuratTugas?->first()?->nama_tempat_tujuan ?? $attributes['nama_tempat_tujuan'] ?? null;
+                $nama = $tujuanSuratTugas?->first()->nama_tempat_tujuan ?? $attributes['nama_tempat_tujuan'] ?? null;
                 return $nama ? ucwords(strtolower($nama)) : '-';
             }
             return ($tujuanSuratTugas && $tujuanSuratTugas->isNotEmpty()) ? TujuanSuratTugas::combinerTujuan($tujuanSuratTugas, $masterSls) : '-';
@@ -243,44 +243,84 @@ class Penugasan extends Model {
     public static function perluPerbaikan($data, bool $checkRole = false) {
         $res = 0;
         $pengajuan = self::with("riwayatPengajuan")->find($data['id']);
-        if (!$pengajuan->canPerluPerbaikan($checkRole)) return 0;
+        if (!$pengajuan || !$pengajuan->canPerluPerbaikan($checkRole)) return 0;
         $res += $pengajuan->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_PERLU_REVISI, "tgl_arahan_revisi", now());
         $res += $pengajuan->riwayatPengajuan->update(["catatan_butuh_perbaikan" => $data["catatan_butuh_perbaikan"]]);
+        if ($res) {
+            \App\Services\SuratTugas\SuratTugasNotificationService::notifyPerluRevisi($pengajuan, $data["catatan_butuh_perbaikan"] ?? '');
+        }
         return $res != 0;
     }
 
     public static function ajukanRevisi($data) {
         $res = 0;
         $pengajuan = self::with("riwayatPengajuan")->find($data['id']);
-        if (!$pengajuan->canAjukanRevisi()) return 0;
+        if (!$pengajuan || !$pengajuan->canAjukanRevisi()) return 0;
         $res += $pengajuan->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DIKIRIM, "tgl_dikirim", now());
         $res += $pengajuan->update($data);
         return $res != 0;
     }
 
+    /**
+     * Memeriksa apakah seorang user memiliki wewenang approval berdasarkan delegasi di Setting.
+     */
+    public static function isUserApprover(?User $user, ?string $plhId = null): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        if ($plhId && $user->pegawai?->nip === $plhId) {
+            return true;
+        }
+
+        $approvalMode = Setting::where('key', 'st_approval_mode')->value('value') ?? 'delegasi_ppspm';
+
+        switch ($approvalMode) {
+            case 'auto_approve':
+                return $user->hasRole('kepala_satker') || $user->hasRole('ppspm');
+
+            case 'ppspm_only':
+                return $user->hasRole('ppspm');
+
+            case 'kepala_only':
+                return $user->hasRole('kepala_satker');
+
+            case 'delegasi_ppspm':
+            default:
+                return $user->hasRole('kepala_satker') || $user->hasRole('ppspm');
+        }
+    }
+
+    public function isApprover(?User $user = null): bool
+    {
+        $user = $user ?? auth()->user();
+        return self::isUserApprover($user, $this->plh_id);
+    }
+
     public function canSetujui(bool $checkRole = true) {
         if ($checkRole == false) return true;
         return
-            $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM && (
-                auth()->user()->hasRole("kepala_satker") ||
-                $this->plh_id == auth()->user()->pegawai?->nip
-            );
+            $this->riwayatPengajuan?->status == Constants::STATUS_PENGAJUAN_DIKIRIM &&
+            self::isUserApprover(auth()->user(), $this->plh_id);
     }
     public function canRevisi(bool $checkRole = true) {
         if ($checkRole == false) return true;
-        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM;
+        return $this->riwayatPengajuan?->status == Constants::STATUS_PENGAJUAN_DIKIRIM;
     }
     public function canAjukanRevisi(bool $checkRole = true) {
         if ($checkRole == false) return true;
-        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_PERLU_REVISI;
+        return $this->riwayatPengajuan?->status == Constants::STATUS_PENGAJUAN_PERLU_REVISI;
     }
     public function canTolak(bool $checkRole = true) {
         if ($checkRole == false) return true;
         return
-            $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM && (
-                $this->plh_id == auth()->user()->pegawai?->nip ||
-                auth()->user()->hasRole("kepala_satker")
-            );
+            $this->riwayatPengajuan?->status == Constants::STATUS_PENGAJUAN_DIKIRIM &&
+            self::isUserApprover(auth()->user(), $this->plh_id);
     }
     public function canBatalkan(bool $checkRole = true) {
         if ($checkRole == false) return true;
@@ -341,11 +381,8 @@ class Penugasan extends Model {
     }
     public function canPerluPerbaikan(bool $checkRole = true) {
         if ($checkRole == false) return true;
-        return $this->riwayatPengajuan->status == Constants::STATUS_PENGAJUAN_DIKIRIM &&
-            (
-                $this->plh_id == auth()->user()->pegawai?->nip ||
-                auth()->user()->hasRole("kepala_satker")
-            );
+        return $this->riwayatPengajuan?->status == Constants::STATUS_PENGAJUAN_DIKIRIM &&
+            self::isUserApprover(auth()->user(), $this->plh_id);
     }
 
     public function assignNomorSuratTugas($mode_langsung = false, $data = null) {
@@ -386,7 +423,11 @@ class Penugasan extends Model {
         if (!$this->canSetujui($checkRole)) return 0;
         if (!$this->surat_tugas_id) $this->assignNomorSuratTugas($mode_langsung, $data);
         if ($this->jenis_surat_tugas != Constants::NON_SPPD) $this->assignNomorSuratPerjadin();
-        return $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DISETUJUI, "tgl_diterima", now());
+        $res = $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DISETUJUI, "tgl_diterima", now());
+        if ($res) {
+            \App\Services\SuratTugas\SuratTugasNotificationService::notifyDisetujui($this);
+        }
+        return $res;
     }
     public function tolak(bool $checkRole = true) {
         if (!$this->canTolak($checkRole)) return 0;
@@ -407,7 +448,11 @@ class Penugasan extends Model {
             NomorSurat::whereIn('id', $idsToDelete)->delete();
         }
 
-        return $this->riwayatPengajuan?->updateStatus(Constants::STATUS_PENGAJUAN_DITOLAK, "tgl_ditolak", now());
+        $res = $this->riwayatPengajuan?->updateStatus(Constants::STATUS_PENGAJUAN_DITOLAK, "tgl_ditolak", now());
+        if ($res) {
+            \App\Services\SuratTugas\SuratTugasNotificationService::notifyDitolak($this);
+        }
+        return $res;
     }
     public function batalkan(bool $checkRole = true) {
         if (!$this->canBatalkan($checkRole)) return 0;

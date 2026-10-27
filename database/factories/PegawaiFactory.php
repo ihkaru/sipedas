@@ -26,8 +26,9 @@ class PegawaiFactory extends Factory
             "golongan"=>["II","III"][rand(0,1)],
             "pangkat"=>["a","b","c","d"][$pangkatJabatan],
             "jabatan"=>["Muda","Muda Tingkat 1","-","Tingkat 1"][$pangkatJabatan],
-            "email"=>strtolower($arrName[0]).".".strtolower($arrName[1])."@bps.go.id",
-            "atasan_langsung_id"=>"196908031992111001",
+            "email"=>strtolower($arrName[0]).".".strtolower($arrName[1] ?? 'user')."@bps.go.id",
+            "panggilan"=>$arrName[0],
+            "atasan_langsung_id"=>null,
             "unit_kerja"=>"BPS Kabupaten Mempawah",
         ];
     }
