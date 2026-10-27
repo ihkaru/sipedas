@@ -235,6 +235,7 @@ class MonitorHonorMitra extends Page implements HasTable
                         'mendekati_limit' => 'Mendekati Batas (>= 80% Kuota)',
                         'over_limit' => 'Tidak Bisa (Over Limit)',
                     ])
+                    ->query(fn (Builder $query) => $query)
                     ->baseQuery(function (Builder $query, array $data) use ($limitSensus, $limitSurvei): Builder {
                         if (empty($data['value'])) {
                             return $query;
