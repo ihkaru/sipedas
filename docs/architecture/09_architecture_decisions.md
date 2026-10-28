@@ -1,7 +1,7 @@
 # 9. Keputusan Penting Pembuatan Sistem (Architecture Decisions)
 
 > [!INFO] **Architecture Provenance & Freshness**
-> - **Verified Commit**: `f1d9571` (branch: `main`)
+> - **Verified Commit**: `4235153` (branch: `main`)
 > - **Verified Timestamp**: `2026-10-28T12:30:00+07:00`
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
