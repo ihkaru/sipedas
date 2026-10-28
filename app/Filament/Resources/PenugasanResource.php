@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PenugasanResource\Pages;
-use App\Filament\Resources\PenugasanResource\RelationManagers;
 use App\Filament\Resources\PenugasanResource\Widgets\StatusSuratTugasChart;
 use App\Models\Kegiatan;
 use App\Models\MasterSls;
@@ -12,34 +11,40 @@ use App\Models\Pegawai;
 use App\Models\Penugasan;
 use App\Supports\Constants;
 use App\Supports\TanggalMerah;
+use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Schema;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Filament\Tables;
-use Filament\Actions\Action;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Hidden;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
-
 
 class PenugasanResource extends Resource
 {
     protected static ?string $model = Penugasan::class;
 
-    protected static ?string $label = "Pengajuan";
-    protected static ?string $navigationLabel = "Pengajuan";
-    protected static ?string $pluralModelLabel = "Pengajuan";
-    protected static string | \BackedEnum | null $navigationIcon = 'fluentui-document-add-24-o';
-    protected static string | \UnitEnum | null $navigationGroup = "Surat Tugas";
+    protected static ?string $label = 'Pengajuan';
+
+    protected static ?string $navigationLabel = 'Pengajuan';
+
+    protected static ?string $pluralModelLabel = 'Pengajuan';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'fluentui-document-add-24-o';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Surat Tugas';
 
     public static function canViewAny(): bool
     {
@@ -47,12 +52,14 @@ class PenugasanResource extends Resource
             auth()->user()->hasRole('kepala_satker') ||
             auth()->user()->hasRole('operator_umum');
     }
+
     public static function getWidgets(): array
     {
         return [
-            StatusSuratTugasChart::class
+            StatusSuratTugasChart::class,
         ];
     }
+
     public static function formFilterPengajuan()
     {
         return [
@@ -64,11 +71,12 @@ class PenugasanResource extends Resource
                         ->orderByDesc('year')
                         ->pluck('year', 'year')
                         ->toArray();
+
                     return $years ?: [now()->year => now()->year];
                 })
                 ->default(now()->year)
                 ->query(function (Builder $query, array $data) {
-                    if (!empty($data['value'])) {
+                    if (! empty($data['value'])) {
                         $query->whereYear('penugasans.created_at', $data['value']);
                     }
                 }),
@@ -83,14 +91,14 @@ class PenugasanResource extends Resource
                 ->relationship('mitra', 'nama_1')
                 ->multiple()
                 ->searchable(),
-            DateRangeFilter::make("tgl_pengajuan_tugas")
-                ->label("Tanggal Pengajuan"),
-            DateRangeFilter::make("tgl_mulai_tugas")
-                ->label("Tanggal Mulai Tugas"),
-            DateRangeFilter::make("tgl_akhir_tugas")
-                ->label("Tanggal Akhir Tugas"),
-            SelectFilter::make("kegiatan")
-                ->label("Kegiatan")
+            DateRangeFilter::make('tgl_pengajuan_tugas')
+                ->label('Tanggal Pengajuan'),
+            DateRangeFilter::make('tgl_mulai_tugas')
+                ->label('Tanggal Mulai Tugas'),
+            DateRangeFilter::make('tgl_akhir_tugas')
+                ->label('Tanggal Akhir Tugas'),
+            SelectFilter::make('kegiatan')
+                ->label('Kegiatan')
                 ->relationship('kegiatan', 'nama')
                 ->searchable()
                 ->preload()
@@ -100,84 +108,88 @@ class PenugasanResource extends Resource
                 ->searchable()
                 ->multiple()
                 ->query(function (Builder $query, array $data) {
-                    if (!empty($data['values'])) {
+                    if (! empty($data['values'])) {
                         // if we have a value (the aircraft ID from our options() query), just query a nested
                         // set of whereHas() clauses to reach our target, in this case two deep
                         $query->whereHas(
                             'riwayatPengajuan',
-                            fn(Builder $query) => $query->whereIn('status', $data['values'])
+                            fn (Builder $query) => $query->whereIn('status', $data['values'])
                         );
                     }
-                })
+                }),
         ];
     }
+
     public static function formLihatPengajuan()
     {
         return [
-            Hidden::make("id"),
-            Hidden::make("level_tujuan_penugasan")->live(),
-            Hidden::make("jenis_surat_tugas")->live(),
-            Hidden::make("jenis_peserta")->live(),
-            Select::make("kegiatan_id")
-                ->label("Kegiatan")
+            Hidden::make('id'),
+            Hidden::make('level_tujuan_penugasan')->live(),
+            Hidden::make('jenis_surat_tugas')->live(),
+            Hidden::make('jenis_peserta')->live(),
+            Select::make('kegiatan_id')
+                ->label('Kegiatan')
                 ->relationship('kegiatan', 'id')
                 ->searchDebounce(100)
-                ->getOptionLabelFromRecordUsing(fn(Kegiatan $record) => $record->nama)
+                ->getOptionLabelFromRecordUsing(fn (Kegiatan $record) => $record->nama)
                 ->disabled()
                 ->searchable(['nama']),
-            DatePicker::make("tgl_pengajuan_tugas")
+            DatePicker::make('tgl_pengajuan_tugas')
                 ->native(false)
                 ->required()
-                ->label("Tanggal Pengajuan")
+                ->label('Tanggal Pengajuan')
                 ->live(),
-            Select::make("jenis_surat_tugas")
+            Select::make('jenis_surat_tugas')
                 ->options(
                     Constants::JENIS_SURAT_TUGAS_OPTIONS
                 )
                 ->searchable()
                 ->disabled(),
-            Select::make("nama_pegawai")
-                ->label("Pegawai Ditugaskan")
+            Select::make('nama_pegawai')
+                ->label('Pegawai Ditugaskan')
                 ->hidden(function (Get $get, Penugasan $record) {
                     return $record->jenis_peserta == Constants::JENIS_PESERTA_SURAT_TUGAS_MITRA;
                 })
                 ->relationship('satuSurat.pegawai', 'nip')
-                ->getOptionLabelFromRecordUsing(fn(Pegawai $record) => $record->nama)
+                ->getOptionLabelFromRecordUsing(fn (Pegawai $record) => $record->nama)
                 ->searchable(['nama'])
                 ->multiple()
                 ->disabled(),
-            Select::make("nama_mitra")
-                ->label("Mitra Ditugaskan")
+            Select::make('nama_mitra')
+                ->label('Mitra Ditugaskan')
                 ->hidden(function (Get $get, Penugasan $record) {
                     return $record->jenis_peserta == Constants::JENIS_PESERTA_SURAT_TUGAS_PEGAWAI;
                 })
                 ->relationship('satuSurat.mitra', 'id_sobat')
-                ->getOptionLabelFromRecordUsing(fn(Mitra $record) => $record->nama_1)
+                ->getOptionLabelFromRecordUsing(fn (Mitra $record) => $record->nama_1)
                 ->searchable(['nama_1'])
                 ->multiple()
                 ->disabled(),
-            Select::make("plh_id")
-                ->label("Penyetuju")
+            Select::make('plh_id')
+                ->label('Penyetuju')
                 ->relationship('plh', 'nip')
-                ->getOptionLabelFromRecordUsing(fn(Pegawai $record) => $record->nama)
+                ->getOptionLabelFromRecordUsing(fn (Pegawai $record) => $record->nama)
                 ->searchable(['nip'])
                 ->disabled(),
-            Select::make("nip_pengaju")
-                ->label("Pengaju")
+            Select::make('nip_pengaju')
+                ->label('Pengaju')
                 ->relationship('pengaju', 'nip_pengaju')
-                ->getOptionLabelFromRecordUsing(fn(Pegawai $record) => $record->nama)
+                ->getOptionLabelFromRecordUsing(fn (Pegawai $record) => $record->nama)
                 ->searchable(['nama'])
                 ->disabled(),
             DatePicker::make('tgl_mulai_tugas')
                 ->disabled()
-                ->label("Tanggal Mulai Penugasan"),
+                ->label('Tanggal Mulai Penugasan'),
             DatePicker::make('tgl_akhir_tugas')
                 ->disabled()
-                ->label("Tanggal Selesai Penugasan"),
-            TextInput::make("tbh_hari_jalan_awal")
+                ->label('Tanggal Selesai Penugasan'),
+            TextInput::make('tbh_hari_jalan_awal')
                 ->disabled()
                 ->hidden(function (Get $get) {
-                    if ($get("jenis_surat_tugas") != Constants::PERJALANAN_DINAS_LUAR_KOTA) return true;
+                    if ($get('jenis_surat_tugas') != Constants::PERJALANAN_DINAS_LUAR_KOTA) {
+                        return true;
+                    }
+
                     return collect([
                         null,
                         Constants::NON_SPPD,
@@ -187,13 +199,16 @@ class PenugasanResource extends Resource
                             Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
                         ])->contains($get('level_tujuan_penugasan'));
                 })
-                ->placeholder("Masukan tanggal")
+                ->placeholder('Masukan tanggal')
                 ->numeric()
-                ->label("Tambah Hari Awal Perjalanan"),
-            TextInput::make("tbh_hari_jalan_akhir")
+                ->label('Tambah Hari Awal Perjalanan'),
+            TextInput::make('tbh_hari_jalan_akhir')
                 ->disabled()
                 ->hidden(function (Get $get) {
-                    if ($get("jenis_surat_tugas") != Constants::PERJALANAN_DINAS_LUAR_KOTA) return true;
+                    if ($get('jenis_surat_tugas') != Constants::PERJALANAN_DINAS_LUAR_KOTA) {
+                        return true;
+                    }
+
                     return collect([
                         null,
                         Constants::NON_SPPD,
@@ -203,17 +218,17 @@ class PenugasanResource extends Resource
                             Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
                         ])->contains($get('level_tujuan_penugasan'));
                 })
-                ->placeholder("Masukan tanggal")
+                ->placeholder('Masukan tanggal')
                 ->numeric()
-                ->label("Tambah Hari Akhir Perjalanan"),
-            Select::make("prov_ids")
-                ->label("Provinsi")
+                ->label('Tambah Hari Akhir Perjalanan'),
+            Select::make('prov_ids')
+                ->label('Provinsi')
                 ->disabled()
                 ->relationship('tujuanSuratTugas.provinsi', 'prov_id')
                 ->searchDebounce(100)
-                ->getOptionLabelFromRecordUsing(fn(MasterSls $record) => $record->provinsi)
+                ->getOptionLabelFromRecordUsing(fn (MasterSls $record) => $record->provinsi)
                 ->searchable(['provinsi']),
-            Select::make("kabkot_ids")
+            Select::make('kabkot_ids')
                 ->disabled()
                 ->hidden(function (Get $get) {
                     return collect([
@@ -222,14 +237,14 @@ class PenugasanResource extends Resource
                     ])->contains($get('level_tujuan_penugasan'));
                 })
                 ->multiple(function (Get $get) {
-                    return self::butuhMultipleTujuan($get("jenis_surat_tugas"), $get('level_tujuan_penugasan'), Constants::LEVEL_PENUGASAN_KABUPATEN_KOTA);
+                    return self::butuhMultipleTujuan($get('jenis_surat_tugas'), $get('level_tujuan_penugasan'), Constants::LEVEL_PENUGASAN_KABUPATEN_KOTA);
                 })
-                ->label("Kabupaten/Kota")
+                ->label('Kabupaten/Kota')
                 ->relationship('tujuanSuratTugas.kabkot', 'kabkot_id')
                 ->searchDebounce(100)
-                ->getOptionLabelFromRecordUsing(fn(MasterSls $record) => $record->kabkot)
+                ->getOptionLabelFromRecordUsing(fn (MasterSls $record) => $record->kabkot)
                 ->searchable(['kabkot']),
-            Select::make("kecamatan_ids")
+            Select::make('kecamatan_ids')
                 ->disabled()
                 ->hidden(function (Get $get) {
                     return collect([
@@ -239,29 +254,29 @@ class PenugasanResource extends Resource
                     ])->contains($get('level_tujuan_penugasan'));
                 })
                 ->multiple(function (Get $get) {
-                    return self::butuhMultipleTujuan($get("jenis_surat_tugas"), $get('level_tujuan_penugasan'), Constants::LEVEL_PENUGASAN_KECAMATAN);
+                    return self::butuhMultipleTujuan($get('jenis_surat_tugas'), $get('level_tujuan_penugasan'), Constants::LEVEL_PENUGASAN_KECAMATAN);
                 })
-                ->label("Kecamatan")
+                ->label('Kecamatan')
                 ->relationship('tujuanSuratTugas.kecamatan', 'kec_id')
                 ->searchDebounce(100)
-                ->getOptionLabelFromRecordUsing(fn(MasterSls $record) => $record->kecamatan)
+                ->getOptionLabelFromRecordUsing(fn (MasterSls $record) => $record->kecamatan)
                 ->searchable(['kecamatan']),
-            Select::make("desa_kel_ids")
-                ->label("Desa/Kelurahan")
+            Select::make('desa_kel_ids')
+                ->label('Desa/Kelurahan')
                 ->hidden(function (Get $get) {
-                    return !collect([
+                    return ! collect([
                         Constants::LEVEL_PENUGASAN_DESA_KELURAHAN,
                     ])->contains($get('level_tujuan_penugasan'));
                 })
                 ->multiple(function (Get $get) {
-                    return self::butuhMultipleTujuan($get("jenis_surat_tugas"), $get('level_tujuan_penugasan'), Constants::LEVEL_PENUGASAN_DESA_KELURAHAN);
+                    return self::butuhMultipleTujuan($get('jenis_surat_tugas'), $get('level_tujuan_penugasan'), Constants::LEVEL_PENUGASAN_DESA_KELURAHAN);
                 })
                 ->disabled()
                 ->relationship('tujuanSuratTugas.desa', 'desa_kel_id')
                 ->searchDebounce(100)
-                ->getOptionLabelFromRecordUsing(fn(MasterSls $record) => $record->desa_kel)
+                ->getOptionLabelFromRecordUsing(fn (MasterSls $record) => $record->desa_kel)
                 ->searchable(['desa_kel']),
-            Select::make("transportasi")
+            Select::make('transportasi')
                 ->options(
                     Constants::JENIS_TRANSPORTASI_OPTIONS
                 )
@@ -279,16 +294,17 @@ class PenugasanResource extends Resource
                 ->disabled(),
         ];
     }
+
     public static function formPengajuan()
     {
         return [
-            Select::make("jenis_surat_tugas")
+            Select::make('jenis_surat_tugas')
                 ->options(
                     Constants::JENIS_SURAT_TUGAS_OPTIONS
                 )
                 ->live()
                 ->required(),
-            Select::make("jenis_peserta")
+            Select::make('jenis_peserta')
                 ->hidden(function (Get $get) {
                     return $get('jenis_surat_tugas') == null;
                 })
@@ -297,15 +313,15 @@ class PenugasanResource extends Resource
                 )
                 ->live()
                 ->required(),
-            Select::make("mitras")
+            Select::make('mitras')
                 ->hidden(function (Get $get) {
-                    return !($get('jenis_peserta') != Constants::JENIS_PESERTA_SURAT_TUGAS_PEGAWAI);
+                    return ! ($get('jenis_peserta') != Constants::JENIS_PESERTA_SURAT_TUGAS_PEGAWAI);
                 })
                 ->afterStateUpdated(function (?array $state, ?array $old, Set $set) {
                     $set('tgl_mulai_tugas', null);
                 })
 
-                ->label("Mitra Ditugaskan")
+                ->label('Mitra Ditugaskan')
                 ->live()
                 ->options(function () {
                     return Mitra::pluck('nama_1', 'id_sobat')->toArray();
@@ -315,32 +331,38 @@ class PenugasanResource extends Resource
                 ->getOptionLabelUsing(function ($value) {
                     if (is_array($value)) {
                         $value = array_filter($value);
-                        $value = !empty($value) ? reset($value) : null;
+                        $value = ! empty($value) ? reset($value) : null;
                     }
-                    if (!$value) return '';
+                    if (! $value) {
+                        return '';
+                    }
+
                     return Mitra::where('id_sobat', $value)->value('nama_1') ?? '';
                 })
                 ->getOptionLabelsUsing(function ($values) {
-                    if (!is_array($values)) {
+                    if (! is_array($values)) {
                         $values = [$values];
                     }
                     $values = array_filter($values);
-                    if (empty($values)) return [];
+                    if (empty($values)) {
+                        return [];
+                    }
+
                     return Mitra::whereIn('id_sobat', $values)->pluck('nama_1', 'id_sobat')->toArray();
                 })
                 ->required(function (Get $get) {
-                    return $get("jenis_peserta") == Constants::JENIS_PESERTA_SURAT_TUGAS_MITRA
-                        || $get("jenis_peserta") == Constants::JENIS_PESERTA_SURAT_TUGAS_PEGAWAI_MITRA;
+                    return $get('jenis_peserta') == Constants::JENIS_PESERTA_SURAT_TUGAS_MITRA
+                        || $get('jenis_peserta') == Constants::JENIS_PESERTA_SURAT_TUGAS_PEGAWAI_MITRA;
                 })
                 ->multiple(),
-            Select::make("nips")
+            Select::make('nips')
                 ->hidden(function (Get $get) {
                     return $get('jenis_peserta') == Constants::JENIS_PESERTA_SURAT_TUGAS_MITRA;
                 })
                 ->afterStateUpdated(function (?array $state, ?array $old, Set $set) {
                     $set('tgl_mulai_tugas', null);
                 })
-                ->label("Pegawai Ditugaskan")
+                ->label('Pegawai Ditugaskan')
                 ->live()
                 ->options(function () {
                     return Pegawai::pluck('nama', 'nip')->toArray();
@@ -350,40 +372,46 @@ class PenugasanResource extends Resource
                 ->getOptionLabelUsing(function ($value) {
                     if (is_array($value)) {
                         $value = array_filter($value);
-                        $value = !empty($value) ? reset($value) : null;
+                        $value = ! empty($value) ? reset($value) : null;
                     }
-                    if (!$value) return '';
+                    if (! $value) {
+                        return '';
+                    }
+
                     return Pegawai::where('nip', $value)->value('nama') ?? '';
                 })
                 ->getOptionLabelsUsing(function ($values) {
-                    if (!is_array($values)) {
+                    if (! is_array($values)) {
                         $values = [$values];
                     }
                     $values = array_filter($values);
-                    if (empty($values)) return [];
+                    if (empty($values)) {
+                        return [];
+                    }
+
                     return Pegawai::whereIn('nip', $values)->pluck('nama', 'nip')->toArray();
                 })
                 ->required()
                 ->multiple(),
-            Select::make("kegiatan_id")
-                ->label("Kegiatan")
+            Select::make('kegiatan_id')
+                ->label('Kegiatan')
                 ->preload()
                 ->options(function () {
                     return Kegiatan::orderBy('created_at', 'desc')->pluck('nama', 'id')->toArray();
                 })
                 ->required()
                 ->searchable(['nama']),
-            DatePicker::make("tgl_pengajuan_tugas")
+            DatePicker::make('tgl_pengajuan_tugas')
                 ->native(false)
                 ->helperText('Tanggal ini bukan tanggal mulai surat tugas, tapi tanggal Anda membuat pengajuan ini.')
                 ->maxDate(now()->endOfDay())
                 ->required()
-                ->label("Tanggal Anda Membuat Pengajuan Surat Tugas (Hari Ini)")
+                ->label('Tanggal Anda Membuat Pengajuan Surat Tugas (Hari Ini)')
                 ->default(now()->startOfDay())
                 ->live(),
             DatePicker::make('tgl_mulai_tugas')
                 ->hidden(function (Get $get) {
-                    return !($get('nips') != null || $get("mitras") != null);
+                    return ! ($get('nips') != null || $get('mitras') != null);
                 })
                 ->afterStateUpdated(function (?string $state, ?string $old, Set $set) {
                     $set('tgl_akhir_tugas', null);
@@ -392,10 +420,12 @@ class PenugasanResource extends Resource
                 ->live()
                 ->minDate(function (Get $get) {
                     $kegiatan = Kegiatan::find($get('kegiatan_id')) ?? null;
+
                     return max($get('tgl_pengajuan_tugas'), $kegiatan?->tgl_awal_perjadin);
                 })
                 ->maxDate(function (Get $get) {
                     $kegiatan = Kegiatan::find($get('kegiatan_id')) ?? null;
+
                     // if($get('tgl_akhir_tugas')) return $get('tgl_akhir_tugas');
                     return min(now()->addMonth(5), $kegiatan?->tgl_akhir_perjadin, $get('tgl_akhir_tugas'));
                 })
@@ -404,61 +434,42 @@ class PenugasanResource extends Resource
 
                         return [];
                     }
-                    return array_merge(Penugasan::getDisabledDates($get("nips")), TanggalMerah::getLiburDates());
+
+                    return array_merge(Penugasan::getDisabledDates($get('nips')), TanggalMerah::getLiburDates());
                 })
                 ->required()
-                ->label("Tanggal Mulai Penugasan"),
+                ->label('Tanggal Mulai Penugasan'),
             DatePicker::make('tgl_akhir_tugas')
                 ->hidden(function (Get $get) {
-                    return !(($get('nips') != null || $get("mitras") != null) && $get("tgl_mulai_tugas") != null);
+                    return ! (($get('nips') != null || $get('mitras') != null) && $get('tgl_mulai_tugas') != null);
                 })
                 ->native(false)
                 ->live()
                 ->minDate(function (Get $get) {
-                    if ($get('tgl_mulai_tugas')) return $get('tgl_mulai_tugas');
+                    if ($get('tgl_mulai_tugas')) {
+                        return $get('tgl_mulai_tugas');
+                    }
+
                     return now()->subMonth(2);
                 })
                 ->maxDate(function (Get $get) {
                     if ($get('jenis_surat_tugas') == Constants::NON_SPPD) {
                         return now()->addMonth(5);
                     }
-                    return Penugasan::getMinDate($get("tgl_mulai_tugas"), $get("nips")) ?? now()->addMonth(5);
+
+                    return Penugasan::getMinDate($get('tgl_mulai_tugas'), $get('nips')) ?? now()->addMonth(5);
                 })
                 ->disabledDates(function (Get $get) {
-                    return Penugasan::getDisabledDates($get("nips"));
+                    return Penugasan::getDisabledDates($get('nips'));
                 })
                 ->required()
-                ->label("Tanggal Selesai Penugasan"),
-            TextInput::make("tbh_hari_jalan_awal")
+                ->label('Tanggal Selesai Penugasan'),
+            TextInput::make('tbh_hari_jalan_awal')
                 ->hidden(function (Get $get) {
-                    if ($get("jenis_surat_tugas") != Constants::PERJALANAN_DINAS_LUAR_KOTA) return true;
-                    return collect([
-                        null,
-                        Constants::NON_SPPD,
-                    ])->contains($get('jenis_surat_tugas'))
-                        || collect([
-                            null,
-                            Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
-                        ])->contains($get('level_tujuan_penugasan'));
-                })
-                ->required(function (Get $get) {
-                    return !(collect([
-                        null,
-                        Constants::NON_SPPD,
-                    ])->contains($get('jenis_surat_tugas'))
-                        || collect([
-                            null,
-                            Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
-                        ])->contains($get('level_tujuan_penugasan')));
-                })
-                ->placeholder("Masukan jumlah hari")
-                ->numeric()
-                ->default(0)
-                ->label("Tambah Hari Awal Perjalanan"),
+                    if ($get('jenis_surat_tugas') != Constants::PERJALANAN_DINAS_LUAR_KOTA) {
+                        return true;
+                    }
 
-            TextInput::make("tbh_hari_jalan_akhir")
-                ->hidden(function (Get $get) {
-                    if ($get("jenis_surat_tugas") != Constants::PERJALANAN_DINAS_LUAR_KOTA) return true;
                     return collect([
                         null,
                         Constants::NON_SPPD,
@@ -469,7 +480,7 @@ class PenugasanResource extends Resource
                         ])->contains($get('level_tujuan_penugasan'));
                 })
                 ->required(function (Get $get) {
-                    return !(collect([
+                    return ! (collect([
                         null,
                         Constants::NON_SPPD,
                     ])->contains($get('jenis_surat_tugas'))
@@ -478,25 +489,55 @@ class PenugasanResource extends Resource
                             Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
                         ])->contains($get('level_tujuan_penugasan')));
                 })
-                ->placeholder("Masukan jumlah hari")
+                ->placeholder('Masukan jumlah hari')
+                ->numeric()
+                ->default(0)
+                ->label('Tambah Hari Awal Perjalanan'),
+
+            TextInput::make('tbh_hari_jalan_akhir')
+                ->hidden(function (Get $get) {
+                    if ($get('jenis_surat_tugas') != Constants::PERJALANAN_DINAS_LUAR_KOTA) {
+                        return true;
+                    }
+
+                    return collect([
+                        null,
+                        Constants::NON_SPPD,
+                    ])->contains($get('jenis_surat_tugas'))
+                        || collect([
+                            null,
+                            Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
+                        ])->contains($get('level_tujuan_penugasan'));
+                })
+                ->required(function (Get $get) {
+                    return ! (collect([
+                        null,
+                        Constants::NON_SPPD,
+                    ])->contains($get('jenis_surat_tugas'))
+                        || collect([
+                            null,
+                            Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
+                        ])->contains($get('level_tujuan_penugasan')));
+                })
+                ->placeholder('Masukan jumlah hari')
                 ->default(0)
                 ->numeric()
-                ->label("Tambah Hari Akhir Perjalanan"),
-            Select::make("level_tujuan_penugasan")
+                ->label('Tambah Hari Akhir Perjalanan'),
+            Select::make('level_tujuan_penugasan')
                 ->afterStateUpdated(function (Set $set) {
-                    $set("nama_tempat_tujuan", null);
-                    $set("prov_ids", null);
-                    $set("kabkot_ids", null);
-                    $set("kecamatan_ids", null);
-                    $set("desa_kel_ids", null);
+                    $set('nama_tempat_tujuan', null);
+                    $set('prov_ids', null);
+                    $set('kabkot_ids', null);
+                    $set('kecamatan_ids', null);
+                    $set('desa_kel_ids', null);
                 })
-                ->label("Level Tujuan Penugasan")
+                ->label('Level Tujuan Penugasan')
                 ->options(Constants::LEVEL_PENUGASAN_OPTIONS)
                 ->live()
                 ->required(),
             TextInput::make('nama_tempat_tujuan')
-                ->helperText("Contoh: Kantor BPS Kabupaten Kubu Raya; Kantor BPS Provinsi Kalimantan Barat; Pusat Pendidikan dan Pelatihan")
-                ->label("Nama Lokasi Tujuan")
+                ->helperText('Contoh: Kantor BPS Kabupaten Kubu Raya; Kantor BPS Provinsi Kalimantan Barat; Pusat Pendidikan dan Pelatihan')
+                ->label('Nama Lokasi Tujuan')
                 ->hidden(function (Get $get) {
                     return $get('level_tujuan_penugasan') != Constants::LEVEL_PENUGASAN_NAMA_TEMPAT;
                 })
@@ -504,113 +545,128 @@ class PenugasanResource extends Resource
                     return $get('level_tujuan_penugasan') == Constants::LEVEL_PENUGASAN_NAMA_TEMPAT;
                 }),
 
-
-            Select::make("prov_ids")
+            Select::make('prov_ids')
                 ->live()
                 ->afterStateUpdated(function (Set $set) {
-                    $set("kabkot_ids", null);
-                    $set("kecamatan_ids", null);
-                    $set("desa_kel_ids", null);
+                    $set('kabkot_ids', null);
+                    $set('kecamatan_ids', null);
+                    $set('desa_kel_ids', null);
                 })
-                ->label("Provinsi Tujuan")
+                ->label('Provinsi Tujuan')
                 ->hidden(function (Get $get) {
                     return collect([
                         null,
                         Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
-                        Constants::LEVEL_PENUGASAN_NAMA_TEMPAT
+                        Constants::LEVEL_PENUGASAN_NAMA_TEMPAT,
                     ])->contains($get('level_tujuan_penugasan'));
                 })
                 ->required(function (Get $get) {
-                    return !collect([
+                    return ! collect([
                         null,
                         Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
-                        Constants::LEVEL_PENUGASAN_NAMA_TEMPAT
+                        Constants::LEVEL_PENUGASAN_NAMA_TEMPAT,
                     ])->contains($get('level_tujuan_penugasan'));
                 })
                 ->options(function () {
-                    return MasterSls::pluck("provinsi", "prov_id");
+                    return MasterSls::pluck('provinsi', 'prov_id');
                 })
                 ->searchable()
                 ->getOptionLabelUsing(function ($value) {
                     if (is_array($value)) {
                         $value = array_filter($value);
-                        $value = !empty($value) ? reset($value) : null;
+                        $value = ! empty($value) ? reset($value) : null;
                     }
-                    if (!$value) return '';
+                    if (! $value) {
+                        return '';
+                    }
+
                     return MasterSls::where('prov_id', $value)->value('provinsi') ?? '';
                 })
                 ->getOptionLabelsUsing(function ($values) {
-                    if (!is_array($values)) {
+                    if (! is_array($values)) {
                         $values = [$values];
                     }
                     $values = array_filter($values);
-                    if (empty($values)) return [];
+                    if (empty($values)) {
+                        return [];
+                    }
+
                     return MasterSls::whereIn('prov_id', $values)->pluck('provinsi', 'prov_id')->toArray();
                 }),
-            Select::make("kabkot_ids")
+            Select::make('kabkot_ids')
                 ->afterStateUpdated(function (Set $set) {
-                    $set("kecamatan_ids", null);
-                    $set("desa_kel_ids", null);
+                    $set('kecamatan_ids', null);
+                    $set('desa_kel_ids', null);
                 })
                 ->multiple(function (Get $get) {
-                    return self::butuhMultipleTujuan($get("jenis_surat_tugas"), $get('level_tujuan_penugasan'), Constants::LEVEL_PENUGASAN_KABUPATEN_KOTA);
+                    return self::butuhMultipleTujuan($get('jenis_surat_tugas'), $get('level_tujuan_penugasan'), Constants::LEVEL_PENUGASAN_KABUPATEN_KOTA);
                 })
                 ->live()
                 ->required(function (Get $get) {
-                    return !collect([
+                    return ! collect([
                         null,
                         Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
-                        Constants::LEVEL_PENUGASAN_NAMA_TEMPAT
+                        Constants::LEVEL_PENUGASAN_NAMA_TEMPAT,
                     ])->contains($get('level_tujuan_penugasan'));
                 })
                 ->hidden(function (Get $get) {
                     return collect([
                         null,
                         Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
-                        Constants::LEVEL_PENUGASAN_NAMA_TEMPAT
+                        Constants::LEVEL_PENUGASAN_NAMA_TEMPAT,
                     ])->contains($get('level_tujuan_penugasan'));
                 })
-                ->label("Kabupaten/Kota Tujuan")
+                ->label('Kabupaten/Kota Tujuan')
                 ->options(function (Get $get) {
                     $provId = $get('prov_ids');
                     if (is_array($provId)) {
                         $provId = array_filter($provId);
-                        $provId = !empty($provId) ? reset($provId) : null;
+                        $provId = ! empty($provId) ? reset($provId) : null;
                     }
+                    if (! $provId) {
+                        return [];
+                    }
+
                     return MasterSls::where('prov_id', $provId)
-                        ->pluck("kabkot", "kabkot_id");
+                        ->pluck('kabkot', 'kabkot_id');
                 })
                 ->searchable()
                 ->getOptionLabelUsing(function ($value) {
                     if (is_array($value)) {
                         $value = array_filter($value);
-                        $value = !empty($value) ? reset($value) : null;
+                        $value = ! empty($value) ? reset($value) : null;
                     }
-                    if (!$value) return '';
+                    if (! $value) {
+                        return '';
+                    }
+
                     return MasterSls::where('kabkot_id', $value)->value('kabkot') ?? '';
                 })
                 ->getOptionLabelsUsing(function ($values) {
-                    if (!is_array($values)) {
+                    if (! is_array($values)) {
                         $values = [$values];
                     }
                     $values = array_filter($values);
-                    if (empty($values)) return [];
+                    if (empty($values)) {
+                        return [];
+                    }
+
                     return MasterSls::whereIn('kabkot_id', $values)->pluck('kabkot', 'kabkot_id')->toArray();
                 }),
-            Select::make("kecamatan_ids")
+            Select::make('kecamatan_ids')
                 ->afterStateUpdated(function (Set $set) {
-                    $set("desa_kel_ids", null);
+                    $set('desa_kel_ids', null);
                 })
                 ->multiple(function (Get $get) {
-                    return self::butuhMultipleTujuan($get("jenis_surat_tugas"), $get('level_tujuan_penugasan'), Constants::LEVEL_PENUGASAN_KECAMATAN);
+                    return self::butuhMultipleTujuan($get('jenis_surat_tugas'), $get('level_tujuan_penugasan'), Constants::LEVEL_PENUGASAN_KECAMATAN);
                 })
                 ->live()
                 ->required(function (Get $get) {
-                    return !collect([
+                    return ! collect([
                         null,
                         Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
                         Constants::LEVEL_PENUGASAN_KABUPATEN_KOTA,
-                        Constants::LEVEL_PENUGASAN_NAMA_TEMPAT
+                        Constants::LEVEL_PENUGASAN_NAMA_TEMPAT,
                     ])->contains($get('level_tujuan_penugasan'));
                 })
                 ->hidden(function (Get $get) {
@@ -618,10 +674,10 @@ class PenugasanResource extends Resource
                         null,
                         Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
                         Constants::LEVEL_PENUGASAN_KABUPATEN_KOTA,
-                        Constants::LEVEL_PENUGASAN_NAMA_TEMPAT
+                        Constants::LEVEL_PENUGASAN_NAMA_TEMPAT,
                     ])->contains($get('level_tujuan_penugasan'));
                 })
-                ->label("Kecamatan Tujuan")
+                ->label('Kecamatan Tujuan')
                 ->options(function (Get $get) {
                     $kabkotIds = $get('kabkot_ids');
                     $query = MasterSls::query();
@@ -632,37 +688,44 @@ class PenugasanResource extends Resource
                     } else {
                         return [];
                     }
-                    return $query->pluck("kecamatan", "kec_id");
+
+                    return $query->pluck('kecamatan', 'kec_id');
                 })
                 ->searchable()
                 ->getOptionLabelUsing(function ($value) {
                     if (is_array($value)) {
                         $value = array_filter($value);
-                        $value = !empty($value) ? reset($value) : null;
+                        $value = ! empty($value) ? reset($value) : null;
                     }
-                    if (!$value) return '';
+                    if (! $value) {
+                        return '';
+                    }
+
                     return MasterSls::where('kec_id', $value)->value('kecamatan') ?? '';
                 })
                 ->getOptionLabelsUsing(function ($values) {
-                    if (!is_array($values)) {
+                    if (! is_array($values)) {
                         $values = [$values];
                     }
                     $values = array_filter($values);
-                    if (empty($values)) return [];
+                    if (empty($values)) {
+                        return [];
+                    }
+
                     return MasterSls::whereIn('kec_id', $values)->pluck('kecamatan', 'kec_id')->toArray();
                 }),
-            Select::make("desa_kel_ids")
+            Select::make('desa_kel_ids')
                 ->multiple(function (Get $get) {
-                    return self::butuhMultipleTujuan($get("jenis_surat_tugas"), $get('level_tujuan_penugasan'), Constants::LEVEL_PENUGASAN_DESA_KELURAHAN);
+                    return self::butuhMultipleTujuan($get('jenis_surat_tugas'), $get('level_tujuan_penugasan'), Constants::LEVEL_PENUGASAN_DESA_KELURAHAN);
                 })
-                ->label("Desa/Kelurahan Tujuan")
+                ->label('Desa/Kelurahan Tujuan')
                 ->required(function (Get $get) {
                     return collect([
                         Constants::LEVEL_PENUGASAN_DESA_KELURAHAN,
                     ])->contains($get('level_tujuan_penugasan'));
                 })
                 ->hidden(function (Get $get) {
-                    return !collect([
+                    return ! collect([
                         Constants::LEVEL_PENUGASAN_DESA_KELURAHAN,
                     ])->contains($get('level_tujuan_penugasan'));
                 })
@@ -676,26 +739,33 @@ class PenugasanResource extends Resource
                     } else {
                         return [];
                     }
-                    return $query->pluck("desa_kel", "desa_kel_id");
+
+                    return $query->pluck('desa_kel', 'desa_kel_id');
                 })
                 ->searchable()
                 ->getOptionLabelUsing(function ($value) {
                     if (is_array($value)) {
                         $value = array_filter($value);
-                        $value = !empty($value) ? reset($value) : null;
+                        $value = ! empty($value) ? reset($value) : null;
                     }
-                    if (!$value) return '';
+                    if (! $value) {
+                        return '';
+                    }
+
                     return MasterSls::where('desa_kel_id', $value)->value('desa_kel') ?? '';
                 })
                 ->getOptionLabelsUsing(function ($values) {
-                    if (!is_array($values)) {
+                    if (! is_array($values)) {
                         $values = [$values];
                     }
                     $values = array_filter($values);
-                    if (empty($values)) return [];
+                    if (empty($values)) {
+                        return [];
+                    }
+
                     return MasterSls::whereIn('desa_kel_id', $values)->pluck('desa_kel', 'desa_kel_id')->toArray();
                 }),
-            Select::make("transportasi")
+            Select::make('transportasi')
                 ->hidden(function (Get $get) {
                     return collect([
                         null,
@@ -711,7 +781,7 @@ class PenugasanResource extends Resource
                 )
                 ->searchable()
                 ->required(function (Get $get) {
-                    return !(collect([
+                    return ! (collect([
                         Constants::NON_SPPD,
                     ])->contains($get('jenis_surat_tugas'))
                         || collect([
@@ -724,57 +794,57 @@ class PenugasanResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->schema([
-                Forms\Components\TextInput::make('nip')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('kegiatan_id')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('jenis_perjadin')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\DateTimePicker::make('tgl_mulai_tugas'),
-                Forms\Components\DateTimePicker::make('tgl_akhir_tugas'),
-                Forms\Components\TextInput::make('tbh_hari_jalan_awal')
-                    ->default(0)
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('tbh_hari_jalan_akhir')
-                    ->default(0)
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('prov_id')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('kabkot_id')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('kecamatan_id')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('desa_kel_id')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('jenis_surat_tugas')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('surat_tugas_id')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('pegawai_id')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('transportasi')
-                    ->required()
-                    ->maxLength(255)
-            ]);
+            TextInput::make('nip')
+                ->required()
+                ->maxLength(255),
+            TextInput::make('kegiatan_id')
+                ->required()
+                ->numeric(),
+            TextInput::make('jenis_perjadin')
+                ->required()
+                ->maxLength(255),
+            Forms\Components\DateTimePicker::make('tgl_mulai_tugas'),
+            Forms\Components\DateTimePicker::make('tgl_akhir_tugas'),
+            TextInput::make('tbh_hari_jalan_awal')
+                ->default(0)
+                ->required()
+                ->numeric(),
+            TextInput::make('tbh_hari_jalan_akhir')
+                ->default(0)
+                ->required()
+                ->numeric(),
+            TextInput::make('prov_id')
+                ->required()
+                ->maxLength(255),
+            TextInput::make('kabkot_id')
+                ->required()
+                ->maxLength(255),
+            TextInput::make('kecamatan_id')
+                ->required()
+                ->maxLength(255),
+            TextInput::make('desa_kel_id')
+                ->required()
+                ->maxLength(255),
+            TextInput::make('jenis_surat_tugas')
+                ->required()
+                ->maxLength(255),
+            TextInput::make('surat_tugas_id')
+                ->required()
+                ->maxLength(255),
+            TextInput::make('pegawai_id')
+                ->required()
+                ->numeric(),
+            TextInput::make('transportasi')
+                ->required()
+                ->maxLength(255),
+        ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->modifyQueryUsing(function (Builder $query) {
-                return $query->with(["riwayatPengajuan"]);
+                return $query->with(['riwayatPengajuan']);
             })
             ->columns([
                 Tables\Columns\TextColumn::make('pegawai.nama')
@@ -786,16 +856,16 @@ class PenugasanResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('tgl_perjadin')
                     ->badge()
-                    ->label("Tanggal Perjadin")
+                    ->label('Tanggal Perjadin')
                     ->toggleable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('tbh_hari_jalan_awal')
-                    ->label("Tambah Hari Perjalanan Awal")
+                    ->label('Tambah Hari Perjalanan Awal')
                     ->numeric()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
                 Tables\Columns\TextColumn::make('tbh_hari_jalan_akhir')
-                    ->label("Tambah Hari Perjalanan Akhir")
+                    ->label('Tambah Hari Perjalanan Akhir')
                     ->numeric()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
@@ -816,7 +886,7 @@ class PenugasanResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('jenis_surat_tugas')
-                    ->label("Jenis Surat Tugas")
+                    ->label('Jenis Surat Tugas')
                     ->state(function (Penugasan $record): string {
                         return $record->jenis_surat;
                     })
@@ -827,17 +897,17 @@ class PenugasanResource extends Resource
                     ->toggleable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('plh.nama')
-                    ->label("Penyetuju")
+                    ->label('Penyetuju')
                     ->numeric()
                     ->toggleable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('riawayatPengajuan.status')
                     ->badge()
                     ->state(function (Penugasan $record): string {
-                        return $record->riwayatPengajuan?->last_status ?? "";
+                        return $record->riwayatPengajuan?->last_status ?? '';
                     })
                     ->toggleable()
-                    ->label("Status"),
+                    ->label('Status'),
                 // ->searchable(),
                 Tables\Columns\TextColumn::make('transportasi')
                     ->state(function (Penugasan $record): string {
@@ -856,15 +926,15 @@ class PenugasanResource extends Resource
             ])
             ->filters(self::formFilterPengajuan())
             ->actions([
-                \Filament\Actions\EditAction::make()
+                EditAction::make()
                     ->visible(function () {
                         return auth()->user()->hasRole('operator_umum');
                     }),
-                Action::make("lihat")
+                Action::make('lihat')
                     ->modalHeading('Pengajuan Surat Tugas')
                     ->disabledForm()
                     ->modalSubmitAction(false)
-                    ->modalCancelActionLabel("Close")
+                    ->modalCancelActionLabel('Close')
                     ->mountUsing(function (Schema $form, Penugasan $record) {
                         $pegawais = Pegawai::whereIn('nip', Penugasan::find($record->id)->satuSurat()->whereHas('riwayatPengajuan', function ($query) {
                             $query->where('status', Constants::STATUS_PENGAJUAN_DISETUJUI);
@@ -875,58 +945,64 @@ class PenugasanResource extends Resource
                         $form->fill([
                             ...$record->toArray(),
                             ...[
-                                "id" => $record->id,
-                                "catatan_butuh_perbaikan" => $record->riwayatPengajuan->catatan_butuh_perbaikan,
-                                "nama_pegawai" => $pegawais->pluck('nip'),
-                                "nama_mitra" => $mitras->pluck('id_sobat'),
-                                "prov_ids" => $record->tujuanSuratTugas->pluck('prov_id'),
-                                "kabkot_ids" => $record->tujuanSuratTugas->pluck('kabkot_id'),
-                                "kecamatan_ids" => $record->tujuanSuratTugas->pluck('kecamatan_id'),
-                                "desa_kel_ids" => $record->tujuanSuratTugas->pluck('desa_kel_id'),
+                                'id' => $record->id,
+                                'catatan_butuh_perbaikan' => $record->riwayatPengajuan->catatan_butuh_perbaikan,
+                                'nama_pegawai' => $pegawais->pluck('nip'),
+                                'nama_mitra' => $mitras->pluck('id_sobat'),
+                                'prov_ids' => $record->tujuanSuratTugas->pluck('prov_id'),
+                                'kabkot_ids' => $record->tujuanSuratTugas->pluck('kabkot_id'),
+                                'kecamatan_ids' => $record->tujuanSuratTugas->pluck('kecamatan_id'),
+                                'desa_kel_ids' => $record->tujuanSuratTugas->pluck('desa_kel_id'),
                                 // "id"=>$record->id,
                                 // "id"=>$record->id,
-                            ]
+                            ],
                         ]);
                     })
                     ->form([
-                        Hidden::make("id"),
-                        Textarea::make("catatan_butuh_perbaikan")
+                        Hidden::make('id'),
+                        Textarea::make('catatan_butuh_perbaikan')
                             ->disabled()
-                            ->label("Yang Perlu Diperbaiki:"),
-                        ...self::formLihatPengajuan()
+                            ->label('Yang Perlu Diperbaiki:'),
+                        ...self::formLihatPengajuan(),
                     ]),
-                Action::make("setujui")
+                Action::make('setujui')
                     ->visible(function (Penugasan $record) {
                         return $record->canSetujui();
                     })
                     ->action(function (Penugasan $record) {
-                        if ($record->setujui())
-                            return self::notify("success", "Penugasan berhasil disetujui");
-                        return self::notify("danger", "Aksi penyetujuan gagal");
+                        if ($record->setujui()) {
+                            return self::notify('success', 'Penugasan berhasil disetujui');
+                        }
+
+                        return self::notify('danger', 'Aksi penyetujuan gagal');
                     })
-                    ->label("Setujui"),
-                Action::make("batalkan")
+                    ->label('Setujui'),
+                Action::make('batalkan')
                     ->visible(function (Penugasan $record) {
-                        return $record->canBatalkan();;
+                        return $record->canBatalkan();
                     })
                     ->requiresConfirmation()
-                    ->modalDescription("Apakah anda yakin akan membatalkan pengajuan ini? (Pengajuan ini perlu dibuat ulang jika ingin diajukan kembali)")
+                    ->modalDescription('Apakah anda yakin akan membatalkan pengajuan ini? (Pengajuan ini perlu dibuat ulang jika ingin diajukan kembali)')
                     ->action(function (Penugasan $record) {
-                        if ($record->batalkan())
-                            return self::notify("success", "Penugasan berhasil dibatalkan");
-                        return self::notify("danger", "Aksi pembatalan gagal");
+                        if ($record->batalkan()) {
+                            return self::notify('success', 'Penugasan berhasil dibatalkan');
+                        }
+
+                        return self::notify('danger', 'Aksi pembatalan gagal');
                     })
-                    ->label("Batalkan"),
-                Action::make("tolak")
+                    ->label('Batalkan'),
+                Action::make('tolak')
                     ->visible(function (Penugasan $record) {
                         return $record->canTolak();
                     })
                     ->action(function (Penugasan $record) {
-                        if ($record->tolak())
-                            return self::notify("success", "Penugasan berhasil ditolak");
-                        return self::notify("danger", "Aksi penolakan gagal");
+                        if ($record->tolak()) {
+                            return self::notify('success', 'Penugasan berhasil ditolak');
+                        }
+
+                        return self::notify('danger', 'Aksi penolakan gagal');
                     })
-                    ->label("Tolak"),
+                    ->label('Tolak'),
                 // Action::make("cetak")
                 //     ->visible(function (Penugasan $record){
                 //         return $record->canCetak();
@@ -937,122 +1013,128 @@ class PenugasanResource extends Resource
                 //         return self::notify("danger","Aksi pencetakan gagal");
                 //     })
                 //     ->label("Cetak"),
-                Action::make("kumpulkan")
+                Action::make('kumpulkan')
                     ->visible(function (Penugasan $record) {
                         return $record->canKumpulkan();
                     })
                     ->requiresConfirmation()
                     ->modalDescription("Apakah anda yakin akan mengubah status ini menjadi 'Dikumpulkan'?")
                     ->action(function (Penugasan $record) {
-                        if ($record->kumpulkan())
-                            return self::notify("success", "Penugasan berhasil dikumpulkan");
-                        return self::notify("danger", "Aksi pengumpulan gagal");
+                        if ($record->kumpulkan()) {
+                            return self::notify('success', 'Penugasan berhasil dikumpulkan');
+                        }
+
+                        return self::notify('danger', 'Aksi pengumpulan gagal');
                     })
-                    ->label("Kumpulkan"),
-                Action::make("batalkanPengumpulan")
+                    ->label('Kumpulkan'),
+                Action::make('batalkanPengumpulan')
                     ->visible(function (Penugasan $record) {
-                        return $record->canBatalkanPengumpulan();;
+                        return $record->canBatalkanPengumpulan();
                     })
                     ->requiresConfirmation()
                     ->modalDescription("Apakah anda yakin akan mengubah status ini menjadi 'Dicetak'?")
                     ->action(function (Penugasan $record) {
-                        if ($record->batalkanPengumpulan())
-                            return self::notify("success", "Penugasan berhasil diubah menjadi 'Dicetak'");
-                        return self::notify("danger", "Aksi perubahan gagal");
+                        if ($record->batalkanPengumpulan()) {
+                            return self::notify('success', "Penugasan berhasil diubah menjadi 'Dicetak'");
+                        }
+
+                        return self::notify('danger', 'Aksi perubahan gagal');
                     })
-                    ->label("Batalkan Pengumpulan"),
-                Action::make("Cairkan")
+                    ->label('Batalkan Pengumpulan'),
+                Action::make('Cairkan')
                     ->visible(function (Penugasan $record) {
-                        return $record->canCairkan();;
+                        return $record->canCairkan();
                     })
                     ->action(function (Penugasan $record) {
-                        if ($record->cairkan())
-                            return self::notify("success", "Penugasan berhasil dicairkan");
-                        return self::notify("danger", "Aksi pencairan gagal");
+                        if ($record->cairkan()) {
+                            return self::notify('success', 'Penugasan berhasil dicairkan');
+                        }
+
+                        return self::notify('danger', 'Aksi pencairan gagal');
                     })
-                    ->label("Cairkan"),
-                Action::make("revisi")
+                    ->label('Cairkan'),
+                Action::make('revisi')
                     ->mountUsing(function (Schema $form, Penugasan $record) {
                         $form->fill([
                             ...$record->toArray(),
                             ...[
-                                "id" => $record->id,
-                                "catatan_butuh_perbaikan" => $record->riwayatPengajuan->catatan_butuh_perbaikan
-                            ]
+                                'id' => $record->id,
+                                'catatan_butuh_perbaikan' => $record->riwayatPengajuan->catatan_butuh_perbaikan,
+                            ],
                         ]);
                     })
 
                     ->visible(function (Penugasan $record) {
-                        return $record->canPerluPerbaikan();;
+                        return $record->canPerluPerbaikan();
                     })
-                    ->label("Arahkan Revisi")
+                    ->label('Arahkan Revisi')
                     ->form([
-                        Hidden::make("id"),
-                        Textarea::make("catatan_butuh_perbaikan")
+                        Hidden::make('id'),
+                        Textarea::make('catatan_butuh_perbaikan')
                             ->required()
-                            ->label("Yang Perlu Diperbaiki:"),
-                        Select::make("jenis_surat_tugas")
+                            ->label('Yang Perlu Diperbaiki:'),
+                        Select::make('jenis_surat_tugas')
                             ->options(
                                 Constants::JENIS_SURAT_TUGAS_OPTIONS
                             )
                             ->searchable()
                             ->disabled(),
-                        Select::make("nip")
-                            ->label("Pegawai")
+                        Select::make('nip')
+                            ->label('Pegawai')
                             ->options(function () {
                                 return Pegawai::pluck('nama', 'nip')->toArray();
                             })
                             ->searchDebounce(100)
                             ->searchable(['nama'])
                             ->disabled(),
-                        Select::make("kegiatan_id")
-                            ->label("Kegiatan")
+                        Select::make('kegiatan_id')
+                            ->label('Kegiatan')
                             ->relationship('kegiatan', 'id')
                             ->searchDebounce(100)
-                            ->getOptionLabelFromRecordUsing(fn(Kegiatan $record) => $record->nama)
+                            ->getOptionLabelFromRecordUsing(fn (Kegiatan $record) => $record->nama)
                             ->disabled()
                             ->searchable(['nama']),
                         DatePicker::make('tgl_mulai_tugas')
                             ->disabled()
-                            ->label("Tanggal Mulai Penugasan"),
+                            ->label('Tanggal Mulai Penugasan'),
                         DatePicker::make('tgl_akhir_tugas')
                             ->disabled()
-                            ->label("Tanggal Selesai Penugasan"),
-                        TextInput::make("tbh_hari_jalan_awal")
+                            ->label('Tanggal Selesai Penugasan'),
+                        TextInput::make('tbh_hari_jalan_awal')
                             ->disabled()
-                            ->placeholder("Masukan tanggal")
+                            ->placeholder('Masukan tanggal')
                             ->numeric()
-                            ->label("Tambah Hari Awal Perjalanan"),
-                        TextInput::make("tbh_hari_jalan_akhir")
+                            ->label('Tambah Hari Awal Perjalanan'),
+                        TextInput::make('tbh_hari_jalan_akhir')
                             ->disabled()
-                            ->placeholder("Masukan tanggal")
+                            ->placeholder('Masukan tanggal')
                             ->numeric()
-                            ->label("Tambah Hari Akhir Perjalanan"),
-                        Select::make("prov_id")
-                            ->label("Provinsi")
+                            ->label('Tambah Hari Akhir Perjalanan'),
+                        Select::make('prov_id')
+                            ->label('Provinsi')
                             ->disabled()
                             ->options(fn () => MasterSls::pluck('provinsi', 'prov_id'))
                             ->searchDebounce(100)
                             ->searchable(),
-                        Select::make("kabkot_id")
+                        Select::make('kabkot_id')
                             ->disabled()
-                            ->label("Kabupaten/Kota")
+                            ->label('Kabupaten/Kota')
                             ->options(fn () => MasterSls::pluck('kabkot', 'kabkot_id'))
                             ->searchDebounce(100)
                             ->searchable(),
-                        Select::make("kecamatan_id")
+                        Select::make('kecamatan_id')
                             ->disabled()
-                            ->label("Kecamatan")
+                            ->label('Kecamatan')
                             ->options(fn () => MasterSls::pluck('kecamatan', 'kec_id'))
                             ->searchDebounce(100)
                             ->searchable(),
-                        Select::make("desa_kel_id")
-                            ->label("Desa/Kelurahan")
+                        Select::make('desa_kel_id')
+                            ->label('Desa/Kelurahan')
                             ->disabled()
                             ->options(fn () => MasterSls::pluck('desa_kel', 'desa_kel_id'))
                             ->searchDebounce(100)
                             ->searchable(),
-                        Select::make("transportasi")
+                        Select::make('transportasi')
                             ->options(
                                 Constants::JENIS_TRANSPORTASI_OPTIONS
                             )
@@ -1060,68 +1142,70 @@ class PenugasanResource extends Resource
                             ->disabled(),
                     ])
                     ->action(function (array $data) {
-                        if (Penugasan::perluPerbaikan($data))
-                            return self::notify("success", "Arahan perbaikan berhasil dikirim");
-                        return self::notify("danger", "Arahan perbaikan gagal dikirim");
+                        if (Penugasan::perluPerbaikan($data)) {
+                            return self::notify('success', 'Arahan perbaikan berhasil dikirim');
+                        }
+
+                        return self::notify('danger', 'Arahan perbaikan gagal dikirim');
                     }),
-                Action::make("ajukan_revisi")
-                    ->label("Perbaiki")
+                Action::make('ajukan_revisi')
+                    ->label('Perbaiki')
                     ->visible(function (Penugasan $record) {
-                        return $record->canAjukanRevisi();;
+                        return $record->canAjukanRevisi();
                     })
                     ->mountUsing(function (Schema $form, Penugasan $record) {
                         $form->fill([
                             ...$record->toArray(),
                             ...[
-                                "id" => $record->id,
-                                "catatan_butuh_perbaikan" => $record->riwayatPengajuan->catatan_butuh_perbaikan
-                            ]
+                                'id' => $record->id,
+                                'catatan_butuh_perbaikan' => $record->riwayatPengajuan->catatan_butuh_perbaikan,
+                            ],
                         ]);
                     })
                     ->form([
-                        Hidden::make("id"),
-                        Textarea::make("catatan_butuh_perbaikan")
-                            ->label("Catatan Revisi")
+                        Hidden::make('id'),
+                        Textarea::make('catatan_butuh_perbaikan')
+                            ->label('Catatan Revisi')
                             ->disabled(),
-                        Select::make("jenis_surat_tugas")
+                        Select::make('jenis_surat_tugas')
                             ->options(
                                 Constants::JENIS_SURAT_TUGAS_OPTIONS
                             )
                             ->searchable()
                             ->required(),
-                        Select::make("nip")
-                            ->label("Pegawai")
+                        Select::make('nip')
+                            ->label('Pegawai')
                             ->options(function () {
                                 return Pegawai::pluck('nama', 'nip')->toArray();
                             })
                             ->searchDebounce(100)
                             ->searchable(['nama'])
                             ->required(),
-                        Select::make("kegiatan_id")
-                            ->label("Kegiatan")
+                        Select::make('kegiatan_id')
+                            ->label('Kegiatan')
                             ->relationship('kegiatan', 'id')
                             ->searchDebounce(100)
-                            ->getOptionLabelFromRecordUsing(fn(Kegiatan $record) => $record->nama)
+                            ->getOptionLabelFromRecordUsing(fn (Kegiatan $record) => $record->nama)
                             ->required()
                             ->searchable(['nama']),
                         DatePicker::make('tgl_mulai_tugas')
                             ->required()
-                            ->label("Tanggal Mulai Penugasan"),
+                            ->label('Tanggal Mulai Penugasan'),
                         DatePicker::make('tgl_akhir_tugas')
                             ->required()
-                            ->label("Tanggal Selesai Penugasan"),
-                        TextInput::make("tbh_hari_jalan_awal")
+                            ->label('Tanggal Selesai Penugasan'),
+                        TextInput::make('tbh_hari_jalan_awal')
                             ->required()
-                            ->placeholder("Masukan tanggal")
+                            ->placeholder('Masukan tanggal')
                             ->numeric()
-                            ->label("Tambah Hari Awal Perjalanan"),
-                        TextInput::make("tbh_hari_jalan_akhir")
+                            ->label('Tambah Hari Awal Perjalanan'),
+                        TextInput::make('tbh_hari_jalan_akhir')
                             ->required()
-                            ->placeholder("Masukan tanggal")
+                            ->placeholder('Masukan tanggal')
                             ->numeric()
-                            ->label("Tambah Hari Akhir Perjalanan"),
-                        Select::make("prov_id")
-                            ->label("Provinsi")
+                            ->label('Tambah Hari Akhir Perjalanan'),
+                        Select::make('prov_id')
+                            ->label('Provinsi')
                             ->required()
                             ->live()
                             ->afterStateUpdated(function (Set $set) {
@@ -1132,9 +1216,9 @@ class PenugasanResource extends Resource
                             ->options(fn () => MasterSls::pluck('provinsi', 'prov_id'))
                             ->searchDebounce(100)
                             ->searchable(),
-                        Select::make("kabkot_id")
+                        Select::make('kabkot_id')
                             ->required()
-                            ->label("Kabupaten/Kota")
+                            ->label('Kabupaten/Kota')
                             ->live()
                             ->afterStateUpdated(function (Set $set) {
                                 $set('kecamatan_id', null);
@@ -1146,9 +1230,9 @@ class PenugasanResource extends Resource
                             })
                             ->searchDebounce(100)
                             ->searchable(),
-                        Select::make("kecamatan_id")
+                        Select::make('kecamatan_id')
                             ->required()
-                            ->label("Kecamatan")
+                            ->label('Kecamatan')
                             ->live()
                             ->afterStateUpdated(function (Set $set) {
                                 $set('desa_kel_id', null);
@@ -1159,15 +1243,15 @@ class PenugasanResource extends Resource
                             })
                             ->searchDebounce(100)
                             ->searchable(),
-                        Select::make("desa_kel_id")
-                            ->label("Desa/Kelurahan")
+                        Select::make('desa_kel_id')
+                            ->label('Desa/Kelurahan')
                             ->options(function (Get $get) {
                                 return MasterSls::when($get('kecamatan_id'), fn ($q, $kec) => $q->where('kec_id', $kec))
                                     ->pluck('desa_kel', 'desa_kel_id');
                             })
                             ->searchDebounce(100)
                             ->searchable(),
-                        Select::make("transportasi")
+                        Select::make('transportasi')
                             ->options(
                                 Constants::JENIS_TRANSPORTASI_OPTIONS
                             )
@@ -1176,14 +1260,16 @@ class PenugasanResource extends Resource
                     ])
                     ->action(function (array $data) {
                         // dd($data);
-                        if (Penugasan::ajukanRevisi($data))
-                            return self::notify("success", "Revisi pengajuan berhasil dikirim");
-                        return self::notify("danger", "Revisi pengajuan berhasil dikirim");
-                    })
+                        if (Penugasan::ajukanRevisi($data)) {
+                            return self::notify('success', 'Revisi pengajuan berhasil dikirim');
+                        }
+
+                        return self::notify('danger', 'Revisi pengajuan berhasil dikirim');
+                    }),
             ])
             ->bulkActions([
-                \Filament\Actions\BulkActionGroup::make([
-                    \Filament\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -1203,26 +1289,31 @@ class PenugasanResource extends Resource
             'edit' => Pages\EditPenugasan::route('/{record}/edit'),
         ];
     }
+
     public static function notify(string $notificationStatus, string $title)
     {
-        if ($notificationStatus == "success") {
+        if ($notificationStatus == 'success') {
             Notification::make()
                 ->title($title)
                 ->success()
                 ->send();
         }
-        if ($notificationStatus == "danger") {
+        if ($notificationStatus == 'danger') {
             Notification::make()
                 ->title($title)
                 ->danger()
                 ->send();
         }
     }
+
     public static function butuhMultipleTujuan($jenis_surat, $level_tujuan_penugasan, $level_tujuan_field)
     {
         if ($jenis_surat == Constants::NON_SPPD) {
-            if ($level_tujuan_field == $level_tujuan_penugasan) return true;
+            if ($level_tujuan_field == $level_tujuan_penugasan) {
+                return true;
+            }
         }
+
         return false;
     }
 }
