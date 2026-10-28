@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Filament\Resources\PenugasanResource\Widgets\PenugasanDisetujuiTable;
+use App\Models\Penugasan;
 use Filament\Tables\Table;
 use Tests\TestCase;
 
@@ -10,7 +11,7 @@ class PenugasanDisetujuiTableOptimizationTest extends TestCase
 {
     public function test_penugasan_disetujui_table_query_has_comprehensive_eager_loading(): void
     {
-        $widget = new PenugasanDisetujuiTable();
+        $widget = new PenugasanDisetujuiTable;
         $table = $widget->table(Table::make($widget));
         $query = $table->getQuery();
 
@@ -30,7 +31,7 @@ class PenugasanDisetujuiTableOptimizationTest extends TestCase
 
     public function test_penugasan_disetujui_table_pagination_is_bounded(): void
     {
-        $widget = new PenugasanDisetujuiTable();
+        $widget = new PenugasanDisetujuiTable;
         $table = $widget->table(Table::make($widget));
 
         $this->assertTrue($table->isPaginated(), 'PenugasanDisetujuiTable must be paginated');
@@ -40,7 +41,7 @@ class PenugasanDisetujuiTableOptimizationTest extends TestCase
 
     public function test_penugasan_disetujui_table_columns_and_actions(): void
     {
-        $widget = new PenugasanDisetujuiTable();
+        $widget = new PenugasanDisetujuiTable;
         $table = $widget->table(Table::make($widget));
 
         $columns = [];
@@ -73,5 +74,58 @@ class PenugasanDisetujuiTableOptimizationTest extends TestCase
             $fileContent,
             'PDF action URL generator must never call $record->cetak() because it runs on every row render and mutates database'
         );
+    }
+
+    public function test_penugasan_disetujui_table_has_searchable_scalable_filters(): void
+    {
+        $widget = new PenugasanDisetujuiTable;
+        $table = $widget->table(Table::make($widget));
+
+        $filters = [];
+        foreach ($table->getFilters() as $filter) {
+            $filters[$filter->getName()] = $filter;
+        }
+
+        $this->assertArrayHasKey('pegawai', $filters, 'Filter pegawai must exist');
+        $this->assertArrayHasKey('mitra', $filters, 'Filter mitra must exist');
+        $this->assertArrayHasKey('kegiatan', $filters, 'Filter kegiatan must exist');
+        $this->assertArrayHasKey('jenis_petugas', $filters, 'Filter jenis_petugas must exist');
+        $this->assertArrayHasKey('tahun', $filters, 'Filter tahun must exist');
+        $this->assertArrayHasKey('tgl_mulai_tugas', $filters, 'Filter tgl_mulai_tugas must exist');
+
+        // Verify searchability and non-preloaded status for performance
+        $this->assertNotEmpty($filters['pegawai']->getSearchable(), 'Filter pegawai must be searchable');
+        $this->assertFalse($filters['pegawai']->isPreloaded(), 'Filter pegawai must not be preloaded to prevent memory bloat on large datasets');
+
+        $this->assertNotEmpty($filters['mitra']->getSearchable(), 'Filter mitra must be searchable');
+        $this->assertFalse($filters['mitra']->isPreloaded(), 'Filter mitra must not be preloaded to prevent memory bloat on large datasets');
+
+        $this->assertNotEmpty($filters['kegiatan']->getSearchable(), 'Filter kegiatan must be searchable');
+        $this->assertFalse($filters['kegiatan']->isPreloaded(), 'Filter kegiatan must not be preloaded to prevent memory bloat on large datasets');
+    }
+
+    public function test_penugasan_disetujui_table_filters_apply_correct_scopes(): void
+    {
+        $widget = new PenugasanDisetujuiTable;
+        $table = $widget->table(Table::make($widget));
+
+        $filters = [];
+        foreach ($table->getFilters() as $filter) {
+            $filters[$filter->getName()] = $filter;
+        }
+
+        // Test jenis_petugas filter scope
+        $queryPegawai = Penugasan::query();
+        $filters['jenis_petugas']->apply($queryPegawai, ['value' => 'pegawai']);
+        $this->assertStringContainsString('nip', $queryPegawai->toSql());
+
+        $queryMitra = Penugasan::query();
+        $filters['jenis_petugas']->apply($queryMitra, ['value' => 'mitra']);
+        $this->assertStringContainsString('id_sobat', $queryMitra->toSql());
+
+        // Test tahun filter scope
+        $queryTahun = Penugasan::query();
+        $filters['tahun']->apply($queryTahun, ['value' => '2026']);
+        $this->assertStringContainsString('tgl_mulai_tugas', strtolower($queryTahun->toSql()));
     }
 }

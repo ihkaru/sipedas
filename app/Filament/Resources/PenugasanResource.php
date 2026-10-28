@@ -82,15 +82,16 @@ class PenugasanResource extends Resource
                 }),
             SelectFilter::make('pegawai')
                 ->label('Pegawai')
-                ->relationship('pegawai', 'nama')
+                ->relationship('pegawai', 'nama', fn (Builder $query) => $query->orderBy('nama'))
+                ->getOptionLabelFromRecordUsing(fn (Pegawai $record): string => "{$record->nama} ({$record->nip})")
                 ->multiple()
-                ->searchable()
-                ->preload(),
+                ->searchable(['nama', 'nip']),
             SelectFilter::make('mitra')
                 ->label('Mitra')
-                ->relationship('mitra', 'nama_1')
+                ->relationship('mitra', 'nama_1', fn (Builder $query) => $query->orderBy('nama_1'))
+                ->getOptionLabelFromRecordUsing(fn (Mitra $record): string => $record->id_sobat ? "{$record->nama_1} ({$record->id_sobat})" : (string) $record->nama_1)
                 ->multiple()
-                ->searchable(),
+                ->searchable(['nama_1', 'id_sobat']),
             DateRangeFilter::make('tgl_pengajuan_tugas')
                 ->label('Tanggal Pengajuan'),
             DateRangeFilter::make('tgl_mulai_tugas')
@@ -99,9 +100,8 @@ class PenugasanResource extends Resource
                 ->label('Tanggal Akhir Tugas'),
             SelectFilter::make('kegiatan')
                 ->label('Kegiatan')
-                ->relationship('kegiatan', 'nama')
-                ->searchable()
-                ->preload()
+                ->relationship('kegiatan', 'nama', fn (Builder $query) => $query->orderBy('nama'))
+                ->searchable(['nama'])
                 ->multiple(),
             SelectFilter::make('riwayatPengajuan')
                 ->options(Constants::STATUS_PENGAJUAN_OPTIONS)
