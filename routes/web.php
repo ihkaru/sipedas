@@ -2,15 +2,13 @@
 
 use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\ArtisanController;
+use App\Http\Controllers\CustomPageController;
 use App\Http\Controllers\ExcelExportController;
 use App\Http\Controllers\HonorTemplateController;
 use App\Http\Controllers\MitraTemplateController;
 use App\Http\Controllers\PdfController;
 use App\Http\Controllers\SamlController;
-use App\Providers\Filament\APanelProvider;
-use Filament\Http\Middleware\Authenticate;
-use Illuminate\Session\Middleware\AuthenticateSession;
-use Illuminate\Support\Facades\Artisan;
+use App\Http\Controllers\SuratTugasQuickApprovalController;
 use Illuminate\Support\Facades\Route;
 
 // SAML 2.0 SSO Routes (rIDM)
@@ -20,16 +18,15 @@ Route::get('/saml/metadata', [SamlController::class, 'metadata'])->name('saml.me
 Route::match(['get', 'post'], '/saml/logout', [SamlController::class, 'logout'])->name('saml.logout');
 Route::match(['get', 'post'], '/saml/sls', [SamlController::class, 'sls'])->name('saml.sls');
 
-Route::get("/run", [ArtisanController::class, "run"]);
+Route::get('/run', [ArtisanController::class, 'run']);
 Route::get('/clear-all-cache', [ArtisanController::class, 'clearAllCache']);
 Route::view('/', 'welcome');
 Route::get('/login', fn () => redirect()->route('saml.login'))->name('login');
-Route::get('/cetak/penugasan/{id}', [PdfController::class, 'cetakPenugasan'])->name("cetak.penugasan");
-Route::get('/cetak/penugasan-bersama/{id}', [PdfController::class, 'cetakPenugasanBersama'])->name("cetak.penugasan-bersama");
-Route::get('/cetak/kontrak', [PdfController::class, 'cetakKontrak'])->name("cetak.kontrak");
-Route::get('/cetak/bast', [PdfController::class, 'cetakBast'])->name("cetak.bast");
+Route::get('/cetak/penugasan/{id}', [PdfController::class, 'cetakPenugasan'])->name('cetak.penugasan');
+Route::get('/cetak/penugasan-bersama/{id}', [PdfController::class, 'cetakPenugasanBersama'])->name('cetak.penugasan-bersama');
+Route::get('/cetak/kontrak', [PdfController::class, 'cetakKontrak'])->name('cetak.kontrak');
 Route::get('/approve/{token}', [ApprovalController::class, 'handleApproval'])->name('one-click.approve');
-
+Route::get('/surat-tugas/quick-approve/{grup_id}', [SuratTugasQuickApprovalController::class, 'handleQuickApproval'])->name('surat-tugas.quick-approve');
 
 Route::middleware('auth')->group(function () {
     Route::get('/download/template-kegiatan-manmit', [ExcelExportController::class, 'downloadKegiatanTemplate'])
@@ -42,15 +39,15 @@ Route::middleware('auth')->group(function () {
         ->name('download.template.alokasi-honor');
 });
 
-Route::get('/p/{slug}', [\App\Http\Controllers\CustomPageController::class, 'show'])->name('custom-page.show');
+Route::get('/p/{slug}', [CustomPageController::class, 'show'])->name('custom-page.show');
 
 // Fallback serving public storage for cPanel environments if symlink is broken / missing
 Route::get('/storage/{path}', function (string $path) {
-    $fullPath = storage_path('app/public/' . $path);
+    $fullPath = storage_path('app/public/'.$path);
     $realFullPath = realpath($fullPath);
     $realBasePath = realpath(storage_path('app/public'));
 
-    if (!$realFullPath || !$realBasePath || !str_starts_with($realFullPath, $realBasePath) || !is_file($realFullPath)) {
+    if (! $realFullPath || ! $realBasePath || ! str_starts_with($realFullPath, $realBasePath) || ! is_file($realFullPath)) {
         abort(404);
     }
 

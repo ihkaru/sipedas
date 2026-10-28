@@ -12,6 +12,7 @@ use App\Supports\Constants;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Throwable;
 
 class SuratTugasNotificationService
@@ -59,6 +60,7 @@ class SuratTugasNotificationService
                         $foundPpspm = true;
                         $recipients->put($noWa, [
                             'nama' => $peg->panggilan ?? $peg->nama,
+                            'nip' => $peg->nip,
                             'role' => 'Kasubbag TU / PPSPM',
                         ]);
                     }
@@ -70,6 +72,7 @@ class SuratTugasNotificationService
                     if ($peg && ! empty($peg->nomor_wa)) {
                         $recipients->put($peg->nomor_wa, [
                             'nama' => $peg->panggilan ?? $peg->nama,
+                            'nip' => $peg->nip,
                             'role' => 'Kasubbag TU / PPSPM',
                         ]);
                     }
@@ -84,6 +87,7 @@ class SuratTugasNotificationService
                     if ($plhPegawai && ! empty($plhPegawai->nomor_wa)) {
                         $recipients->put($plhPegawai->nomor_wa, [
                             'nama' => $plhPegawai->panggilan ?? $plhPegawai->nama,
+                            'nip' => $plhPegawai->nip,
                             'role' => 'PLH Kepala',
                         ]);
                     }
@@ -99,6 +103,7 @@ class SuratTugasNotificationService
                         $foundKepala = true;
                         $recipients->put($noWa, [
                             'nama' => $peg->panggilan ?? $peg->nama,
+                            'nip' => $peg->nip,
                             'role' => 'Kepala Satker',
                         ]);
                     }
@@ -110,6 +115,7 @@ class SuratTugasNotificationService
                     if ($peg && ! empty($peg->nomor_wa)) {
                         $recipients->put($peg->nomor_wa, [
                             'nama' => $peg->panggilan ?? $peg->nama,
+                            'nip' => $peg->nip,
                             'role' => 'Kepala Satker',
                         ]);
                     }
@@ -154,6 +160,16 @@ class SuratTugasNotificationService
 
             foreach ($recipients as $targetWa => $info) {
                 $namaPenyetuju = $info['nama'];
+                $approverNip = $info['nip'] ?? null;
+                $linkQuickApprove = URL::temporarySignedRoute(
+                    'surat-tugas.quick-approve',
+                    now()->addDays(14),
+                    [
+                        'grup_id' => $first->grup_id,
+                        'nip' => $approverNip,
+                    ]
+                );
+
                 $message = "*Pengajuan Surat Tugas Baru | Dokter V*\n\n".
                     "Halo, Bapak/Ibu *{$namaPenyetuju}*,\n".
                     "Ada pengajuan Surat Tugas baru dari *{$namaPengaju}* yang memerlukan persetujuan:\n\n".
@@ -162,7 +178,10 @@ class SuratTugasNotificationService
                     "*Tujuan*: {$lokasi}\n".
                     "*Tanggal*: {$periode}\n".
                     "*Personil Tertugas*:\n{$personilStr}\n\n".
-                    "Silakan buka link berikut untuk memeriksa dan melakukan *Aksi Persetujuan*:\n".
+                    "⚡ *Persetujuan Cepat (1-Klik)*:\n".
+                    "Klik tautan ini untuk langsung menyetujui tanpa perlu login:\n".
+                    "{$linkQuickApprove}\n\n".
+                    "📋 *Buka Detail di SiPEDAS*:\n".
                     "{$linkAksi}\n\n".
                     'Semangat bertugas!';
 
