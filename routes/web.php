@@ -25,6 +25,7 @@ Route::get('/login', fn () => redirect()->route('saml.login'))->name('login');
 Route::get('/cetak/penugasan/{id}', [PdfController::class, 'cetakPenugasan'])->name('cetak.penugasan');
 Route::get('/cetak/penugasan-bersama/{id}', [PdfController::class, 'cetakPenugasanBersama'])->name('cetak.penugasan-bersama');
 Route::get('/cetak/kontrak', [PdfController::class, 'cetakKontrak'])->name('cetak.kontrak');
+Route::get('/cetak/bast', [PdfController::class, 'cetakBast'])->name('cetak.bast');
 Route::get('/approve/{token}', [ApprovalController::class, 'handleApproval'])->name('one-click.approve');
 Route::get('/surat-tugas/quick-approve/{grup_id}', [SuratTugasQuickApprovalController::class, 'handleQuickApproval'])->name('surat-tugas.quick-approve');
 
