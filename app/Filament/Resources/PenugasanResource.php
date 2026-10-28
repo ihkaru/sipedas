@@ -311,8 +311,23 @@ class PenugasanResource extends Resource
                     return Mitra::pluck('nama_1', 'id_sobat')->toArray();
                 })
                 ->searchDebounce(100)
-                // ->getOptionLabelFromRecordUsing(fn(Pegawai $record)=>$record->nama)
-                ->searchable(['nama_1'])
+                ->searchable()
+                ->getOptionLabelUsing(function ($value) {
+                    if (is_array($value)) {
+                        $value = array_filter($value);
+                        $value = !empty($value) ? reset($value) : null;
+                    }
+                    if (!$value) return '';
+                    return Mitra::where('id_sobat', $value)->value('nama_1') ?? '';
+                })
+                ->getOptionLabelsUsing(function ($values) {
+                    if (!is_array($values)) {
+                        $values = [$values];
+                    }
+                    $values = array_filter($values);
+                    if (empty($values)) return [];
+                    return Mitra::whereIn('id_sobat', $values)->pluck('nama_1', 'id_sobat')->toArray();
+                })
                 ->required(function (Get $get) {
                     return $get("jenis_peserta") == Constants::JENIS_PESERTA_SURAT_TUGAS_MITRA
                         || $get("jenis_peserta") == Constants::JENIS_PESERTA_SURAT_TUGAS_PEGAWAI_MITRA;
@@ -331,8 +346,23 @@ class PenugasanResource extends Resource
                     return Pegawai::pluck('nama', 'nip')->toArray();
                 })
                 ->searchDebounce(100)
-                // ->getOptionLabelFromRecordUsing(fn(Pegawai $record)=>$record->nama)
-                ->searchable(['nama'])
+                ->searchable()
+                ->getOptionLabelUsing(function ($value) {
+                    if (is_array($value)) {
+                        $value = array_filter($value);
+                        $value = !empty($value) ? reset($value) : null;
+                    }
+                    if (!$value) return '';
+                    return Pegawai::where('nip', $value)->value('nama') ?? '';
+                })
+                ->getOptionLabelsUsing(function ($values) {
+                    if (!is_array($values)) {
+                        $values = [$values];
+                    }
+                    $values = array_filter($values);
+                    if (empty($values)) return [];
+                    return Pegawai::whereIn('nip', $values)->pluck('nama', 'nip')->toArray();
+                })
                 ->required()
                 ->multiple(),
             Select::make("kegiatan_id")
@@ -500,7 +530,23 @@ class PenugasanResource extends Resource
                 ->options(function () {
                     return MasterSls::pluck("provinsi", "prov_id");
                 })
-                ->searchable(['provinsi']),
+                ->searchable()
+                ->getOptionLabelUsing(function ($value) {
+                    if (is_array($value)) {
+                        $value = array_filter($value);
+                        $value = !empty($value) ? reset($value) : null;
+                    }
+                    if (!$value) return '';
+                    return MasterSls::where('prov_id', $value)->value('provinsi') ?? '';
+                })
+                ->getOptionLabelsUsing(function ($values) {
+                    if (!is_array($values)) {
+                        $values = [$values];
+                    }
+                    $values = array_filter($values);
+                    if (empty($values)) return [];
+                    return MasterSls::whereIn('prov_id', $values)->pluck('provinsi', 'prov_id')->toArray();
+                }),
             Select::make("kabkot_ids")
                 ->afterStateUpdated(function (Set $set) {
                     $set("kecamatan_ids", null);
@@ -526,10 +572,31 @@ class PenugasanResource extends Resource
                 })
                 ->label("Kabupaten/Kota Tujuan")
                 ->options(function (Get $get) {
-                    return MasterSls::where('prov_id', $get('prov_ids'))
+                    $provId = $get('prov_ids');
+                    if (is_array($provId)) {
+                        $provId = array_filter($provId);
+                        $provId = !empty($provId) ? reset($provId) : null;
+                    }
+                    return MasterSls::where('prov_id', $provId)
                         ->pluck("kabkot", "kabkot_id");
                 })
-                ->searchable(['kabkot']),
+                ->searchable()
+                ->getOptionLabelUsing(function ($value) {
+                    if (is_array($value)) {
+                        $value = array_filter($value);
+                        $value = !empty($value) ? reset($value) : null;
+                    }
+                    if (!$value) return '';
+                    return MasterSls::where('kabkot_id', $value)->value('kabkot') ?? '';
+                })
+                ->getOptionLabelsUsing(function ($values) {
+                    if (!is_array($values)) {
+                        $values = [$values];
+                    }
+                    $values = array_filter($values);
+                    if (empty($values)) return [];
+                    return MasterSls::whereIn('kabkot_id', $values)->pluck('kabkot', 'kabkot_id')->toArray();
+                }),
             Select::make("kecamatan_ids")
                 ->afterStateUpdated(function (Set $set) {
                     $set("desa_kel_ids", null);
@@ -556,10 +623,34 @@ class PenugasanResource extends Resource
                 })
                 ->label("Kecamatan Tujuan")
                 ->options(function (Get $get) {
-                    return MasterSls::where('kabkot_id', $get('kabkot_ids'))
-                        ->pluck("kecamatan", "kec_id");
+                    $kabkotIds = $get('kabkot_ids');
+                    $query = MasterSls::query();
+                    if (is_array($kabkotIds)) {
+                        $query->whereIn('kabkot_id', array_filter($kabkotIds));
+                    } elseif ($kabkotIds) {
+                        $query->where('kabkot_id', $kabkotIds);
+                    } else {
+                        return [];
+                    }
+                    return $query->pluck("kecamatan", "kec_id");
                 })
-                ->searchable(['kecamatan']),
+                ->searchable()
+                ->getOptionLabelUsing(function ($value) {
+                    if (is_array($value)) {
+                        $value = array_filter($value);
+                        $value = !empty($value) ? reset($value) : null;
+                    }
+                    if (!$value) return '';
+                    return MasterSls::where('kec_id', $value)->value('kecamatan') ?? '';
+                })
+                ->getOptionLabelsUsing(function ($values) {
+                    if (!is_array($values)) {
+                        $values = [$values];
+                    }
+                    $values = array_filter($values);
+                    if (empty($values)) return [];
+                    return MasterSls::whereIn('kec_id', $values)->pluck('kecamatan', 'kec_id')->toArray();
+                }),
             Select::make("desa_kel_ids")
                 ->multiple(function (Get $get) {
                     return self::butuhMultipleTujuan($get("jenis_surat_tugas"), $get('level_tujuan_penugasan'), Constants::LEVEL_PENUGASAN_DESA_KELURAHAN);
@@ -576,10 +667,34 @@ class PenugasanResource extends Resource
                     ])->contains($get('level_tujuan_penugasan'));
                 })
                 ->options(function (Get $get) {
-                    return MasterSls::where('kec_id', $get('kecamatan_ids'))
-                        ->pluck("desa_kel", "desa_kel_id");
+                    $kecIds = $get('kecamatan_ids');
+                    $query = MasterSls::query();
+                    if (is_array($kecIds)) {
+                        $query->whereIn('kec_id', array_filter($kecIds));
+                    } elseif ($kecIds) {
+                        $query->where('kec_id', $kecIds);
+                    } else {
+                        return [];
+                    }
+                    return $query->pluck("desa_kel", "desa_kel_id");
                 })
-                ->searchable(['desa_kel']),
+                ->searchable()
+                ->getOptionLabelUsing(function ($value) {
+                    if (is_array($value)) {
+                        $value = array_filter($value);
+                        $value = !empty($value) ? reset($value) : null;
+                    }
+                    if (!$value) return '';
+                    return MasterSls::where('desa_kel_id', $value)->value('desa_kel') ?? '';
+                })
+                ->getOptionLabelsUsing(function ($values) {
+                    if (!is_array($values)) {
+                        $values = [$values];
+                    }
+                    $values = array_filter($values);
+                    if (empty($values)) return [];
+                    return MasterSls::whereIn('desa_kel_id', $values)->pluck('desa_kel', 'desa_kel_id')->toArray();
+                }),
             Select::make("transportasi")
                 ->hidden(function (Get $get) {
                     return collect([
