@@ -8,14 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 class Pengaturan extends Model
 {
     use HasFactory;
-    protected $guarded=[];
+
+    protected $guarded = [];
 
     public static $values;
 
     public static function key(string $key)
     {
         self::$values = self::$values ?? self::get();
-        $item = self::$values->where("key", $key)->first();
+        $item = self::$values->where('key', $key)->first();
         if ($item) {
             return $item;
         }
@@ -31,6 +32,7 @@ class Pengaturan extends Model
     public static function getValue(string $key, $default = null)
     {
         $item = self::key($key);
+
         return $item ? $item->nilai : $default;
     }
 
@@ -40,8 +42,10 @@ class Pengaturan extends Model
             'NAMA_KAKO' => config('satker.kabkot', 'KABUPATEN MEMPAWAH'),
             'NAMA_PROVINSI' => config('satker.provinsi', 'KALIMANTAN BARAT'),
             'LEVEL_SATUAN_KERJA' => strtoupper((string) config('satker.level', 'KAKO')),
-            'ID_PLH_DEFAULT' => config('satker.pejabat.nip_kasubbag', '196908031992111001'),
+            'ID_PLH_DEFAULT' => config('satker.pejabat.kepala_nip', config('satker.pejabat.nip_kepala', '196908031992111001')),
             'NIP_PPK_SATER' => config('satker.pejabat.nip_ppk', '199306062016021001'),
+            'NIP_KASUBBAG_TU' => config('satker.pejabat.kasubbag_tu_nip', config('satker.pejabat.nip_kasubbag', '198008112005021004')),
+            'NIP_BENDAHARA' => config('satker.pejabat.bendahara_nip', config('satker.pejabat.nip_bendahara', '198801012010121001')),
             'SURTUG_JML_HARI_BATAS_PENGEMBALIAN' => 13,
             'SURTUG_JML_HARI_MULAI_PENGINGAT_SURTUG' => 10,
             'SURTUG_JML_HARI_BATAS_PENCAIRAN' => 17,
@@ -52,13 +56,17 @@ class Pengaturan extends Model
     public static function namaSatker(bool $denganLevelAdministrasi = true)
     {
         $namaSatker = self::getValue('NAMA_KAKO', config('satker.kabkot', 'KABUPATEN MEMPAWAH'));
-        if ($denganLevelAdministrasi) return $namaSatker;
-        $res = "";
-        foreach (explode(" ", (string) $namaSatker) as $k => $v) {
-            if ($k == 0) continue;
-            $res = $res . " " . $v;
+        if ($denganLevelAdministrasi) {
+            return $namaSatker;
         }
+        $res = '';
+        foreach (explode(' ', (string) $namaSatker) as $k => $v) {
+            if ($k == 0) {
+                continue;
+            }
+            $res = $res.' '.$v;
+        }
+
         return trim($res);
     }
-
 }

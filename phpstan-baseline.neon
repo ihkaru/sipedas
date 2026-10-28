@@ -49,6 +49,30 @@ parameters:
 			path: app/Exports/PengajuanExport.php
 
 		-
+			message: '#^Using nullsafe property access "\?\-\>jenis_kegiatan" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Exports/Sheets/MonitorHonorMitraDetailSheet.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/Sheets/MonitorHonorMitraDetailSheet.php
+
+		-
+			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'
+			identifier: greater.alwaysTrue
+			count: 1
+			path: app/Exports/Sheets/MonitorHonorMitraSummarySheet.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>jenis_kegiatan" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/Sheets/MonitorHonorMitraSummarySheet.php
+
+		-
 			message: '#^Parameter \#1 \$options of method Filament\\Forms\\Components\\Select\:\:options\(\) expects array\<array\<string\>\|string\>\|Closure\|Illuminate\\Contracts\\Support\\Arrayable\|string\|null, non\-empty\-array\<int, int\> given\.$#'
 			identifier: argument.type
 			count: 1
@@ -65,12 +89,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/Filament/Pages/KalenderPerjadin.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$pegawai\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Pages/LaporanPerjadinPage.php
 
 		-
 			message: '#^Parameter \#1 \$rules of method Filament\\Pages\\BasePage\:\:validate\(\) expects array\<string, array\<mixed\>\>\|null, array\<string, string\> given\.$#'
@@ -109,6 +127,12 @@ parameters:
 			path: app/Filament/Pages/MatriksPerjadinPegawai.php
 
 		-
+			message: '#^Call to function method_exists\(\) with \$this\(App\\Filament\\Pages\\MonitorHonorMitra\) and ''getTableQueryForExp…'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Filament/Pages/MonitorHonorMitra.php
+
+		-
 			message: '#^Parameter \#1 \$options of method Filament\\Forms\\Components\\Select\:\:options\(\) expects array\<array\<string\>\|string\>\|Closure\|Illuminate\\Contracts\\Support\\Arrayable\|string\|null, non\-empty\-array\<int, int\> given\.$#'
 			identifier: argument.type
 			count: 1
@@ -125,6 +149,30 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/Filament/Pages/Pengaturan.php
+
+		-
+			message: '#^Cannot access property \$name on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Resources/ApiKeyResource/Pages/EditApiKey.php
+
+		-
+			message: '#^Parameter \#1 \$apiKey of static method App\\Services\\AiContextService\:\:generateContextForApiKey\(\) expects App\\Models\\ApiKey, Illuminate\\Database\\Eloquent\\Model\|int\|string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Resources/ApiKeyResource/Pages/EditApiKey.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Filament/Resources/AuditLogResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Resources/AuditLogResource.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Honor\:\:\$id_batasan_honor\.$#'
@@ -211,10 +259,10 @@ parameters:
 			path: app/Filament/Resources/MitraResource/RelationManagers/KemitraansRelationManager.php
 
 		-
-			message: '#^Call to method fill\(\) on an unknown class App\\Filament\\Resources\\Form\.$#'
-			identifier: class.notFound
-			count: 3
-			path: app/Filament/Resources/PenugasanResource.php
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:searchNomor\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Filament/Resources/NomorSuratResource.php
 
 		-
 			message: '#^Method Carbon\\Carbon\:\:addMonth\(\) invoked with 1 parameter, 0 required\.$#'
@@ -229,40 +277,16 @@ parameters:
 			path: app/Filament/Resources/PenugasanResource.php
 
 		-
-			message: '#^Parameter \$form of anonymous function has invalid type App\\Filament\\Resources\\Form\.$#'
-			identifier: class.notFound
-			count: 3
-			path: app/Filament/Resources/PenugasanResource.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>last_status" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Filament/Resources/PenugasanResource.php
 
 		-
-			message: '#^Call to method fill\(\) on an unknown class App\\Filament\\Resources\\PenugasanResource\\Pages\\Form\.$#'
-			identifier: class.notFound
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$riwayatPengajuan\.$#'
+			identifier: property.notFound
 			count: 1
-			path: app/Filament/Resources/PenugasanResource/Pages/ListPenugasans.php
-
-		-
-			message: '#^Parameter \$form of anonymous function has invalid type App\\Filament\\Resources\\PenugasanResource\\Pages\\Form\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Filament/Resources/PenugasanResource/Pages/ListPenugasans.php
-
-		-
-			message: '#^Call to method fill\(\) on an unknown class App\\Filament\\Resources\\PenugasanResource\\Widgets\\Form\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Filament/Resources/PenugasanResource/Widgets/PenugasanTable.php
-
-		-
-			message: '#^Parameter \$form of anonymous function has invalid type App\\Filament\\Resources\\PenugasanResource\\Widgets\\Form\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Filament/Resources/PenugasanResource/Widgets/PenugasanTable.php
+			path: app/Filament/Resources/PenugasanResource/Widgets/PenugasanDisetujuiTable.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\RiwayatPengajuan\:\:\$jumlah\.$#'
@@ -295,12 +319,6 @@ parameters:
 			path: app/Filament/Resources/PenugasanResource/Widgets/StatusSuratTugasChart.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$pegawai\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Resources/RiwayatPengajuanResource/Widgets/RiwayatPengajuanTable.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
 			identifier: property.notFound
 			count: 1
@@ -313,27 +331,9 @@ parameters:
 			path: app/Filament/Resources/RiwayatPpkResource/Pages/ListRiwayatPpks.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$pegawai\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Resources/Sipancong/PengajuanResource.php
-
-		-
 			message: '#^Call to an undefined static method App\\Services\\Sipancong\\PengajuanServices\:\:rawPerluPemeriksaanAtauProsesBendahara\(\)\.$#'
 			identifier: staticMethod.notFound
 			count: 1
-			path: app/Filament/Resources/Sipancong/PengajuanResource.php
-
-		-
-			message: '#^Call to method fill\(\) on an unknown class App\\Filament\\Resources\\Sipancong\\Form\.$#'
-			identifier: class.notFound
-			count: 6
-			path: app/Filament/Resources/Sipancong/PengajuanResource.php
-
-		-
-			message: '#^Parameter \$form of anonymous function has invalid type App\\Filament\\Resources\\Sipancong\\Form\.$#'
-			identifier: class.notFound
-			count: 6
 			path: app/Filament/Resources/Sipancong/PengajuanResource.php
 
 		-
@@ -341,18 +341,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Filament/Resources/Sipancong/PengajuanResource/Forms/PengajuanForms.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$pegawai\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Resources/Sipancong/PengajuanResource/Pages/ListPengajuans.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$pegawai\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Filament/Resources/UserResource.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
@@ -371,6 +359,492 @@ parameters:
 			identifier: deadCode.unreachable
 			count: 2
 			path: app/Filament/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Honor\>\|Illuminate\\Database\\Eloquent\\Model\:\:\$harga_per_satuan\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/AlokasiHonorApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id_sobat\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/AlokasiHonorApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$kegiatanManmit\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/AlokasiHonorApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$kegiatan_manmit_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/AlokasiHonorApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama_1\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/AlokasiHonorApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nomor_surat_bast\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/AlokasiHonorApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nomor_surat_perjanjian_kerja\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/AlokasiHonorApiController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:searchNomor\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/AlokasiHonorApiController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\AlokasiHonor\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/AlokasiHonorApiController.php
+
+		-
+			message: '#^Parameter \$honor of static method App\\Services\\HonorAllocationService\:\:validateEligibility\(\) expects App\\Models\\Honor, Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Honor\>\|Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/AlokasiHonorApiController.php
+
+		-
+			message: '#^Parameter \$mitra of static method App\\Services\\HonorAllocationService\:\:validateEligibility\(\) expects App\\Models\\Mitra, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/AlokasiHonorApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/AuditLogApiController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\ApiAuditLog\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/AuditLogApiController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/AuditLogApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\NomorSurat\:\:\$nomor_surat_bast\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/DokumenApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\NomorSurat\:\:\$nomor_surat_perjanjian_kerja\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/DokumenApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 5
+			path: app/Http/Controllers/Api/DokumenApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id_sobat\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Controllers/Api/DokumenApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jabatan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/DokumenApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jenis_honor\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/DokumenApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$kegiatanManmit\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/DokumenApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama_1\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Controllers/Api/DokumenApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nomor_surat_bast\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/DokumenApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nomor_surat_perjanjian_kerja\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/DokumenApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tanggal_nomor\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Http/Controllers/Api/DokumenApiController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:searchNomor\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/DokumenApiController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<\(int\|string\),Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\AlokasiHonor\>\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 2
+			path: app/Http/Controllers/Api/DokumenApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Honor\:\:\$alokasi_honors_count\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/HonorApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Controllers/Api/HonorApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jenis_kegiatan\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/HonorApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 5
+			path: app/Http/Controllers/Api/HonorApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tgl_akhir_pelaksanaan\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/HonorApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tgl_mulai_pelaksanaan\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/HonorApiController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Honor\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 2
+			path: app/Http/Controllers/Api/HonorApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$jenis_kelamin\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/KegiatanManmitApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$posisi_daftar\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/KegiatanManmitApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$whatsapp_target\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/KegiatanManmitApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$whatsapp_url\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/KegiatanManmitApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$harga_per_satuan\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/KegiatanManmitApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/KegiatanManmitApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jabatan\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Controllers/Api/KegiatanManmitApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jenis_honor\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/KegiatanManmitApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$satuan_honor\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/KegiatanManmitApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/KegiatanManmitApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tanggal_akhir_kegiatan\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/KegiatanManmitApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tanggal_pembayaran_maksimal\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/KegiatanManmitApiController.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: string, nama\: string, jenis\: ''SENSUS''\|''SURVEI''\|null, tgl_mulai\: string\|null, tgl_akhir\: string\|null, honors\: Illuminate\\Support\\Collection\<int, array\{id\: mixed, jabatan\: mixed, harga\: float, satuan\: mixed\}\>\} but returns array\{id\: string, nama\: string, jenis\: ''SENSUS''\|''SURVEI''\|null, tgl_mulai\: string\|null, tgl_akhir\: string\|null, honors\: Illuminate\\Support\\Collection\<int, array\{id\: string, jabatan\: mixed, harga\: float, satuan\: mixed\}\>\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Api/KegiatanManmitApiController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 3
+			path: app/Http/Controllers/Api/KegiatanManmitApiController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Mitra\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/KegiatanManmitApiController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:filter\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/KegiatanManmitApiController.php
+
+		-
+			message: '#^Relation ''alokasiHonors'' is not found in App\\Models\\Mitra model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Api/KegiatanManmitApiController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>status" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/KegiatanManmitApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$agama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$alamat_desa\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$alamat_detail\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$alamat_kab\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$alamat_kec\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$alamat_prov\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$alokasiHonors\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$catatan\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$deskripsi_pekerjaan_lain\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$jenis_kelamin\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$nama_2\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$npwp\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$pekerjaan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$pendidikan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$posisi\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$posisi_daftar\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$status_perkawinan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$whatsapp_target\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$whatsapp_url\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tahun\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>status" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Http/Controllers/Api/MitraApiController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Pegawai\:\:\$atasanLangsung\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/PegawaiApiController.php
+
+		-
+			message: '#^Relation ''atasanLangsung'' is not found in App\\Models\\Pegawai model\.$#'
+			identifier: larastan.relationExistence
+			count: 2
+			path: app/Http/Controllers/Api/PegawaiApiController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Contracts\\Auth\\Factory\|Illuminate\\Contracts\\Auth\\Guard\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/PenugasanApiController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/PenugasanApiController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama_1" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/PenugasanApiController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>status" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/PenugasanApiController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\ActionToken\:\:\$pengajuan\.$#'
@@ -409,6 +883,270 @@ parameters:
 			path: app/Http/Controllers/PdfController.php
 
 		-
+			message: '#^Relation ''pegawai'' is not found in App\\Models\\User model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/SamlController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method Illuminate\\Contracts\\Auth\\Guard\:\:setUser\(\) expects Illuminate\\Contracts\\Auth\\Authenticatable, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Middleware/ApiKeyMiddleware.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\AlokasiHonorResource\:\:\$bast\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/AlokasiHonorResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\AlokasiHonorResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/AlokasiHonorResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\AlokasiHonorResource\:\:\$honor\.$#'
+			identifier: property.notFound
+			count: 9
+			path: app/Http/Resources/Api/AlokasiHonorResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\AlokasiHonorResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/AlokasiHonorResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\AlokasiHonorResource\:\:\$kontrak\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/AlokasiHonorResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\AlokasiHonorResource\:\:\$mitra\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Resources/Api/AlokasiHonorResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\AlokasiHonorResource\:\:\$mitra_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/AlokasiHonorResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\AlokasiHonorResource\:\:\$surat_bast_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/AlokasiHonorResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\AlokasiHonorResource\:\:\$surat_perjanjian_kerja_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/AlokasiHonorResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\AlokasiHonorResource\:\:\$tanggal_akhir_perjanjian\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/AlokasiHonorResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\AlokasiHonorResource\:\:\$tanggal_mulai_perjanjian\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/AlokasiHonorResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\AlokasiHonorResource\:\:\$tanggal_penanda_tanganan_spk_oleh_petugas\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/AlokasiHonorResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\AlokasiHonorResource\:\:\$target_per_satuan_honor\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/AlokasiHonorResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\AlokasiHonorResource\:\:\$total_honor\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/AlokasiHonorResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\AlokasiHonorResource\:\:\$updated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/AlokasiHonorResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>harga_per_satuan" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Resources/Api/AlokasiHonorResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$grup_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$id_sobat\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$jenis_peserta\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$jenis_surat_tugas\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$kegiatan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$kegiatan_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$level_tujuan_penugasan\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$nama_tempat_tujuan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$nip_pengaju\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$plh_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$riwayatPengajuan\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$suratPerjadin\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$suratTugas\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$surat_perjadin_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$surat_tugas_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$tgl_akhir_tugas\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$tgl_mulai_tugas\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$tgl_pengajuan_tugas\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$transportasi\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\PenugasanApiResource\:\:\$updated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>jabatan" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama_1" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>status" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Resources/Api/PenugasanApiResource.php
+
+		-
 			message: '#^Method Carbon\\Carbon\:\:addDay\(\) invoked with 1 parameter, 0 required\.$#'
 			identifier: arguments.count
 			count: 1
@@ -445,6 +1183,12 @@ parameters:
 			path: app/Models/Mitra.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$whatsapp_target\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Mitra.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
 			identifier: property.notFound
 			count: 1
@@ -455,12 +1199,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/Models/Mitra.php
-
-		-
-			message: '#^Parameter \#1 \$string of function str_pad expects string, int given\.$#'
-			identifier: argument.type
-			count: 4
-			path: app/Models/NomorSurat.php
 
 		-
 			message: '#^Variable \$nomorSuratBaru might not be defined\.$#'
@@ -478,18 +1216,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$nip\.$#'
 			identifier: property.notFound
 			count: 2
-			path: app/Models/Penugasan.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$pegawai\.$#'
-			identifier: property.notFound
-			count: 11
-			path: app/Models/Penugasan.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama_tempat_tujuan\.$#'
-			identifier: property.notFound
-			count: 1
 			path: app/Models/Penugasan.php
 
 		-
@@ -517,12 +1243,6 @@ parameters:
 			path: app/Models/Penugasan.php
 
 		-
-			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Contracts\\Auth\\Factory\|Illuminate\\Contracts\\Auth\\Guard\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 2
-			path: app/Models/Penugasan.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -531,7 +1251,7 @@ parameters:
 		-
 			message: '#^Using nullsafe property access "\?\-\>nip" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 3
+			count: 1
 			path: app/Models/Penugasan.php
 
 		-
@@ -565,12 +1285,6 @@ parameters:
 			path: app/Models/Sipancong/Pengajuan.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$pegawai\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Sipancong/Pengajuan.php
-
-		-
 			message: '#^PHPDoc type array\<int, string\> of property App\\Models\\User\:\:\$hidden is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$hidden\.$#'
 			identifier: property.phpDocType
 			count: 1
@@ -583,10 +1297,52 @@ parameters:
 			path: app/Models/User.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AiContextService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AiContextService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>email" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/AiContextService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/AiContextService.php
+
+		-
 			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
 			identifier: larastan.noEnvCallsOutsideOfConfig
 			count: 2
 			path: app/Services/GoogleSheetsService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/HonorAllocationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jenis_kegiatan\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/HonorAllocationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/HonorAllocationService.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$kegiatanManmit\.$#'
@@ -619,12 +1375,6 @@ parameters:
 			path: app/Services/Sipancong/PengajuanServices.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$pegawai\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Services/Sipancong/PengajuanServices.php
-
-		-
 			message: '#^Binary operation "\+" between string and 1 results in an error\.$#'
 			identifier: binaryOp.invalid
 			count: 1
@@ -647,12 +1397,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 11
 			path: app/Services/Sipancong/PengajuanServices.php
-
-		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 1
-			path: app/Services/WhatsappNotifier.php
 
 		-
 			message: '#^Method Carbon\\Carbon\:\:addDay\(\) invoked with 1 parameter, 0 required\.$#'

@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Models\Kegiatan;
 use App\Models\Pegawai;
+use App\Models\Pengaturan;
 use App\Models\Penugasan;
 use App\Models\RiwayatPengajuan;
 use App\Models\Setting;
@@ -217,5 +218,114 @@ class SuratTugasApprovalDelegationTest extends TestCase
             return str_contains($request->body(), 'Surat Tugas Ditolak');
         });
     }
-}
 
+    public function test_is_user_approver_recognizes_kasubbag_by_configured_nip_fallback(): void
+    {
+        Setting::updateOrCreate(['key' => 'st_approval_mode'], ['value' => 'ppspm_only']);
+
+        $kasubbagNip = '198008112005021004';
+        $pegawaiKasubbag = Pegawai::factory()->create([
+            'nip' => $kasubbagNip,
+            'nama' => 'Muhammad Adwin, S.Mn.',
+            'panggilan' => 'Bg Adwin',
+        ]);
+        $userKasubbag = User::factory()->create(['email' => $pegawaiKasubbag->email]);
+        // Note: user does NOT have the Spatie 'ppspm' role, only 'pegawai'
+        $userKasubbag->assignRole('pegawai');
+
+        Pengaturan::updateOrCreate(
+            ['key' => 'NIP_KASUBBAG_TU'],
+            ['nilai' => $kasubbagNip, 'deskripsi' => 'Kasubbag TU']
+        );
+
+        $this->assertTrue(Penugasan::isUserApprover($userKasubbag));
+    }
+
+    public function test_non_sppd_requires_approval_and_notifies_ppspm_in_ppspm_only_mode(): void
+    {
+        Http::fake([
+            '*' => Http::response(['status' => 'success'], 200),
+        ]);
+
+        config(['services.whatsapp.aina.api_key' => 'test-api-key']);
+        Setting::updateOrCreate(['key' => 'whatsapp_notification_enabled'], ['value' => '1']);
+        Setting::updateOrCreate(['key' => 'st_approval_mode'], ['value' => 'ppspm_only']);
+
+        $kasubbagNip = '198008112005021004';
+        $pegawaiKasubbag = Pegawai::factory()->create([
+            'nip' => $kasubbagNip,
+            'nama' => 'Muhammad Adwin, S.Mn.',
+            'panggilan' => 'Bg Adwin',
+            'nomor_wa' => '085346332883',
+        ]);
+        $userKasubbag = User::factory()->create(['email' => $pegawaiKasubbag->email]);
+        $userKasubbag->assignRole('ppspm');
+
+        // Submitter: Regular employee (Kak Sarah)
+        $pegawaiSubmitter = Pegawai::factory()->create([
+            'nip' => '199801012022032001',
+            'nama' => 'Sarah Pratiwi',
+            'panggilan' => 'Kak Sarah',
+            'nomor_wa' => '081234567899',
+        ]);
+        $userSubmitter = User::factory()->create(['email' => $pegawaiSubmitter->email]);
+        $userSubmitter->assignRole('pegawai');
+
+        $this->actingAs($userSubmitter);
+
+        // Assignee: Budiman Aller
+        $pegawaiTertugas = Pegawai::factory()->create([
+            'nip' => '199705052021021001',
+            'nama' => 'Budiman Aller Silaban',
+            'panggilan' => 'Bg Aller',
+            'nomor_wa' => '081122334455',
+        ]);
+
+        $kegiatan = Kegiatan::factory()->create(['id' => 998879, 'nama' => 'Survei SHKK 2026']);
+
+        $dataPengajuan = [
+            'nama_kegiatan' => 'Survei SHKK 2026',
+            'level_tujuan' => Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
+            'lokasi' => 'Mempawah Timur',
+            'tanggal_mulai' => now()->addDay()->toDateString(),
+            'tanggal_selesai' => now()->addDay()->toDateString(),
+            'jenis_petugas' => 'PEGAWAI',
+            'apakah_sppd' => 0, // NON_SPPD
+            'nips' => [$pegawaiTertugas->nip],
+            'mitras' => [],
+        ];
+
+        $success = Penugasan::ajukan($dataPengajuan);
+        $this->assertTrue($success);
+
+        $penugasan = Penugasan::where('nip', $pegawaiTertugas->nip)->latest('id')->first();
+        $this->assertNotNull($penugasan);
+
+        // Must NOT be auto-approved
+        $this->assertEquals(Constants::STATUS_PENGAJUAN_DIKIRIM, $penugasan->riwayatPengajuan->status);
+
+        // Notification must have been sent to Kasubbag TU / PPSPM (Bg Adwin)
+        Http::assertSent(function ($request) {
+            return str_contains($request->body(), 'Pengajuan Surat Tugas Baru') &&
+                   str_contains($request->body(), '6285346332883');
+        });
+
+        // Kak Sarah cannot approve
+        $this->assertFalse($penugasan->canSetujui());
+
+        // Acting as Kasubbag TU (Bg Adwin) can approve
+        $this->actingAs($userKasubbag);
+        $this->assertTrue($penugasan->canSetujui());
+
+        $penugasan->setujui();
+        $penugasan->refresh();
+        $this->assertEquals(Constants::STATUS_PENGAJUAN_DISETUJUI, $penugasan->riwayatPengajuan->status);
+
+        // Approval notification must cite Bg Adwin, NOT Kak Sarah!
+        Http::assertSent(function ($request) {
+            return str_contains($request->body(), 'Surat Tugas Disetujui') &&
+                   str_contains($request->body(), 'Bg Adwin') &&
+                   ! str_contains($request->body(), 'disetujui oleh Kak Sarah');
+        });
+    }
+}

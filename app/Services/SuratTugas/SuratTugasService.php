@@ -2,15 +2,14 @@
 
 namespace App\Services\SuratTugas;
 
-use App\Models\NomorSurat;
 use App\Models\Pegawai;
 use App\Models\Pengaturan;
 use App\Models\Penugasan;
 use App\Models\Plh;
 use App\Models\RiwayatPengajuan;
+use App\Models\Setting;
 use App\Models\TujuanSuratTugas;
 use App\Supports\Constants;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -63,10 +62,10 @@ class SuratTugasService
         $createdPenugasans = DB::transaction(function () use ($data, $pengajuNip) {
             // Tentukan NIP Pengaju
             $user = auth()->user();
-            $effectivePengajuNip = $pengajuNip 
+            $effectivePengajuNip = $pengajuNip
                 ?? ($user && $user->pegawai ? $user->pegawai->nip : null)
-                ?? $data['nip_pengaju'] 
-                ?? (!empty($data['nips']) ? $data['nips'][0] : null)
+                ?? $data['nip_pengaju']
+                ?? (! empty($data['nips']) ? $data['nips'][0] : null)
                 ?? (Pengaturan::key('ID_PLH_DEFAULT') ? Pengaturan::key('ID_PLH_DEFAULT')->nilai : null)
                 ?? '198008112005021004';
 
@@ -109,9 +108,8 @@ class SuratTugasService
                 RiwayatPengajuan::kirim([$pengajuan->id]);
                 TujuanSuratTugas::ajukan($data, $pengajuan->id);
 
-                // Jika Non-SPPD atau mode auto-approve aktif, langsung otomatis disetujui (auto-approved)
-                $isAutoApprove = ($pengajuan->jenis_surat_tugas === Constants::NON_SPPD) 
-                    || (\App\Models\Setting::where('key', 'st_approval_mode')->value('value') === 'auto_approve');
+                // Jika mode auto-approve aktif, langsung otomatis disetujui (auto-approved)
+                $isAutoApprove = (Setting::where('key', 'st_approval_mode')->value('value') === 'auto_approve');
 
                 if ($isAutoApprove) {
                     $pengajuan->setujui(checkRole: false);
@@ -149,9 +147,8 @@ class SuratTugasService
                 RiwayatPengajuan::kirim([$pengajuan->id]);
                 TujuanSuratTugas::ajukan($data, $pengajuan->id);
 
-                // Jika Non-SPPD atau mode auto-approve aktif, langsung otomatis disetujui (auto-approved)
-                $isAutoApprove = ($pengajuan->jenis_surat_tugas === Constants::NON_SPPD) 
-                    || (\App\Models\Setting::where('key', 'st_approval_mode')->value('value') === 'auto_approve');
+                // Jika mode auto-approve aktif, langsung otomatis disetujui (auto-approved)
+                $isAutoApprove = (Setting::where('key', 'st_approval_mode')->value('value') === 'auto_approve');
 
                 if ($isAutoApprove) {
                     $pengajuan->setujui(checkRole: false);
@@ -164,12 +161,12 @@ class SuratTugasService
         });
 
         // Kirim notifikasi WhatsApp pengajuan baru jika ada penugasan yang masih menunggu persetujuan (DIKIRIM)
-        if (!empty($createdPenugasans)) {
+        if (! empty($createdPenugasans)) {
             $hasPendingApproval = collect($createdPenugasans)->contains(
-                fn($p) => $p->riwayatPengajuan?->status === Constants::STATUS_PENGAJUAN_DIKIRIM
+                fn ($p) => $p->riwayatPengajuan?->status === Constants::STATUS_PENGAJUAN_DIKIRIM
             );
             if ($hasPendingApproval) {
-                \App\Services\SuratTugas\SuratTugasNotificationService::notifyPengajuanBaru($createdPenugasans);
+                SuratTugasNotificationService::notifyPengajuanBaru($createdPenugasans);
             }
         }
 
@@ -187,7 +184,7 @@ class SuratTugasService
             Constants::STATUS_PENGAJUAN_PERLU_REVISI,
         ];
 
-        if (!in_array($status, $editableStatuses)) {
+        if (! in_array($status, $editableStatuses)) {
             throw new \RuntimeException("Penugasan #{$penugasan->id} dengan status '{$status}' tidak dapat diubah lagi secara langsung.");
         }
 
@@ -258,7 +255,7 @@ class SuratTugasService
                     $modeLangsung = $params['mode_langsung'] ?? false;
                     $dataNomor = $params['nomor_manual'] ?? null;
                     $success = $penugasan->setujui($checkRole, $modeLangsung, $dataNomor);
-                    if (!$success) {
+                    if (! $success) {
                         throw new \RuntimeException("Gagal menyetujui penugasan #{$penugasan->id}. Periksa hak akses dan status saat ini.");
                     }
                     break;
@@ -266,7 +263,7 @@ class SuratTugasService
                 case 'tolak':
                 case 'reject':
                     $success = $penugasan->tolak($checkRole);
-                    if (!$success) {
+                    if (! $success) {
                         throw new \RuntimeException("Gagal menolak penugasan #{$penugasan->id}. Periksa hak akses dan status saat ini.");
                     }
                     break;
@@ -275,7 +272,7 @@ class SuratTugasService
                 case 'perlu_perbaikan':
                     $catatan = $params['catatan'] ?? $params['catatan_butuh_perbaikan'] ?? 'Perlu perbaikan data';
                     $success = Penugasan::perluPerbaikan(['id' => $penugasan->id, 'catatan_butuh_perbaikan' => $catatan], $checkRole);
-                    if (!$success) {
+                    if (! $success) {
                         throw new \RuntimeException("Gagal mengirim arahan perbaikan untuk penugasan #{$penugasan->id}.");
                     }
                     break;
@@ -283,7 +280,7 @@ class SuratTugasService
                 case 'ajukan_revisi':
                 case 'submit_revisi':
                     $success = Penugasan::ajukanRevisi(array_merge($params, ['id' => $penugasan->id]));
-                    if (!$success) {
+                    if (! $success) {
                         throw new \RuntimeException("Gagal mengajukan revisi penugasan #{$penugasan->id}.");
                     }
                     break;
@@ -291,28 +288,28 @@ class SuratTugasService
                 case 'cetak':
                 case 'print':
                     $success = $penugasan->cetak($checkRole);
-                    if (!$success) {
+                    if (! $success) {
                         throw new \RuntimeException("Gagal mengubah status penugasan #{$penugasan->id} menjadi Dicetak.");
                     }
                     break;
 
                 case 'kumpulkan':
                     $success = $penugasan->kumpulkan($checkRole);
-                    if (!$success) {
+                    if (! $success) {
                         throw new \RuntimeException("Gagal mengubah status penugasan #{$penugasan->id} menjadi Dikumpulkan.");
                     }
                     break;
 
                 case 'batalkan_pengumpulan':
                     $success = $penugasan->batalkanPengumpulan($checkRole);
-                    if (!$success) {
+                    if (! $success) {
                         throw new \RuntimeException("Gagal membatalkan pengumpulan penugasan #{$penugasan->id}.");
                     }
                     break;
 
                 case 'cairkan':
                     $success = $penugasan->cairkan($checkRole);
-                    if (!$success) {
+                    if (! $success) {
                         throw new \RuntimeException("Gagal mengubah status penugasan #{$penugasan->id} menjadi Dicairkan.");
                     }
                     break;

@@ -3,12 +3,14 @@
 namespace App\Services\SuratTugas;
 
 use App\Models\Pegawai;
+use App\Models\Pengaturan;
 use App\Models\Penugasan;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\WhatsappNotifier;
 use App\Supports\Constants;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -17,13 +19,13 @@ class SuratTugasNotificationService
     /**
      * Kirim notifikasi pengajuan Surat Tugas baru kepada Penyetuju (Kepala Satker dan/atau PPSPM/Kasubbag TU).
      *
-     * @param array|\Illuminate\Support\Collection|Penugasan $penugasans Kumpulan atau record penugasan dalam satu pengajuan.
+     * @param  array|Collection|Penugasan  $penugasans  Kumpulan atau record penugasan dalam satu pengajuan.
      */
     public static function notifyPengajuanBaru($penugasans): void
     {
         try {
             $list = is_array($penugasans) ? collect($penugasans) : (
-                $penugasans instanceof \Illuminate\Support\Collection ? $penugasans : collect([$penugasans])
+                $penugasans instanceof Collection ? $penugasans : collect([$penugasans])
             );
 
             if ($list->isEmpty()) {
@@ -44,13 +46,29 @@ class SuratTugasNotificationService
             // 1. Tentukan daftar target penerima notifikasi approver
             $recipients = collect();
 
+            $kasubbagNip = Pengaturan::getValue('NIP_KASUBBAG_TU', config('satker.pejabat.kasubbag_tu_nip', '198008112005021004'));
+            $kepalaNip = Pengaturan::getValue('ID_PLH_DEFAULT', config('satker.pejabat.kepala_nip', '196908031992111001'));
+
             if ($mode === 'delegasi_ppspm' || $mode === 'ppspm_only') {
                 $ppspmUsers = User::getPpspm();
+                $foundPpspm = false;
                 foreach ($ppspmUsers as $u) {
                     $peg = $u->pegawai;
                     $noWa = $peg?->nomor_wa;
-                    if (!empty($noWa)) {
+                    if (! empty($noWa)) {
+                        $foundPpspm = true;
                         $recipients->put($noWa, [
+                            'nama' => $peg->panggilan ?? $peg->nama,
+                            'role' => 'Kasubbag TU / PPSPM',
+                        ]);
+                    }
+                }
+
+                // Fallback: Jika tidak ditemukan via Spatie role, gunakan NIP Kasubbag TU definitif
+                if (! $foundPpspm && ! empty($kasubbagNip)) {
+                    $peg = Pegawai::where('nip', $kasubbagNip)->first();
+                    if ($peg && ! empty($peg->nomor_wa)) {
+                        $recipients->put($peg->nomor_wa, [
                             'nama' => $peg->panggilan ?? $peg->nama,
                             'role' => 'Kasubbag TU / PPSPM',
                         ]);
@@ -61,9 +79,9 @@ class SuratTugasNotificationService
             $tembusanKepala = (bool) (Setting::where('key', 'whatsapp_notify_st_tembusan_kepala')->value('value') ?? false);
             if ($mode === 'kepala_only' || ($mode === 'delegasi_ppspm' && $tembusanKepala)) {
                 // Cari PLH jika terdefinisi di penugasan
-                if (!empty($first->plh_id)) {
+                if (! empty($first->plh_id)) {
                     $plhPegawai = Pegawai::where('nip', $first->plh_id)->first();
-                    if ($plhPegawai && !empty($plhPegawai->nomor_wa)) {
+                    if ($plhPegawai && ! empty($plhPegawai->nomor_wa)) {
                         $recipients->put($plhPegawai->nomor_wa, [
                             'nama' => $plhPegawai->panggilan ?? $plhPegawai->nama,
                             'role' => 'PLH Kepala',
@@ -73,11 +91,24 @@ class SuratTugasNotificationService
 
                 // Kepala Satker
                 $kepalaUsers = User::getKepalaSatker();
+                $foundKepala = false;
                 foreach ($kepalaUsers as $u) {
                     $peg = $u->pegawai;
                     $noWa = $peg?->nomor_wa;
-                    if (!empty($noWa)) {
+                    if (! empty($noWa)) {
+                        $foundKepala = true;
                         $recipients->put($noWa, [
+                            'nama' => $peg->panggilan ?? $peg->nama,
+                            'role' => 'Kepala Satker',
+                        ]);
+                    }
+                }
+
+                // Fallback: Jika belum ditemukan via Spatie role, gunakan NIP Kepala Satker definitif
+                if (! $foundKepala && ! empty($kepalaNip)) {
+                    $peg = Pegawai::where('nip', $kepalaNip)->first();
+                    if ($peg && ! empty($peg->nomor_wa)) {
+                        $recipients->put($peg->nomor_wa, [
                             'nama' => $peg->panggilan ?? $peg->nama,
                             'role' => 'Kepala Satker',
                         ]);
@@ -90,6 +121,7 @@ class SuratTugasNotificationService
                     'mode' => $mode,
                     'penugasan_id' => $first->id,
                 ]);
+
                 return;
             }
 
@@ -98,14 +130,14 @@ class SuratTugasNotificationService
             foreach ($list as $p) {
                 if ($p instanceof Penugasan) {
                     $p->loadMissing(['pegawai', 'mitra']);
-                    $nama = !empty($p->nip) 
-                        ? ($p->pegawai ? ($p->pegawai->nama ?? $p->nip) : $p->nip) 
+                    $nama = ! empty($p->nip)
+                        ? ($p->pegawai ? ($p->pegawai->nama ?? $p->nip) : $p->nip)
                         : ($p->mitra ? ($p->mitra->nama_1 ?? $p->id_sobat) : $p->id_sobat);
-                    $tipe = !empty($p->nip) ? 'PNS' : 'Mitra';
+                    $tipe = ! empty($p->nip) ? 'PNS' : 'Mitra';
                     $personilList[] = "- {$nama} ({$tipe})";
                 }
             }
-            $personilStr = !empty($personilList) ? implode("\n", array_slice($personilList, 0, 8)) : '-';
+            $personilStr = ! empty($personilList) ? implode("\n", array_slice($personilList, 0, 8)) : '-';
             if (count($personilList) > 8) {
                 $sisa = count($personilList) - 8;
                 $personilStr .= "\n- ...dan {$sisa} orang lainnya";
@@ -118,26 +150,26 @@ class SuratTugasNotificationService
             $tglMulai = $first->tgl_mulai_tugas ? Carbon::parse($first->tgl_mulai_tugas)->translatedFormat('d M Y') : '-';
             $tglAkhir = $first->tgl_akhir_tugas ? Carbon::parse($first->tgl_akhir_tugas)->translatedFormat('d M Y') : '-';
             $periode = ($tglMulai === $tglAkhir) ? $tglMulai : "{$tglMulai} s.d. {$tglAkhir}";
-            $linkAksi = rtrim(config('app.url'), '/') . '/a/penugasans';
+            $linkAksi = rtrim(config('app.url'), '/').'/a/penugasans';
 
             foreach ($recipients as $targetWa => $info) {
                 $namaPenyetuju = $info['nama'];
-                $message = "*Pengajuan Surat Tugas Baru | SiPEDAS*\n\n" .
-                    "Halo, Bapak/Ibu *{$namaPenyetuju}*,\n" .
-                    "Ada pengajuan Surat Tugas baru dari *{$namaPengaju}* yang memerlukan persetujuan:\n\n" .
-                    "*Kegiatan*: {$namaKegiatan}\n" .
-                    "*Jenis*: {$jenisSt}\n" .
-                    "*Tujuan*: {$lokasi}\n" .
-                    "*Tanggal*: {$periode}\n" .
-                    "*Personil Tertugas*:\n{$personilStr}\n\n" .
-                    "Silakan buka link berikut untuk memeriksa dan melakukan *Aksi Persetujuan*:\n" .
-                    "{$linkAksi}\n\n" .
-                    "Semangat bertugas!";
+                $message = "*Pengajuan Surat Tugas Baru | SiPEDAS*\n\n".
+                    "Halo, Bapak/Ibu *{$namaPenyetuju}*,\n".
+                    "Ada pengajuan Surat Tugas baru dari *{$namaPengaju}* yang memerlukan persetujuan:\n\n".
+                    "*Kegiatan*: {$namaKegiatan}\n".
+                    "*Jenis*: {$jenisSt}\n".
+                    "*Tujuan*: {$lokasi}\n".
+                    "*Tanggal*: {$periode}\n".
+                    "*Personil Tertugas*:\n{$personilStr}\n\n".
+                    "Silakan buka link berikut untuk memeriksa dan melakukan *Aksi Persetujuan*:\n".
+                    "{$linkAksi}\n\n".
+                    'Semangat bertugas!';
 
                 WhatsappNotifier::send($targetWa, $message, 'whatsapp_notify_st_baru');
             }
         } catch (Throwable $e) {
-            Log::error('SuratTugasNotificationService: Gagal mengirim notifikasi pengajuan baru: ' . $e->getMessage(), [
+            Log::error('SuratTugasNotificationService: Gagal mengirim notifikasi pengajuan baru: '.$e->getMessage(), [
                 'exception' => $e,
             ]);
         }
@@ -153,12 +185,20 @@ class SuratTugasNotificationService
 
             $authUser = auth()->user();
             $authPegawai = $authUser?->pegawai;
-            $namaPenyetuju = $approverName 
-                ?? ($authPegawai ? ($authPegawai->panggilan ?? $authPegawai->nama) : 'Penyetuju');
+
+            if (! empty($approverName)) {
+                $namaPenyetuju = $approverName;
+            } elseif (Setting::where('key', 'st_approval_mode')->value('value') === 'auto_approve') {
+                $namaPenyetuju = 'Sistem (Otomatis)';
+            } elseif ($authUser && Penugasan::isUserApprover($authUser, $penugasan->plh_id)) {
+                $namaPenyetuju = $authPegawai ? ($authPegawai->panggilan ?? $authPegawai->nama) : 'Penyetuju';
+            } else {
+                $namaPenyetuju = 'Penyetuju (Otoritas Satker)';
+            }
 
             $namaKegiatan = $penugasan->kegiatan ? $penugasan->kegiatan->nama : 'Kegiatan Dinas';
-            $namaTertugas = !empty($penugasan->nip) 
-                ? ($penugasan->pegawai ? ($penugasan->pegawai->nama ?? $penugasan->nip) : $penugasan->nip) 
+            $namaTertugas = ! empty($penugasan->nip)
+                ? ($penugasan->pegawai ? ($penugasan->pegawai->nama ?? $penugasan->nip) : $penugasan->nip)
                 : ($penugasan->mitra ? ($penugasan->mitra->nama_1 ?? $penugasan->id_sobat) : $penugasan->id_sobat);
 
             $noSt = $penugasan->suratTugas ? ($penugasan->suratTugas->nomor_surat_tugas ?? '-') : '-';
@@ -169,39 +209,39 @@ class SuratTugasNotificationService
             $tglMulai = $penugasan->tgl_mulai_tugas ? Carbon::parse($penugasan->tgl_mulai_tugas)->translatedFormat('d M Y') : '-';
             $tglAkhir = $penugasan->tgl_akhir_tugas ? Carbon::parse($penugasan->tgl_akhir_tugas)->translatedFormat('d M Y') : '-';
             $periode = ($tglMulai === $tglAkhir) ? $tglMulai : "{$tglMulai} s.d. {$tglAkhir}";
-            $linkRiwayat = rtrim(config('app.url'), '/') . '/a';
+            $linkRiwayat = rtrim(config('app.url'), '/').'/a';
 
             // Kumpulkan nomor WA tujuan (Pengaju dan Personil tertugas jika berbeda)
             $targets = collect();
 
-            if ($penugasan->pengaju && !empty($penugasan->pengaju->nomor_wa)) {
+            if ($penugasan->pengaju && ! empty($penugasan->pengaju->nomor_wa)) {
                 $targets->put($penugasan->pengaju->nomor_wa, $penugasan->pengaju->panggilan ?? $penugasan->pengaju->nama);
             }
 
             $personilPegawai = $penugasan->pegawai;
             $personilMitra = $penugasan->mitra;
-            $personilWa = !empty($penugasan->nip) ? $personilPegawai?->nomor_wa : $personilMitra?->nomor_wa;
-            if (!empty($personilWa) && !$targets->has($personilWa)) {
+            $personilWa = ! empty($penugasan->nip) ? $personilPegawai?->nomor_wa : $personilMitra?->nomor_wa;
+            if (! empty($personilWa) && ! $targets->has($personilWa)) {
                 $targets->put($personilWa, $personilPegawai ? ($personilPegawai->panggilan ?? $namaTertugas) : $namaTertugas);
             }
 
             foreach ($targets as $targetWa => $namaPenerima) {
-                $message = "*Surat Tugas Disetujui! | SiPEDAS*\n\n" .
-                    "Halo, *{$namaPenerima}*,\n" .
-                    "Kabar baik! Pengajuan Surat Tugas untuk kegiatan *'{$namaKegiatan}'* telah *disetujui* oleh *{$namaPenyetuju}*.\n\n" .
-                    "*No. Surat Tugas*: {$noSt}\n" .
-                    $lineSpd .
-                    "*Tertugas*: {$namaTertugas}\n" .
-                    "*Tujuan*: {$lokasi}\n" .
-                    "*Tanggal*: {$periode}\n\n" .
-                    "Silakan mencetak Surat Tugas secara mandiri melalui menu Riwayat di SiPEDAS untuk diserahkan ke TU:\n" .
-                    "{$linkRiwayat}\n\n" .
-                    "Semangat bertugas!";
+                $message = "*Surat Tugas Disetujui! | SiPEDAS*\n\n".
+                    "Halo, *{$namaPenerima}*,\n".
+                    "Kabar baik! Pengajuan Surat Tugas untuk kegiatan *'{$namaKegiatan}'* telah *disetujui* oleh *{$namaPenyetuju}*.\n\n".
+                    "*No. Surat Tugas*: {$noSt}\n".
+                    $lineSpd.
+                    "*Tertugas*: {$namaTertugas}\n".
+                    "*Tujuan*: {$lokasi}\n".
+                    "*Tanggal*: {$periode}\n\n".
+                    "Silakan mencetak Surat Tugas secara mandiri melalui menu Riwayat di SiPEDAS untuk diserahkan ke TU:\n".
+                    "{$linkRiwayat}\n\n".
+                    'Semangat bertugas!';
 
                 WhatsappNotifier::send($targetWa, $message, 'whatsapp_notify_st_disetujui');
             }
         } catch (Throwable $e) {
-            Log::error('SuratTugasNotificationService: Gagal mengirim notifikasi disetujui: ' . $e->getMessage(), [
+            Log::error('SuratTugasNotificationService: Gagal mengirim notifikasi disetujui: '.$e->getMessage(), [
                 'penugasan_id' => $penugasan->id,
                 'exception' => $e,
             ]);
@@ -218,7 +258,7 @@ class SuratTugasNotificationService
 
             $authUser = auth()->user();
             $authPegawai = $authUser?->pegawai;
-            $namaPemeriksa = $approverName 
+            $namaPemeriksa = $approverName
                 ?? ($authPegawai ? ($authPegawai->panggilan ?? $authPegawai->nama) : 'Pemeriksa');
 
             $namaPengaju = $penugasan->pengaju ? ($penugasan->pengaju->panggilan ?? $penugasan->pengaju->nama) : 'Pengaju';
@@ -229,24 +269,24 @@ class SuratTugasNotificationService
             }
 
             $namaKegiatan = $penugasan->kegiatan ? $penugasan->kegiatan->nama : 'Kegiatan Dinas';
-            $namaTertugas = !empty($penugasan->nip) 
-                ? ($penugasan->pegawai ? ($penugasan->pegawai->nama ?? $penugasan->nip) : $penugasan->nip) 
+            $namaTertugas = ! empty($penugasan->nip)
+                ? ($penugasan->pegawai ? ($penugasan->pegawai->nama ?? $penugasan->nip) : $penugasan->nip)
                 : ($penugasan->mitra ? ($penugasan->mitra->nama_1 ?? $penugasan->id_sobat) : $penugasan->id_sobat);
 
-            $link = rtrim(config('app.url'), '/') . '/a';
+            $link = rtrim(config('app.url'), '/').'/a';
 
-            $message = "*Perlu Perbaikan Surat Tugas | SiPEDAS*\n\n" .
-                "Halo, *{$namaPengaju}*,\n" .
-                "Pengajuan Surat Tugas untuk kegiatan *'{$namaKegiatan}'* (Tertugas: {$namaTertugas}) memerlukan perbaikan dari *{$namaPemeriksa}*.\n\n" .
-                "*Catatan Arahan Perbaikan*:\n" .
-                "\"*{$catatan}*\"\n\n" .
-                "Silakan buka link berikut untuk melakukan perbaikan pengajuan:\n" .
-                "{$link}\n\n" .
-                "Semangat!";
+            $message = "*Perlu Perbaikan Surat Tugas | SiPEDAS*\n\n".
+                "Halo, *{$namaPengaju}*,\n".
+                "Pengajuan Surat Tugas untuk kegiatan *'{$namaKegiatan}'* (Tertugas: {$namaTertugas}) memerlukan perbaikan dari *{$namaPemeriksa}*.\n\n".
+                "*Catatan Arahan Perbaikan*:\n".
+                "\"*{$catatan}*\"\n\n".
+                "Silakan buka link berikut untuk melakukan perbaikan pengajuan:\n".
+                "{$link}\n\n".
+                'Semangat!';
 
             WhatsappNotifier::send($targetWa, $message, 'whatsapp_notify_st_revisi');
         } catch (Throwable $e) {
-            Log::error('SuratTugasNotificationService: Gagal mengirim notifikasi revisi: ' . $e->getMessage(), [
+            Log::error('SuratTugasNotificationService: Gagal mengirim notifikasi revisi: '.$e->getMessage(), [
                 'penugasan_id' => $penugasan->id,
                 'exception' => $e,
             ]);
@@ -263,7 +303,7 @@ class SuratTugasNotificationService
 
             $authUser = auth()->user();
             $authPegawai = $authUser?->pegawai;
-            $namaPemeriksa = $approverName 
+            $namaPemeriksa = $approverName
                 ?? ($authPegawai ? ($authPegawai->panggilan ?? $authPegawai->nama) : 'Penyetuju');
 
             $namaPengaju = $penugasan->pengaju ? ($penugasan->pengaju->panggilan ?? $penugasan->pengaju->nama) : 'Pengaju';
@@ -274,23 +314,23 @@ class SuratTugasNotificationService
             }
 
             $namaKegiatan = $penugasan->kegiatan ? $penugasan->kegiatan->nama : 'Kegiatan Dinas';
-            $namaTertugas = !empty($penugasan->nip) 
-                ? ($penugasan->pegawai ? ($penugasan->pegawai->nama ?? $penugasan->nip) : $penugasan->nip) 
+            $namaTertugas = ! empty($penugasan->nip)
+                ? ($penugasan->pegawai ? ($penugasan->pegawai->nama ?? $penugasan->nip) : $penugasan->nip)
                 : ($penugasan->mitra ? ($penugasan->mitra->nama_1 ?? $penugasan->id_sobat) : $penugasan->id_sobat);
 
             $lokasi = $penugasan->nama_tempat_tujuan ?? $penugasan->tujuan_penugasan ?? '-';
-            $link = rtrim(config('app.url'), '/') . '/a';
+            $link = rtrim(config('app.url'), '/').'/a';
 
-            $message = "*Surat Tugas Ditolak | SiPEDAS*\n\n" .
-                "Halo, *{$namaPengaju}*,\n" .
-                "Mohon maaf, pengajuan Surat Tugas untuk kegiatan *'{$namaKegiatan}'* (Tertugas: {$namaTertugas}, Tujuan: {$lokasi}) telah *ditolak* oleh *{$namaPemeriksa}*.\n\n" .
-                "Silakan periksa detailnya melalui tautan berikut:\n" .
-                "{$link}\n\n" .
-                "Terima kasih.";
+            $message = "*Surat Tugas Ditolak | SiPEDAS*\n\n".
+                "Halo, *{$namaPengaju}*,\n".
+                "Mohon maaf, pengajuan Surat Tugas untuk kegiatan *'{$namaKegiatan}'* (Tertugas: {$namaTertugas}, Tujuan: {$lokasi}) telah *ditolak* oleh *{$namaPemeriksa}*.\n\n".
+                "Silakan periksa detailnya melalui tautan berikut:\n".
+                "{$link}\n\n".
+                'Terima kasih.';
 
             WhatsappNotifier::send($targetWa, $message, 'whatsapp_notify_st_ditolak');
         } catch (Throwable $e) {
-            Log::error('SuratTugasNotificationService: Gagal mengirim notifikasi ditolak: ' . $e->getMessage(), [
+            Log::error('SuratTugasNotificationService: Gagal mengirim notifikasi ditolak: '.$e->getMessage(), [
                 'penugasan_id' => $penugasan->id,
                 'exception' => $e,
             ]);

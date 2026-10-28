@@ -6,8 +6,9 @@ use Tests\TestCase;
 
 class AuthLoginLayoutTest extends TestCase
 {
-    public function test_login_redirects_to_saml_by_default(): void
+    public function test_login_redirects_to_saml_when_sso_mode_is_active(): void
     {
+        config(['satker.auth.mode' => 'sso_saml']);
         $response = $this->get('/a/login');
 
         $response->assertStatus(302);
@@ -16,10 +17,19 @@ class AuthLoginLayoutTest extends TestCase
 
     public function test_login_local_emergency_mode_renders_successfully(): void
     {
+        config(['satker.auth.mode' => 'sso_saml']);
         $response = $this->get('/a/login?local=1');
 
         $response->assertStatus(200);
-        $response->assertSee('Login Darurat (Lokal)');
+        $response->assertSee('Login Akun Lokal');
+    }
+
+    public function test_login_renders_email_password_form_in_email_password_mode(): void
+    {
+        config(['satker.auth.mode' => 'email_password']);
+        $response = $this->get('/a/login');
+
+        $response->assertStatus(200);
     }
 
     public function test_login_logged_out_mode_renders_successfully(): void

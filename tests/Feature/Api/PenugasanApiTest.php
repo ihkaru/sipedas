@@ -16,7 +16,6 @@ use App\Models\User;
 use App\Supports\Constants;
 use App\Supports\TanggalMerah;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class PenugasanApiTest extends TestCase
@@ -24,11 +23,17 @@ class PenugasanApiTest extends TestCase
     use RefreshDatabase;
 
     protected string $apiKey = 'test-penugasan-api-key';
+
     protected User $user;
+
     protected Pegawai $pegawai1;
+
     protected Pegawai $pegawai2;
+
     protected Pegawai $kepalaSatker;
+
     protected Mitra $mitra1;
+
     protected Kegiatan $kegiatan;
 
     protected function setUp(): void
@@ -211,8 +216,9 @@ class PenugasanApiTest extends TestCase
 
     public function test_create_non_sppd_auto_approves_and_generates_st_number(): void
     {
-        // Izin weekend travel aktif
+        // Izin weekend travel aktif & mode auto-approve aktif
         Setting::updateOrCreate(['key' => 'allow_weekend_travel'], ['value' => '1']);
+        Setting::updateOrCreate(['key' => 'st_approval_mode'], ['value' => 'auto_approve']);
 
         $payload = [
             'jenis_surat_tugas' => 'NON_SPPD',
@@ -375,6 +381,7 @@ class PenugasanApiTest extends TestCase
     public function test_audit_log_rollback_deletes_penugasan_and_cleans_up_numbers(): void
     {
         Setting::updateOrCreate(['key' => 'allow_weekend_travel'], ['value' => '1']);
+        Setting::updateOrCreate(['key' => 'st_approval_mode'], ['value' => 'auto_approve']);
 
         $payload = [
             'jenis_surat_tugas' => 'NON_SPPD',
@@ -428,7 +435,7 @@ class PenugasanApiTest extends TestCase
 
         // 1. Test regular index
         $res = $this->withHeaders(['X-API-KEY' => $this->apiKey])
-            ->getJson('/api/v1/penugasan?nip=' . $this->pegawai1->nip);
+            ->getJson('/api/v1/penugasan?nip='.$this->pegawai1->nip);
 
         $res->assertStatus(200)
             ->assertJsonPath('success', true)
@@ -456,8 +463,8 @@ class PenugasanApiTest extends TestCase
                         'lokasi',
                         'no_st',
                         'no_spd',
-                    ]
-                ]
+                    ],
+                ],
             ]);
     }
 

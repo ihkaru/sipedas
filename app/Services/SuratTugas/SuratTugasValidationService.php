@@ -3,7 +3,6 @@
 namespace App\Services\SuratTugas;
 
 use App\Models\Kegiatan;
-use App\Models\MasterSls;
 use App\Models\Mitra;
 use App\Models\Pegawai;
 use App\Models\Penugasan;
@@ -20,6 +19,25 @@ class SuratTugasValidationService
      */
     public function normalize(array $data): array
     {
+        // 0. Alias Legacy / Form Fields
+        if (empty($data['kegiatan_id']) && ! empty($data['nama_kegiatan'])) {
+            $data['kegiatan_id'] = Kegiatan::where('nama', trim($data['nama_kegiatan']))->value('id');
+        }
+        if (empty($data['tgl_mulai_tugas']) && ! empty($data['tanggal_mulai'])) {
+            $data['tgl_mulai_tugas'] = $data['tanggal_mulai'];
+        }
+        if (empty($data['tgl_akhir_tugas']) && ! empty($data['tanggal_selesai'])) {
+            $data['tgl_akhir_tugas'] = $data['tanggal_selesai'];
+        }
+        if (empty($data['nama_tempat_tujuan']) && ! empty($data['lokasi'])) {
+            $data['nama_tempat_tujuan'] = $data['lokasi'];
+        }
+        if (! isset($data['jenis_surat_tugas']) && isset($data['apakah_sppd'])) {
+            $data['jenis_surat_tugas'] = ((int) $data['apakah_sppd'] === 1)
+                ? Constants::PERJALAN_DINAS_DALAM_KOTA
+                : Constants::NON_SPPD;
+        }
+
         // 1. Jenis Surat Tugas
         $jenisSurat = $data['jenis_surat_tugas'] ?? Constants::NON_SPPD;
         $jenisSuratUpper = strtoupper(trim((string) $jenisSurat));
@@ -41,21 +59,21 @@ class SuratTugasValidationService
         $nips = [];
         if (isset($data['nips']) && is_array($data['nips'])) {
             $nips = array_values(array_filter(array_map('trim', $data['nips'])));
-        } elseif (!empty($data['nip'])) {
+        } elseif (! empty($data['nip'])) {
             $nips = is_array($data['nip']) ? array_values(array_filter(array_map('trim', $data['nip']))) : [trim((string) $data['nip'])];
         }
 
         $mitras = [];
         if (isset($data['mitras']) && is_array($data['mitras'])) {
             $mitras = array_values(array_filter(array_map('trim', $data['mitras'])));
-        } elseif (!empty($data['mitra'])) {
+        } elseif (! empty($data['mitra'])) {
             $mitras = is_array($data['mitra']) ? array_values(array_filter(array_map('trim', $data['mitra']))) : [trim((string) $data['mitra'])];
-        } elseif (!empty($data['id_sobat'])) {
+        } elseif (! empty($data['id_sobat'])) {
             $mitras = is_array($data['id_sobat']) ? array_values(array_filter(array_map('trim', $data['id_sobat']))) : [trim((string) $data['id_sobat'])];
-        } elseif (!empty($data['mitra_ids']) && is_array($data['mitra_ids'])) {
+        } elseif (! empty($data['mitra_ids']) && is_array($data['mitra_ids'])) {
             $mitraRecords = Mitra::whereIn('id', $data['mitra_ids'])->pluck('id_sobat')->toArray();
             $mitras = array_values(array_filter($mitraRecords));
-        } elseif (!empty($data['mitra_id'])) {
+        } elseif (! empty($data['mitra_id'])) {
             $mitraRecord = Mitra::find($data['mitra_id']);
             if ($mitraRecord && $mitraRecord->id_sobat) {
                 $mitras = [$mitraRecord->id_sobat];
@@ -66,7 +84,7 @@ class SuratTugasValidationService
         $data['mitras'] = $mitras;
 
         // 3. Normalisasi Jenis Peserta
-        if (!empty($data['jenis_peserta'])) {
+        if (! empty($data['jenis_peserta'])) {
             $jp = strtoupper(trim((string) $data['jenis_peserta']));
             $jpMap = [
                 'PEGAWAI' => Constants::JENIS_PESERTA_SURAT_TUGAS_PEGAWAI,
@@ -80,9 +98,9 @@ class SuratTugasValidationService
             $data['jenis_peserta'] = $jpMap[$jp] ?? $data['jenis_peserta'];
         } else {
             // Auto-detect berdasarkan personil yang diberikan
-            if (!empty($nips) && !empty($mitras)) {
+            if (! empty($nips) && ! empty($mitras)) {
                 $data['jenis_peserta'] = Constants::JENIS_PESERTA_SURAT_TUGAS_PEGAWAI_MITRA;
-            } elseif (!empty($mitras)) {
+            } elseif (! empty($mitras)) {
                 $data['jenis_peserta'] = Constants::JENIS_PESERTA_SURAT_TUGAS_MITRA;
             } else {
                 $data['jenis_peserta'] = Constants::JENIS_PESERTA_SURAT_TUGAS_PEGAWAI;
@@ -131,7 +149,7 @@ class SuratTugasValidationService
         $data['tbh_hari_jalan_akhir'] = isset($data['tbh_hari_jalan_akhir']) ? (int) $data['tbh_hari_jalan_akhir'] : 0;
 
         // 8. Normalisasi Transportasi
-        if (!empty($data['transportasi'])) {
+        if (! empty($data['transportasi'])) {
             $tr = strtoupper(trim((string) $data['transportasi']));
             $trMap = [
                 '-' => Constants::NON_TRANSPORTASI,
@@ -163,13 +181,15 @@ class SuratTugasValidationService
                 $val = $data[$k];
                 if (is_array($val)) {
                     $cleaned = array_values(array_filter(array_map('strval', $val)));
-                    return !empty($cleaned) ? $cleaned : null;
+
+                    return ! empty($cleaned) ? $cleaned : null;
                 }
-                if ($val !== '' && $val !== null) {
+                if ($val !== '') {
                     return [(string) $val];
                 }
             }
         }
+
         return null;
     }
 
@@ -184,7 +204,7 @@ class SuratTugasValidationService
         $data = $this->normalize($raw);
         $check = $this->checkEligibility($data);
 
-        if (!$check['eligible']) {
+        if (! $check['eligible']) {
             $firstField = array_key_first($check['errors']) ?? 'general';
             throw ValidationException::withMessages($check['errors'])->errorBag('default');
         }
@@ -204,21 +224,21 @@ class SuratTugasValidationService
         $conflicts = [];
 
         // 1. Validasi Jenis Surat Tugas
-        if (!in_array($data['jenis_surat_tugas'], array_keys(Constants::JENIS_SURAT_TUGAS_OPTIONS))) {
-            $errors['jenis_surat_tugas'] = ["Jenis surat tugas tidak valid. Pilihan valid: " . implode(', ', array_keys(Constants::JENIS_SURAT_TUGAS_OPTIONS))];
-            $remediations['jenis_surat_tugas'] = "Gunakan salah satu dari: NON_SPPD, PERJALAN_DINAS_DALAM_KOTA, PERJALANAN_DINAS_LUAR_KOTA, PERJALANAN_DINAS_PAKET_MEETING.";
+        if (! in_array($data['jenis_surat_tugas'], array_keys(Constants::JENIS_SURAT_TUGAS_OPTIONS))) {
+            $errors['jenis_surat_tugas'] = ['Jenis surat tugas tidak valid. Pilihan valid: '.implode(', ', array_keys(Constants::JENIS_SURAT_TUGAS_OPTIONS))];
+            $remediations['jenis_surat_tugas'] = 'Gunakan salah satu dari: NON_SPPD, PERJALAN_DINAS_DALAM_KOTA, PERJALANAN_DINAS_LUAR_KOTA, PERJALANAN_DINAS_PAKET_MEETING.';
         }
 
         // 2. Validasi Kegiatan
         $kegiatan = null;
         if (empty($data['kegiatan_id'])) {
-            $errors['kegiatan_id'] = ["Kegiatan (kegiatan_id) wajib dipilih."];
-            $remediations['kegiatan_id'] = "Pilih kegiatan yang terdaftar melalui GET /api/v1/kegiatan-manmit.";
+            $errors['kegiatan_id'] = ['Kegiatan (kegiatan_id) wajib dipilih.'];
+            $remediations['kegiatan_id'] = 'Pilih kegiatan yang terdaftar melalui GET /api/v1/kegiatan-manmit.';
         } else {
             $kegiatan = Kegiatan::find($data['kegiatan_id']);
-            if (!$kegiatan) {
+            if (! $kegiatan) {
                 $errors['kegiatan_id'] = ["Kegiatan dengan ID '{$data['kegiatan_id']}' tidak ditemukan."];
-                $remediations['kegiatan_id'] = "Periksa kembali ID kegiatan melalui endpoint GET /api/v1/kegiatan-manmit.";
+                $remediations['kegiatan_id'] = 'Periksa kembali ID kegiatan melalui endpoint GET /api/v1/kegiatan-manmit.';
             }
         }
 
@@ -229,28 +249,28 @@ class SuratTugasValidationService
 
         if ($jenisPeserta === Constants::JENIS_PESERTA_SURAT_TUGAS_PEGAWAI || $jenisPeserta === Constants::JENIS_PESERTA_SURAT_TUGAS_PEGAWAI_MITRA) {
             if (empty($nips)) {
-                $errors['nips'] = ["Pegawai yang ditugaskan (nips) wajib diisi minimal 1 pegawai."];
+                $errors['nips'] = ['Pegawai yang ditugaskan (nips) wajib diisi minimal 1 pegawai.'];
                 $remediations['nips'] = "Cantumkan NIP pegawai yang aktif pada array 'nips'.";
             } else {
                 $existingNips = Pegawai::whereIn('nip', $nips)->pluck('nip')->toArray();
                 $diff = array_diff($nips, $existingNips);
-                if (!empty($diff)) {
-                    $errors['nips'] = ["NIP pegawai berikut tidak ditemukan di sistem: " . implode(', ', $diff)];
-                    $remediations['nips'] = "Gunakan NIP valid yang terdaftar pada sistem (cek GET /api/v1/pegawais).";
+                if (! empty($diff)) {
+                    $errors['nips'] = ['NIP pegawai berikut tidak ditemukan di sistem: '.implode(', ', $diff)];
+                    $remediations['nips'] = 'Gunakan NIP valid yang terdaftar pada sistem (cek GET /api/v1/pegawais).';
                 }
             }
         }
 
         if ($jenisPeserta === Constants::JENIS_PESERTA_SURAT_TUGAS_MITRA || $jenisPeserta === Constants::JENIS_PESERTA_SURAT_TUGAS_PEGAWAI_MITRA) {
             if (empty($mitras)) {
-                $errors['mitras'] = ["Mitra yang ditugaskan (mitras) wajib diisi minimal 1 mitra."];
+                $errors['mitras'] = ['Mitra yang ditugaskan (mitras) wajib diisi minimal 1 mitra.'];
                 $remediations['mitras'] = "Cantumkan ID Sobat mitra pada array 'mitras'.";
             } else {
                 $existingMitras = Mitra::whereIn('id_sobat', $mitras)->pluck('id_sobat')->toArray();
                 $diff = array_diff($mitras, $existingMitras);
-                if (!empty($diff)) {
-                    $errors['mitras'] = ["ID Sobat mitra berikut tidak ditemukan di sistem: " . implode(', ', $diff)];
-                    $remediations['mitras'] = "Gunakan ID Sobat mitra yang terdaftar pada sistem (cek GET /api/v1/mitras).";
+                if (! empty($diff)) {
+                    $errors['mitras'] = ['ID Sobat mitra berikut tidak ditemukan di sistem: '.implode(', ', $diff)];
+                    $remediations['mitras'] = 'Gunakan ID Sobat mitra yang terdaftar pada sistem (cek GET /api/v1/mitras).';
                 }
             }
         }
@@ -258,7 +278,7 @@ class SuratTugasValidationService
         // 4. Validasi Tanggal Pengajuan
         $tglPengajuan = Carbon::parse($data['tgl_pengajuan_tugas']);
         if ($tglPengajuan->endOfDay()->isBefore(now()->startOfDay()->subYears(2))) {
-            $errors['tgl_pengajuan_tugas'] = ["Tanggal pengajuan tugas terlalu lampau."];
+            $errors['tgl_pengajuan_tugas'] = ['Tanggal pengajuan tugas terlalu lampau.'];
         }
 
         // 5. Validasi Tanggal Mulai dan Selesai
@@ -266,29 +286,29 @@ class SuratTugasValidationService
         $tglAkhir = null;
 
         if (empty($data['tgl_mulai_tugas'])) {
-            $errors['tgl_mulai_tugas'] = ["Tanggal mulai tugas (tgl_mulai_tugas) wajib diisi."];
+            $errors['tgl_mulai_tugas'] = ['Tanggal mulai tugas (tgl_mulai_tugas) wajib diisi.'];
         } else {
             try {
                 $tglMulai = Carbon::parse($data['tgl_mulai_tugas']);
             } catch (\Throwable $e) {
-                $errors['tgl_mulai_tugas'] = ["Format tanggal mulai tugas tidak valid."];
+                $errors['tgl_mulai_tugas'] = ['Format tanggal mulai tugas tidak valid.'];
             }
         }
 
         if (empty($data['tgl_akhir_tugas'])) {
-            $errors['tgl_akhir_tugas'] = ["Tanggal selesai tugas (tgl_akhir_tugas) wajib diisi."];
+            $errors['tgl_akhir_tugas'] = ['Tanggal selesai tugas (tgl_akhir_tugas) wajib diisi.'];
         } else {
             try {
                 $tglAkhir = Carbon::parse($data['tgl_akhir_tugas']);
             } catch (\Throwable $e) {
-                $errors['tgl_akhir_tugas'] = ["Format tanggal selesai tugas tidak valid."];
+                $errors['tgl_akhir_tugas'] = ['Format tanggal selesai tugas tidak valid.'];
             }
         }
 
         if ($tglMulai && $tglAkhir) {
             if ($tglMulai->isAfter($tglAkhir)) {
                 $errors['tgl_mulai_tugas'] = ["Tanggal mulai tugas ({$tglMulai->toDateString()}) tidak boleh melebihi tanggal selesai tugas ({$tglAkhir->toDateString()})."];
-                $remediations['tgl_mulai_tugas'] = "Pastikan rentang tanggal mulai <= tanggal selesai.";
+                $remediations['tgl_mulai_tugas'] = 'Pastikan rentang tanggal mulai <= tanggal selesai.';
             }
 
             // Validasi batasan tanggal perjadin dari Kegiatan jika didefinisikan
@@ -316,7 +336,7 @@ class SuratTugasValidationService
                 }
 
                 // b. Cek Bentrok Jadwal Perjadin untuk Pegawai yang ditugaskan
-                if (!empty($nips)) {
+                if (! empty($nips)) {
                     $requestedDates = Penugasan::generateDateRange($tglMulai, $tglAkhir);
 
                     // Ambil seluruh penugasan SPPD aktif yang bersinggungan langsung dengan rentang tanggal yang diminta
@@ -342,9 +362,9 @@ class SuratTugasValidationService
                     }
                     $overlapDates = array_values(array_unique($overlapDates));
 
-                    if (!empty($overlapDates)) {
-                        $errors['jadwal_bentrok'] = ["Terdapat personil yang sudah memiliki agenda Perjalanan Dinas (SPPD) lain pada tanggal: " . implode(', ', $overlapDates)];
-                        $remediations['jadwal_bentrok'] = "Pilih rentang tanggal lain yang tidak tumpang-tindih atau gunakan jenis penugasan Non-SPPD.";
+                    if (! empty($overlapDates)) {
+                        $errors['jadwal_bentrok'] = ['Terdapat personil yang sudah memiliki agenda Perjalanan Dinas (SPPD) lain pada tanggal: '.implode(', ', $overlapDates)];
+                        $remediations['jadwal_bentrok'] = 'Pilih rentang tanggal lain yang tidak tumpang-tindih atau gunakan jenis penugasan Non-SPPD.';
                         $conflicts['overlapping_dates'] = $overlapDates;
 
                         // Rinci pegawai mana yang bentrok
@@ -359,7 +379,7 @@ class SuratTugasValidationService
                                 $peg = Pegawai::where('nip', $nipCheck)->first();
                                 $conflicts['pegawai'][] = [
                                     'nip' => $nipCheck,
-                                    'nama' => $peg?->nama ?? $nipCheck,
+                                    'nama' => $peg ? $peg->nama : $nipCheck,
                                     'bentrok_dates' => array_values(array_unique($pegDates)),
                                 ];
                             }
@@ -393,14 +413,14 @@ class SuratTugasValidationService
         // 8. Validasi Transportasi
         if ($data['jenis_surat_tugas'] !== Constants::NON_SPPD && $levelTujuan !== Constants::LEVEL_PENUGASAN_TANPA_LOKASI) {
             if (empty($data['transportasi'])) {
-                $errors['transportasi'] = ["Moda transportasi wajib dipilih untuk perjalanan dinas berlokasi."];
-                $remediations['transportasi'] = "Pilih salah satu: TRANSPORTASI_KENDARAAN_DINAS, TRANSPORTASI_KENDARAAN_UMUM, atau TRANSPORTASI_KENDARAAN_PRIBADI.";
+                $errors['transportasi'] = ['Moda transportasi wajib dipilih untuk perjalanan dinas berlokasi.'];
+                $remediations['transportasi'] = 'Pilih salah satu: TRANSPORTASI_KENDARAAN_DINAS, TRANSPORTASI_KENDARAAN_UMUM, atau TRANSPORTASI_KENDARAAN_PRIBADI.';
             }
         }
 
         // 9. Estimasi Penyetuju (Approver / Plh)
         $approver = null;
-        if (!empty($data['tgl_mulai_tugas'])) {
+        if (! empty($data['tgl_mulai_tugas'])) {
             try {
                 $pegawaiPlh = Plh::getApprover($nips, Carbon::parse($data['tgl_mulai_tugas'])->toDateTimeString(), true);
                 if ($pegawaiPlh) {
@@ -424,8 +444,8 @@ class SuratTugasValidationService
             ],
             'surat_perjalanan_dinas' => [
                 'akan_diterbitkan' => ($data['jenis_surat_tugas'] !== Constants::NON_SPPD),
-                'keterangan' => ($data['jenis_surat_tugas'] === Constants::NON_SPPD) 
-                    ? 'Non-SPPD (Tidak menerbitkan lembar SPD)' 
+                'keterangan' => ($data['jenis_surat_tugas'] === Constants::NON_SPPD)
+                    ? 'Non-SPPD (Tidak menerbitkan lembar SPD)'
                     : 'Menerbitkan Nomor SPD otomatis saat disetujui',
             ],
         ];
