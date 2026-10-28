@@ -1,12 +1,12 @@
 # 4. Strategi Solusi (Solution Strategy)
 
 > [!INFO] **Architecture Provenance & Freshness**
-> - **Verified Commit**: `9cc0f0e` (branch: `main`)
-> - **Verified Timestamp**: `2026-10-27T18:56:09+07:00`
+> - **Verified Commit**: `e7b2e7b` (branch: `main`)
+> - **Verified Timestamp**: `2026-10-28T12:30:00+07:00`
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
-Seksi ini menjelaskan pendekatan praktis yang diambil dalam membangun sistem SiPEDAS untuk menyelesaikan persoalan nyata di lapangan secara sederhana dan efektif.
+Seksi ini menjelaskan pendekatan praktis yang diambil dalam membangun sistem Dokter-V untuk menyelesaikan persoalan nyata di lapangan secara sederhana dan efektif.
 
 ---
 
@@ -19,12 +19,14 @@ graph TD
     A --> D["Bantuan AI untuk Laporan"]
     A --> E["Ekspor Data yang Ringan"]
     A --> F["Pengujian Otomatis yang Aman"]
+    A --> G["Generalisasi Multi-Satker"]
 
     B --> B1["Tanggal akhir kegiatan menentukan bulan kontrak, honor, dan BAST"]
     C --> C1["Pimpinan cukup klik tautan di WA dari HP tanpa perlu login laptop"]
     D --> D1["Format laporan dikunci agar bahasa resmi dan data tidak melenceng"]
     E --> E1["Mengunduh ribuan data mitra dibuat hemat memori agar tidak macet"]
     F --> F1["Uji coba program dijalankan di memori sementara tanpa merusak data kantor"]
+    G --> G1["Pemisahan logika invarian inti dari konfigurasi varian kantor lokal"]
 ```
 
 ---
@@ -43,7 +45,9 @@ graph TD
 - **Masalah**: Pegawai sering harus menunggu berhari-hari agar surat tugas ditandatangani karena pimpinan sedang dinas luar atau rapat penting.
 - **Solusi**:
   - **Pencegahan Jadwal Bentrok**: Begitu pegawai memilih tanggal tugas dan nama rekan kerja, sistem langsung mengecek kalender kantor. Jika salah satu pegawai sudah punya tugas dinas aktif di tanggal tersebut, sistem langsung memberi tahu dan menolak pengajuan.
-  - **Tautan Persetujuan Kilat di WhatsApp**: Pimpinan menerima ringkasan tugas di WA bersama sebuah tautan aman berbatas waktu. Cukup klik tautan itu dari layar HP, surat tugas langsung disahkan, nomor surat otomatis terbit, dan pegawai langsung mendapat kabar bahwa surat siap dicetak.
+  - **Tautan Persetujuan Kilat di WhatsApp (Signed URL 1-Click)**: Pengesah tugas menerima ringkasan tugas di WA bersama sebuah tautan aman bertanda tangan kriptografis (`URL::temporarySignedRoute` HMAC-SHA256, 14 hari). Cukup klik tautan itu dari layar HP, surat tugas langsung disahkan, nomor surat otomatis terbit, dan pegawai langsung mendapat kabar bahwa surat siap dicetak.
+  - **Pencegahan Bot/Crawler**: Sistem mendeteksi User-Agent bot peninjau tautan (misal bot WhatsApp/Facebook) sehingga hanya menampilkan kartu tinjauan metadata tanpa memicu persetujuan otomatis sebelum tautan dibuka sungguhan oleh pimpinan.
+  - **Mode Delegasi Persetujuan**: Mendukung konfigurasi fleksibel `st_approval_mode` (`delegasi_ppspm`, `kepala_only`, `ppspm_only`, `auto_approve`) yang berlaku seragam untuk tugas berbiaya dinas (SPPD) maupun non-SPPD.
   - **Pengalihan Otomatis ke Plh**: Jika pimpinan sedang cuti panjang, wewenang otomatis beralih ke Pelaksana Harian yang ditunjuk resmi.
 
 ### 3. Mengurangi Beban Mengetik Laporan Menggunakan AI
@@ -70,4 +74,11 @@ graph TD
 - **Masalah**: Pengembang sistem perlu menguji fitur baru secara menyeluruh, tetapi jika pengujian menyentuh database kantor, ada risiko data penting terhapus atau berubah.
 - **Solusi**:
   - Pengujian otomatis dijalankan menggunakan ruang memori sementara yang terpisah sepenuhnya dari database kantor.
-  - Pengujian menguji logika nyata perhitungan honor dan aturan SBM secara nyata tanpa menggunakan data rekayasa palsu, sehingga menjamin aplikasi bekerja dengan benar saat dipakai sehari-hari.
+  - Pengujian menguji logika nyata perhitungan honor dan aturan SBM secara nyata tanpa menggunakan data rekayaka palsu, sehingga menjamin aplikasi bekerja dengan benar saat dipakai sehari-hari.
+
+### 7. Memudahkan Penerapan di Satuan Kerja Lain (Framework Multi-Satker)
+- **Masalah**: Kantor BPS lain ingin mengadopsi sistem ini, namun aplikasi sebelumnya masih memuat nama instansi, NIP pejabat, dan data wilayah yang tertulis mati di kode program.
+- **Solusi**:
+  - **Pemisahan Invarian vs Varian**: Memisahkan logika proses bisnis (invarian) dari data lokal kantor (varian).
+  - **Pusat Konfigurasi Satker (`config/satker.php`)**: Seluruh identitas instansi, kode 4 digit BPS, pejabat definitif, dan mode autentikasi diatur dari berkas konfigurasi tunggal.
+  - **Perintah CLI Terpadu**: Menyediakan perintah `php artisan satker:init`, `satker:export-template`, dan `satker:import-all` agar kantor baru cukup mengunggah berkas CSV pegawai dan mitra untuk langsung siap beroperasi.

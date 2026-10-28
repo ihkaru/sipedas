@@ -1,8 +1,8 @@
 # GEMINI.md — Architecture Standards, Development Protocol & Quality Gates
 
 > [!NOTE] **Repository Ground Truth**
-> - **Application**: DOKTER-V (SiPEDAS — Sistem Informasi Penugasan dan Administrasi Surat)
-> - **Domain**: Tata Kelola Penugasan, Perjalanan Dinas (SPPD), Verifikasi Keuangan (Sipancong), dan Pembayaran Honor Mitra Statistik (SBM 2026) di lingkungan Badan Pusat Statistik (BPS).
+> - **Application**: DOKTER-V
+> - **Domain**: Tata Kelola Penugasan, Perjalanan Dinas (SPPD), Verifikasi Berkas Pembayaran Keuangan, dan Pembayaran Honor Mitra Statistik (SBM 2026) di lingkungan Badan Pusat Statistik (BPS).
 > - **Framework Roadmap**: [docs/ROADMAP.md](docs/ROADMAP.md) | [Rencana Pelaksanaan Fase 2](docs/roadmap/02_satker_framework_generalization.md)
 > - **Portability Contract**: File ini berkomitmen 100% portabel dan bebas dari referensi path lokal maupun kredensial mesin tertentu.
 
@@ -15,7 +15,7 @@ Aplikasi Dokter-V dirancang untuk dapat diadopsi oleh seluruh Satuan Kerja BPS K
 ### 1.1 Komponen Invarian (Core Framework — Tidak Boleh Diubah per Satker)
 1. **Workflows & State Machines**:
    - Siklus hidup Surat Tugas: `DRAFT` $\rightarrow$ `DIKIRIM` $\rightarrow$ `DISETUJUI` / `PERLU_REVISI` / `DITOLAK` $\rightarrow$ `DICAIRKAN` / `DIBATALKAN`.
-   - Pipeline verifikasi Sipancong: Bendahara Pengeluaran $\rightarrow$ Penguji SPM (PPSPM) $\rightarrow$ Pejabat Pembuat Komitmen (PPK) $\rightarrow$ Pencairan.
+   - Pipeline verifikasi berkas pembayaran: Bendahara Pengeluaran $\rightarrow$ Penguji SPM (PPSPM) $\rightarrow$ Pejabat Pembuat Komitmen (PPK) $\rightarrow$ Pencairan.
    - Mode delegasi approval pimpinan (`st_approval_mode`: `delegasi_ppspm`, `kepala_only`, `ppspm_only`, `auto_approve`).
 2. **Aturan Bisnis & Kepatuhan Regulasi**:
    - Validasi batas maksimal honor bulanan mitra sesuai Peraturan Menteri Keuangan Standar Biaya Masukan (PMK SBM 2026).
@@ -41,7 +41,7 @@ Aplikasi Dokter-V dirancang untuk dapat diadopsi oleh seluruh Satuan Kerja BPS K
 ├── app/
 │   ├── Filament/                # Antarmuka Admin & Dashboard (Filament v5)
 │   │   ├── Pages/               # Halaman khusus (Pengaturan, LaporanPerjadinPage, dll)
-│   │   └── Resources/           # CRUD Resources (Penugasan, Mitra, Honor, Sipancong)
+│   │   └── Resources/           # CRUD Resources (Penugasan, Mitra, Honor, Pembayaran)
 │   ├── Http/
 │   │   ├── Controllers/Api/     # REST API & AI Skill Endpoints
 │   │   └── Middleware/          # Auth, ApiKey, CSRF, SAML Proxy
@@ -49,7 +49,7 @@ Aplikasi Dokter-V dirancang untuk dapat diadopsi oleh seluruh Satuan Kerja BPS K
 │   │   ├── Penugasan.php        # State machine persetujuan & otorisasi tugas
 │   │   ├── NomorSurat.php       # Mesin penomoran surat resmi BPS
 │   │   ├── PresetRutePerjadin.php # Rute perjalanan dinas & estimasi waktu
-│   │   ├── Sipancong/           # Model pipeline verifikasi berkas keuangan
+│   │   ├── Sipancong/           # Model entitas verifikasi berkas pembayaran
 │   │   └── User.php             # Akun, role, dan relasi pegawai
 │   ├── Services/                # Domain & Application Logic
 │   │   ├── SuratTugas/          # Layanan validasi, penerbitan, & notifikasi tugas

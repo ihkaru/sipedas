@@ -28,7 +28,7 @@ class SuratTugasQuickApprovalController extends Controller
                 '<!DOCTYPE html><html><head>'.
                 '<title>Persetujuan Cepat Surat Tugas — Dokter V</title>'.
                 '<meta property="og:title" content="Persetujuan Cepat Surat Tugas — Dokter V" />'.
-                '<meta property="og:description" content="Tautan persetujuan resmi Surat Tugas Dokter V / SiPEDAS." />'.
+                '<meta property="og:description" content="Tautan persetujuan resmi Surat Tugas Dokter V." />'.
                 '</head><body>Persetujuan Cepat Surat Tugas</body></html>',
                 200,
                 ['Content-Type' => 'text/html']

@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
             MicrositeSeeder::class,
         ]);
         $this->call([
-            SipancongSeeder::class,
+            PembayaranSeeder::class,
             // PengajuanSeeder::class
         ]);
 

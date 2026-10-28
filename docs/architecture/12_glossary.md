@@ -1,12 +1,12 @@
 # 12. Glosarium dan Istilah Penting (Glossary)
 
 > [!INFO] **Architecture Provenance & Freshness**
-> - **Verified Commit**: `9cc0f0e` (branch: `main`)
-> - **Verified Timestamp**: `2026-10-27T18:56:09+07:00`
+> - **Verified Commit**: `e7b2e7b` (branch: `main`)
+> - **Verified Timestamp**: `2026-10-28T12:30:00+07:00`
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
-Seksi ini memuat penjelasan istilah sehari-hari yang sering digunakan di lingkungan BPS dan dalam pengelolaan sistem SiPEDAS secara sederhana tanpa bahasa teknis yang rumit.
+Seksi ini memuat penjelasan istilah sehari-hari yang sering digunakan di lingkungan BPS dan dalam pengelolaan sistem Dokter-V secara sederhana tanpa bahasa teknis yang rumit.
 
 ---
 
@@ -21,7 +21,7 @@ Seksi ini memuat penjelasan istilah sehari-hari yang sering digunakan di lingkun
 | **SBM (Standar Biaya Masukan)** | Aturan batas maksimal biaya dan honor yang ditetapkan oleh Menteri Keuangan agar uang negara digunakan secara wajar. | Pembatas otomatis: mitra survei maksimal menerima Rp 3.353.000/bulan, mitra sensus maksimal Rp 4.694.000/bulan. |
 | **LPD (Laporan Perjalanan Dinas)** | Laporan pertanggungjawaban resmi yang ditulis pegawai setelah pulang dari tugas dinas luar atau survei lapangan. | Disusun dengan bantuan modul AI Google Gemini dari catatan ringkas pegawai agar cepat selesai. |
 | **Plh (Pelaksana Harian)** | Pejabat yang ditunjuk untuk menggantikan sementara tugas pimpinan saat pimpinan sedang cuti atau dinas luar kota. | Bisa menyetujui surat tugas di aplikasi secara sah sesuai surat penunjukan. |
-| **PPK (Pejabat Pembuat Komitmen)** | Pejabat kantor yang bertanggung jawab atas perjanjian kerja sama dan berhak memerintahkan pembayaran dana kantor. | Menandatangani kontrak SPK dan menyetujui perintah bayar honor di modul Sipancong. |
+| **PPK (Pejabat Pembuat Komitmen)** | Pejabat kantor yang bertanggung jawab atas perjanjian kerja sama dan berhak memerintahkan pembayaran dana kantor. | Menandatangani kontrak SPK dan menyetujui perintah bayar honor di modul Verifikasi Keuangan. |
 | **PPSPM (Pejabat Penandatangan SPM)** | Pejabat kantor yang bertugas menguji keabsahan tagihan sebelum diterbitkan surat perintah membayar ke bank. | Memeriksa kuitansi dan mata anggaran belanja pada tahapan kedua verifikasi keuangan. |
 | **Bendahara Pengeluaran** | Petugas yang mengurus kas kantor, memotong pajak resmi, dan mentransfer uang pembayaran ke rekening penerima. | Memeriksa berkas awal dan mencatat nomor bukti transfer bank setelah uang terkirim. |
 | **MAK (Mata Anggaran Keluaran)** | Kode pos anggaran belanja di dokumen DIPA kantor untuk membiayai suatu kegiatan atau honor. | Wajib dipilih saat mengajukan tugas agar jelas dari pos anggaran mana biaya tersebut dibayar. |

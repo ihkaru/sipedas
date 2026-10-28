@@ -28,6 +28,13 @@ Route::get('/cetak/kontrak', [PdfController::class, 'cetakKontrak'])->name('ceta
 Route::get('/approve/{token}', [ApprovalController::class, 'handleApproval'])->name('one-click.approve');
 Route::get('/surat-tugas/quick-approve/{grup_id}', [SuratTugasQuickApprovalController::class, 'handleQuickApproval'])->name('surat-tugas.quick-approve');
 
+// Backward compatibility: redirect legacy /a/sipancong URLs to /a/pembayaran
+Route::get('/a/sipancong/{path?}', function ($path = '') {
+    $queryString = request()->getQueryString();
+    $target = '/a/pembayaran/' . $path . ($queryString ? '?' . $queryString : '');
+    return redirect($target, 301);
+})->where('path', '.*');
+
 Route::middleware('auth')->group(function () {
     Route::get('/download/template-kegiatan-manmit', [ExcelExportController::class, 'downloadKegiatanTemplate'])
         ->name('download.template.kegiatan-manmit');

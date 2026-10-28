@@ -11,7 +11,7 @@
 
 ## 1. Latar Belakang dan Tujuan
 
-Aplikasi **Dokter-V (SiPEDAS)** berawal sebagai solusi otomasi administrasi, persuratan tugas, dan tata kelola honor mitra statistik di BPS Kabupaten Mempawah (Satker 6104). Seiring dengan terbuktinya efektivitas sistem ini dalam mencegah bentrok penugasan, memastikan kepatuhan batas honor SBM 2026, dan mempermudah approval pimpinan via WhatsApp, **banyak Satker BPS Kabupaten/Kota lain yang menyatakan minat untuk mereplikasi dan menerapkan Dokter-V di kantor mereka**.
+Aplikasi **Dokter-V** berawal sebagai solusi otomasi administrasi, persuratan tugas, dan tata kelola honor mitra statistik di BPS Kabupaten Mempawah (Satker 6104). Seiring dengan terbuktinya efektivitas sistem ini dalam mencegah bentrok penugasan, memastikan kepatuhan batas honor SBM 2026, dan mempermudah approval pimpinan via WhatsApp, **banyak Satker BPS Kabupaten/Kota lain yang menyatakan minat untuk mereplikasi dan menerapkan Dokter-V di kantor mereka**.
 
 Namun, pada basis kode saat ini masih terdapat sejumlah komponen dan data spesifik BPS Mempawah yang tertanam (*hardcoded* atau *tightly coupled*), seperti:
 1. Kode satker `6104` dan `61041` yang tersebar pada logika format penomoran surat ([`NomorSurat.php`](file:///home/ihza/Projects/sipedas/app/Models/NomorSurat.php)) dan master SLS.

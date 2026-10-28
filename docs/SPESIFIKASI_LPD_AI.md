@@ -1,6 +1,6 @@
 # DOKUMEN SPESIFIKASI KEBUTUHAN SISTEM & DESAIN TEKNIS
 ## Modul Laporan Perjalanan Dinas (LPD) Terintegrasi Generative AI (LLM)
-**Dokter V (Dokumentasi Elektronik Terpadu & Verifikasi / formerly SIPEDAS)**  
+**Dokter V (Digitalisasi dan Otomatisasi Kelola Transaksi Keuangan Elektronik Real-time - Verifikasi)**  
 *Badan Pusat Statistik (BPS)*
 
 ---

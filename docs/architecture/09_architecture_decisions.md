@@ -1,12 +1,12 @@
 # 9. Keputusan Penting Pembuatan Sistem (Architecture Decisions)
 
 > [!INFO] **Architecture Provenance & Freshness**
-> - **Verified Commit**: `9cc0f0e` (branch: `main`)
-> - **Verified Timestamp**: `2026-10-27T18:56:09+07:00`
+> - **Verified Commit**: `e7b2e7b` (branch: `main`)
+> - **Verified Timestamp**: `2026-10-28T12:30:00+07:00`
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
-Seksi ini mencatat keputusan-keputusan teknis penting yang diambil selama merancang sistem SiPEDAS, alasan di baliknya, serta konsekuensinya.
+Seksi ini mencatat keputusan-keputusan teknis penting yang diambil selama merancang sistem Dokter-V, alasan di baliknya, serta konsekuensinya.
 
 ---
 
@@ -14,7 +14,7 @@ Seksi ini mencatat keputusan-keputusan teknis penting yang diambil selama meranc
 
 - **Status**: Diterima dan Diterapkan
 - **Mengapa Keputusan Ini Diambil?**:
-  Sistem SiPEDAS sering dibuka bersamaan oleh banyak pegawai untuk mengurus surat tugas dan memeriksa ribuan data honor mitra. Jika menggunakan cara lama di mana server harus membaca dan menyiapkan seluruh program dari nol setiap kali ada yang mengklik menu, halaman web akan terasa lambat (butuh waktu 100 milidetik lebih per klik) dan komputer server cepat kehabisan tenaga CPU.
+  Sistem Dokter-V sering dibuka bersamaan oleh banyak pegawai untuk mengurus surat tugas dan memeriksa ribuan data honor mitra. Jika menggunakan cara lama di mana server harus membaca dan menyiapkan seluruh program dari nol setiap kali ada yang mengklik menu, halaman web akan terasa lambat (butuh waktu 100 milidetik lebih per klik) dan komputer server cepat kehabisan tenaga CPU.
 - **Keputusan yang Diambil**:
   Aplikasi dijalankan di atas server modern **FrankenPHP**. Aplikasi disiapkan sekali di awal dan terus siap siaga di memori server. Begitu ada pegawai yang mengklik menu, sistem langsung merespons dalam waktu kurang dari 10 milidetik.
 - **Manfaat Nyata**:
@@ -67,3 +67,32 @@ Seksi ini mencatat keputusan-keputusan teknis penting yang diambil selama meranc
   - Database kantor yang asli 100% aman dan tidak akan pernah terotak-atik oleh proses uji coba program.
   - Memberikan kepastian bahwa logika aturan honor dan batas SBM bekerja dengan benar sebelum program dirilis ke pegawai.
 - **Risiko yang Muncul / Risks created**: RISK-04
+
+---
+
+## ADR-05: Pemisahan Invarian vs Varian untuk Generalisasi Framework Multi-Satker
+
+- **Status**: Diterima dan Diterapkan
+- **Mengapa Keputusan Ini Diambil?**:
+  Aplikasi awalnya dibangun untuk BPS Kabupaten Mempawah (kode 6104). Ketika satker BPS lain ingin mengadopsi Dokter-V, mereka menemui kesulitan karena nama satker, NIP pejabat, dan data wilayah tercampur dalam kode program.
+- **Keputusan yang Diambil**:
+  Memisahkan sistem menjadi **Invarian** (logika proses bisnis universal, state machines, kepatuhan batas honor SBM 2026, single date anchoring) dan **Varian** (konfigurasi satker via `config/satker.php`, template data master CSV di `storage/app/templates/`, serta CLI onboarding `php artisan satker:*`). Autentikasi juga mendukung mode ganda (`sso_saml` dan `email_password`).
+- **Manfaat Nyata**:
+  - Satker baru dapat mengadopsi Dokter-V dalam waktu kurang dari 30 menit tanpa menyentuh kode PHP.
+  - Kode program inti tetap 100% bersih, portabel, dan mudah diperbarui via upstream git pull.
+- **Risiko yang Muncul / Risks created**: RISK-05
+
+---
+
+## ADR-06: Pengesahan Kilat Surat Tugas via Temporary Signed Route dengan Mitigasi Bot Crawler
+
+- **Status**: Diterima dan Diterapkan
+- **Mengapa Keputusan Ini Diambil?**:
+  Pimpinan kantor sering berada di lapangan dan membutuhkan cara pengesahan surat tugas yang cepat tanpa harus login ke dashboard web dari laptop. Namun, membuat endpoint persetujuan berbasis URL publik rawan dipicu secara prematur oleh automated link previewer/crawler (misalnya crawler WhatsApp `facebookexternalhit/1.1`) saat pesan WA masuk.
+- **Keputusan yang Diambil**:
+  Menggunakan mekanisme **Laravel Temporary Signed Route** (`URL::temporarySignedRoute`) dengan tanda tangan digital HMAC-SHA256 berbatas waktu 14 hari yang mengikat `grup_id` dan NIP pengesah. Endpoint dilengkapi inspeksi `User-Agent` untuk mendeteksi bot/crawler dan hanya menyajikan OpenGraph preview tanpa mengubah status penugasan. Persetujuan hanya diproses dalam database transaction ketika dibuka oleh manusia di browser.
+- **Manfaat Nyata**:
+  - Pimpinan dapat menyetujui surat tugas secara instan (1-klik) dari layar smartphone tanpa perlu login.
+  - Aman dari eksekusi tidak sengaja akibat link preview WhatsApp.
+  - Stateless: tidak memerlukan tabel database tambahan untuk token sementara.
+- **Risiko yang Muncul / Risks created**: RISK-06

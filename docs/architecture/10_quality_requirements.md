@@ -1,12 +1,12 @@
 # 10. Pengujian Kualitas Sistem (Quality Requirements)
 
 > [!INFO] **Architecture Provenance & Freshness**
-> - **Verified Commit**: `9cc0f0e` (branch: `main`)
-> - **Verified Timestamp**: `2026-10-27T18:56:09+07:00`
+> - **Verified Commit**: `e7b2e7b` (branch: `main`)
+> - **Verified Timestamp**: `2026-10-28T12:30:00+07:00`
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
-Seksi ini merinci skenario pengujian nyata untuk memastikan sistem SiPEDAS bekerja sesuai standar kualitas yang diharapkan oleh kantor.
+Seksi ini merinci skenario pengujian nyata untuk memastikan sistem Dokter-V bekerja sesuai standar kualitas yang diharapkan oleh kantor.
 
 ---
 
@@ -14,7 +14,7 @@ Seksi ini merinci skenario pengujian nyata untuk memastikan sistem SiPEDAS beker
 
 ```mermaid
 graph TD
-    Q["Kualitas yang Dijaga di SiPEDAS"]
+    Q["Kualitas yang Dijaga di Dokter-V"]
     Q --> Q1["#integrity (Jadwal Bersih & Data Tepat)"]
     Q --> Q2["#compliance (Taat Aturan Batas Honor Pemerintah)"]
     Q --> Q3["#usability (Cepat dan Mudah Dipakai Pegawai)"]

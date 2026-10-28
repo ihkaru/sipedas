@@ -5,8 +5,8 @@ namespace Tests\Unit;
 use App\Models\Pegawai;
 use App\Models\Sipancong\Pengajuan;
 use App\Services\Sipancong\PengajuanServices;
-use App\Supports\SipancongConstants as Constants;
-use Database\Seeders\SipancongSeeder;
+use App\Supports\PembayaranConstants as Constants;
+use Database\Seeders\PembayaranSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -17,7 +17,7 @@ class BendaharaBulkActionTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(SipancongSeeder::class);
+        $this->seed(PembayaranSeeder::class);
     }
 
     public function test_pengaju_relation_returns_pegawai(): void

@@ -20,6 +20,7 @@ class JenisDokumenResource extends Resource
     protected static ?string $label = "Jenis Dokumen";
     protected static ?string $navigationLabel = "Jenis Dokumen";
     protected static ?string $pluralModelLabel = "Jenis Dokumen";
+    protected static ?string $slug = 'pembayaran/jenis-dokumens';
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document';
     protected static string | \UnitEnum | null $navigationGroup = "Pembayaran";
     protected static ?int $navigationSort = 2;

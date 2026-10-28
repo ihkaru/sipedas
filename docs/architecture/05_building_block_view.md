@@ -1,18 +1,18 @@
 # 5. Bagian-Bagian Penyusun Sistem (Building Block View)
 
 > [!INFO] **Architecture Provenance & Freshness**
-> - **Verified Commit**: `9cc0f0e` (branch: `main`)
-> - **Verified Timestamp**: `2026-10-27T18:56:09+07:00`
+> - **Verified Commit**: `e7b2e7b` (branch: `main`)
+> - **Verified Timestamp**: `2026-10-28T12:30:00+07:00`
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
-Seksi ini menguraikan bagian-bagian utama yang membentuk sistem SiPEDAS dan tugas dari masing-masing bagian tersebut.
+Seksi ini menguraikan bagian-bagian utama yang membentuk sistem Dokter-V dan tugas dari masing-masing bagian tersebut.
 
 ---
 
 ## 5.1 Susunan Komponen Utama Sistem
 
-Sistem SiPEDAS dibagi ke dalam 7 bagian utama yang saling bekerja sama:
+Sistem Dokter-V dibagi ke dalam 7 bagian utama yang saling bekerja sama:
 
 ```mermaid
 graph TD
@@ -23,10 +23,10 @@ graph TD
     end
 
     subgraph MesinKerja["Bagian Pengolah Data & Aturan Bisnis"]
-        SipedasCore["SiPEDAS Core (Surat Tugas)"]
-        DokterV["Dokter V Engine (Honor Mitra)"]
-        Sipancong["Sipancong Finance (Verifikasi Tagihan)"]
-        LPDAI["LPD AI Engine (Penyusun Laporan)"]
+        SuratTugasCore["Surat Tugas Engine"]
+        HonorCore["Honor & Mitra Engine"]
+        KeuanganCore["Verifikasi Keuangan"]
+        LPDAI["LPD AI Engine"]
     end
 
     subgraph PenghubungLayananLuar["Bagian Komunikasi Luar"]
@@ -39,22 +39,22 @@ graph TD
         MySQLStore["Relational Persistence (Database MySQL) (IF-07)"]
     end
 
-    FilamentUI --> SipedasCore
-    FilamentUI --> DokterV
-    FilamentUI --> Sipancong
+    FilamentUI --> SuratTugasCore
+    FilamentUI --> HonorCore
+    FilamentUI --> KeuanganCore
     FilamentUI --> LPDAI
-    PublicWebhook --> SipedasCore
-    AgentAPI --> SipedasCore
+    PublicWebhook --> SuratTugasCore
+    AgentAPI --> SuratTugasCore
 
-    SipedasCore --> WAClient
-    DokterV --> WAClient
-    DokterV --> GSheetsSync
-    Sipancong --> WAClient
+    SuratTugasCore --> WAClient
+    HonorCore --> WAClient
+    HonorCore --> GSheetsSync
+    KeuanganCore --> WAClient
     LPDAI --> AIGatewayClient
 
-    SipedasCore --> MySQLStore
-    DokterV --> MySQLStore
-    Sipancong --> MySQLStore
+    SuratTugasCore --> MySQLStore
+    HonorCore --> MySQLStore
+    KeuanganCore --> MySQLStore
     LPDAI --> MySQLStore
 ```
 
@@ -62,9 +62,9 @@ graph TD
 
 | Name | Responsibility | Interfaces |
 |:---|:---|:---|
-| SiPEDAS Core | Mengelola pengajuan surat tugas pegawai, mengecek jadwal dinas yang bertabrakan, memberi nomor surat resmi, dan menangani alur persetujuan pimpinan atau Plh. | IF-01, IF-04, IF-08 |
-| Dokter V Engine | Mengelola data mitra lapangan, mengecek batas maksimal honor bulanan (aturan SBM), menggabungkan kontrak kerja (SPK), menerbitkan berita acara (BAST), dan memantau beban kerja mitra. | IF-01, IF-06 |
-| Sipancong Finance | Memeriksa berkas tagihan secara berurutan (Bendahara $\rightarrow$ PPSPM $\rightarrow$ PPK), memantau kecepatan proses berkas, dan mencatat nomor bukti transfer pembayaran ke bank. | IF-01 |
+| Surat Tugas Engine | Mengelola pengajuan surat tugas pegawai, mengecek jadwal dinas yang bertabrakan, memberi nomor surat resmi, dan menangani alur persetujuan pimpinan atau Plh. | IF-01, IF-04, IF-08 |
+| Honor & Mitra Engine | Mengelola data mitra lapangan, mengecek batas maksimal honor bulanan (aturan SBM), menggabungkan kontrak kerja (SPK), menerbitkan berita acara (BAST), dan memantau beban kerja mitra. | IF-01, IF-06 |
+| Verifikasi Keuangan | Memeriksa berkas tagihan secara berurutan (Bendahara $\rightarrow$ PPSPM $\rightarrow$ PPK), memantau kecepatan proses berkas, dan mencatat nomor bukti transfer pembayaran ke bank. | IF-01 |
 | LPD AI Engine | Membantu pegawai menyusun laporan perjalanan dinas dari catatan ringkas dan foto lapangan menjadi draf laporan resmi yang rapi dan siap cetak. | IF-01, IF-05 |
 | WhatsApp Gateway Client | Mengirim pesan pemberitahuan otomatis ke nomor HP pegawai dan pimpinan, serta mengelola daftar nomor yang tidak ingin dikirimi pesan tertentu. | IF-04 |
 | SAML & Agent Auth API | Memeriksa login satu akun resmi BPS (SSO rIDM) dan menyediakan pintu akses data terprogram yang aman untuk bot/skrip otomatis. | IF-02, IF-03 |
@@ -74,19 +74,19 @@ graph TD
 
 ## 5.2 Rincian Cara Kerja Masing-Masing Bagian
 
-### 1. Modul Surat Tugas (SiPEDAS Core)
-- Lokasi kode: [`app/Filament/Resources/PenugasanResource.php`](file:///root/projects/sipedas/app/Filament/Resources/PenugasanResource.php) dan [`app/Models/Penugasan.php`](file:///root/projects/sipedas/app/Models/Penugasan.php).
+### 1. Modul Surat Tugas (Surat Tugas Engine)
+- Lokasi kode: [`app/Filament/Resources/PenugasanResource.php`](file:///root/projects/sipedas/app/Filament/Resources/PenugasanResource.php), [`app/Models/Penugasan.php`](file:///root/projects/sipedas/app/Models/Penugasan.php), [`app/Http/Controllers/SuratTugasQuickApprovalController.php`](file:///root/projects/sipedas/app/Http/Controllers/SuratTugasQuickApprovalController.php), dan [`app/Services/SuratTugas/`](file:///root/projects/sipedas/app/Services/SuratTugas/).
 - **Formulir Pengajuan**: Pegawai memilih tanggal berangkat, tanggal pulang, tujuan, mata anggaran (MAK), dan siapa saja pegawai yang ikut bertugas.
 - **Pengecek Jadwal Bentrok**: Sebelum disimpan, sistem otomatis mencocokkan tanggal dengan riwayat tugas pegawai yang dipilih. Jika ada yang sedang dinas di hari yang sama, sistem langsung menolak dan memunculkan peringatan.
-- **Pembuat Tautan WA**: Menghasilkan tautan unik rahasia yang dikirimkan ke WhatsApp pimpinan agar bisa disetujui hanya dengan satu sentuhan di layar HP.
+- **Pembuat Tautan WA Kriptografis (1-Click Approval)**: Menghasilkan temporary signed route ber-HMAC yang dikirim ke pengesah yang didelegasikan (`st_approval_mode`). Pimpinan cukup sekali klik dari HP tanpa login, dilengkapi deteksi bot crawler untuk mencegah persetujuan prematur saat WhatsApp me-load preview tautan.
 
-### 2. Modul Honor & Mitra (Dokter V Engine)
+### 2. Modul Honor & Mitra (Honor & Mitra Engine)
 - Lokasi kode: [`app/Filament/Resources/HonorResource.php`](file:///root/projects/sipedas/app/Filament/Resources/HonorResource.php) dan [`app/Filament/Pages/MonitorHonorMitra.php`](file:///root/projects/sipedas/app/Filament/Pages/MonitorHonorMitra.php).
 - **Pengontrol Batas Honor (SBM 2026)**: Menghitung total honor yang sudah dialokasikan kepada seorang mitra pada bulan bersangkutan. Jika alokasi baru membuat totalnya melewati batas resmi (Rp 3.353.000 untuk survei atau Rp 4.694.000 untuk sensus), penyimpanan otomatis dibatalkan.
 - **Pencetak Kontrak (SPK) & BAST**: Membuat naskah kontrak kerja bulanan dan lembar serah terima hasil kerja yang bisa langsung dicetak dalam bentuk PDF resmi instansi.
 - **Layar Pantau Mitra**: Menampilkan dashboard yang menunjukkan mitra mana yang jadwalnya masih kosong, pas, atau terlalu padat, serta bisa diunduh ke Excel.
 
-### 3. Modul Pemantauan Keuangan (Sipancong Finance)
+### 3. Modul Verifikasi Keuangan (Verifikasi Keuangan)
 - Lokasi kode: [`app/Filament/Resources/PengajuanResource.php`](file:///root/projects/sipedas/app/Filament/Resources/PengajuanResource.php) dan [`app/Models/Pengajuan.php`](file:///root/projects/sipedas/app/Models/Pengajuan.php).
 - **Jalur Berkas Berjenjang**: Memastikan berkas diperiksa langkah demi langkah. Bendahara memeriksa bukti fisik awal $\rightarrow$ PPSPM memeriksa ketersediaan anggaran DIPA $\rightarrow$ PPK menyetujui perintah bayar $\rightarrow$ Bendahara mencatat nomor bukti transfer bank.
 

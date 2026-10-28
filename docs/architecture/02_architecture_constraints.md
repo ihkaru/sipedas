@@ -1,12 +1,12 @@
 # 2. Batasan Sistem (Architecture Constraints)
 
 > [!INFO] **Architecture Provenance & Freshness**
-> - **Verified Commit**: `9cc0f0e` (branch: `main`)
-> - **Verified Timestamp**: `2026-10-27T18:56:09+07:00`
+> - **Verified Commit**: `e7b2e7b` (branch: `main`)
+> - **Verified Timestamp**: `2026-10-28T12:30:00+07:00`
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
-Seksi ini menjelaskan batas-batas teknologi, aturan hukum keuangan, dan infrastruktur server yang menjadi landasan pembuatan sistem SiPEDAS.
+Seksi ini menjelaskan batas-batas teknologi, aturan hukum keuangan, dan infrastruktur server yang menjadi landasan pembuatan sistem Dokter-V.
 
 ---
 
@@ -30,6 +30,8 @@ Seksi ini menjelaskan batas-batas teknologi, aturan hukum keuangan, dan infrastr
 | **CON-07** | **Pemisahan Peran Pengelola Keuangan** | Undang-Undang Perbendaharaan Negara. | Pejabat yang membuat komitmen pengeluaran (PPK), yang menguji berkas (PPSPM), dan yang mentransfer uang (Bendahara) harus orang yang berbeda. Satu orang tidak boleh menyetujui tahapannya sendiri. |
 | **CON-08** | **Satu Patokan Tanggal Kontrak Mitra** | Standar Pemeriksaan Keuangan BPS & Audit BPK. | Kolom `tanggal_akhir_kegiatan` pada data honor adalah satu-satunya patokan untuk menentukan bulan honor, batas SBM, tanggal kontrak (SPK), dan tanggal berita acara (BAST). |
 | **CON-09** | **Format Berkas Resmi SPK & BAST** | Prosedur Operasional Standar (SOP) Pengadaan Jasa BPS. | Dokumen kontrak SPK dan BAST wajib memiliki nomor surat yang sah dan bisa langsung dicetak dalam format PDF resmi instansi pemerintah. |
+| **CON-13** | **Pemisahan Invarian vs Varian Multi-Satker** | Standar Generalisasi Arsitektur Dokter-V BPS se-Indonesia. | Logika bisnis inti (state machine, SBM, antarbentrok) adalah invarian universal. Data satker (kode satker, NIP pejabat, master wilayah SLS, mitra) dikelola sebagai varian terisolasi via `config/satker.php` & template CSV. |
+| **CON-14** | **Fleksibilitas Autentikasi Satker** | Kebutuhan Onboarding Satker Tanpa SSO Mandiri. | Sistem wajib mendukung mode autentikasi ganda via `AUTH_MODE`: SSO SAML 2.0 (rIDM BPS) untuk satker dengan integrasi SSO, atau akun lokal (`email_password`) untuk satker yang belum memiliki sertifikat SSO. |
 
 ---
 

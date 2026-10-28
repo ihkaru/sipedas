@@ -1,12 +1,12 @@
 # 11. Risiko dan Catatan Perbaikan (Risks and Technical Debt)
 
 > [!INFO] **Architecture Provenance & Freshness**
-> - **Verified Commit**: `9cc0f0e` (branch: `main`)
-> - **Verified Timestamp**: `2026-10-27T18:56:09+07:00`
+> - **Verified Commit**: `e7b2e7b` (branch: `main`)
+> - **Verified Timestamp**: `2026-10-28T12:30:00+07:00`
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
-Seksi ini mencatat potensi kendala yang perlu diwaspadai dalam pengoperasian sistem SiPEDAS serta daftar bagian program yang dijadwalkan untuk dirapikan lebih lanjut.
+Seksi ini mencatat potensi kendala yang perlu diwaspadai dalam pengoperasian sistem Dokter-V serta daftar bagian program yang dijadwalkan untuk dirapikan lebih lanjut.
 
 ---
 
@@ -18,6 +18,8 @@ Seksi ini mencatat potensi kendala yang perlu diwaspadai dalam pengoperasian sis
 | RISK-02 | Data Honor Lama Sebelum Ada Aturan Satu Patokan Tanggal Belum Lengkap | Dampak: Tinggi<br>Kemungkinan: Sedang | Menjalankan program pembersih data otomatis yang melengkapi kolom tanggal selesai kegiatan dari arsip kegiatan survei lama, serta menandai data anomali agar dicek ulang oleh petugas kantor. |
 | RISK-03 | Server AI Google Gemini Sedang Mengalami Gangguan atau Lambat Merespons | Dampak: Sedang<br>Kemungkinan: Sedang | Memberikan batas tunggu maksimal 15 detik pada modul laporan. Jika AI sedang tidak merespons, sistem tetap menyediakan formulir manual di layar agar pegawai tetap bisa mengetik dan menyimpan laporannya tanpa terhambat. |
 | RISK-04 | Perbedaan Karakteristik Antara Database Pengujian di Memori dan Database Asli Kantor | Dampak: Sedang<br>Kemungkinan: Rendah | Menggunakan perintah query database yang standar dan seragam yang dipahami oleh semua jenis database, sehingga apa yang berhasil di pengujian dipastikan berjalan sama di server kantor. |
+| RISK-05 | Ketidaksesuaian Format Master Data CSV saat Migrasi Satker Baru | Dampak: Sedang<br>Kemungkinan: Sedang | Menyediakan validator skema `php artisan satker:validate` dan template CSV resmi di `storage/app/templates/` agar data pegawai/mitra divalidasi format kolom dan tipe datanya sebelum dimasukkan ke database. |
+| RISK-06 | Prefetch Otomatis Tautan WhatsApp oleh Crawler Media Sosial Membuka Endpoint Persetujuan | Dampak: Tinggi<br>Kemungkinan: Tinggi | Menambahkan filter deteksi `User-Agent` bot crawler (WhatsApp, Facebook, Twitter, Googlebot). Jika request berasal dari crawler, sistem hanya menyajikan HTML preview OpenGraph tanpa memicu mutasi persetujuan status penugasan. |
 
 ---
 

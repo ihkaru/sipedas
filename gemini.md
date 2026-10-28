@@ -21,7 +21,7 @@
 1. **SELALU GUNAKAN DOCKER untuk Development Server:**
    - Stack development sudah terkonfigurasi lengkap di `docker-compose.dev.yml` dan script `dev`.
    - **Dilarang** menjalankan `php artisan serve` di host Windows karena PHP host lokal adalah versi 8.3, sedangkan container Docker sudah menggunakan **PHP 8.4** lengkap dengan FrankenPHP + Octane + MySQL + Redis.
-   - **Port 8000 di komputer ini adalah COOLIFY DASHBOARD**, BUKAN aplikasi SIPEDAS!
+   - **Port 8000 di komputer ini adalah COOLIFY DASHBOARD**, BUKAN aplikasi Dokter-V!
 
 2. **Daftar Port & Endpoint Lokal (Docker):**
    - **Aplikasi Web / Login:** [http://localhost:8200/login](http://localhost:8200/login) atau [http://127.0.0.1:8200/login](http://127.0.0.1:8200/login)

@@ -1,4 +1,4 @@
-# DOKTER-V (SiPEDAS)
+# DOKTER-V
 **Digitalisasi dan Otomatisasi Kelola Transaksi Keuangan Elektronik Real-time - Verifikasi**  
 *Kerangka Kerja Tata Kelola Penugasan, Perjalanan Dinas, dan Pembayaran Honor Mitra untuk Satuan Kerja BPS Kabupaten/Kota se-Indonesia.*
 
@@ -10,7 +10,7 @@
 - **Deteksi Bentrok Jadwal Penugasan**: Sistem otomatis mencegah penugasan ganda pada pegawai di tanggal yang sama (*anti-schedule collision*).
 - **Kepatuhan Batas Honor SBM 2026**: Validasi otomatis batas kumulatif honor bulanan mitra statistik sesuai Peraturan Menteri Keuangan Standar Biaya Masukan.
 - **Konsolidasi Kontrak Bulanan**: Penggabungan kegiatan survei dalam bulan yang sama ke dalam 1 kontrak (SPK & BAST) terpadu.
-- **Monitoring Pembayaran (Sipancong)**: Pantau kelengkapan berkas untuk semua jenis pencairan keuangan (Transport Lokal, Perjalanan Dinas, Honor Survei, Uang Makan/Lembur) dari meja Bendahara Pengeluaran $\rightarrow$ PPSPM $\rightarrow$ PPK $\rightarrow$ Pencairan.
+- **Monitoring & Verifikasi Berkas Pembayaran**: Pantau kelengkapan berkas untuk semua jenis pencairan keuangan (Transport Lokal, Perjalanan Dinas, Honor Survei, Uang Makan/Lembur) dari meja Bendahara Pengeluaran $\rightarrow$ PPSPM $\rightarrow$ PPK $\rightarrow$ Pencairan.
 - **Otomasi Persetujuan via WhatsApp**: Notifikasi instan dan aksi persetujuan cepat bagi pimpinan langsung dari HP, lengkap dengan dukungan mode delegasi ke Kasubbag TU (`ppspm`).
 - **Penyusunan Laporan Dinas Berbantuan AI (LPD AI)**: Transformasi catatan lapangan dan foto kegiatan menjadi laporan dinas formal sesuai tata bahasa baku pemerintah (PUEBI).
 

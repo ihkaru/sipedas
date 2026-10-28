@@ -20,6 +20,7 @@ class StatusPengajuanResource extends Resource
     protected static ?string $label = "Status Pengajuan";
     protected static ?string $navigationLabel = "Status Pengajuan";
     protected static ?string $pluralModelLabel = "Status Pengajuan";
+    protected static ?string $slug = 'pembayaran/status-pengajuans';
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-check';
     protected static string | \UnitEnum | null $navigationGroup = "Pembayaran";
     protected static ?int $navigationSort = 5;

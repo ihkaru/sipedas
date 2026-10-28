@@ -1,7 +1,7 @@
 # Roadmap Pengembangan Dokter-V (Framework Tata Kelola & Otomasi BPS Kab/Kota)
 
 > [!NOTE] **Visi Strategis Dokter-V**
-> Menjadikan **Dokter-V (SiPEDAS)** sebagai standar kerangka kerja (*framework*) tata kelola penugasan, persuratan dinas, verifikasi berkas keuangan, dan otomasi pembayaran honor mitra statistik yang **andal, adaptif, dan siap pakai untuk seluruh 514 Satuan Kerja BPS Kabupaten/Kota di Indonesia**.
+> Menjadikan **Dokter-V** sebagai standar kerangka kerja (*framework*) tata kelola penugasan, persuratan dinas, verifikasi berkas keuangan, dan otomasi pembayaran honor mitra statistik yang **andal, adaptif, dan siap pakai untuk seluruh 514 Satuan Kerja BPS Kabupaten/Kota di Indonesia**.
 
 ---
 
@@ -15,7 +15,7 @@ Untuk memungkinkan Dokter-V diterapkan di kantor BPS mana pun tanpa perlu meromb
 │                                                                        │
 │  • Mesin Validasi Batas Honor PMK SBM 2026 (Survei vs Sensus)          │
 │  • State Machine Alur Persuratan & SPPD Perka BPS                      │
-│  • Pipeline Verifikasi Berkas Pembayaran Keuangan (Sipancong)          │
+│  • Pipeline Verifikasi Berkas Pembayaran Keuangan                      │
 │  • Algoritma Deteksi Jadwal Bertabrakan (Anti-Collision Engine)        │
 │  • Gateway Notifikasi WhatsApp Otomatis & Opt-Out Handling             │
 │  • SAML 2.0 BPS Single Sign-On (rIDM) & Filament RBAC Shield           │
@@ -49,7 +49,7 @@ timeline
     title Timeline Evolusi Platform Dokter-V
     section Fase 1 (Selesai)
         Fondasi Inti & Hardening : Otomasi Surat Tugas
-                                  : Verifikasi Keuangan Sipancong
+                                  : Verifikasi Berkas Keuangan
                                   : SBM Honor Mitra 2026
                                   : Dokumentasi arc42 & Safety Log
     section Fase 2 (Sedang Berjalan)
@@ -72,9 +72,9 @@ timeline
 ### [FASE 1] — Fondasi Inti, Kepatuhan Aturan & Stabilitas Operasional
 > **Status:** `SELESAI (COMPLETED)` | **Basis:** BPS Kabupaten Mempawah (6104)
 
-- [x] **SiPEDAS Core**: Siklus hidup Surat Tugas, pembuatan SPPD otomatis, dan deteksi jadwal bertabrakan.
-- [x] **Dokter-V SBM Engine**: Pembatasan batas honor bulanan sesuai PMK Standar Biaya Masukan (SBM 2026) dan konsolidasi kontrak bulanan.
-- [x] **Sipancong Pipeline**: Verifikasi berkas keuangan berjenjang (Bendahara $\rightarrow$ PPSPM $\rightarrow$ PPK $\rightarrow$ Pencairan).
+- [x] **Surat Tugas & SPPD Engine**: Siklus hidup Surat Tugas, pembuatan SPPD otomatis, dan deteksi jadwal bertabrakan.
+- [x] **SBM Honor Mitra Engine**: Pembatasan batas honor bulanan sesuai PMK Standar Biaya Masukan (SBM 2026) dan konsolidasi kontrak bulanan.
+- [x] **Pipeline Verifikasi Pembayaran**: Verifikasi berkas keuangan berjenjang (Bendahara $\rightarrow$ PPSPM $\rightarrow$ PPK $\rightarrow$ Pencairan).
 - [x] **WhatsApp Automation**: Notifikasi pengajuan, persetujuan pimpinan, revisi, dan penolakan via gateway Whatsmeow/Aina/Fonnte.
 - [x] **Delegasi Approval**: Fleksibilitas approval pimpinan dialihkan ke Kasubbag TU (`ppspm`) via antarmuka Pengaturan.
 - [x] **Dokumentasi Terstruktur**: Arsitektur enterprise modular berbasis arc42 ([`docs/architecture/`](architecture/01_introduction_and_goals.md)).

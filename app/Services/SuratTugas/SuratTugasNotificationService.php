@@ -181,7 +181,7 @@ class SuratTugasNotificationService
                     "⚡ *Persetujuan Cepat (1-Klik)*:\n".
                     "Klik tautan ini untuk langsung menyetujui tanpa perlu login:\n".
                     "{$linkQuickApprove}\n\n".
-                    "📋 *Buka Detail di SiPEDAS*:\n".
+                    "📋 *Buka Detail di Dokter V*:\n".
                     "{$linkAksi}\n\n".
                     'Semangat bertugas!';
 

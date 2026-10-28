@@ -12,7 +12,7 @@ class Kernel extends ConsoleKernel
         // ... (mungkin ada task lain)
 
         // Jalankan command ini setiap hari pada pukul 01:00 pagi
-        $schedule->command('sipancong:auto-approve-ppk')->dailyAt('01:00');
+        $schedule->command('pembayaran:auto-approve-ppk')->dailyAt('01:00');
     }
 
     // ...

@@ -25,7 +25,7 @@ During startup (`docker-entrypoint.sh`), when `APP_ENV=production`, the containe
 ## 4. Coolify Deployment Recommendations (Zero-Downtime)
 
 ### Option A: Standard Application Deployment (RECOMMENDED for Zero-Downtime)
-1. In Coolify, create a new resource: **Application** -> **Public/Private Repository** -> Select `sipedas`.
+1. In Coolify, create a new resource: **Application** -> **Public/Private Repository** -> Select your repository.
 2. Build Pack: **Dockerfile**.
 3. Ports Exposes: `80`.
 4. Domain: Set your domain (e.g. `https://admin.dvlpid.my.id`).

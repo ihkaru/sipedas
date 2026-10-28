@@ -3,10 +3,10 @@
 return [
     /*
     |--------------------------------------------------------------------------
-    | SAML 2.0 Configuration for SIPEDAS / DOKTER-V
+    | SAML 2.0 Configuration for DOKTER-V
     |--------------------------------------------------------------------------
     |
-    | Connects SIPEDAS as a Service Provider (SP) to rIDM Identity Provider (IdP).
+    | Connects DOKTER-V as a Service Provider (SP) to rIDM Identity Provider (IdP).
     |
     */
     'strict' => env('SAML_STRICT', false),

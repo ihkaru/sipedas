@@ -22,7 +22,6 @@ class MitraUpdateApiTest extends TestCase
 
         config([
             'dokter_v.api_key' => $this->apiKey,
-            'sipedas.api_key' => $this->apiKey,
         ]);
 
         $this->user = User::factory()->create([

@@ -227,7 +227,7 @@
 
         <div class="btn-group">
             <a href="{{ url('/a/penugasans') }}" class="btn btn-primary">
-                Buka di Dashboard SiPEDAS
+                Buka di Dashboard Dokter V
             </a>
             @if (isset($first) && $first->surat_tugas_id)
                 <a href="{{ route('cetak.penugasan', ['id' => $first->id]) }}" target="_blank" class="btn btn-secondary">

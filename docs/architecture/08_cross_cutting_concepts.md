@@ -1,8 +1,8 @@
 # 8. Konsep Perlindungan dan Keamanan Sistem (Cross-Cutting Concepts)
 
 > [!INFO] **Architecture Provenance & Freshness**
-> - **Verified Commit**: `9cc0f0e` (branch: `main`)
-> - **Verified Timestamp**: `2026-10-27T18:56:09+07:00`
+> - **Verified Commit**: `e7b2e7b` (branch: `main`)
+> - **Verified Timestamp**: `2026-10-28T12:30:00+07:00`
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
@@ -15,23 +15,29 @@ Seksi ini menjelaskan aturan-aturan penting yang berlaku menyeluruh di semua men
 ```mermaid
 graph TD
     Pengguna["Orang yang Ingin Akses"] --> Pilihan{"Cara Mengakses?"}
-    Pilihan -->|Pegawai Buka Web| SAML["Login Satu Akun BPS (/saml/login)"]
-    Pilihan -->|Pimpinan Lewat WhatsApp| TokenSign["Tautan Rahasia Unik (/approve/{token})"]
+    Pilihan -->|Pegawai Buka Web (Mode SSO)| SAML["Login Satu Akun BPS (/saml/login)"]
+    Pilihan -->|Pegawai Buka Web (Mode Lokal)| LocalLogin["Login Akun Email/Sandi (/a/login)"]
+    Pilihan -->|Pengesah Lewat WhatsApp| TokenSign["Tautan Kriptografis Signed Route (/surat-tugas/quick-approve)"]
     Pilihan -->|Program Bot Otomatis| APIKey["Kunci Rahasia API (/v1/*)"]
 
     SAML --> rIDM["Dicek ke Akun Resmi BPS (rIDM)"]
-    TokenSign --> CekToken["Pastikan Tautan Asli dan Belum Kedaluwarsa"]
+    LocalLogin --> CekBcrypt["Dicek ke Tabel Pegawai (Bcrypt Hash)"]
+    TokenSign --> CekToken["Validasi Tanda Tangan HMAC & Deteksi Bot"]
     APIKey --> CekKey["Pastikan Kunci Terdaftar"]
 
     rIDM --> MasukMenu["Masuk ke Menu Sesuai Jabatan"]
-    CekToken --> SahkanTugas["Langsung Sahkan Surat Tugas"]
+    CekBcrypt --> MasukMenu
+    CekToken --> SahkanTugas["Langsung Sahkan Surat Tugas (1-Klik)"]
     CekKey --> BeriData["Berikan Data yang Diminta"]
 ```
 
-1. **Masuk Satu Akun Resmi BPS (Single Sign-On / rIDM)**:
-   - Pegawai tidak perlu membuat kata sandi baru. Cukup gunakan email/NIP resmi BPS untuk masuk. Nama, jabatan, dan NIP otomatis disinkronkan ke sistem.
-2. **Tautan Rahasia WhatsApp untuk Pimpinan**:
-   - Tautan persetujuan surat tugas dibuat menggunakan kode rahasia yang unik (*token HMAC SHA-256*) dan hanya berlaku selama 7 hari. Tautan ini tidak bisa ditebak atau diubah-ubah oleh orang lain. Sekali ditekan dan disetujui, tautan tersebut tidak bisa dipakai lagi.
+1. **Masuk Satu Akun Resmi BPS (Single Sign-On / rIDM) & Akun Lokal**:
+   - Jika `AUTH_MODE=sso_saml`: Pegawai masuk menggunakan email/NIP resmi BPS (rIDM SSO). Nama, jabatan, dan NIP otomatis disinkronkan ke sistem.
+   - Jika `AUTH_MODE=email_password`: Untuk kantor yang belum terhubung ke SSO pusat, sistem menyediakan autentikasi lokal aman menggunakan kata sandi ter-hash (Bcrypt) dengan proteksi brute-force (rate limiter 5 percobaan).
+2. **Tautan Persetujuan Kilat WhatsApp Bertanda Tangan Kriptografis (1-Click Signed Route)**:
+   - Tautan persetujuan dibuat menggunakan mekanisme `URL::temporarySignedRoute` (HMAC SHA-256 terikat pada kunci rahasia aplikasi `APP_KEY`), berlaku selama 14 hari.
+   - **Stateless & Efisien**: Tidak memerlukan tabel database token sementara. Menjamin `grup_id` dan `nip` pengesah tidak dapat dimanipulasi tanpa merusak tanda tangan digital.
+   - **Pencegahan Bot/Crawler**: Sistem memeriksa header `User-Agent`. Jika permintaan berasal dari bot pembuat thumbnail (WhatsApp `facebookexternalhit/1.1`, Twitterbot, Googlebot), sistem hanya merespons dengan metadata OpenGraph tanpa mengubah status surat tugas. Persetujuan hanya tereksekusi saat diklik peramban nyata.
 3. **Kunci API untuk Integrasi Otomatis**:
    - Jika ada bot atau program lain yang butuh data, akses hanya diberikan jika menyertakan kunci rahasia (*API Key*). Kunci ini disimpan dalam bentuk acak terenkripsi di database kantor.
 
@@ -89,3 +95,15 @@ flowchart TD
 Ketika pengembang memperbarui aplikasi atau memperbarui versi sistem di server:
 - Sistem menggunakan perintah pembaruan yang cerdas (*updateOrCreate*).
 - Pengaturan yang sudah diisi oleh pegawai (misalnya pengaturan mematikan notifikasi pesan tertentu) tetap terjaga aman dan **tidak akan terhapus** saat aplikasi diperbarui.
+
+---
+
+## 8.6 Pengelolaan Konfigurasi Multi-Satker (Invarian vs Varian)
+
+Untuk memastikan sistem dapat diadopsi oleh satker BPS lain tanpa modifikasi kode inti:
+1. **Pemisahan Logika Invarian**:
+   - Seluruh aturan perhitungan SBM, alur surat tugas, siklus hidup verifikasi keuangan, dan deteksi bentrok bersifat universal dan tidak dimodifikasi antar-kantor.
+2. **Pusat Konfigurasi Varian (`config/satker.php`)**:
+   - Variabel `SATKER_KODE`, `SATKER_NAMA`, `SATKER_KABUPATEN`, dan daftar NIP pejabat definitif (Kepala, Kasubbag TU, PPK, Bendahara) diatur melalui environment variable dan file config.
+3. **Data Master Terisolasi & Terstruktur**:
+   - Impor data pegawai, mitra, dan wilayah SLS menggunakan template CSV standar di `storage/app/templates/` yang dieksekusi melalui artisan command `satker:import-all`.

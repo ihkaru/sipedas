@@ -1,29 +1,29 @@
 # 6. Alur Kerja Sistem (Runtime View)
 
 > [!INFO] **Architecture Provenance & Freshness**
-> - **Verified Commit**: `9cc0f0e` (branch: `main`)
-> - **Verified Timestamp**: `2026-10-27T18:56:09+07:00`
+> - **Verified Commit**: `e7b2e7b` (branch: `main`)
+> - **Verified Timestamp**: `2026-10-28T12:30:00+07:00`
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
-Seksi ini menceritakan urutan kejadian langkah demi langkah saat pengguna menggunakan fitur-fitur penting dalam sistem SiPEDAS.
+Seksi ini menceritakan urutan kejadian langkah demi langkah saat pengguna menggunakan fitur-fitur penting dalam sistem Dokter-V.
 
 ---
 
-## 6.1 Alur 1: Mengajukan Surat Tugas, Cek Jadwal Bentrok, dan Setuju via WhatsApp
+## 6.1 Alur 1: Mengajukan Surat Tugas, Cek Jadwal Bentrok, dan Setuju 1-Klik via WhatsApp
 
-Alur ini menjelaskan bagaimana pegawai mengajukan tugas dinas hingga disahkan oleh pimpinan lewat pesan WhatsApp:
+Alur ini menjelaskan bagaimana pegawai mengajukan tugas dinas hingga disahkan oleh pengesah berwenang (Kepala Satker / Kasubbag TU) lewat pesan WhatsApp:
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Pegawai as Pegawai ASN
     participant UI as Halaman Web (IF-01)
-    participant Core as SiPEDAS Core
+    participant Core as Surat Tugas Engine
     participant DB as Database MySQL (IF-07)
     participant WAClient as Pengirim WhatsApp (IF-04)
-    actor Pimpinan as Kepala Satker / Plh
-    participant Webhook as Tautan Persetujuan (IF-08)
+    actor Approver as Pengesah (Kepala Satker / Kasubbag TU)
+    participant Webhook as Tautan Persetujuan Signed Route (IF-08)
 
     Pegawai->>UI: Buka form Surat Tugas, isi tujuan, tanggal, dan nama anggota tim
     UI->>Core: Periksa apakah ada jadwal yang bertabrakan
@@ -33,16 +33,21 @@ sequenceDiagram
         UI-->>Pegawai: Muncul peringatan: "Pegawai X sudah ada tugas dinas di tanggal ini"
     else Jika Jadwal Semua Pegawai Kosong
         Core->>DB: Simpan Surat Tugas (Status: Menunggu Persetujuan)
-        Core->>Core: Buat tautan persetujuan rahasia berbatas waktu
-        Core->>WAClient: Kirim pesan ringkasan tugas + tautan persetujuan ke WhatsApp pimpinan
-        WAClient-->>Pimpinan: Pesan WA masuk: "Ada permohonan surat tugas baru. Klik tautan ini untuk menyetujui."
+        Core->>Core: Tentukan approver via st_approval_mode & buat temporary signed URL (HMAC SHA-256)
+        Core->>WAClient: Kirim pesan ringkasan tugas + tautan persetujuan 1-klik ke WhatsApp approver
+        WAClient-->>Approver: Pesan WA masuk: "Ada permohonan surat tugas baru. Klik tautan ini untuk menyetujui."
         
-        Pimpinan->>Webhook: Buka pesan WA dari HP, lalu sentuh tautan persetujuan
-        Webhook->>Core: Cocokkan keaslian tautan dan pastikan belum kedaluwarsa
-        Core->>DB: Ubah status menjadi: Disetujui & terbitkan nomor surat resmi
-        Core->>WAClient: Kirim kabar ke pemohon bahwa tugas sudah disahkan
-        Webhook-->>Pimpinan: Layar HP menampilkan: "Surat Tugas Berhasil Disahkan"
-        WAClient-->>Pegawai: Pesan WA masuk: "Surat tugas Anda sudah disahkan pimpinan. Silakan cetak PDF."
+        opt Saat WhatsApp Crawler Mengambil Thumbnail Preview
+            Approver->>Webhook: Crawler WhatsApp/Facebook mengirim GET request
+            Webhook->>Webhook: Deteksi User-Agent Crawler -> Return preview HTML saja tanpa mengubah status!
+        end
+
+        Approver->>Webhook: Approver menyentuh tautan dari peramban ponsel
+        Webhook->>Core: Validasi tanda tangan HMAC dan masa kedaluwarsa 14 hari
+        Core->>DB: DB Transaction: Ubah status menjadi 'disetujui' & generate nomor surat resmi
+        Core->>WAClient: Kirim notifikasi ke pemohon bahwa surat tugas telah disetujui
+        Webhook-->>Approver: Halaman respons sukses: "Surat Tugas Berhasil Disetujui (No: B-xxx)"
+        WAClient-->>Pegawai: Pesan WA masuk: "Surat tugas Anda telah disetujui. Silakan cetak PDF mandiri."
     end
 ```
 
@@ -112,7 +117,7 @@ sequenceDiagram
 
 ---
 
-## 6.4 Alur 4: Tahapan Pemeriksaan Berkas Keuangan (Sipancong)
+## 6.4 Alur 4: Tahapan Pemeriksaan Berkas Keuangan
 
 Alur pemeriksaan berkas pembayaran oleh petugas keuangan kantor sampai dana dicairkan:
 
@@ -121,25 +126,25 @@ sequenceDiagram
     autonumber
     actor Bendahara as Bendahara Pengeluaran
     participant UI as Halaman Web (IF-01)
-    participant Sipancong as Sipancong Finance
+    participant Keuangan as Verifikasi Keuangan
     participant DB as Database MySQL (IF-07)
     actor PPSPM as Penguji SPM (PPSPM)
     actor PPK as Pejabat Pembuat Komitmen (PPK)
 
     Bendahara->>UI: Periksa kelengkapan kuitansi dan bukti pengeluaran
-    UI->>Sipancong: Berkas dinyatakan lengkap tahap awal
-    Sipancong->>DB: Ubah status berkas: Menunggu Uji PPSPM
+    UI->>Keuangan: Berkas dinyatakan lengkap tahap awal
+    Keuangan->>DB: Ubah status berkas: Menunggu Uji PPSPM
     
     PPSPM->>UI: Periksa kecukupan pagu anggaran dan nomor mata anggaran (MAK)
-    UI->>Sipancong: Sahkan pengujian surat perintah membayar
-    Sipancong->>DB: Ubah status berkas: Menunggu Persetujuan PPK
+    UI->>Keuangan: Sahkan pengujian surat perintah membayar
+    Keuangan->>DB: Ubah status berkas: Menunggu Persetujuan PPK
     
     PPK->>UI: Pastikan hasil kerja lapangan sudah selesai dan BAST sudah diteken
-    UI->>Sipancong: Setujui perintah bayar
-    Sipancong->>DB: Ubah status berkas: Siap Dicairkan ke Rekening
+    UI->>Keuangan: Setujui perintah bayar
+    Keuangan->>DB: Ubah status berkas: Siap Dicairkan ke Rekening
     
     Bendahara->>UI: Lakukan transfer bank dan masukkan nomor referensi transfer/SP2D
-    UI->>Sipancong: Tutup proses pembayaran
-    Sipancong->>DB: Ubah status berkas: Selesai Dibayarkan
+    UI->>Keuangan: Tutup proses pembayaran
+    Keuangan->>DB: Ubah status berkas: Selesai Dibayarkan
     UI-->>Bendahara: Bukti pelunasan pembayaran tersimpan rapi di riwayat
 ```

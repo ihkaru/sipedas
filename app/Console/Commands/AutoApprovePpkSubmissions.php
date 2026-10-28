@@ -11,7 +11,10 @@ use Illuminate\Support\Facades\Log;
 
 class AutoApprovePpkSubmissions extends Command
 {
-    protected $signature = 'sipancong:auto-approve-ppk';
+    protected $signature = 'pembayaran:auto-approve-ppk';
+
+    protected $aliases = ['sipancong:auto-approve-ppk'];
+
     protected $description = 'Mencari pengajuan yang melewati batas waktu di PPK dan menyetujuinya secara otomatis.';
 
     public function handle()
@@ -23,6 +26,7 @@ class AutoApprovePpkSubmissions extends Command
 
         if ($maxDays <= 0) {
             $this->info('Fitur auto-approve berbasis waktu tidak aktif (nilai <= 0). Proses dihentikan.');
+
             return self::SUCCESS;
         }
 
@@ -35,6 +39,7 @@ class AutoApprovePpkSubmissions extends Command
 
         if ($overdueSubmissions->isEmpty()) {
             $this->info('Tidak ditemukan pengajuan yang melewati batas waktu.');
+
             return self::SUCCESS;
         }
 
@@ -44,7 +49,7 @@ class AutoApprovePpkSubmissions extends Command
             // Siapkan data seolah-olah PPK menginput form
             $dataForApproval = [
                 'status_pengajuan_ppk_id' => Constants::STATUS_DISETUJUI_TANPA_CATATAN,
-                'catatan_ppk' => 'Disetujui otomatis oleh sistem karena melebihi batas waktu pemeriksaan (' . $maxDays . ' hari).',
+                'catatan_ppk' => 'Disetujui otomatis oleh sistem karena melebihi batas waktu pemeriksaan ('.$maxDays.' hari).',
             ];
 
             try {
@@ -53,12 +58,13 @@ class AutoApprovePpkSubmissions extends Command
                 $this->info("Pengajuan #{$pengajuan->id} ({$pengajuan->uraian_pengajuan}) berhasil disetujui otomatis.");
                 Log::info("Pengajuan #{$pengajuan->id} disetujui otomatis oleh sistem (batas waktu).");
             } catch (\Throwable $th) {
-                $this->error("Gagal memproses pengajuan #{$pengajuan->id}: " . $th->getMessage());
+                $this->error("Gagal memproses pengajuan #{$pengajuan->id}: ".$th->getMessage());
                 Log::error("Gagal auto-approve pengajuan #{$pengajuan->id}", ['error' => $th->getMessage()]);
             }
         }
 
         $this->info('Proses otomatisasi PPK selesai.');
+
         return self::SUCCESS;
     }
 }

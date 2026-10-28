@@ -1,12 +1,12 @@
 # 1. Pengantar dan Tujuan (Introduction and Goals)
 
 > [!INFO] **Architecture Provenance & Freshness**
-> - **Verified Commit**: `9cc0f0e` (branch: `main`)
-> - **Verified Timestamp**: `2026-10-27T18:56:09+07:00`
+> - **Verified Commit**: `e7b2e7b` (branch: `main`)
+> - **Verified Timestamp**: `2026-10-28T12:30:00+07:00`
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
-Dokumen ini menjelaskan rancangan dan cara kerja sistem **SiPEDAS** (Sistem Informasi Penugasan dan Administrasi Surat). Sistem ini menyatukan pengelolaan surat tugas pegawai, pengelolaan honor mitra statistik (**Dokter V**), pemantauan berkas pembayaran (**Sipancong**), dan pembuatan laporan perjalanan dinas yang dibantu kecerdasan buatan (**LPD AI**) di lingkungan Badan Pusat Statistik (BPS).
+Dokumen ini menjelaskan rancangan dan cara kerja sistem **Dokter-V** (Digitalisasi dan Otomatisasi Kelola Transaksi Keuangan Elektronik Real-time - Verifikasi). Sistem ini menyatukan pengelolaan surat tugas dinas, pengelolaan honor mitra statistik, pemantauan dan verifikasi berkas pembayaran keuangan, serta pembuatan laporan perjalanan dinas yang dibantu kecerdasan buatan (**LPD AI**) yang dirancang portabel untuk dapat diadopsi oleh seluruh satuan kerja Badan Pusat Statistik (BPS) Kabupaten/Kota di Indonesia.
 
 ---
 
@@ -14,18 +14,19 @@ Dokumen ini menjelaskan rancangan dan cara kerja sistem **SiPEDAS** (Sistem Info
 
 Sistem ini dibuat untuk mengatasi masalah operasional harian di kantor:
 
-1. **Surat Tugas dan Perjalanan Dinas (SiPEDAS Core)**:
+1. **Surat Tugas dan Perjalanan Dinas (Modul Persuratan & SPPD)**:
    - **Mencegah jadwal bertabrakan**: Sistem otomatis menolak jika ada pegawai yang ditugaskan ke dua tempat berbeda pada hari yang sama.
-   - **Persetujuan cepat lewat WhatsApp**: Pimpinan yang sedang rapat atau dinas luar tidak perlu repot membuka laptop dan login ke aplikasi web. Cukup klik tautan persetujuan di pesan WhatsApp dari HP, surat tugas langsung sah dan terbit nomornya.
+   - **Persetujuan cepat 1-klik lewat WhatsApp**: Pimpinan yang sedang rapat atau dinas luar tidak perlu repot membuka laptop dan login ke aplikasi web. Cukup klik tautan bertanda tangan kriptografis di pesan WhatsApp dari HP, surat tugas langsung sah dan nomor resminya terbit seketika.
+   - **Mode delegasi persetujuan fleksibel**: Mengatur siapa yang berhak mengesahkan tugas lewat pengaturan `st_approval_mode` (`delegasi_ppspm`, `kepala_only`, `ppspm_only`, `auto_approve`), baik untuk tugas berbiaya dinas (SPPD) maupun non-SPPD.
    - **Pendelegasian pejabat**: Jika pimpinan definitif sedang cuti atau dinas, kewenangan penandatanganan otomatis bisa dialihkan ke Pelaksana Harian (Plh).
 
-2. **Pengelolaan Mitra Statistik & Pembayaran Honor (Dokter V)**:
+2. **Pengelolaan Mitra Statistik & Pembayaran Honor (Modul Honor & SBM)**:
    - **Satu patokan tanggal yang pasti**: Tanggal selesai kegiatan survei/sensus (`tanggal_akhir_kegiatan`) menjadi satu-satunya acuan untuk menentukan bulan honor, tanggal kontrak (SPK), dan tanggal serah terima hasil kerja (BAST). Ini mencegah tanggal yang tidak sinkron saat diperiksa auditor.
    - **Pencegahan otomatis batas honor (SBM 2026)**: Sistem otomatis memblokir jika total honor mitra dalam satu bulan melebihi batas aturan pemerintah (maksimal Rp 3.353.000 untuk kegiatan survei dan Rp 4.694.000 untuk kegiatan sensus).
    - **Penggabungan kontrak bulanan**: Kegiatan survei dalam bulan yang sama otomatis digabung ke dalam 1 kontrak bulanan, sedangkan kegiatan sensus dibuatkan kontrak per kegiatan.
    - **Pemantauan beban kerja mitra**: Membantu koordinator lapangan melihat mana mitra yang masih kosong jadwalnya, mana yang pas, dan mana yang sudah penuh agar pembagian tugas merata.
 
-3. **Pemeriksaan Berkas Keuangan (Sipancong)**:
+3. **Pemeriksaan Berkas Pembayaran Keuangan (Modul Verifikasi Keuangan)**:
    - **Alur verifikasi yang jelas**: Berkas tagihan diperiksa berurutan dari Bendahara Pengeluaran $\rightarrow$ Penguji SPM (PPSPM) $\rightarrow$ Pembuat Komitmen (PPK) $\rightarrow$ Pencairan ke rekening bank.
    - **Mencegah berkas tertahan**: Riwayat pemeriksaan tercatat jelas sehingga pegawai tahu di meja mana berkas mereka sedang diproses.
 

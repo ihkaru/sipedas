@@ -1219,12 +1219,6 @@ parameters:
 			path: app/Models/Penugasan.php
 
 		-
-			message: '#^Deprecated in PHP 8\.4\: Parameter \#1 \$with \(array\) is implicitly nullable via default value null\.$#'
-			identifier: parameter.implicitlyNullable
-			count: 1
-			path: app/Models/Penugasan.php
-
-		-
 			message: '#^Method Carbon\\Carbon\:\:addDay\(\) invoked with 1 parameter, 0 required\.$#'
 			identifier: arguments.count
 			count: 1
@@ -1258,12 +1252,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\Plh\:\:\$pegawaiPengganti\.$#'
 			identifier: property.notFound
 			count: 2
-			path: app/Models/Plh.php
-
-		-
-			message: '#^Deprecated in PHP 8\.4\: Parameter \#1 \$date \(Illuminate\\Support\\Carbon\|string\) is implicitly nullable via default value null\.$#'
-			identifier: parameter.implicitlyNullable
-			count: 1
 			path: app/Models/Plh.php
 
 		-

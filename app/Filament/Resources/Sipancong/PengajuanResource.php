@@ -36,6 +36,7 @@ class PengajuanResource extends Resource
     protected static ?string $label = "Pengajuan";
     protected static ?string $navigationLabel = "Pengajuan";
     protected static ?string $pluralModelLabel = "Pengajuan";
+    protected static ?string $slug = 'pembayaran/pengajuans';
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clipboard-document-list';
     protected static string | \UnitEnum | null $navigationGroup = "Pembayaran";
     protected static ?int $navigationSort = 1;

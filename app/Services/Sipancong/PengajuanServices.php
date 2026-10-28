@@ -453,7 +453,7 @@ class PengajuanServices {
 
         $namaPanggilanPpk = $userPpk->pegawai?->panggilan ?? 'Bapak/Ibu';
         $namaPengaju = $record->pengaju?->panggilan ?? 'Pengaju';
-        $linkKeAksi = config("app.url") . "/a/sipancong/pengajuans?activeTab=PPK";
+        $linkKeAksi = config("app.url") . "/a/pembayaran/pengajuans?activeTab=PPK";
 
         // BUAT LINK PERSETUJUAN CEPAT
         $linkCepat = self::generateApprovalLink($record, 'ppk_approve');
@@ -516,7 +516,7 @@ class PengajuanServices {
             $originalTargetWa = $userPemeriksa?->pegawai?->nomor_wa;
             $catatanSebelumnya = $record->catatan_ppk;
             $tanggapanPengaju = $data['tanggapan_pengaju_ke_ppk'] ?? $record->tanggapan_pengaju_ke_ppk;
-            $link = config("app.url") . "/a/sipancong/pengajuans?activeTab=PPK";
+            $link = config("app.url") . "/a/pembayaran/pengajuans?activeTab=PPK";
         } else if ($record->posisi_dokumen_id == Constants::POSISI_PPSPM) {
             $userPemeriksa = User::getPpspm()->first();
             $pemeriksa = $userPemeriksa?->pegawai?->panggilan ?? 'PPSPM';
@@ -524,7 +524,7 @@ class PengajuanServices {
             $originalTargetWa = $userPemeriksa?->pegawai?->nomor_wa;
             $catatanSebelumnya = $record->catatan_ppspm;
             $tanggapanPengaju = $data['tanggapan_pengaju_ke_ppspm'] ?? $record->tanggapan_pengaju_ke_ppspm;
-            $link = config("app.url") . "/a/sipancong/pengajuans?activeTab=PPSPM";
+            $link = config("app.url") . "/a/pembayaran/pengajuans?activeTab=PPSPM";
         } else if ($record->posisi_dokumen_id == Constants::POSISI_BENDAHARA) {
             $userPemeriksa = User::getBendahara()->first();
             $pemeriksa = $userPemeriksa?->pegawai?->panggilan ?? 'Bendahara';
@@ -532,7 +532,7 @@ class PengajuanServices {
             $originalTargetWa = $userPemeriksa?->pegawai?->nomor_wa;
             $catatanSebelumnya = $record->catatan_bendahara;
             $tanggapanPengaju = $data['tanggapan_pengaju_ke_bendahara'] ?? $record->tanggapan_pengaju_ke_bendahara;
-            $link = config("app.url") . "/a/sipancong/pengajuans?activeTab=Bendahara";
+            $link = config("app.url") . "/a/pembayaran/pengajuans?activeTab=Bendahara";
         }
 
         // MODIFIKASI: Gunakan helper untuk menentukan target WA
@@ -602,7 +602,7 @@ class PengajuanServices {
 
         if ($statusId == Constants::STATUS_DITOLAK) {
             $originalTargetWa = $record->pengaju?->nomor_wa;
-            $link = config("app.url") . "/a/sipancong/pengajuans?activeTab=Pengaju";
+            $link = config("app.url") . "/a/pembayaran/pengajuans?activeTab=Pengaju";
             $message = "*Perlu Perbaikan | DOKTER-V* \n\nHalo, *$pengaju*,\nPengajuanmu '$uraian' (Nominal: $nominal) telah diperiksa oleh *$namaPemeriksa* sebagai " . strtoupper($role) . ".\n\nCatatan dari beliau:\n\"*$catatan*\"\n\nSilakan buka link berikut untuk melakukan *Perbaikan* atau memberi *Tanggapan*:\n\n$link\n\nSemangat!!";
         } elseif (Constants::isDisetujui($statusId)) {
             $catatanTambahan = "";
@@ -614,7 +614,7 @@ class PengajuanServices {
                 $userPenerima = User::getPpspm()->first();
                 $namaPenerima = $userPenerima?->pegawai?->panggilan ?? 'PPSPM';
                 $originalTargetWa = $userPenerima?->pegawai?->nomor_wa;
-                $link = config("app.url") . "/a/sipancong/pengajuans?activeTab=PPSPM";
+                $link = config("app.url") . "/a/pembayaran/pengajuans?activeTab=PPSPM";
 
                 // BUAT LINK PERSETUJUAN CEPAT UNTUK PPSPM
                 $linkCepat = self::generateApprovalLink($record, 'ppspm_approve');
@@ -625,7 +625,7 @@ class PengajuanServices {
                 $userPenerima = User::getBendahara()->first();
                 $namaPenerima = $userPenerima?->pegawai?->panggilan ?? 'Bendahara';
                 $originalTargetWa = $userPenerima?->pegawai?->nomor_wa;
-                $link = config("app.url") . "/a/sipancong/pengajuans?activeTab=Bendahara";
+                $link = config("app.url") . "/a/pembayaran/pengajuans?activeTab=Bendahara";
 
                 // --- PERBAIKAN DIMULAI ---
                 // BUAT LINK PERSETUJUAN CEPAT UNTUK BENDAHARA
