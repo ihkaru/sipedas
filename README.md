@@ -23,7 +23,7 @@ Dokter-V sedang berkembang dari aplikasi internal BPS Kabupaten Mempawah menjadi
 | Rencana Kerja / Dokumen | Deskripsi | Status |
 |:---|:---|:---:|
 | 📍 [**Roadmap Pengembangan Dokter-V**](docs/ROADMAP.md) | Visi multi-fase dari aplikasi lokal menuju platform multi-satker nasional. | **Active** |
-| 🚀 [**Rencana Pelaksanaan Fase 2**](docs/roadmap/02_satker_framework_generalization.md) | Rencana aksi terinci: pemisahan invarian/varian, CLI setup wizard, dan modul satker. | **In Progress** |
+| 🚀 [**Rencana Pelaksanaan Fase 2**](docs/roadmap/phase-02/README.md) | Rencana aksi terinci: pemisahan invarian/varian, CLI setup wizard, dan modul satker. | **In Progress** |
 | 🏛️ [**Standar Arsitektur (GEMINI.md)**](GEMINI.md) | Pedoman rekayasa perangkat lunak, aturan invarian/varian, dan verification gauntlet. | **Active** |
 
 ---

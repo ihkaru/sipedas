@@ -1,7 +1,7 @@
 # 3. Konteks dan Cakupan Sistem (Context and Scope)
 
 > [!INFO] **Architecture Provenance & Freshness**
-> - **Verified Commit**: `53db284` (branch: `main`)
+> - **Verified Commit**: `8765819` (branch: `main`)
 > - **Verified Timestamp**: `2026-10-28T12:30:00+07:00`
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`

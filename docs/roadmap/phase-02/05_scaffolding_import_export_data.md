@@ -4,7 +4,7 @@
 > - **Kode Rencana**: `PLN-P02-05`
 > - **Fase**: 2 (Generalisasi Framework Multi-Satker)
 > - **Tingkat Prioritas**: P0 (Kritis)
-> - **Induk**: [02. Rencana Pelaksanaan Fase 2](../02_satker_framework_generalization.md)
+> - **Induk**: [02. Rencana Pelaksanaan Fase 2](README.md)
 
 ---
 

@@ -3,7 +3,7 @@
 > [!NOTE] **Repository Ground Truth**
 > - **Application**: DOKTER-V
 > - **Domain**: Tata Kelola Penugasan, Perjalanan Dinas (SPPD), Verifikasi Berkas Pembayaran Keuangan, dan Pembayaran Honor Mitra Statistik (SBM 2026) di lingkungan Badan Pusat Statistik (BPS).
-> - **Framework Roadmap**: [docs/ROADMAP.md](docs/ROADMAP.md) | [Rencana Pelaksanaan Fase 2](docs/roadmap/02_satker_framework_generalization.md)
+> - **Framework Roadmap**: [docs/ROADMAP.md](docs/ROADMAP.md) | [Rencana Pelaksanaan Fase 2](docs/roadmap/phase-02/README.md)
 > - **Portability Contract**: File ini berkomitmen 100% portabel dan bebas dari referensi path lokal maupun kredensial mesin tertentu.
 
 ---
@@ -62,7 +62,7 @@ Aplikasi Dokter-V dirancang untuk dapat diadopsi oleh seluruh Satuan Kerja BPS K
 ├── docker/                      # Caddyfile dan konfigurasi PHP OPcache
 ├── docs/                        # Dokumentasi resmi
 │   ├── ROADMAP.md               # Roadmap multi-fase Dokter-V
-│   ├── roadmap/                 # Rencana kerja bernomor (02_satker_framework_generalization.md)
+│   ├── roadmap/                 # Rencana kerja bernomor per paket folder (phase-01/, phase-02/, dst)
 │   └── architecture/            # Dokumentasi arsitektur enterprise arc42 (01_ s.d. 12_)
 ├── routes/                      # Web, API, dan Console scheduled tasks
 └── tests/                       # Unit dan Feature test suite
@@ -124,7 +124,8 @@ docker compose -f docker-compose.dev.yml up -d
 
 ## 5. Rujukan Dokumen Penting
 - [Roadmap Pengembangan Dokter-V](docs/ROADMAP.md)
-- [Rencana Pelaksanaan Fase 2: Generalisasi Framework Multi-Satker](docs/roadmap/02_satker_framework_generalization.md)
+- [Katalog Rencana Pelaksanaan & Standar Roadmap](docs/roadmap/README.md)
+- [Rencana Pelaksanaan Fase 2: Generalisasi Framework Multi-Satker](docs/roadmap/phase-02/README.md)
 - [Arsitektur Sistem arc42 (01 Pengantar s.d. 12 Glosarium)](docs/architecture/01_introduction_and_goals.md)
 - [Aturan Bisnis & Kontrak Keuangan](docs/BUSINESS_RULES.md)
 - [Panduan Produksi & Deployment](PRODUCTION_GUIDE.md)

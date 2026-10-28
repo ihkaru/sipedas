@@ -70,7 +70,8 @@ timeline
 ---
 
 ### [FASE 1] — Fondasi Inti, Kepatuhan Aturan & Stabilitas Operasional
-> **Status:** `SELESAI (COMPLETED)` | **Basis:** BPS Kabupaten Mempawah (6104)
+> **Status:** `SELESAI (COMPLETED)` | **Basis:** BPS Kabupaten Mempawah (6104)  
+> **Dokumen Rencana & Rekam Jejak:** 👉 [**phase-01/README.md**](roadmap/phase-01/README.md)
 
 - [x] **Surat Tugas & SPPD Engine**: Siklus hidup Surat Tugas, pembuatan SPPD otomatis, dan deteksi jadwal bertabrakan.
 - [x] **SBM Honor Mitra Engine**: Pembatasan batas honor bulanan sesuai PMK Standar Biaya Masukan (SBM 2026) dan konsolidasi kontrak bulanan.
@@ -84,8 +85,8 @@ timeline
 
 ### [FASE 2] — Generalisasi Framework Multi-Satker & Decoupling Invarian/Varian
 > **Status:** `SEDANG BERJALAN (IN PROGRESS / READY FOR EXECUTION)`  
-> **Dokumen Master Fase 2:** 👉 [**02_satker_framework_generalization.md**](roadmap/02_satker_framework_generalization.md)  
-> **Direktori Berkas Rencana Bernomor:** 👉 [`docs/roadmap/phase-02/`](roadmap/phase-02/)
+> **Dokumen Master Fase 2:** 👉 [**phase-02/README.md**](roadmap/phase-02/README.md)  
+> **Katalog & Panduan Roadmap:** 👉 [`docs/roadmap/README.md`](roadmap/README.md)
 
 Tujuan utama fase ini adalah memisahkan komponen invarian (inti tata kelola BPS) dari varian (spesifik satker) agar pengembang dari Satker BPS mana pun dapat mengkloning repositori ini dan menjalankannya untuk kantor mereka dalam waktu kurang dari 5 menit.
 
@@ -108,7 +109,8 @@ Karena rincian pekerjaan Fase 2 mencakup banyak modul arsitektur terpisah dan da
 ---
 
 ### [FASE 3] — Interoperabilitas Ekosistem BPS & Sinkronisasi Data Otomatis
-> **Status:** `DIRENCANAKAN (PLANNED)`
+> **Status:** `DIRENCANAKAN (PLANNED)`  
+> **Dokumen Master Fase 3:** 👉 [**phase-03/README.md**](roadmap/phase-03/README.md)
 
 Menghubungkan Dokter-V secara langsung dengan sistem-sistem nasional yang digunakan di lingkungan BPS:
 
@@ -124,7 +126,8 @@ Menghubungkan Dokter-V secara langsung dengan sistem-sistem nasional yang diguna
 ---
 
 ### [FASE 4] — Enterprise Cloud Multi-Tenant & Autonomous SRE
-> **Status:** `VISI JANGKA PANJANG (FUTURE VISION)`
+> **Status:** `VISI JANGKA PANJANG (FUTURE VISION)`  
+> **Dokumen Master Fase 4:** 👉 [**phase-04/README.md**](roadmap/phase-04/README.md)
 
 - [ ] **Arsitektur Multi-Tenancy**:
   - Opsi *Single Database Multi-Tenant* atau *Multi-Database per Tenant* untuk satker di lingkungan satu provinsi yang ingin di-host terpusat di server BPS Provinsi.
@@ -136,7 +139,8 @@ Menghubungkan Dokter-V secara langsung dengan sistem-sistem nasional yang diguna
 ---
 
 ## 3. Rujukan Dokumen Terkait
-- [Rencana Pelaksanaan Fase 2: Generalisasi Framework](roadmap/02_satker_framework_generalization.md)
+- [Katalog Paket Roadmap & Modul Bernomor](roadmap/README.md)
+- [Rencana Pelaksanaan Fase 2: Generalisasi Framework](roadmap/phase-02/README.md)
 - [Dokumentasi Arsitektur Sistem (arc42)](architecture/01_introduction_and_goals.md)
 - [Aturan Bisnis & Kontrak Keuangan](BUSINESS_RULES.md)
 - [Standar Operasional Prosedur (SOP)](SOP_DOKTER-V.md)
