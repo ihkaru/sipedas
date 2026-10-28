@@ -22,4 +22,19 @@ class Setting extends Model
             }
         });
     }
+
+    public static function get(string $key, $default = null)
+    {
+        $val = static::where('key', $key)->value('value');
+        if ($val !== null) {
+            return $val;
+        }
+
+        return match ($key) {
+            'st_approval_mode' => config('satker.defaults.st_approval_mode', $default ?? 'delegasi_ppspm'),
+            'whatsapp_notify_st_tembusan_kepala' => config('satker.defaults.st_tembusan_kepala', $default ?? true),
+            'ppk_instant_auto_approve' => config('satker.defaults.ppk_instant_auto_approve', $default ?? false),
+            default => $default,
+        };
+    }
 }

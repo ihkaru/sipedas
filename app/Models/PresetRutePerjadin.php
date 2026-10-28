@@ -22,17 +22,38 @@ class PresetRutePerjadin extends Model
     }
 
     /**
+     * Get label for regency/city/province based on satker config.
+     */
+    public static function getKabupatenLabel(): string
+    {
+        $tingkat = config('satker.tingkat', 'kako');
+        $nama = config('satker.kabupaten', 'Mempawah');
+        if ($tingkat === 'provinsi') {
+            return config('satker.provinsi', 'Kalimantan Barat');
+        }
+        return ($tingkat === 'kota' ? 'Kota ' : 'Kab. ') . $nama;
+    }
+
+    /**
+     * Get capital / base city name from satker config.
+     */
+    public static function getIbukotaName(): string
+    {
+        return config('satker.ibukota', 'Mempawah');
+    }
+
+    /**
      * Find matching preset record for a kecamatan.
      */
     public static function getPresetForKecamatan(?string $kecamatanName): ?self
     {
         if (!$kecamatanName) {
-            return self::where('nama_kecamatan', 'MEMPAWAH HILIR')->first();
+            return self::where('is_active', true)->first() ?: self::where('nama_kecamatan', 'MEMPAWAH HILIR')->first();
         }
 
         $upperInput = strtoupper(trim(str_ireplace(['kecamatan', 'kabupaten', 'kota'], '', $kecamatanName)));
         
-        // Handle historical/common aliases in Kab. Mempawah
+        // Handle historical/common aliases in Kab. Mempawah (if applicable)
         if (str_contains($upperInput, 'SIANTAN') || str_contains($upperInput, 'JUNGKAT')) {
             $upperInput = 'JONGKAT';
         }
@@ -53,7 +74,7 @@ class PresetRutePerjadin extends Model
             })
             ->first();
 
-        return $matched ?: self::where('nama_kecamatan', 'MEMPAWAH HILIR')->first();
+        return $matched ?: (self::where('is_active', true)->first() ?: self::where('nama_kecamatan', 'MEMPAWAH HILIR')->first());
     }
 
     /**
@@ -99,14 +120,15 @@ class PresetRutePerjadin extends Model
             // 5. Istirahat & Sholat Ashar (15.00 - 15.15 -> 15 Menit)
             // 6. Pulang (15.15 - ...)
             $pulangEnd = Carbon::createFromFormat('H.i', '15.15')->addMinutes($travelMinutes)->format('H.i');
+            $ibukota = self::getIbukotaName();
 
             return [
-                ['step' => 1, 'waktu' => $startCoord, 'kategori' => 'berangkat_koordinasi', 'uraian' => 'Perjalanan dari Mempawah menuju lokasi penugasan dan berkoordinasi dengan pihak kecamatan serta penandatanganan/cap visum SPPD.'],
+                ['step' => 1, 'waktu' => $startCoord, 'kategori' => 'berangkat_koordinasi', 'uraian' => "Perjalanan dari {$ibukota} menuju lokasi penugasan dan berkoordinasi dengan pihak kecamatan serta penandatanganan/cap visum SPPD."],
                 ['step' => 2, 'waktu' => "{$pagiEnd} - 11.30", 'kategori' => 'lapangan_1', 'uraian' => 'Perjalanan menuju lokasi sampel/wilayah sasaran dan melaksanakan kegiatan pengawasan/pendataan lapangan.'],
                 ['step' => 3, 'waktu' => '11.30 - 13.00', 'kategori' => 'ishoma_jumat', 'uraian' => 'Istirahat, Ibadah Sholat Jumat, dan Makan Siang'],
                 ['step' => 4, 'waktu' => '13.00 - 15.00', 'kategori' => 'lapangan_2', 'uraian' => 'Melanjutkan pelaksanaan kegiatan lapangan, verifikasi data sampel, dan evaluasi hasil kegiatan.'],
                 ['step' => 5, 'waktu' => '15.00 - 15.15', 'kategori' => 'sholat_ashar', 'uraian' => 'Istirahat dan Sholat Ashar'],
-                ['step' => 6, 'waktu' => "15.15 - {$pulangEnd}", 'kategori' => 'kembali', 'uraian' => 'Perjalanan kembali ke Mempawah.'],
+                ['step' => 6, 'waktu' => "15.15 - {$pulangEnd}", 'kategori' => 'kembali', 'uraian' => "Perjalanan kembali ke {$ibukota}."],
             ];
         }
 
@@ -118,14 +140,15 @@ class PresetRutePerjadin extends Model
         // 5. Istirahat & Sholat Ashar (15.00 - 15.15 -> 15 Menit)
         // 6. Pulang (15.15 - ...)
         $pulangEnd = Carbon::createFromFormat('H.i', '15.15')->addMinutes($travelMinutes)->format('H.i');
+        $ibukota = self::getIbukotaName();
 
         return [
-            ['step' => 1, 'waktu' => $startCoord, 'kategori' => 'berangkat_koordinasi', 'uraian' => 'Perjalanan dari Mempawah menuju lokasi penugasan dan berkoordinasi dengan pihak kecamatan serta penandatanganan/cap visum SPPD.'],
+            ['step' => 1, 'waktu' => $startCoord, 'kategori' => 'berangkat_koordinasi', 'uraian' => "Perjalanan dari {$ibukota} menuju lokasi penugasan dan berkoordinasi dengan pihak kecamatan serta penandatanganan/cap visum SPPD."],
             ['step' => 2, 'waktu' => "{$pagiEnd} - 12.00", 'kategori' => 'lapangan_1', 'uraian' => 'Perjalanan menuju lokasi sampel/wilayah sasaran dan melaksanakan kegiatan pengawasan/pendataan lapangan.'],
             ['step' => 3, 'waktu' => '12.00 - 13.00', 'kategori' => 'ishoma_zhuhur', 'uraian' => 'Istirahat, Sholat Zhuhur, dan Makan Siang'],
             ['step' => 4, 'waktu' => '13.00 - 15.00', 'kategori' => 'lapangan_2', 'uraian' => 'Melanjutkan pelaksanaan kegiatan lapangan, verifikasi data sampel, dan evaluasi hasil kegiatan.'],
             ['step' => 5, 'waktu' => '15.00 - 15.15', 'kategori' => 'sholat_ashar', 'uraian' => 'Istirahat dan Sholat Ashar'],
-            ['step' => 6, 'waktu' => "15.15 - {$pulangEnd}", 'kategori' => 'kembali', 'uraian' => 'Perjalanan kembali ke Mempawah.'],
+            ['step' => 6, 'waktu' => "15.15 - {$pulangEnd}", 'kategori' => 'kembali', 'uraian' => "Perjalanan kembali ke {$ibukota}."],
         ];
     }
 
@@ -232,24 +255,26 @@ class PresetRutePerjadin extends Model
     public static function getResolvedAddressForSpot(?string $kecamatanName, ?string $spotName = null): string
     {
         $preset = self::getPresetForKecamatan($kecamatanName);
-        $kecTitle = $preset ? 'Kec. ' . \Illuminate\Support\Str::title(strtolower($preset->nama_kecamatan)) : 'Kec. Mempawah Hilir';
+        $kabLabel = self::getKabupatenLabel();
+        $defaultKecName = self::where('is_active', true)->value('nama_kecamatan') ?? 'Mempawah Hilir';
+        $kecTitle = $preset ? 'Kec. ' . \Illuminate\Support\Str::title(strtolower($preset->nama_kecamatan)) : 'Kec. ' . \Illuminate\Support\Str::title(strtolower($defaultKecName));
         
         if ($spotName && !empty(trim($spotName))) {
             $cleanSpot = trim(str_ireplace(['(Visum SPPD)', '(Visum SPPD & Koordinasi)'], '', $spotName));
             if (!str_starts_with($cleanSpot, 'Lokasi Lapangan') && !str_starts_with($cleanSpot, 'Titik Utama')) {
-                return "{$cleanSpot}, {$kecTitle}, Kab. Mempawah";
+                return "{$cleanSpot}, {$kecTitle}, {$kabLabel}";
             }
         }
 
         if ($preset && !empty($preset->kantor_camat_alamat)) {
             $alamat = $preset->kantor_camat_alamat;
-            if (!str_contains($alamat, 'Kab. Mempawah') && !str_contains($alamat, 'Mempawah')) {
-                $alamat .= ', Kab. Mempawah';
+            if (!str_contains($alamat, $kabLabel)) {
+                $alamat .= ", {$kabLabel}";
             }
             return $alamat;
         }
 
-        return "{$kecTitle}, Kab. Mempawah";
+        return "{$kecTitle}, {$kabLabel}";
     }
 
     /**
@@ -280,8 +305,9 @@ class PresetRutePerjadin extends Model
     public static function formatCleanPhotoCaption(?string $spotName, ?string $uraian, ?string $kecamatanName, string $tglLabel): string
     {
         $preset = self::getPresetForKecamatan($kecamatanName);
-        $cleanKec = $preset ? 'Kec. ' . \Illuminate\Support\Str::title(strtolower($preset->nama_kecamatan)) : 'Kec. Mempawah Hilir';
-        $kecBaseName = $preset ? \Illuminate\Support\Str::title(strtolower($preset->nama_kecamatan)) : 'Mempawah Hilir';
+        $defaultKecName = self::where('is_active', true)->value('nama_kecamatan') ?? 'Mempawah Hilir';
+        $cleanKec = $preset ? 'Kec. ' . \Illuminate\Support\Str::title(strtolower($preset->nama_kecamatan)) : 'Kec. ' . \Illuminate\Support\Str::title(strtolower($defaultKecName));
+        $kecBaseName = $preset ? \Illuminate\Support\Str::title(strtolower($preset->nama_kecamatan)) : \Illuminate\Support\Str::title(strtolower($defaultKecName));
         
         $spotRaw = trim($spotName ?? '');
         $isGenericSpot = empty($spotRaw) || str_starts_with($spotRaw, 'Lokasi Lapangan') || str_starts_with($spotRaw, 'Titik Utama');

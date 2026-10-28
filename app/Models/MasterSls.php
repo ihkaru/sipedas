@@ -19,13 +19,24 @@ class MasterSls extends Model
         return self::$mastersls;
     }
 
+    public static function getSatkerKabkotIds(): array
+    {
+        $satkerKode = (string) config('satker.kode', '6104');
+        return [$satkerKode];
+    }
+
+    public static function getSatkerProvIds(): array
+    {
+        $satkerKode = (string) config('satker.kode', '6104');
+        return [strlen($satkerKode) >= 2 ? substr($satkerKode, 0, 2) : "61"];
+    }
+
     public static function getIdByName($nama, $level, $data = null)
     {
         if ($nama == null) return null;
         $masterSls = self::getMasterSls();
-        $res = [];
-        $res["prov_ids"] = ["61"];
-        $res["kabkot_ids"] = ["6104"];
+        $res["prov_ids"] = self::getSatkerProvIds();
+        $res["kabkot_ids"] = self::getSatkerKabkotIds();
         $res["kecamatan_ids"] = [];
         $res["desa_kel_ids"] = [];
         $nama = explode(",", $nama);

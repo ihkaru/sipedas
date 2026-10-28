@@ -123,7 +123,9 @@ class AIService
         $kegiatan = $metaContext['kegiatan_nama'] ?? '';
         $suratTugas = $metaContext['nomor_surat_tugas'] ?? '';
         $transportasi = $metaContext['moda_transportasi'] ?? 'Kendaraan Pribadi';
-        $daerah = $metaContext['daerah_dikunjungi'] ?? 'Kecamatan Mempawah Timur';
+        $ibukota = config('satker.ibukota', 'Mempawah');
+        $kabLabel = (config('satker.tingkat', 'kako') === 'kota' ? 'Kota ' : 'Kab. ') . config('satker.kabupaten', 'Mempawah');
+        $daerah = $metaContext['daerah_dikunjungi'] ?? "Kecamatan di {$kabLabel}";
         $pelaksana = $metaContext['pelaksana_nama'] ?? '';
         $inputStr = json_encode($rawInput, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         
@@ -145,7 +147,7 @@ Untuk setiap tanggal kegiatan, baca daftar `titik_kegiatan` secara berurutan dan
 
 1. Slot Keberangkatan & Koordinasi (Kantor Camat / Desa):
    - Waktu: Sesuai preset keberangkatan kecamatan (contoh: 08.00 - 08.30).
-   - Uraian: Perjalanan dari Mempawah menuju {$daerah} dan berkoordinasi dengan pihak kecamatan/desa terkait pelaksanaan {$kegiatan} serta penandatanganan/cap visum SPPD.
+   - Uraian: Perjalanan dari {$ibukota} menuju {$daerah} dan berkoordinasi dengan pihak kecamatan/desa terkait pelaksanaan {$kegiatan} serta penandatanganan/cap visum SPPD.
    - Permasalahan/Pemecahan: "-" (atau kendala administrasi jika ada di draf).
    - Keterangan: "-".
 
@@ -172,7 +174,7 @@ Untuk setiap tanggal kegiatan, baca daftar `titik_kegiatan` secara berurutan dan
 
 5. Slot Perjalanan Pulang:
    - Waktu: Sesuai estimasi waktu kembali (contoh: 15.15 - 15.45).
-   - Uraian: Perjalanan kembali ke Mempawah.
+   - Uraian: Perjalanan kembali ke {$ibukota}.
    - Permasalahan/Pemecahan: "-".
    - Keterangan: "-".
 
@@ -185,7 +187,7 @@ Anda HARUS merespons dalam format JSON persis seperti struktur berikut:
     {
       "tanggal": "YYYY-MM-DD",
       "waktu": "08.00 - 08.30",
-      "uraian_kegiatan": "Perjalanan dari Mempawah menuju ... dan berkoordinasi ...",
+      "uraian_kegiatan": "Perjalanan dari {$ibukota} menuju ... dan berkoordinasi ...",
       "permasalahan_pemecahan": "-",
       "keterangan": "-"
     },
@@ -213,7 +215,7 @@ Anda HARUS merespons dalam format JSON persis seperti struktur berikut:
     {
       "tanggal": "YYYY-MM-DD",
       "waktu": "14.30 - 15.00",
-      "uraian_kegiatan": "Perjalanan kembali ke Mempawah",
+      "uraian_kegiatan": "Perjalanan kembali ke {$ibukota}",
       "permasalahan_pemecahan": "-",
       "keterangan": "-"
     }
@@ -312,7 +314,8 @@ PROMPT;
         $kegiatan = $metaContext['kegiatan_nama'] ?? '';
         $suratTugas = $metaContext['nomor_surat_tugas'] ?? '';
         $transportasi = $metaContext['moda_transportasi'] ?? 'Kendaraan Pribadi';
-        $daerah = $metaContext['daerah_dikunjungi'] ?? ($periodikData['cakupan_wilayah'] ?? 'Kecamatan di Kab. Mempawah');
+        $kabLabel = (config('satker.tingkat', 'kako') === 'kota' ? 'Kota ' : 'Kab. ') . config('satker.kabupaten', 'Mempawah');
+        $daerah = $metaContext['daerah_dikunjungi'] ?? ($periodikData['cakupan_wilayah'] ?? "Kecamatan di {$kabLabel}");
         $periodeStr = $metaContext['periode_str'] ?? '';
         $cakupan = $periodikData['cakupan_wilayah'] ?: $daerah;
         $uraianDraft = $periodikData['uraian_draft'] ?? '';
@@ -369,7 +372,8 @@ PROMPT;
     {
         $currentJson = json_encode($currentReport, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         $kegiatan = $metaContext['kegiatan_nama'] ?? '';
-        $daerah = $metaContext['daerah_dikunjungi'] ?? 'Kecamatan Mempawah Timur';
+        $kabLabel = (config('satker.tingkat', 'kako') === 'kota' ? 'Kota ' : 'Kab. ') . config('satker.kabupaten', 'Mempawah');
+        $daerah = $metaContext['daerah_dikunjungi'] ?? "Kecamatan di {$kabLabel}";
 
         $prompt = <<<PROMPT
 Tugas Anda: Lakukan REVISI & PENYEMPURNAAN terhadap tabel laporan perjalanan dinas BPS berikut sesuai instruksi spesifik dari pegawai.

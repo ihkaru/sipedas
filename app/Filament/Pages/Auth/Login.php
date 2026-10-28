@@ -18,13 +18,18 @@ class Login extends BaseLogin
     {
         parent::mount();
 
-        // Jangan auto-redirect jika pengguna baru saja logout (?logged_out=1) atau mode login lokal darurat (?local=1)
-        if (request()->has('logged_out') || request()->has('local')) {
-            return;
-        }
+        $authMode = config('satker.auth.mode', 'sso_saml');
 
-        // Auto-redirect langsung ke SSO SAML rIDM
-        $this->redirect(route('saml.login'));
+        // Hanya auto-redirect jika mode memang 'sso_saml' dan bukan logout / local request
+        if ($authMode === 'sso_saml') {
+            if (request()->has('logged_out') || request()->has('local')) {
+                return;
+            }
+
+            if (\Illuminate\Support\Facades\Route::has(config('satker.auth.sso_route', 'saml.login'))) {
+                $this->redirect(route(config('satker.auth.sso_route', 'saml.login')));
+            }
+        }
     }
 
     public function getHeading(): string|Htmlable
@@ -34,35 +39,41 @@ class Login extends BaseLogin
         }
 
         if (request()->has('local')) {
-            return 'Login Darurat (Lokal)';
+            return 'Login Akun Lokal';
         }
 
-        return 'Masuk ke SIPEDAS';
+        $namaSatker = config('satker.nama', 'DOKTER-V');
+        return 'Masuk ke ' . $namaSatker;
     }
 
     public function getSubheading(): string|Htmlable|null
     {
+        $authMode = config('satker.auth.mode', 'sso_saml');
+        $ssoLabel = config('satker.auth.sso_label', 'Masuk via SSO BPS');
+
         if (request()->has('logged_out')) {
             return new HtmlString(
                 'Sesi kerja Anda telah aman diakhiri.<br>' .
-                '<span class="text-xs text-gray-500 dark:text-gray-400">Butuh akses darurat? <a href="' . url('/a/login?local=1') . '" class="underline text-primary-600 dark:text-primary-400">Login akun lokal</a></span>'
+                '<span class="text-xs text-gray-500 dark:text-gray-400">Butuh akses akun lokal? <a href="' . url('/a/login?local=1') . '" class="underline text-primary-600 dark:text-primary-400">Klik di sini</a></span>'
             );
         }
 
-        if (request()->has('local')) {
+        if (request()->has('local') && $authMode === 'sso_saml') {
             return new HtmlString(
-                'Mode darurat menggunakan akun database lokal.<br>' .
-                '<span class="text-xs text-gray-500 dark:text-gray-400"><a href="' . route('saml.login') . '" class="underline text-primary-600 dark:text-primary-400">&larr; Masuk via SSO BPS Mempawah</a></span>'
+                'Mode akses menggunakan akun database lokal.<br>' .
+                '<span class="text-xs text-gray-500 dark:text-gray-400"><a href="' . route('saml.login') . '" class="underline text-primary-600 dark:text-primary-400">&larr; ' . e($ssoLabel) . '</a></span>'
             );
         }
 
-        return 'Portal Manajemen Kegiatan & Perjalanan Dinas';
+        return 'Portal Manajemen Kegiatan, Administrasi Surat & Perjalanan Dinas';
     }
 
     public function form(Schema $schema): Schema
     {
-        if (!request()->has('local')) {
-            // Hilangkan input email & password jika bukan mode lokal darurat
+        $authMode = config('satker.auth.mode', 'sso_saml');
+
+        // Pada mode sso_saml murni, sembunyikan form input lokal kecuali jika ?local=1
+        if ($authMode === 'sso_saml' && !request()->has('local')) {
             return $schema->components([]);
         }
 
@@ -71,20 +82,27 @@ class Login extends BaseLogin
 
     protected function getFormActions(): array
     {
-        if (!request()->has('local')) {
-            return [
-                Action::make('saml_login')
-                    ->label('Masuk dengan SSO BPS Mempawah (SAML 2.0)')
-                    ->icon('heroicon-o-arrow-right-end-on-rectangle')
-                    ->url(route('saml.login'))
-                    ->button()
-                    ->color('primary'),
-            ];
+        $authMode = config('satker.auth.mode', 'sso_saml');
+        $actions = [];
+
+        // Tampilkan tombol submit form email & password jika bukan mode sso_saml murni tanpa ?local
+        if ($authMode !== 'sso_saml' || request()->has('local')) {
+            $actions[] = $this->getAuthenticateFormAction();
         }
 
-        return [
-            $this->getAuthenticateFormAction(),
-        ];
+        // Tampilkan tombol SSO jika mode hybrid atau mode sso_saml tanpa ?local
+        if ($authMode === 'hybrid' || ($authMode === 'sso_saml' && !request()->has('local'))) {
+            if (\Illuminate\Support\Facades\Route::has(config('satker.auth.sso_route', 'saml.login'))) {
+                $actions[] = Action::make('saml_login')
+                    ->label(config('satker.auth.sso_label', 'Masuk dengan SSO BPS (SAML 2.0)'))
+                    ->icon('heroicon-o-arrow-right-end-on-rectangle')
+                    ->url(route(config('satker.auth.sso_route', 'saml.login')))
+                    ->button()
+                    ->color($authMode === 'hybrid' ? 'gray' : 'primary');
+            }
+        }
+
+        return $actions;
     }
 
     public function hasFullWidthFormActions(): bool

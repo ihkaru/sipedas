@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string("kec_id");
             $table->string("kabkot_id");
             $table->string("prov_id");
-            $table->string("sls_id");
+            $table->string("sls_id")->unique();
             $table->string("provinsi");
             $table->string("kabkot");
             $table->string("kecamatan");

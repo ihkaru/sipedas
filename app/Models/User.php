@@ -54,8 +54,11 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        // Allowed domains/roles for panel access in production
-        return $this->hasRole('super_admin') || str_contains($this->email, '@bps.go.id');
+        // Allowed domains/roles for panel access
+        return $this->hasAnyRole(['super_admin', 'operator_umum', 'kepala_satker', 'ppspm', 'ppk', 'bendahara', 'pegawai'])
+            || str_contains($this->email, '@bps.go.id')
+            || config('satker.auth.mode') === 'email_password'
+            || app()->environment('local');
     }
 
     public function pegawai()

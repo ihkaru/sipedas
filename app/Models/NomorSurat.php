@@ -246,17 +246,19 @@ class NomorSurat extends Model
     {
         return Attribute::make(
             get: function (mixed $value, array $attributes) {
-                if (isset($attributes['sub_nomor'])) {
-                    $sub_nomor = "." . $attributes['sub_nomor'];
-                } else $sub_nomor = "";
-                $nomor = $attributes['nomor'];
-                $nomor = str_pad($nomor, 3, "0", STR_PAD_LEFT);
-                $tanggal_nomor = Carbon::parse($attributes['tanggal_nomor']);
-                $bulan = $tanggal_nomor->month;
-                $bulan = str_pad($bulan, 2, "0", STR_PAD_LEFT);
-                $tahun = $tanggal_nomor->year;
-                $res = "B-$nomor" . $sub_nomor . "/61041/KP.650/$bulan/$tahun";
-                return $res;
+                $sub_nomor = isset($attributes['sub_nomor']) ? "." . $attributes['sub_nomor'] : "";
+                $nomor = str_pad((string)($attributes['nomor'] ?? ''), 3, "0", STR_PAD_LEFT);
+                $bulan = isset($attributes['bulan']) ? str_pad((string)$attributes['bulan'], 2, "0", STR_PAD_LEFT) : (isset($attributes['tanggal_nomor']) ? str_pad((string)Carbon::parse($attributes['tanggal_nomor'])->month, 2, "0", STR_PAD_LEFT) : now()->format('m'));
+                $tahun = $attributes['tahun'] ?? (isset($attributes['tanggal_nomor']) ? Carbon::parse($attributes['tanggal_nomor'])->year : now()->year);
+
+                $template = config('satker.format_surat.surat_tugas', 'B-{nomor}{sub_nomor}/{kode_surat}/{kode_klasifikasi}/{bulan}/{tahun}');
+                return self::renderFormat($template, [
+                    'nomor' => $nomor,
+                    'sub_nomor' => $sub_nomor,
+                    'kode_klasifikasi' => 'KP.650',
+                    'bulan' => $bulan,
+                    'tahun' => $tahun,
+                ]);
             },
         );
     }
@@ -264,17 +266,19 @@ class NomorSurat extends Model
     {
         return Attribute::make(
             get: function (mixed $value, array $attributes) {
-                if (isset($attributes['sub_nomor'])) {
-                    $sub_nomor = "." . $attributes['sub_nomor'];
-                } else $sub_nomor = "";
-                $nomor = $attributes['nomor'];
-                $nomor = str_pad($nomor, 3, "0", STR_PAD_LEFT);
-                $tanggal_nomor = Carbon::parse($attributes['tanggal_nomor']);
-                $bulan = $tanggal_nomor->month;
-                $bulan = str_pad($bulan, 2, "0", STR_PAD_LEFT);
-                $tahun = $tanggal_nomor->year;
-                $res = "$nomor" . $sub_nomor . "/SPD/$bulan/$tahun";
-                return $res;
+                $sub_nomor = isset($attributes['sub_nomor']) ? "." . $attributes['sub_nomor'] : "";
+                $nomor = str_pad((string)($attributes['nomor'] ?? ''), 3, "0", STR_PAD_LEFT);
+                $bulan = isset($attributes['bulan']) ? str_pad((string)$attributes['bulan'], 2, "0", STR_PAD_LEFT) : (isset($attributes['tanggal_nomor']) ? str_pad((string)Carbon::parse($attributes['tanggal_nomor'])->month, 2, "0", STR_PAD_LEFT) : now()->format('m'));
+                $tahun = $attributes['tahun'] ?? (isset($attributes['tanggal_nomor']) ? Carbon::parse($attributes['tanggal_nomor'])->year : now()->year);
+
+                $template = config('satker.format_surat.sppd', '{nomor}{sub_nomor}/SPD/{bulan}/{tahun}');
+                return self::renderFormat($template, [
+                    'nomor' => $nomor,
+                    'sub_nomor' => $sub_nomor,
+                    'kode_klasifikasi' => 'PL.300',
+                    'bulan' => $bulan,
+                    'tahun' => $tahun,
+                ]);
             },
         );
     }
@@ -282,17 +286,19 @@ class NomorSurat extends Model
     {
         return Attribute::make(
             get: function (mixed $value, array $attributes) {
-                if (isset($attributes['sub_nomor'])) {
-                    $sub_nomor = "." . $attributes['sub_nomor'];
-                } else $sub_nomor = "";
-                $nomor = $attributes['nomor'];
-                $nomor = str_pad($nomor, 3, "0", STR_PAD_LEFT);
-                $tanggal_nomor = Carbon::parse($attributes['tanggal_nomor']);
-                $bulan = $tanggal_nomor->month;
-                $bulan = str_pad($bulan, 2, "0", STR_PAD_LEFT);
-                $tahun = $tanggal_nomor->year;
-                $res = "$nomor" . $sub_nomor . "/61041/PL.300/$bulan/$tahun";
-                return $res;
+                $sub_nomor = isset($attributes['sub_nomor']) ? "." . $attributes['sub_nomor'] : "";
+                $nomor = str_pad((string)($attributes['nomor'] ?? ''), 3, "0", STR_PAD_LEFT);
+                $bulan = isset($attributes['bulan']) ? str_pad((string)$attributes['bulan'], 2, "0", STR_PAD_LEFT) : (isset($attributes['tanggal_nomor']) ? str_pad((string)Carbon::parse($attributes['tanggal_nomor'])->month, 2, "0", STR_PAD_LEFT) : now()->format('m'));
+                $tahun = $attributes['tahun'] ?? (isset($attributes['tanggal_nomor']) ? Carbon::parse($attributes['tanggal_nomor'])->year : now()->year);
+
+                $template = config('satker.format_surat.spk', '{nomor}{sub_nomor}/{kode_surat}/PL.300/{bulan}/{tahun}');
+                return self::renderFormat($template, [
+                    'nomor' => $nomor,
+                    'sub_nomor' => $sub_nomor,
+                    'kode_klasifikasi' => 'PL.300',
+                    'bulan' => $bulan,
+                    'tahun' => $tahun,
+                ]);
             },
         );
     }
@@ -300,19 +306,47 @@ class NomorSurat extends Model
     {
         return Attribute::make(
             get: function (mixed $value, array $attributes) {
-                if (isset($attributes['sub_nomor'])) {
-                    $sub_nomor = "." . $attributes['sub_nomor'];
-                } else $sub_nomor = "";
-                $nomor = $attributes['nomor'];
-                $nomor = str_pad($nomor, 3, "0", STR_PAD_LEFT);
-                $tanggal_nomor = Carbon::parse($attributes['tanggal_nomor']);
-                $bulan = $tanggal_nomor->month;
-                $bulan = str_pad($bulan, 2, "0", STR_PAD_LEFT);
-                $tahun = $tanggal_nomor->year;
-                $res = "$nomor" . $sub_nomor . "/6104/BAST/$bulan/$tahun";
-                return $res;
+                $sub_nomor = isset($attributes['sub_nomor']) ? "." . $attributes['sub_nomor'] : "";
+                $nomor = str_pad((string)($attributes['nomor'] ?? ''), 3, "0", STR_PAD_LEFT);
+                $bulan = isset($attributes['bulan']) ? str_pad((string)$attributes['bulan'], 2, "0", STR_PAD_LEFT) : (isset($attributes['tanggal_nomor']) ? str_pad((string)Carbon::parse($attributes['tanggal_nomor'])->month, 2, "0", STR_PAD_LEFT) : now()->format('m'));
+                $tahun = $attributes['tahun'] ?? (isset($attributes['tanggal_nomor']) ? Carbon::parse($attributes['tanggal_nomor'])->year : now()->year);
+
+                $template = config('satker.format_surat.bast', '{nomor}{sub_nomor}/{kode_satker}/BAST/{bulan}/{tahun}');
+                return self::renderFormat($template, [
+                    'nomor' => $nomor,
+                    'sub_nomor' => $sub_nomor,
+                    'bulan' => $bulan,
+                    'tahun' => $tahun,
+                ]);
             },
         );
+    }
+
+    public static function renderFormat(string $template, array $data): string
+    {
+        $bulanNum = (int) ($data['bulan'] ?? now()->month);
+
+        $tokens = [
+            '{nomor}'            => (string) ($data['nomor'] ?? ''),
+            '{sub_nomor}'        => (string) ($data['sub_nomor'] ?? ''),
+            '{kode_satker}'      => (string) config('satker.kode', '6104'),
+            '{kode_surat}'       => (string) config('satker.kode_surat', config('satker.kode', '6104') . '1'),
+            '{kode_klasifikasi}' => (string) ($data['kode_klasifikasi'] ?? 'KP.650'),
+            '{bulan}'            => str_pad((string) $bulanNum, 2, '0', STR_PAD_LEFT),
+            '{bulan_romawi}'     => self::toRomawi($bulanNum),
+            '{tahun}'            => (string) ($data['tahun'] ?? now()->year),
+        ];
+
+        return str_replace(array_keys($tokens), array_values($tokens), $template);
+    }
+
+    public static function toRomawi(int $number): string
+    {
+        $map = [
+            12 => 'XII', 11 => 'XI', 10 => 'X', 9 => 'IX', 8 => 'VIII',
+            7 => 'VII', 6 => 'VI', 5 => 'V', 4 => 'IV', 3 => 'III', 2 => 'II', 1 => 'I'
+        ];
+        return $map[$number] ?? (string) $number;
     }
 
     public function alokasiHonor()
