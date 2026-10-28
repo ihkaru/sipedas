@@ -85,7 +85,7 @@ class Pengaturan extends Page implements HasForms
                     ->schema([
                         Toggle::make('whatsapp_notification_enabled')
                             ->label('Aktifkan Notifikasi WhatsApp (Master Switch)')
-                            ->helperText('Jika dinonaktifkan, seluruh pengiriman notifikasi WhatsApp dari sistem Dokter V dan SiPEDAS akan dihentikan.')
+                            ->helperText('Jika dinonaktifkan, seluruh pengiriman notifikasi WhatsApp dari sistem Dokter V akan dihentikan.')
                             ->live(),
 
                         Select::make('whatsapp_opt_out_numbers')
@@ -102,7 +102,7 @@ class Pengaturan extends Page implements HasForms
                             ->description('Atur jenis event pengajuan yang memicu pengiriman pesan WhatsApp.')
                             ->compact()
                             ->schema([
-                                Section::make('Pengajuan Surat Tugas (SiPEDAS)')
+                                Section::make('Pengajuan Surat Tugas')
                                     ->compact()
                                     ->schema([
                                         Toggle::make('whatsapp_notify_st_baru')

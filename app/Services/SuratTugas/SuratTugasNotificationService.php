@@ -154,7 +154,7 @@ class SuratTugasNotificationService
 
             foreach ($recipients as $targetWa => $info) {
                 $namaPenyetuju = $info['nama'];
-                $message = "*Pengajuan Surat Tugas Baru | SiPEDAS*\n\n".
+                $message = "*Pengajuan Surat Tugas Baru | Dokter V*\n\n".
                     "Halo, Bapak/Ibu *{$namaPenyetuju}*,\n".
                     "Ada pengajuan Surat Tugas baru dari *{$namaPengaju}* yang memerlukan persetujuan:\n\n".
                     "*Kegiatan*: {$namaKegiatan}\n".
@@ -226,7 +226,7 @@ class SuratTugasNotificationService
             }
 
             foreach ($targets as $targetWa => $namaPenerima) {
-                $message = "*Surat Tugas Disetujui! | SiPEDAS*\n\n".
+                $message = "*Surat Tugas Disetujui! | Dokter V*\n\n".
                     "Halo, *{$namaPenerima}*,\n".
                     "Kabar baik! Pengajuan Surat Tugas untuk kegiatan *'{$namaKegiatan}'* telah *disetujui* oleh *{$namaPenyetuju}*.\n\n".
                     "*No. Surat Tugas*: {$noSt}\n".
@@ -234,7 +234,7 @@ class SuratTugasNotificationService
                     "*Tertugas*: {$namaTertugas}\n".
                     "*Tujuan*: {$lokasi}\n".
                     "*Tanggal*: {$periode}\n\n".
-                    "Silakan mencetak Surat Tugas secara mandiri melalui menu Riwayat di SiPEDAS untuk diserahkan ke TU:\n".
+                    "Silakan mencetak Surat Tugas secara mandiri melalui menu Riwayat di Dokter V untuk diserahkan ke TU:\n".
                     "{$linkRiwayat}\n\n".
                     'Semangat bertugas!';
 
@@ -275,7 +275,7 @@ class SuratTugasNotificationService
 
             $link = rtrim(config('app.url'), '/').'/a';
 
-            $message = "*Perlu Perbaikan Surat Tugas | SiPEDAS*\n\n".
+            $message = "*Perlu Perbaikan Surat Tugas | Dokter V*\n\n".
                 "Halo, *{$namaPengaju}*,\n".
                 "Pengajuan Surat Tugas untuk kegiatan *'{$namaKegiatan}'* (Tertugas: {$namaTertugas}) memerlukan perbaikan dari *{$namaPemeriksa}*.\n\n".
                 "*Catatan Arahan Perbaikan*:\n".
@@ -321,7 +321,7 @@ class SuratTugasNotificationService
             $lokasi = $penugasan->nama_tempat_tujuan ?? $penugasan->tujuan_penugasan ?? '-';
             $link = rtrim(config('app.url'), '/').'/a';
 
-            $message = "*Surat Tugas Ditolak | SiPEDAS*\n\n".
+            $message = "*Surat Tugas Ditolak | Dokter V*\n\n".
                 "Halo, *{$namaPengaju}*,\n".
                 "Mohon maaf, pengajuan Surat Tugas untuk kegiatan *'{$namaKegiatan}'* (Tertugas: {$namaTertugas}, Tujuan: {$lokasi}) telah *ditolak* oleh *{$namaPemeriksa}*.\n\n".
                 "Silakan periksa detailnya melalui tautan berikut:\n".

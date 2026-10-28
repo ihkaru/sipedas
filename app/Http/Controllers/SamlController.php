@@ -65,20 +65,20 @@ class SamlController extends Controller
             $email = $attributes['email'][0] ?? $nameId;
             $nip = $attributes['nip'][0] ?? null;
 
-            // Cari user terdaftar di database SIPEDAS
+            // Cari user terdaftar di database Dokter V
             $user = User::where('email', $email)->first();
             if (!$user && $nip) {
                 $user = User::whereHas('pegawai', fn($q) => $q->where('nip', $nip))->first();
             }
 
             if (!$user) {
-                Log::warning('SAML User Not Found in SIPEDAS', [
+                Log::warning('SAML User Not Found in Dokter V', [
                     'nameId' => $nameId,
                     'email' => $email,
                     'attributes' => $attributes,
                 ]);
                 return redirect('/a/login')->withErrors([
-                    'saml' => "Akun pegawai ({$email}) belum terdaftar di SIPEDAS. Silakan hubungi admin.",
+                    'saml' => "Akun pegawai ({$email}) belum terdaftar di Dokter V. Silakan hubungi admin.",
                 ]);
             }
 
