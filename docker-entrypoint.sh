@@ -36,5 +36,20 @@ mkdir -p /app/storage/framework/sessions \
 chown -R www-data:www-data /app/storage/framework /app/storage/logs /app/bootstrap/cache 2>/dev/null || true
 chmod -R 775 /app/storage/framework /app/storage/logs /app/bootstrap/cache 2>/dev/null || true
 
+# Storage Maintenance: Truncate oversized logs (>50MB) and prune logs older than 14 days
+if [ -d /app/storage/logs ]; then
+  find /app/storage/logs -type f -name "*.log" -size +50M -exec truncate -s 0 {} + 2>/dev/null || true
+  find /app/storage/logs -type f -name "*.log" -mtime +14 -delete 2>/dev/null || true
+fi
+
+# Sync Composer dependencies in development container if lock file is newer than vendor autoload
+if [ "$APP_ENV" != "production" ] && [ -f /app/composer.lock ]; then
+  if ! php -r "exit(file_exists('/app/vendor/autoload.php') && filemtime('/app/vendor/autoload.php') >= filemtime('/app/composer.lock') ? 0 : 1);" 2>/dev/null; then
+    echo "Outdated vendor detected in dev container. Running composer install..."
+    composer install --prefer-dist --no-interaction || true
+  fi
+fi
+
 echo "System ready. Starting FrankenPHP / Octane."
 exec "$@"
+
