@@ -497,11 +497,19 @@
                         </td>
                         <td style="padding: 0; padding-bottom: 0;">
                             <p class="s2" style="margin: 0; text-align: justify; line-height: 1.3;">
-                                Peraturan BPS Nomor 5 Tahun 2023 tentang Organisasi dan Tata Kerja BPS Provinsi dan
-                                BPS Kabupaten/Kota (Berita Negara Republik Indonesia Tahun 2023 Nomor 429), sebagaimana
-                                telah diubah dengan Peraturan BPS Nomor 3 Tahun 2025 tentang Perubahan atas Peraturan
-                                BPS Nomor 5 Tahun 2023 tentang Organisasi dan Tata Kerja Badan Pusat Statistik Provinsi
-                                dan BPS Kabupaten/Kota (Berita Negara Republik Indonesia Tahun 2025 Nomor 683);
+                                @php
+                                    $tglSuratTugasBersama = $penugasans->first()?->tgl_pengajuan_tugas ?? $penugasans->first()?->tgl_mulai_tugas ?? now();
+                                    $isSotk2026 = $c::parse($tglSuratTugasBersama)->format('Y-m-d') >= '2026-05-22';
+                                @endphp
+                                @if ($isSotk2026)
+                                    Peraturan Badan Pusat Statistik Nomor 3 Tahun 2026 tentang Organisasi dan Tata Kerja Badan Pusat Statistik Provinsi dan Badan Pusat Statistik Kabupaten/Kota (Berita Negara Republik Indonesia Tahun 2026 Nomor 331);
+                                @else
+                                    Peraturan BPS Nomor 5 Tahun 2023 tentang Organisasi dan Tata Kerja BPS Provinsi dan
+                                    BPS Kabupaten/Kota (Berita Negara Republik Indonesia Tahun 2023 Nomor 429), sebagaimana
+                                    telah diubah dengan Peraturan BPS Nomor 3 Tahun 2025 tentang Perubahan atas Peraturan
+                                    BPS Nomor 5 Tahun 2023 tentang Organisasi dan Tata Kerja Badan Pusat Statistik Provinsi
+                                    dan BPS Kabupaten/Kota (Berita Negara Republik Indonesia Tahun 2025 Nomor 683);
+                                @endif
                             </p>
                         </td>
                     </tr>
