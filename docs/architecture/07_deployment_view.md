@@ -1,8 +1,8 @@
 # 7. Tempat Berjalan Sistem (Deployment View)
 
 > [!INFO] **Architecture Provenance & Freshness**
-> - **Verified Commit**: `e02307b` (branch: `main`)
-> - **Verified Timestamp**: `2026-10-29T12:40:00+07:00`
+> - **Verified Commit**: `2fce49d` (branch: `main`)
+> - **Verified Timestamp**: `2026-10-29T17:40:00+07:00`
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
@@ -107,3 +107,13 @@ Sistem dirancang hemat sumber daya sehingga komputer kantor standar sudah sangat
 | **Aplikasi Utama (dokterv-app)** | 1.0 – 2.0 Inti | 1024 MB (1 GB) | 10 GB SSD | Terisolasi di jaringan internal, hanya bisa diakses lewat jalur Traefik. |
 | **Database (mysql-server)** | 1.0 – 2.0 Inti | 2048 MB (2 GB) | 50 GB SSD | Terkunci di dalam server, orang luar tidak bisa mengakses database secara langsung. |
 | **Layanan WhatsApp (Aina)** | 0.5 – 1.0 Inti | 512 MB | 5 GB SSD | Menjaga koneksi WhatsApp kantor tetap stabil sepanjang hari. |
+
+---
+
+## 7.4 Optimasi Build Docker & Deployment Coolify
+
+Untuk menjaga proses rilis aplikasi berjalan secepat mungkin (<2 menit) dan mencegah proses deployment Coolify terhenti lama (timeout 26 menit), arsitektur container menerapkan standar:
+1. **Sinkronisasi Cache Mount Composer**: `COMPOSER_CACHE_DIR=/tmp/cache` dipasangkan dengan `--mount=type=cache,target=/tmp/cache` pada BuildKit agar unduhan pustaka tidak diulang dari awal saat deploy.
+2. **Penangguhan Autoloader di Stage 1 (`--no-autoloader`)**: Pustaka diunduh tanpa scanning classmap autoloader, mencegah pemindaian 36.282 berkas `google/apiclient-services` yang membebani CPU/IO disk.
+3. **Pemangkasan Google API Services**: 328 service yang tidak digunakan dipangkas seketika di Stage 1, menyisakan hanya Sheets & Drive.
+4. **Pinning Versi Ekstensi PHP**: Binary installer ekstensi PHP dipatok ke versi rilis statis (`2.12.6`) agar layer build tidak pernah ter-bust oleh URL redirect dinamis saat Coolify menjalankan `docker compose build --pull`.

@@ -1,8 +1,8 @@
 # 5. Bagian-Bagian Penyusun Sistem (Building Block View)
 
 > [!INFO] **Architecture Provenance & Freshness**
-> - **Verified Commit**: `e02307b` (branch: `main`)
-> - **Verified Timestamp**: `2026-10-29T12:40:00+07:00`
+> - **Verified Commit**: `2fce49d` (branch: `main`)
+> - **Verified Timestamp**: `2026-10-29T17:40:00+07:00`
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
