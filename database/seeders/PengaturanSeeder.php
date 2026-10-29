@@ -15,7 +15,7 @@ class PengaturanSeeder extends Seeder
         $provinsi = config('satker.provinsi', 'KALIMANTAN BARAT');
         $kabupaten = config('satker.kabupaten', 'MEMPAWAH');
         $tingkat = config('satker.tingkat', 'kako');
-        $kakoLabel = ($tingkat === 'kota' ? 'KOTA ' : 'KABUPATEN ') . strtoupper($kabupaten);
+        $kakoLabel = ($tingkat === 'kota' ? 'KOTA ' : 'KABUPATEN ').strtoupper($kabupaten);
 
         $nipKepala = config('satker.pejabat.kepala_nip', '196908031992111001');
         $nipPpk = config('satker.pejabat.ppk_nip', '199306062016021001');
@@ -66,6 +66,10 @@ class PengaturanSeeder extends Seeder
         Pengaturan::updateOrCreate(
             ['key' => 'st_approval_mode'],
             ['nilai' => $approvalMode, 'deskripsi' => 'Mode Persetujuan Surat Tugas']
+        );
+        Pengaturan::updateOrCreate(
+            ['key' => 'st_non_sppd_mode'],
+            ['nilai' => config('satker.defaults.st_non_sppd_mode', 'auto_approve_notify'), 'deskripsi' => 'Mode Persetujuan Surat Tugas Non-SPPD']
         );
     }
 }

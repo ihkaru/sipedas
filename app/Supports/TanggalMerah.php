@@ -2,22 +2,33 @@
 
 namespace App\Supports;
 
+use App\Models\Setting;
 use Illuminate\Support\Carbon;
 
 class TanggalMerah extends ATanggalMerah
 {
     public static ATanggalMerah $t;
+
     public static ?array $tanggalMerahDates = null;
+
     public static function getLiburDates(?int $year = null)
     {
-        if (self::$tanggalMerahDates) return self::$tanggalMerahDates;
-        self::$t ??= new ATanggalMerah();
-        $res = collect(self::$t->getData())->keys()->flatten()->toArray();
-        unset($res[count($res) - 1]);
+        if (self::$tanggalMerahDates) {
+            return self::$tanggalMerahDates;
+        }
+        try {
+            self::$t ??= new ATanggalMerah;
+            $res = collect(self::$t->getData())->keys()->flatten()->toArray();
+            if (! empty($res)) {
+                unset($res[count($res) - 1]);
+            }
+        } catch (\Throwable $e) {
+            $res = [];
+        }
 
         $allowWeekend = false;
         try {
-            $allowWeekend = (bool) \App\Models\Setting::where('key', 'allow_weekend_travel')->value('value');
+            $allowWeekend = (bool) Setting::where('key', 'allow_weekend_travel')->value('value');
         } catch (\Throwable $e) {
             // ignore
         }
@@ -26,12 +37,13 @@ class TanggalMerah extends ATanggalMerah
             $sabtu = [];
             $ahad = [];
         } else {
-            $sabtu = self::getDatesByDayName(Carbon::parse("2024-01-01"), now()->addYear(1), Carbon::SATURDAY);
-            $ahad = self::getDatesByDayName(Carbon::parse("2024-01-01"), now()->addYear(1), Carbon::SUNDAY);
+            $sabtu = self::getDatesByDayName(Carbon::parse('2024-01-01'), now()->addYear(1), Carbon::SATURDAY);
+            $ahad = self::getDatesByDayName(Carbon::parse('2024-01-01'), now()->addYear(1), Carbon::SUNDAY);
         }
 
         self::$tanggalMerahDates = collect(array_merge($res, $sabtu, $ahad))
             ->sort()->unique()->flatten()->toArray();
+
         // if(!collect(self::$tanggalMerahDates)->flatten()->contains("2024-04-21")) dd($sabtu,$ahad);
         return self::$tanggalMerahDates;
     }
@@ -44,6 +56,7 @@ class TanggalMerah extends ATanggalMerah
         for ($date = $startDate; $date->lte($endDate); $date->addWeek()) {
             $res[] = $date->format('Y-m-d');
         }
+
         return $res;
     }
 
@@ -57,14 +70,19 @@ class TanggalMerah extends ATanggalMerah
         $tes = 0;
         while ($tanggalMerahDates->contains($date->toDateString())) {
             $tes += 1;
-            if ($tes > 10) dd("While inaf");
+            if ($tes > 10) {
+                dd('While inaf');
+            }
             $date->addDay($step);
         }
+
         return $date;
     }
+
     public static function isLibur(Carbon $date)
     {
         $tanggalMerahDates = collect(self::getLiburDates())->flatten();
+
         return $tanggalMerahDates->contains($date->toDateString());
     }
 }

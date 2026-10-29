@@ -1,8 +1,8 @@
 # 1. Pengantar dan Tujuan (Introduction and Goals)
 
 > [!INFO] **Architecture Provenance & Freshness**
-> - **Verified Commit**: `54c7394` (branch: `main`)
-> - **Verified Timestamp**: `2026-10-29T09:42:00+07:00`
+> - **Verified Commit**: `8b015a7` (branch: `main`)
+> - **Verified Timestamp**: `2026-10-29T11:35:00+07:00`
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
@@ -23,7 +23,7 @@ Sistem ini dibuat untuk mengatasi masalah operasional harian di kantor:
 1. **Surat Tugas dan Perjalanan Dinas (Modul Persuratan & SPPD)**:
    - **Mencegah jadwal bertabrakan**: Sistem otomatis menolak jika ada pegawai yang ditugaskan ke dua tempat berbeda pada hari yang sama.
    - **Persetujuan cepat 1-klik lewat WhatsApp**: Pimpinan yang sedang rapat atau dinas luar tidak perlu repot membuka laptop dan login ke aplikasi web. Cukup klik tautan bertanda tangan kriptografis di pesan WhatsApp dari HP, surat tugas langsung sah dan nomor resminya terbit seketika.
-   - **Mode delegasi persetujuan fleksibel**: Mengatur siapa yang berhak mengesahkan tugas lewat pengaturan `st_approval_mode` (`delegasi_ppspm`, `kepala_only`, `ppspm_only`, `auto_approve`), baik untuk tugas berbiaya dinas (SPPD) maupun non-SPPD.
+   - **Mode delegasi persetujuan fleksibel & wewenang Non-SPPD**: Mengatur siapa yang berhak mengesahkan tugas lewat pengaturan `st_approval_mode` (`delegasi_ppspm`, `kepala_only`, `ppspm_only`, `auto_approve`) untuk tugas berbiaya dinas (SPPD), serta kebijakan terpisah `st_non_sppd_mode` (`auto_approve_notify` dengan notifikasi khusus info ke Kasubbag TU, `follow_global`, atau `auto_approve_silent`) untuk tugas dinas lokal tanpa anggaran SPD.
    - **Pendelegasian pejabat**: Jika pimpinan definitif sedang cuti atau dinas, kewenangan penandatanganan otomatis bisa dialihkan ke Pelaksana Harian (Plh).
 
 2. **Pengelolaan Mitra Statistik & Pembayaran Honor (Modul Honor & SBM)**:

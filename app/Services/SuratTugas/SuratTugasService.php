@@ -59,7 +59,13 @@ class SuratTugasService
     {
         $data = $this->validator->validate($rawData);
 
-        $createdPenugasans = DB::transaction(function () use ($data, $pengajuNip) {
+        $globalApprovalMode = Setting::get('st_approval_mode', 'delegasi_ppspm');
+        $nonSppdMode = Setting::get('st_non_sppd_mode', 'auto_approve_notify');
+        $isNonSppd = ($data['jenis_surat_tugas'] === Constants::NON_SPPD);
+        $isAutoApprove = ($globalApprovalMode === 'auto_approve')
+            || ($isNonSppd && in_array($nonSppdMode, ['auto_approve_notify', 'auto_approve_silent']));
+
+        $createdPenugasans = DB::transaction(function () use ($data, $pengajuNip, $isAutoApprove) {
             // Tentukan NIP Pengaju
             $user = auth()->user();
             $effectivePengajuNip = $pengajuNip
@@ -109,8 +115,6 @@ class SuratTugasService
                 TujuanSuratTugas::ajukan($data, $pengajuan->id);
 
                 // Jika mode auto-approve aktif, langsung otomatis disetujui (auto-approved)
-                $isAutoApprove = (Setting::where('key', 'st_approval_mode')->value('value') === 'auto_approve');
-
                 if ($isAutoApprove) {
                     $pengajuan->setujui(checkRole: false);
                 }
@@ -148,8 +152,6 @@ class SuratTugasService
                 TujuanSuratTugas::ajukan($data, $pengajuan->id);
 
                 // Jika mode auto-approve aktif, langsung otomatis disetujui (auto-approved)
-                $isAutoApprove = (Setting::where('key', 'st_approval_mode')->value('value') === 'auto_approve');
-
                 if ($isAutoApprove) {
                     $pengajuan->setujui(checkRole: false);
                 }
@@ -167,6 +169,8 @@ class SuratTugasService
             );
             if ($hasPendingApproval) {
                 SuratTugasNotificationService::notifyPengajuanBaru($createdPenugasans);
+            } elseif ($isNonSppd && $nonSppdMode === 'auto_approve_notify') {
+                SuratTugasNotificationService::notifyNonSppdAutoApproved($createdPenugasans);
             }
         }
 

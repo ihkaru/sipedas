@@ -195,6 +195,117 @@ class SuratTugasNotificationService
     }
 
     /**
+     * Kirim notifikasi ringkasan Surat Tugas Non-SPPD yang telah disetujui otomatis oleh sistem kepada Kasubbag TU.
+     *
+     * @param  Collection|array  $createdPenugasans
+     */
+    public static function notifyNonSppdAutoApproved($createdPenugasans): void
+    {
+        try {
+            $list = collect($createdPenugasans)->filter(
+                fn ($p) => $p instanceof Penugasan && $p->jenis_surat_tugas === Constants::NON_SPPD
+            );
+
+            if ($list->isEmpty()) {
+                return;
+            }
+
+            /** @var Penugasan $first */
+            $first = $list->first();
+            $first->loadMissing(['pengaju', 'kegiatan', 'pegawai', 'mitra', 'suratTugas', 'riwayatPengajuan']);
+
+            // 1. Tentukan target penerima: HANYA Kasubbag TU / PPSPM
+            $recipients = collect();
+            $kasubbagNip = Pengaturan::getValue('NIP_KASUBBAG_TU', config('satker.pejabat.kasubbag_tu_nip', '198008112005021004'));
+
+            $ppspmUsers = User::getPpspm();
+            $foundPpspm = false;
+            foreach ($ppspmUsers as $u) {
+                $peg = $u->pegawai;
+                $noWa = $peg?->nomor_wa;
+                if (! empty($noWa)) {
+                    $foundPpspm = true;
+                    $recipients->put($noWa, [
+                        'nama' => $peg->panggilan ?? $peg->nama,
+                        'nip' => $peg->nip,
+                        'role' => 'Kasubbag TU / PPSPM',
+                    ]);
+                }
+            }
+
+            // Fallback: Jika tidak ditemukan via Spatie role, gunakan NIP Kasubbag TU definitif
+            if (! $foundPpspm && ! empty($kasubbagNip)) {
+                $peg = Pegawai::where('nip', $kasubbagNip)->first();
+                if ($peg && ! empty($peg->nomor_wa)) {
+                    $recipients->put($peg->nomor_wa, [
+                        'nama' => $peg->panggilan ?? $peg->nama,
+                        'nip' => $peg->nip,
+                        'role' => 'Kasubbag TU / PPSPM',
+                    ]);
+                }
+            }
+
+            if ($recipients->isEmpty()) {
+                Log::info('SuratTugasNotificationService: Tidak ada target nomor WhatsApp Kasubbag TU yang ditemukan untuk info Non-SPPD.', [
+                    'penugasan_id' => $first->id,
+                ]);
+
+                return;
+            }
+
+            // 2. Susun ringkasan personil tertugas
+            $personilList = [];
+            foreach ($list as $p) {
+                if ($p instanceof Penugasan) {
+                    $p->loadMissing(['pegawai', 'mitra']);
+                    $nama = ! empty($p->nip)
+                        ? ($p->pegawai ? ($p->pegawai->nama ?? $p->nip) : $p->nip)
+                        : ($p->mitra ? ($p->mitra->nama_1 ?? $p->id_sobat) : $p->id_sobat);
+                    $tipe = ! empty($p->nip) ? 'PNS' : 'Mitra';
+                    $personilList[] = "- {$nama} ({$tipe})";
+                }
+            }
+            $personilStr = ! empty($personilList) ? implode("\n", array_slice($personilList, 0, 8)) : '-';
+            if (count($personilList) > 8) {
+                $sisa = count($personilList) - 8;
+                $personilStr .= "\n- ...dan {$sisa} orang lainnya";
+            }
+
+            $namaPengaju = $first->pengaju ? ($first->pengaju->panggilan ?? $first->pengaju->nama) : 'Pengaju';
+            $namaKegiatan = $first->kegiatan ? $first->kegiatan->nama : 'Kegiatan Dinas';
+            $noSt = $first->suratTugas ? ($first->suratTugas->nomor_surat_tugas ?? '-') : '-';
+            $lokasi = $first->nama_tempat_tujuan ?? $first->tujuan_penugasan ?? '-';
+            $tglMulai = $first->tgl_mulai_tugas ? Carbon::parse($first->tgl_mulai_tugas)->translatedFormat('d M Y') : '-';
+            $tglAkhir = $first->tgl_akhir_tugas ? Carbon::parse($first->tgl_akhir_tugas)->translatedFormat('d M Y') : '-';
+            $periode = ($tglMulai === $tglAkhir) ? $tglMulai : "{$tglMulai} s.d. {$tglAkhir}";
+            $linkAksi = rtrim(config('app.url'), '/').'/a/penugasans';
+
+            foreach ($recipients as $targetWa => $info) {
+                $namaKasubbag = $info['nama'];
+
+                $message = "*Pemberitahuan Surat Tugas Non-SPPD | Dokter V*\n\n".
+                    "Halo, Bapak/Ibu *{$namaKasubbag}*,\n".
+                    "Informasi: Terdapat Surat Tugas *Non-SPPD* baru dari *{$namaPengaju}* yang telah diterbitkan dan *disetujui otomatis* oleh sistem:\n\n".
+                    "*Kegiatan*: {$namaKegiatan}\n".
+                    "*Jenis*: Non SPPD\n".
+                    "*No. ST*: {$noSt}\n".
+                    "*Tujuan*: {$lokasi}\n".
+                    "*Tanggal*: {$periode}\n".
+                    "*Personil Tertugas*:\n{$personilStr}\n\n".
+                    "📋 *Buka Detail di Dokter V*:\n".
+                    "{$linkAksi}\n\n".
+                    '_Pesan ini bersifat pemberitahuan sistem (auto-approved)._';
+
+                WhatsappNotifier::send($targetWa, $message, 'whatsapp_notify_st_baru');
+            }
+        } catch (Throwable $e) {
+            Log::error('SuratTugasNotificationService: Gagal mengirim notifikasi info Non-SPPD: '.$e->getMessage(), [
+                'exception' => $e,
+            ]);
+        }
+    }
+
+    /**
      * Kirim notifikasi bahwa Surat Tugas telah disetujui kepada Pengaju dan Personil.
      */
     public static function notifyDisetujui(Penugasan $penugasan, ?string $approverName = null): void
@@ -207,7 +318,10 @@ class SuratTugasNotificationService
 
             if (! empty($approverName)) {
                 $namaPenyetuju = $approverName;
-            } elseif (Setting::where('key', 'st_approval_mode')->value('value') === 'auto_approve') {
+            } elseif (
+                Setting::where('key', 'st_approval_mode')->value('value') === 'auto_approve' ||
+                ($penugasan->jenis_surat_tugas === Constants::NON_SPPD && in_array(Setting::get('st_non_sppd_mode', 'auto_approve_notify'), ['auto_approve_notify', 'auto_approve_silent']))
+            ) {
                 $namaPenyetuju = 'Sistem (Otomatis)';
             } elseif ($authUser && Penugasan::isUserApprover($authUser, $penugasan->plh_id)) {
                 $namaPenyetuju = $authPegawai ? ($authPegawai->panggilan ?? $authPegawai->nama) : 'Penyetuju';

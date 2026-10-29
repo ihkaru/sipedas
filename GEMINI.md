@@ -18,7 +18,7 @@ Aplikasi Dokter-V dirancang untuk dapat diadopsi oleh seluruh Satuan Kerja BPS K
 1. **Workflows & State Machines**:
    - Siklus hidup Surat Tugas: `DRAFT` $\rightarrow$ `DIKIRIM` $\rightarrow$ `DISETUJUI` / `PERLU_REVISI` / `DITOLAK` $\rightarrow$ `DICAIRKAN` / `DIBATALKAN`.
    - Pipeline verifikasi berkas pembayaran: Bendahara Pengeluaran $\rightarrow$ Penguji SPM (PPSPM) $\rightarrow$ Pejabat Pembuat Komitmen (PPK) $\rightarrow$ Pencairan.
-   - Mode delegasi approval pimpinan (`st_approval_mode`: `delegasi_ppspm`, `kepala_only`, `ppspm_only`, `auto_approve`).
+   - Mode delegasi approval pimpinan (`st_approval_mode`: `delegasi_ppspm`, `kepala_only`, `ppspm_only`, `auto_approve`) dan kebijakan khusus Non-SPPD (`st_non_sppd_mode`: `auto_approve_notify` dengan notifikasi info Kasubbag TU, `follow_global`, `auto_approve_silent`).
 2. **Aturan Bisnis & Kepatuhan Regulasi**:
    - Validasi batas maksimal honor bulanan mitra sesuai Peraturan Menteri Keuangan Standar Biaya Masukan (PMK SBM 2026).
    - Konsolidasi kontrak bulanan untuk kegiatan survei dan kontrak per kegiatan untuk kegiatan sensus.

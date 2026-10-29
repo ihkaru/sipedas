@@ -1,8 +1,8 @@
 # 6. Alur Kerja Sistem (Runtime View)
 
 > [!INFO] **Architecture Provenance & Freshness**
-> - **Verified Commit**: `54c7394` (branch: `main`)
-> - **Verified Timestamp**: `2026-10-29T09:42:00+07:00`
+> - **Verified Commit**: `8b015a7` (branch: `main`)
+> - **Verified Timestamp**: `2026-10-29T11:35:00+07:00`
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
@@ -32,22 +32,28 @@ sequenceDiagram
         Core-->>UI: Tolak penyimpanan & sebutkan nama pegawai yang bentrok
         UI-->>Pegawai: Muncul peringatan: "Pegawai X sudah ada tugas dinas di tanggal ini"
     else Jika Jadwal Semua Pegawai Kosong
-        Core->>DB: Simpan Surat Tugas (Status: Menunggu Persetujuan)
-        Core->>Core: Tentukan approver via st_approval_mode & buat temporary signed URL (HMAC SHA-256)
-        Core->>WAClient: Kirim pesan ringkasan tugas + tautan persetujuan 1-klik ke WhatsApp approver
-        WAClient-->>Approver: Pesan WA masuk: "Ada permohonan surat tugas baru. Klik tautan ini untuk menyetujui."
-        
-        opt Saat WhatsApp Crawler Mengambil Thumbnail Preview
-            Approver->>Webhook: Crawler WhatsApp/Facebook mengirim GET request
-            Webhook->>Webhook: Deteksi User-Agent Crawler -> Return preview HTML saja tanpa mengubah status!
-        end
+        alt Jika Tugas Non-SPPD & Mode auto_approve_notify
+            Core->>DB: DB Transaction: Simpan & Auto-Approve (terbitkan Nomor ST tanpa lembar SPD)
+            Core->>WAClient: Kirim ringkasan info pemberitahuan Non-SPPD khusus ke WhatsApp Kasubbag TU
+            Core->>WAClient: Kirim kabar disetujui (Sistem Otomatis) ke WhatsApp Pemohon & Personil
+        else Jika Tugas SPPD Berbiaya atau Mode follow_global
+            Core->>DB: Simpan Surat Tugas (Status: Menunggu Persetujuan)
+            Core->>Core: Tentukan approver via st_approval_mode & buat temporary signed URL (HMAC SHA-256)
+            Core->>WAClient: Kirim pesan ringkasan tugas + tautan persetujuan 1-klik ke WhatsApp approver
+            WAClient-->>Approver: Pesan WA masuk: "Ada permohonan surat tugas baru. Klik tautan ini untuk menyetujui."
+            
+            opt Saat WhatsApp Crawler Mengambil Thumbnail Preview
+                Approver->>Webhook: Crawler WhatsApp/Facebook mengirim GET request
+                Webhook->>Webhook: Deteksi User-Agent Crawler -> Return preview HTML saja tanpa mengubah status!
+            end
 
-        Approver->>Webhook: Approver menyentuh tautan dari peramban ponsel
-        Webhook->>Core: Validasi tanda tangan HMAC dan masa kedaluwarsa 14 hari
-        Core->>DB: DB Transaction: Ubah status menjadi 'disetujui' & generate nomor surat resmi
-        Core->>WAClient: Kirim notifikasi ke pemohon bahwa surat tugas telah disetujui
-        Webhook-->>Approver: Halaman respons sukses: "Surat Tugas Berhasil Disetujui (No: B-xxx)"
-        WAClient-->>Pegawai: Pesan WA masuk: "Surat tugas Anda telah disetujui. Silakan cetak PDF mandiri."
+            Approver->>Webhook: Approver menyentuh tautan dari peramban ponsel
+            Webhook->>Core: Validasi tanda tangan HMAC dan masa kedaluwarsa 14 hari
+            Core->>DB: DB Transaction: Ubah status menjadi 'disetujui' & generate nomor surat resmi
+            Core->>WAClient: Kirim notifikasi ke pemohon bahwa surat tugas telah disetujui
+            Webhook-->>Approver: Halaman respons sukses: "Surat Tugas Berhasil Disetujui (No: B-xxx)"
+            WAClient-->>Pegawai: Pesan WA masuk: "Surat tugas Anda telah disetujui. Silakan cetak PDF mandiri."
+        end
     end
 ```
 

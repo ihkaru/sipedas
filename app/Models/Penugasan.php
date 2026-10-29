@@ -592,9 +592,12 @@ class Penugasan extends Model
         }
         $res = $this->riwayatPengajuan->updateStatus(Constants::STATUS_PENGAJUAN_DISETUJUI, 'tgl_diterima', now());
         if ($res) {
-            $approvalMode = Setting::where('key', 'st_approval_mode')->value('value') ?? 'delegasi_ppspm';
+            $approvalMode = Setting::get('st_approval_mode', 'delegasi_ppspm');
+            $nonSppdMode = Setting::get('st_non_sppd_mode', 'auto_approve_notify');
+            $isNonSppdAuto = ($this->jenis_surat_tugas === Constants::NON_SPPD && in_array($nonSppdMode, ['auto_approve_notify', 'auto_approve_silent']));
+
             $approverLabel = null;
-            if ($approvalMode === 'auto_approve' || $mode_langsung) {
+            if ($approvalMode === 'auto_approve' || $isNonSppdAuto || $mode_langsung) {
                 $authUser = auth()->user();
                 if (! $authUser || ! self::isUserApprover($authUser, $this->plh_id)) {
                     $approverLabel = 'Sistem (Otomatis)';
@@ -900,10 +903,18 @@ class Penugasan extends Model
             }
         }
 
-        $approvalMode = Setting::where('key', 'st_approval_mode')->value('value') ?? 'delegasi_ppspm';
-        if ($approvalMode === 'auto_approve') {
+        $globalApprovalMode = Setting::get('st_approval_mode', 'delegasi_ppspm');
+        $nonSppdMode = Setting::get('st_non_sppd_mode', 'auto_approve_notify');
+        $isNonSppd = ($data['jenis_surat_tugas'] === Constants::NON_SPPD);
+        $isAutoApprove = ($globalApprovalMode === 'auto_approve')
+            || ($isNonSppd && in_array($nonSppdMode, ['auto_approve_notify', 'auto_approve_silent']));
+
+        if ($isAutoApprove) {
             foreach ($createdPenugasans as $p) {
                 $p->setujui(checkRole: false, mode_langsung: true, data: $data);
+            }
+            if ($isNonSppd && $nonSppdMode === 'auto_approve_notify') {
+                SuratTugasNotificationService::notifyNonSppdAutoApproved($createdPenugasans);
             }
         } else {
             if (! empty($createdPenugasans)) {

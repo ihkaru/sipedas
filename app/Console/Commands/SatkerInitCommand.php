@@ -146,10 +146,18 @@ class SatkerInitCommand extends Command
             ['key' => 'st_approval_mode'],
             ['nilai' => $approvalMode, 'deskripsi' => 'Mode Persetujuan Surat Tugas']
         );
+        Pengaturan::updateOrCreate(
+            ['key' => 'st_non_sppd_mode'],
+            ['nilai' => config('satker.defaults.st_non_sppd_mode', 'auto_approve_notify'), 'deskripsi' => 'Mode Persetujuan Surat Tugas Non-SPPD']
+        );
 
         Setting::updateOrCreate(
             ['key' => 'st_approval_mode'],
             ['value' => $approvalMode]
+        );
+        Setting::updateOrCreate(
+            ['key' => 'st_non_sppd_mode'],
+            ['value' => config('satker.defaults.st_non_sppd_mode', 'auto_approve_notify')]
         );
 
         $this->components->info('Database pengaturans & settings berhasil disinkronisasi.');

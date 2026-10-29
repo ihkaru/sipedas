@@ -32,6 +32,7 @@ class Setting extends Model
 
         return match ($key) {
             'st_approval_mode' => config('satker.defaults.st_approval_mode', $default ?? 'delegasi_ppspm'),
+            'st_non_sppd_mode' => config('satker.defaults.st_non_sppd_mode', $default ?? 'auto_approve_notify'),
             'whatsapp_notify_st_tembusan_kepala' => config('satker.defaults.st_tembusan_kepala', $default ?? true),
             'ppk_instant_auto_approve' => config('satker.defaults.ppk_instant_auto_approve', $default ?? false),
             default => $default,

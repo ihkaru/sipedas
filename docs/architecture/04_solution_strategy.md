@@ -1,8 +1,8 @@
 # 4. Strategi Solusi (Solution Strategy)
 
 > [!INFO] **Architecture Provenance & Freshness**
-> - **Verified Commit**: `54c7394` (branch: `main`)
-> - **Verified Timestamp**: `2026-10-29T09:42:00+07:00`
+> - **Verified Commit**: `8b015a7` (branch: `main`)
+> - **Verified Timestamp**: `2026-10-29T11:35:00+07:00`
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
@@ -47,7 +47,7 @@ graph TD
   - **Pencegahan Jadwal Bentrok**: Begitu pegawai memilih tanggal tugas dan nama rekan kerja, sistem langsung mengecek kalender kantor. Jika salah satu pegawai sudah punya tugas dinas aktif di tanggal tersebut, sistem langsung memberi tahu dan menolak pengajuan.
   - **Tautan Persetujuan Kilat di WhatsApp (Signed URL 1-Click)**: Pengesah tugas menerima ringkasan tugas di WA bersama sebuah tautan aman bertanda tangan kriptografis (`URL::temporarySignedRoute` HMAC-SHA256, 14 hari). Cukup klik tautan itu dari layar HP, surat tugas langsung disahkan, nomor surat otomatis terbit, dan pegawai langsung mendapat kabar bahwa surat siap dicetak.
   - **Pencegahan Bot/Crawler**: Sistem mendeteksi User-Agent bot peninjau tautan (misal bot WhatsApp/Facebook) sehingga hanya menampilkan kartu tinjauan metadata tanpa memicu persetujuan otomatis sebelum tautan dibuka sungguhan oleh pimpinan.
-  - **Mode Delegasi Persetujuan**: Mendukung konfigurasi fleksibel `st_approval_mode` (`delegasi_ppspm`, `kepala_only`, `ppspm_only`, `auto_approve`) yang berlaku seragam untuk tugas berbiaya dinas (SPPD) maupun non-SPPD.
+  - **Mode Delegasi Persetujuan SPPD & Non-SPPD**: Mendukung konfigurasi fleksibel `st_approval_mode` (`delegasi_ppspm`, `kepala_only`, `ppspm_only`, `auto_approve`) untuk tugas berbiaya dinas (SPPD). Khusus untuk tugas non-SPPD (tanpa anggaran SPD), sistem menyediakan opsi `st_non_sppd_mode` yang secara default mengotomatisasi persetujuan instan (*auto-approve*) dan hanya mengirimkan ringkasan pemberitahuan (info) ke Kasubbag TU tanpa membebani Kepala Satker.
   - **Pengalihan Otomatis ke Plh**: Jika pimpinan sedang cuti panjang, wewenang otomatis beralih ke Pelaksana Harian yang ditunjuk resmi.
 
 ### 3. Mengurangi Beban Mengetik Laporan Menggunakan AI
