@@ -2,83 +2,29 @@
 
 namespace App\Filament\Resources\PenugasanResource\Widgets;
 
+use App\Filament\Resources\PenugasanResource\Widgets\Concerns\HasStatusSuratTugasChartConfiguration;
 use App\Models\RiwayatPengajuan;
-use App\Supports\Constants;
 use Filament\Widgets\ChartWidget;
 
 class StatusSuratTugasAndaChart extends ChartWidget
 {
+    use HasStatusSuratTugasChartConfiguration;
+
     protected ?string $heading = 'Jumlah Status Surat Tugas Anda';
     protected string $color = 'primary';
 
-
     protected function getData(): array
     {
-        $riwayatPengajuan = RiwayatPengajuan::whereHas('penugasan',function($query){
-            $query->whereHas('pegawai',function($query){
-                $query->where('nip',auth()->user()->pegawai?->nip ?? "");
-                // dd(auth()->user()->pegawai?->nip);
-            });
-        })
-            ->selectRaw('status,count(status) as jumlah')->groupBy('status')->get();
-        $labels = [
-            "Dikirim",
-            "Dibatalkan",
-            "Perlu Revisi",
-            "Ditolak",
-            "Disetujui",
-            "Dicetak",
-            "Dikumpulkan",
-            "Dicairkan",
-        ];
-        $data = [
-            $riwayatPengajuan->where('status','STATUS_PENGAJUAN_DIKIRIM')->first()?->jumlah ?? 0,
-            $riwayatPengajuan->where('status','STATUS_PENGAJUAN_DIBATALKAN')->first()?->jumlah ?? 0,
-            $riwayatPengajuan->where('status','STATUS_PENGAJUAN_PERLU_REVISI')->first()?->jumlah ?? 0,
-            $riwayatPengajuan->where('status','STATUS_PENGAJUAN_DITOLAK')->first()?->jumlah ?? 0,
-            $riwayatPengajuan->where('status','STATUS_PENGAJUAN_DISETUJUI')->first()?->jumlah ?? 0,
-            $riwayatPengajuan->where('status','STATUS_PENGAJUAN_DICETAK')->first()?->jumlah ?? 0,
-            $riwayatPengajuan->where('status','STATUS_PENGAJUAN_DIKUMPULKAN')->first()?->jumlah ?? 0,
-            $riwayatPengajuan->where('status','STATUS_PENGAJUAN_DICAIRKAN')->first()?->jumlah ?? 0,
-        ];
+        $nip = auth()->user()?->pegawai?->nip ?? '';
 
-        return [
-            'datasets' => [
-                [
-                    'label' => 'Status Surat Tugas',
-                    'data' => $data,
+        $statusCounts = RiwayatPengajuan::query()
+            ->whereHas('penugasan.pegawai', function ($query) use ($nip) {
+                $query->where('nip', $nip);
+            })
+            ->selectRaw('status, count(status) as jumlah')
+            ->groupBy('status')
+            ->pluck('jumlah', 'status');
 
-
-                ],
-
-            ],
-            'labels' => $labels,
-        ];
-    }
-
-    protected function getType(): string
-    {
-        return 'bar';
-    }
-
-    protected function getOptions(): array
-    {
-        return [
-            'plugins' => [
-                'legend' => [
-                    'display' => false,
-                ],
-                'datalabels' => [
-                    'color'=> '#36A2EB'
-                ]
-            ],
-            'scales'=>[
-                'y'=> [
-                    'ticks'=>[
-                        'precision'=>0
-                    ]
-                ]
-            ]
-        ];
+        return $this->formatChartData($statusCounts);
     }
 }
