@@ -3,16 +3,29 @@
 # Stage 1: Build PHP dependencies (Production Lean & Cached)
 FROM composer:2 AS composer-builder
 WORKDIR /app
-ENV COMPOSER_PROCESS_TIMEOUT=1800
+ENV COMPOSER_ALLOW_SUPERUSER=1 \
+    COMPOSER_MEMORY_LIMIT=-1 \
+    COMPOSER_PROCESS_TIMEOUT=1800 \
+    COMPOSER_CACHE_DIR=/tmp/cache
 COPY composer.json composer.lock ./
 RUN --mount=type=cache,target=/tmp/cache \
-    composer install \
-    --no-dev \
-    --prefer-dist \
-    --no-scripts \
-    --no-progress \
-    --no-interaction \
-    --ignore-platform-reqs
+    (composer install \
+        --no-dev \
+        --prefer-dist \
+        --no-scripts \
+        --no-autoloader \
+        --no-progress \
+        --no-interaction \
+        --ignore-platform-reqs || \
+    (sleep 5 && composer install \
+        --no-dev \
+        --prefer-dist \
+        --no-scripts \
+        --no-autoloader \
+        --no-progress \
+        --no-interaction \
+        --ignore-platform-reqs)) && \
+    find vendor/google/apiclient-services/src -mindepth 1 -maxdepth 1 ! -name 'Sheets*' ! -name 'Drive*' -exec rm -rf {} + 2>/dev/null || true
 
 # Stage 2: Build frontend assets
 FROM node:22-slim AS node-builder
@@ -99,7 +112,9 @@ CMD ["php", "artisan", "octane:start", "--server=frankenphp", "--host=0.0.0.0", 
 # Stage 5: Production Environment
 FROM base AS prod
 ENV APP_ENV=production \
-    APP_DEBUG=false
+    APP_DEBUG=false \
+    COMPOSER_ALLOW_SUPERUSER=1 \
+    COMPOSER_MEMORY_LIMIT=-1
 
 # Copy PHP dependencies (clean, production only)
 COPY --from=composer-builder /app/vendor ./vendor
