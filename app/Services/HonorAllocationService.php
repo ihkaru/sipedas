@@ -6,7 +6,6 @@ use App\Models\AlokasiHonor;
 use App\Models\Honor;
 use App\Models\Mitra;
 use App\Models\NomorSurat;
-use App\Supports\Constants;
 use App\Supports\TanggalMerah;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -21,10 +20,12 @@ class HonorAllocationService
     {
         if (is_numeric($identifier)) {
             $mitra = Mitra::find($identifier);
-            if ($mitra) return $mitra;
+            if ($mitra) {
+                return $mitra;
+            }
         }
 
-        return Mitra::where('id_sobat', (string)$identifier)->first();
+        return Mitra::where('id_sobat', (string) $identifier)->first();
     }
 
     /**
@@ -45,7 +46,7 @@ class HonorAllocationService
         float $target,
         ?int $excludeAlokasiId = null
     ): array {
-        if (!$honor->tanggal_akhir_kegiatan) {
+        if (! $honor->tanggal_akhir_kegiatan) {
             return [
                 'eligible' => false,
                 'message' => "Honor ID {$honor->id} belum memiliki tanggal_akhir_kegiatan.",
@@ -61,7 +62,7 @@ class HonorAllocationService
             ->where('status', 'AKTIF')
             ->exists();
 
-        if (!$isMitraAktif) {
+        if (! $isMitraAktif) {
             return [
                 'eligible' => false,
                 'message' => "Mitra {$mitra->nama_1} ({$mitra->id_sobat}) tidak memiliki status kemitraan aktif pada tahun {$year}.",
@@ -83,7 +84,7 @@ class HonorAllocationService
             $excludeAlokasiId
         );
 
-        if (!$serviceValidation['eligible']) {
+        if (! $serviceValidation['eligible']) {
             return [
                 'eligible' => false,
                 'message' => $serviceValidation['message'],
@@ -103,14 +104,14 @@ class HonorAllocationService
     public static function checkEligibility(int|string $mitraIdentifier, string $honorId, float $target): array
     {
         $mitra = self::resolveMitra($mitraIdentifier);
-        if (!$mitra) {
+        if (! $mitra) {
             throw ValidationException::withMessages([
                 'mitra_id' => ["Mitra dengan ID/Sobat '{$mitraIdentifier}' tidak ditemukan."],
             ]);
         }
 
         $honor = self::resolveHonor($honorId);
-        if (!$honor) {
+        if (! $honor) {
             throw ValidationException::withMessages([
                 'honor_id' => ["Honor dengan ID '{$honorId}' tidak ditemukan."],
             ]);
@@ -121,7 +122,7 @@ class HonorAllocationService
         $tanggalAkhir = Carbon::parse($honor->tanggal_akhir_kegiatan);
         $startOfMonth = $tanggalAkhir->copy()->startOfMonth();
         $endOfMonth = $tanggalAkhir->copy()->endOfMonth();
-        $totalHonor = (float)$honor->harga_per_satuan * $target;
+        $totalHonor = (float) $honor->harga_per_satuan * $target;
 
         $remainingBudget = HonorService::getMitraRemainingBudget($mitra->id, $startOfMonth, $endOfMonth);
 
@@ -138,7 +139,7 @@ class HonorAllocationService
                 'jabatan' => $honor->jabatan,
                 'jenis_honor' => $honor->jenis_honor,
                 'satuan' => $honor->satuan_honor,
-                'harga_per_satuan' => (float)$honor->harga_per_satuan,
+                'harga_per_satuan' => (float) $honor->harga_per_satuan,
                 'kegiatan_manmit' => [
                     'id' => $honor->kegiatanManmit?->id,
                     'nama' => $honor->kegiatanManmit?->nama,
@@ -156,6 +157,65 @@ class HonorAllocationService
     }
 
     /**
+     * Batch dry-run eligibility check untuk daftar kandidat mitra.
+     * Sangat optimal untuk coding agent membandingkan kesiapan beberapa kandidat dalam 1 request.
+     *
+     * @param  array<int|string>  $candidateIdentifiers
+     */
+    public static function checkBatchEligibility(array $candidateIdentifiers, string $honorId, float $target): array
+    {
+        $honor = self::resolveHonor($honorId);
+        if (! $honor) {
+            throw ValidationException::withMessages([
+                'honor_id' => ["Honor dengan ID '{$honorId}' tidak ditemukan."],
+            ]);
+        }
+
+        $results = [];
+        $eligibleCount = 0;
+        $ineligibleCount = 0;
+
+        foreach ($candidateIdentifiers as $identifier) {
+            try {
+                $check = self::checkEligibility($identifier, $honorId, $target);
+                if ($check['eligible']) {
+                    $eligibleCount++;
+                } else {
+                    $ineligibleCount++;
+                }
+                $results[] = $check;
+            } catch (\Exception $e) {
+                $ineligibleCount++;
+                $results[] = [
+                    'eligible' => false,
+                    'message' => $e->getMessage(),
+                    'mitra' => [
+                        'identifier' => $identifier,
+                    ],
+                    'honor' => [
+                        'id' => $honorId,
+                    ],
+                ];
+            }
+        }
+
+        return [
+            'total_checked' => count($candidateIdentifiers),
+            'eligible_count' => $eligibleCount,
+            'ineligible_count' => $ineligibleCount,
+            'honor' => [
+                'id' => $honor->id,
+                'jabatan' => $honor->jabatan,
+                'jenis_honor' => $honor->jenis_honor,
+                'satuan' => $honor->satuan_honor,
+                'harga_per_satuan' => (float) $honor->harga_per_satuan,
+                'total_beban_honor' => (float) $honor->harga_per_satuan * $target,
+            ],
+            'candidates' => $results,
+        ];
+    }
+
+    /**
      * Eksekusi alokasi honor dan penerbitan nomor SPK & BAST secara atomik.
      *
      * @throws ValidationException
@@ -163,14 +223,14 @@ class HonorAllocationService
     public static function allocate(int|string $mitraIdentifier, string $honorId, float $target): AlokasiHonor
     {
         $mitra = self::resolveMitra($mitraIdentifier);
-        if (!$mitra) {
+        if (! $mitra) {
             throw ValidationException::withMessages([
                 'mitra_id' => ["Mitra dengan ID/Sobat '{$mitraIdentifier}' tidak ditemukan."],
             ]);
         }
 
         $honor = self::resolveHonor($honorId);
-        if (!$honor) {
+        if (! $honor) {
             throw ValidationException::withMessages([
                 'honor_id' => ["Honor dengan ID '{$honorId}' tidak ditemukan."],
             ]);
@@ -178,22 +238,22 @@ class HonorAllocationService
 
         // Validasi Pre-flight SEBELUM generate nomor surat ke DB
         $validation = self::validateEligibility($mitra, $honor, $target);
-        if (!$validation['eligible']) {
+        if (! $validation['eligible']) {
             throw ValidationException::withMessages([
                 'target' => [$validation['message']],
             ]);
         }
 
         $tanggalAkhirKegiatan = Carbon::parse($honor->tanggal_akhir_kegiatan);
-        $tanggalMulaiKontrak  = $tanggalAkhirKegiatan->copy()->startOfMonth();
-        $tanggalAkhirKontrak  = $tanggalAkhirKegiatan->copy()->endOfMonth();
+        $tanggalMulaiKontrak = $tanggalAkhirKegiatan->copy()->startOfMonth();
+        $tanggalAkhirKontrak = $tanggalAkhirKegiatan->copy()->endOfMonth();
 
         // SPK: ditandatangani H-1 hari kerja sebelum awal bulan kontrak
-        $tanggalPengajuanSpk  = TanggalMerah::getNextWorkDay($tanggalMulaiKontrak->copy(), -1);
+        $tanggalPengajuanSpk = TanggalMerah::getNextWorkDay($tanggalMulaiKontrak->copy(), -1);
         // BAST: ditandatangani pada/sebelum hari kerja akhir kegiatan
         $tanggalPengajuanBast = TanggalMerah::getNextWorkDay($tanggalAkhirKegiatan->copy(), -1);
 
-        $totalHonor = (float)$honor->harga_per_satuan * $target;
+        $totalHonor = (float) $honor->harga_per_satuan * $target;
         $isSensus = ($honor->kegiatanManmit?->jenis_kegiatan === 'SENSUS');
 
         return DB::transaction(function () use (
@@ -269,9 +329,9 @@ class HonorAllocationService
             try {
                 $mitraIdentifier = $item['mitra_id'] ?? $item['id_sobat'] ?? null;
                 $honorId = $item['honor_id'] ?? null;
-                $target = (float)($item['target_per_satuan_honor'] ?? $item['target'] ?? 0);
+                $target = (float) ($item['target_per_satuan_honor'] ?? $item['target'] ?? 0);
 
-                if (!$mitraIdentifier || !$honorId || $target <= 0) {
+                if (! $mitraIdentifier || ! $honorId || $target <= 0) {
                     throw new \InvalidArgumentException("Item indeks #{$index} memiliki data tidak lengkap.");
                 }
 

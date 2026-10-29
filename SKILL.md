@@ -88,8 +88,14 @@ Skill ini memberikan instruksi lengkap bagi AI Coding Agent untuk berinteraksi d
   2. *Langkah 2*: Sesuaikan tanggal honor via `PATCH /api/v1/honors/{id}` (`{"tanggal_akhir_kegiatan": "YYYY-MM-DD"}`).
 
 ### C. Lookup & Manajemen Mitra Statistik
-- `GET /api/v1/mitras?tahun=2026&bulan=3&available_only=1&compact=1`
-- Query Params: `q` (nama/NIK/Sobat/email/telp/WA), `ids` (comma-separated), `tahun`, `bulan`, `status` (AKTIF/dll), `aktif_only`, `kecamatan`, `desa`, `jenis_kelamin` (L/P), `posisi` (PCL/PML), `has_allocations` (0/1), `with_sbml`, `available_only`, `sort_by` (nama/id/sobat/nik/created_at), `sort_order` (asc/desc), `compact`, `per_page`.
+- `GET /api/v1/mitras?honor_id=HON-1&target=10&ready_only=1&compact=1`
+- **Fitur Cerdas AI**:
+  - `honor_id` (string): ID pos honor yang akan diberikan.
+  - `target` (numeric): Volume beban kerja untuk honor tersebut.
+  - `ready_only` / `available_only` (0/1): Hanya kembalikan mitra yang siap & memenuhi syarat (aktif, bebas bentrok jadwal sensus, dan sisa pagu SBML cukup).
+  - `min_sisa` (numeric): Filter batas minimal sisa pagu SBML bulanan (contoh: `min_sisa=1500000`).
+  - `min_sisa_survei` / `min_sisa_sensus` (numeric): Filter sisa pagu spesifik per jenis kegiatan.
+- Query Params Tambahan: `q` (nama/NIK/Sobat/email/telp/WA), `ids` (comma-separated), `tahun`, `bulan`, `status` (AKTIF/dll), `aktif_only`, `kecamatan`, `desa`, `jenis_kelamin` (L/P), `posisi` (PCL/PML), `has_allocations` (0/1), `with_sbml`, `sort_by` (nama/id/sobat/nik/created_at), `sort_order` (asc/desc), `compact`, `per_page`.
 - `GET /api/v1/mitras/{id}`: Detail profil mitra (identifikasi via ID, ID Sobat, atau NIK) lengkap dengan kontak, WhatsApp, dan riwayat kemitraan.
 - `POST /api/v1/mitras`: Daftarkan mitra baru ke dalam sistem + binding status kemitraan tahunan. Reversible via rollback!
   - Body: `{"nama": "Herri Gustaman", "nik": "6104220200480001", "id_sobat": "610422020048", "nomor_wa": "081258309999", "status_kemitraan": "AKTIF", "tahun": 2026}`
@@ -106,10 +112,11 @@ Skill ini memberikan instruksi lengkap bagi AI Coding Agent untuk berinteraksi d
 - `PATCH /api/v1/pegawais/{nip}`: Update data pegawai (jabatan, nomor WA, unit kerja, email, pangkat, golongan, dll). Reversible via rollback.
 - `DELETE /api/v1/pegawais/{nip}`: Hapus pegawai. Reversible via rollback!
 
-### E. Pre-Flight Check (Dry Run)
+### E. Pre-Flight Check (Dry Run Single & Batch Candidates)
 - `POST /api/v1/alokasi/check`
-- Body: `{"honor_id": "HON-1", "mitra_id": 123, "target": 10.0}`
-- Response: `{ "status": "success", "data": { "eligible": true|false, "reason": "...", ... } }`
+- **Single Check**: `{"honor_id": "HON-1", "mitra_id": 123, "target": 10.0}`
+- **Batch Candidates Check**: `{"honor_id": "HON-1", "target": 10.0, "candidates": [123, 125, "61041001"]}`
+- Response Batch: `{ "status": "success", "data": { "total_checked": 3, "eligible_count": 2, "ineligible_count": 1, "candidates": [...] } }`
 
 ### F. Buat & Kelola Alokasi (Single / Batch / Update)
 - `POST /api/v1/alokasi`: Buat alokasi single atau batch (`allocations: [...]`).

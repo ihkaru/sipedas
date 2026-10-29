@@ -29,19 +29,19 @@ class AlokasiHonorApiController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->whereHas('mitra', function ($m) use ($search) {
                     $m->where('nama_1', 'like', "%{$search}%")
-                      ->orWhere('id_sobat', 'like', "%{$search}%")
-                      ->orWhere('nik', 'like', "%{$search}%");
+                        ->orWhere('id_sobat', 'like', "%{$search}%")
+                        ->orWhere('nik', 'like', "%{$search}%");
                 })
-                ->orWhereHas('honor.kegiatanManmit', function ($k) use ($search) {
-                    $k->where('nama', 'like', "%{$search}%")
-                      ->orWhere('id', 'like', "%{$search}%");
-                })
-                ->orWhereHas('kontrak', function ($ns) use ($search) {
-                    $ns->searchNomor($search);
-                })
-                ->orWhereHas('bast', function ($ns) use ($search) {
-                    $ns->searchNomor($search);
-                });
+                    ->orWhereHas('honor.kegiatanManmit', function ($k) use ($search) {
+                        $k->where('nama', 'like', "%{$search}%")
+                            ->orWhere('id', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('kontrak', function ($ns) use ($search) {
+                        $ns->searchNomor($search);
+                    })
+                    ->orWhereHas('bast', function ($ns) use ($search) {
+                        $ns->searchNomor($search);
+                    });
             });
         }
 
@@ -55,13 +55,13 @@ class AlokasiHonorApiController extends Controller
             $query->where('mitra_id', $request->input('mitra_id'));
         } elseif ($request->filled('id_sobat')) {
             $idSobat = $request->input('id_sobat');
-            $query->whereHas('mitra', fn($m) => $m->where('id_sobat', $idSobat));
+            $query->whereHas('mitra', fn ($m) => $m->where('id_sobat', $idSobat));
         }
 
         // 4. Filter Kegiatan ID
         $kegiatanId = $request->input('kegiatan_manmit_id') ?? $request->input('kegiatan_id');
         if ($kegiatanId) {
-            $query->whereHas('honor', fn($q) => $q->where('kegiatan_manmit_id', $kegiatanId));
+            $query->whereHas('honor', fn ($q) => $q->where('kegiatan_manmit_id', $kegiatanId));
         }
 
         // 5. Filter Tahun & Bulan
@@ -80,7 +80,7 @@ class AlokasiHonorApiController extends Controller
         $query->orderBy($sortBy, $sortOrder);
 
         // 7. Pagination
-        $perPage = min(max((int)($request->input('per_page') ?? $request->input('limit') ?? 20), 1), 100);
+        $perPage = min(max((int) ($request->input('per_page') ?? $request->input('limit') ?? 20), 1), 100);
         $paginated = $query->paginate($perPage);
 
         // 8. Compact / Token-Dense Mode
@@ -96,8 +96,8 @@ class AlokasiHonorApiController extends Controller
                     'kegiatan_id' => $alokasi->honor?->kegiatan_manmit_id,
                     'nama_kegiatan' => $alokasi->honor?->kegiatanManmit?->nama,
                     'honor_id' => $alokasi->honor_id,
-                    'target' => (float)$alokasi->target_per_satuan_honor,
-                    'total_honor' => (float)$alokasi->total_honor,
+                    'target' => (float) $alokasi->target_per_satuan_honor,
+                    'total_honor' => (float) $alokasi->total_honor,
                     'nomor_spk' => $alokasi->kontrak?->nomor_surat_perjanjian_kerja,
                     'nomor_bast' => $alokasi->bast?->nomor_surat_bast,
                     'created_at' => $alokasi->created_at?->toISOString(),
@@ -125,10 +125,25 @@ class AlokasiHonorApiController extends Controller
      */
     public function check(CheckEligibilityRequest $request): JsonResponse
     {
-        $mitraIdentifier = $request->input('mitra_id') ?? $request->input('id_sobat');
         $honorId = $request->input('honor_id');
-        $target = (float)$request->input('target');
+        $target = (float) $request->input('target');
 
+        // Jika request batch candidates diberikan
+        if ($request->filled('candidates') && is_array($request->input('candidates'))) {
+            $batchResult = HonorAllocationService::checkBatchEligibility(
+                candidateIdentifiers: $request->input('candidates'),
+                honorId: $honorId,
+                target: $target
+            );
+
+            return response()->json([
+                'status' => 'success',
+                'message' => "Pemeriksaan batch selesai: {$batchResult['eligible_count']} memenuhi syarat, {$batchResult['ineligible_count']} tidak memenuhi syarat.",
+                'data' => $batchResult,
+            ]);
+        }
+
+        $mitraIdentifier = $request->input('mitra_id') ?? $request->input('id_sobat');
         $result = HonorAllocationService::checkEligibility($mitraIdentifier, $honorId, $target);
 
         return response()->json([
@@ -164,7 +179,7 @@ class AlokasiHonorApiController extends Controller
             );
 
             $transformedResults = collect($batchResult['results'])
-                ->map(fn($alokasi) => new AlokasiHonorResource($alokasi));
+                ->map(fn ($alokasi) => new AlokasiHonorResource($alokasi));
 
             return response()->json([
                 'status' => $batchResult['failed_count'] === 0 ? 'success' : 'partial',
@@ -180,7 +195,7 @@ class AlokasiHonorApiController extends Controller
 
         $mitraIdentifier = $request->input('mitra_id') ?? $request->input('id_sobat');
         $honorId = $request->input('honor_id');
-        $target = (float)$request->input('target');
+        $target = (float) $request->input('target');
 
         try {
             $alokasi = HonorAllocationService::allocate($mitraIdentifier, $honorId, $target);
@@ -218,7 +233,7 @@ class AlokasiHonorApiController extends Controller
     {
         $alokasi = AlokasiHonor::with(['mitra', 'honor.kegiatanManmit', 'kontrak', 'bast'])->find($id);
 
-        if (!$alokasi) {
+        if (! $alokasi) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Alokasi honor tidak ditemukan.',
@@ -238,7 +253,7 @@ class AlokasiHonorApiController extends Controller
     {
         $alokasi = AlokasiHonor::find($id);
 
-        if (!$alokasi) {
+        if (! $alokasi) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Alokasi honor tidak ditemukan.',
@@ -276,7 +291,7 @@ class AlokasiHonorApiController extends Controller
     {
         $alokasi = AlokasiHonor::with(['mitra', 'honor.kegiatanManmit', 'kontrak', 'bast'])->find($id);
 
-        if (!$alokasi) {
+        if (! $alokasi) {
             return response()->json([
                 'status' => 'error',
                 'message' => "Alokasi honor dengan ID #{$id} tidak ditemukan.",
@@ -298,7 +313,7 @@ class AlokasiHonorApiController extends Controller
             : $alokasi->honor;
 
         $targetInput = $request->input('target') ?? $request->input('target_per_satuan_honor');
-        $newTarget = $targetInput !== null ? (float)$targetInput : (float)$alokasi->target_per_satuan_honor;
+        $newTarget = $targetInput !== null ? (float) $targetInput : (float) $alokasi->target_per_satuan_honor;
 
         // Jika target atau honor berubah, validasi ulang limit SBML & bentrok sensus
         if ($targetInput !== null || $request->filled('honor_id')) {
@@ -309,10 +324,10 @@ class AlokasiHonorApiController extends Controller
                 excludeAlokasiId: $alokasi->id
             );
 
-            if (!$eligibility['eligible']) {
+            if (! $eligibility['eligible']) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Pembaruan alokasi gagal validasi bisnis: ' . $eligibility['message'],
+                    'message' => 'Pembaruan alokasi gagal validasi bisnis: '.$eligibility['message'],
                 ], 422);
             }
         }
@@ -322,12 +337,12 @@ class AlokasiHonorApiController extends Controller
         $updates = [];
         if ($targetInput !== null) {
             $updates['target_per_satuan_honor'] = $newTarget;
-            $updates['total_honor'] = $newTarget * (float)$honor->harga_per_satuan;
+            $updates['total_honor'] = $newTarget * (float) $honor->harga_per_satuan;
         }
         if ($request->filled('honor_id')) {
             $updates['honor_id'] = $request->input('honor_id');
             if ($targetInput === null) {
-                $updates['total_honor'] = (float)$alokasi->target_per_satuan_honor * (float)$honor->harga_per_satuan;
+                $updates['total_honor'] = (float) $alokasi->target_per_satuan_honor * (float) $honor->harga_per_satuan;
             }
         }
         if ($request->has('status')) {

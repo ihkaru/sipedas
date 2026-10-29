@@ -317,13 +317,19 @@ Jika di lapangan jadwal kegiatan diperpanjang (misalnya dari September ke Oktobe
 
 ---
 
-### Endpoint 2: Lookup Mitra Statistik
+### Endpoint 2: Lookup Mitra Statistik & Smart Workload Readiness Filter
 - **Method & Path**: `GET /api/v1/mitras`
+- **Tujuan**: Menemukan mitra yang memenuhi syarat dan siap menerima beban kerja tertentu tanpa melanggar SBML atau jadwal sensus.
 - **Query Parameters**:
+- `honor_id` (string) - **Fitur Cerdas AI**: ID pos honor yang akan diberikan. Sistem otomatis mengecek kesiapan mitra terhadap beban honor ini.
+- `target` (numeric, default: 1) - Volume beban kerja yang direncanakan untuk honor tersebut.
+- `ready_only` / `available_only` (boolean: `1` atau `0`) - **Sangat Direkomendasikan untuk AI Agent**: Jika dipadukan dengan `honor_id` dan `target`, hanya kembalikan mitra yang 100% MEMENUHI SYARAT (aktif, bebas bentrok jadwal sensus, dan sisa pagu SBML cukup). Jika tanpa `honor_id`, hanya kembalikan mitra dengan sisa survei > 0 di bulan target.
+- `min_sisa` (numeric) - Filter minimal sisa pagu SBML bulanan (contoh: `min_sisa=1500000`).
+- `min_sisa_survei` / `min_sisa_sensus` (numeric) - Filter spesifik batas minimal sisa survei atau sensus.
 - `q` / `search` (string) - Cari instan nama, NIK, ID Sobat, email, atau no telp
 - `ids` (string) - Batch lookup ID atau ID Sobat dipisah koma (contoh: `ids=105,108,61041001`)
-- `tahun` (integer, default: {$currentYear}) - Filter tahun kemitraan
-- `bulan` (integer 1-12) - Sertakan jika ingin kalkulasi sisa plafon SBML dan filter penugasan
+- `tahun` (integer, default: {$currentYear}) - Filter tahun kemitraan (otomatis diambil dari jadwal honor jika `honor_id` disertakan)
+- `bulan` (integer 1-12) - Sertakan jika ingin kalkulasi sisa plafon SBML (otomatis diambil dari akhir kegiatan honor jika `honor_id` disertakan)
 - `status` (string) - Filter status kemitraan spesifik (`AKTIF`, `TIDAK_AKTIF`, `BLACKLISTED`)
 - `aktif_only` (boolean: `1` atau `0`, default: `1`) - Hanya mitra kemitraan aktif
 - `kecamatan` (string) - Filter wilayah kecamatan domisili
@@ -332,11 +338,10 @@ Jika di lapangan jadwal kegiatan diperpanjang (misalnya dari September ke Oktobe
 - `posisi` (string) - Filter posisi/peran mitra (PCL, PML, dll)
 - `has_allocations` (boolean: `1` atau `0`) - Filter jika mitra sudah/belum memiliki alokasi di bulan target
 - `with_sbml` (boolean: `1` atau `0`) - Lampirkan objek kalkulasi sisa SBML bulan target
-- `available_only` (boolean: `1` atau `0`) - Hanya mitra yang sisa pagu SBML-nya > 0 di bulan target
 - `sort_by` (`nama`, `nama_1`, `id`, `id_sobat`, `nik`, `created_at`) & `sort_order` (`asc`/`desc`)
 - `compact` (boolean: `1` atau `0`, default: `0`) - Mode hemat token (hanya id, sobat, nik, nama, status, sisa sbml)
 - `per_page` / `limit` (integer 1-100, default: 20)
-- **Contoh Response (200 OK)**:
+- **Contoh Smart Filter Response dengan `honor_id` & `ready_only=1` (200 OK)**:
 ```json
 {
   "status": "success",
@@ -349,12 +354,30 @@ Jika di lapangan jadwal kegiatan diperpanjang (misalnya dari September ke Oktobe
       "status_kemitraan": "AKTIF",
       "tahun_kemitraan": {$currentYear},
       "sisa_sbml": {
-        "bulan": 3,
+        "bulan": 5,
         "sisa_survei": 2703000,
         "sisa_sensus": 4044000
+      },
+      "eligibility": {
+        "eligible": true,
+        "message": "Mitra memenuhi syarat untuk dialokasikan.",
+        "honor_id": "HON-2026-001",
+        "jabatan": "Pencacah Lapangan",
+        "target": 10,
+        "satuan": "Dokumen",
+        "beban_honor": 650000
       }
     }
-  ]
+  ],
+  "meta": {
+    "total": 1,
+    "honor_query": {
+      "honor_id": "HON-2026-001",
+      "jabatan": "Pencacah Lapangan",
+      "target": 10,
+      "beban_honor": 650000
+    }
+  }
 }
 ```
 
@@ -466,10 +489,10 @@ Jika di lapangan jadwal kegiatan diperpanjang (misalnya dari September ke Oktobe
 
 ---
 
-### Endpoint 3: Pre-Flight Check / Dry-Run (Simulasi Kelayakan)
+### Endpoint 3: Pre-Flight Check / Dry-Run (Simulasi Kelayakan Single & Batch Candidates)
 - **Method & Path**: `POST /api/v1/alokasi/check`
-- **Tujuan**: Memastikan alokasi memenuhi aturan (SBML, jadwal tidak bentrok, mitra aktif) **TANPA MENULIS KE DATABASE**.
-- **Request Body (JSON)**:
+- **Tujuan**: Memastikan kelayakan alokasi (SBML, jadwal bentrok sensus, status mitra aktif) **TANPA MENULIS KE DATABASE**.
+- **Mode 1: Single Mitra Check**:
 ```json
 {
   "mitra_id": 105,
@@ -479,30 +502,42 @@ Jika di lapangan jadwal kegiatan diperpanjang (misalnya dari September ke Oktobe
 ```
 *(Dapat menggunakan `"id_sobat": "61041001"` sebagai pengganti `mitra_id`)*
 
-- **Contoh Response Lolos (200 OK)**:
+- **Mode 2: Batch Candidates Check (Optimal untuk AI Agent)**:
 ```json
 {
-  "status": "success",
-  "data": {
-    "eligible": true,
-    "estimated_total_honor": 780000,
-    "harga_per_satuan": 65000,
-    "target": 12,
-    "mitra": { "id": 105, "nama": "Budi Santoso" },
-    "kegiatan": { "nama": "Survei Biaya Hidup Triwulan I", "jenis": "SURVEI" }
-  }
+  "honor_id": "HON-2026-001",
+  "target": 12,
+  "candidates": [105, 108, "61041001", 112]
 }
 ```
 
-- **Contoh Response Ditolak (422 Unprocessable Content)**:
+- **Contoh Batch Response (200 OK)**:
 ```json
 {
-  "status": "error",
+  "status": "success",
+  "message": "Pemeriksaan batch selesai: 2 memenuhi syarat, 2 tidak memenuhi syarat.",
   "data": {
-    "eligible": false,
-    "reason": "Alokasi ditolak: Penambahan honor melampaui batas SBML bulanan pada bulan Maret (Plafon: Rp {$formattedSbmlSurvei}).",
-    "mitra_id": 105,
-    "honor_id": "HON-2026-001"
+    "total_checked": 4,
+    "eligible_count": 2,
+    "ineligible_count": 2,
+    "honor": {
+      "id": "HON-2026-001",
+      "jabatan": "Pencacah Lapangan",
+      "total_beban_honor": 780000
+    },
+    "candidates": [
+      {
+        "eligible": true,
+        "message": "Mitra memenuhi syarat untuk dialokasikan.",
+        "mitra": { "id": 105, "nama": "Budi Santoso", "id_sobat": "61041001" },
+        "sisa_limit_sbml": { "sisa_survei": 2703000, "sisa_sensus": 4044000 }
+      },
+      {
+        "eligible": false,
+        "message": "Akumulasi honor SURVEI melebihi limit SBML.",
+        "mitra": { "id": 108, "nama": "Siti Nurhaliza", "id_sobat": "61041002" }
+      }
+    ]
   }
 }
 ```

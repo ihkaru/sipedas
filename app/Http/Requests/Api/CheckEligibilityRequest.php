@@ -17,9 +17,11 @@ class CheckEligibilityRequest extends FormRequest
     {
         return [
             'honor_id' => ['required', 'string', 'exists:honors,id'],
-            'mitra_id' => ['required_without:id_sobat', 'nullable', 'integer', 'exists:mitras,id'],
-            'id_sobat' => ['required_without:mitra_id', 'nullable', 'string', 'exists:mitras,id_sobat'],
             'target' => ['required', 'numeric', 'min:0.01'],
+            'mitra_id' => ['required_without_all:id_sobat,candidates', 'nullable', 'integer', 'exists:mitras,id'],
+            'id_sobat' => ['required_without_all:mitra_id,candidates', 'nullable', 'string', 'exists:mitras,id_sobat'],
+            'candidates' => ['required_without_all:mitra_id,id_sobat', 'nullable', 'array', 'min:1'],
+            'candidates.*' => ['required'],
         ];
     }
 
@@ -28,10 +30,13 @@ class CheckEligibilityRequest extends FormRequest
         return [
             'honor_id.required' => 'Parameter honor_id wajib diisi.',
             'honor_id.exists' => 'Honor dengan ID tersebut tidak ditemukan.',
-            'mitra_id.required_without' => 'Parameter mitra_id atau id_sobat wajib diisi.',
+            'mitra_id.required_without_all' => 'Parameter mitra_id, id_sobat, atau candidates wajib diisi.',
             'mitra_id.exists' => 'Mitra dengan ID tersebut tidak ditemukan.',
-            'id_sobat.required_without' => 'Parameter id_sobat atau mitra_id wajib diisi.',
+            'id_sobat.required_without_all' => 'Parameter id_sobat, mitra_id, atau candidates wajib diisi.',
             'id_sobat.exists' => 'Mitra dengan ID Sobat tersebut tidak ditemukan.',
+            'candidates.required_without_all' => 'Parameter candidates, mitra_id, atau id_sobat wajib diisi.',
+            'candidates.array' => 'Parameter candidates harus berupa array.',
+            'candidates.min' => 'Parameter candidates minimal berisi 1 kandidat.',
             'target.required' => 'Parameter target wajib diisi.',
             'target.numeric' => 'Target harus berupa angka desimal atau bulat.',
             'target.min' => 'Target minimal bernilai 0.01.',

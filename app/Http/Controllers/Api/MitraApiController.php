@@ -31,14 +31,14 @@ class MitraApiController extends Controller
     {
         $mitra = $this->findMitra($id);
 
-        if (!$mitra) {
+        if (! $mitra) {
             return response()->json([
                 'status' => 'error',
                 'message' => "Mitra dengan identifier '{$id}' tidak ditemukan.",
             ], 404);
         }
 
-        $tahun = (int)$request->input('tahun', now()->year);
+        $tahun = (int) $request->input('tahun', now()->year);
         $mitra->load(['kemitraans', 'alokasiHonors.honor.kegiatanManmit']);
 
         $currentKemitraan = $mitra->kemitraans->firstWhere('tahun', $tahun);
@@ -78,7 +78,7 @@ class MitraApiController extends Controller
                 'tahun' => $tahun,
                 'status' => $currentKemitraan?->status ?? 'BELUM_TERDAFTAR',
             ],
-            'riwayat_kemitraan' => $mitra->kemitraans->map(fn($k) => [
+            'riwayat_kemitraan' => $mitra->kemitraans->map(fn ($k) => [
                 'tahun' => $k->tahun,
                 'status' => $k->status,
             ]),
@@ -87,7 +87,7 @@ class MitraApiController extends Controller
         ];
 
         // Sisa pagu SBML jika diminta
-        $targetBulan = $request->filled('bulan') ? (int)$request->input('bulan') : null;
+        $targetBulan = $request->filled('bulan') ? (int) $request->input('bulan') : null;
         if ($targetBulan) {
             $start = Carbon::create($tahun, $targetBulan, 1)->startOfMonth();
             $end = Carbon::create($tahun, $targetBulan, 1)->endOfMonth();
@@ -95,22 +95,22 @@ class MitraApiController extends Controller
             $data['sisa_sbml'] = [
                 'bulan' => $targetBulan,
                 'tahun' => $tahun,
-                'sisa_survei' => $remaining['min_survei'],
-                'sisa_sensus' => $remaining['min_sensus'],
+                'sisa_survei' => $remaining['min_survei'] ?? $remaining['survei'] ?? 0,
+                'sisa_sensus' => $remaining['min_sensus'] ?? $remaining['sensus'] ?? 0,
             ];
         }
 
         // Histori alokasi penugasan jika diminta
         if ($request->boolean('with_allocations', false)) {
-            $data['alokasi_honors'] = $mitra->alokasiHonors->map(fn($a) => [
+            $data['alokasi_honors'] = $mitra->alokasiHonors->map(fn ($a) => [
                 'id' => $a->id,
                 'honor_id' => $a->honor_id,
                 'kegiatan_id' => $a->honor?->kegiatan_manmit_id,
                 'kegiatan_nama' => $a->honor?->kegiatanManmit?->nama,
                 'jabatan' => $a->honor?->jabatan,
                 'jenis_honor' => $a->honor?->jenis_honor,
-                'volume' => (float)$a->alokasi_volume,
-                'total_honor' => (float)$a->total_honor,
+                'volume' => (float) $a->alokasi_volume,
+                'total_honor' => (float) $a->total_honor,
                 'tanggal_mulai' => $a->tanggal_mulai_perjanjian?->format('Y-m-d'),
                 'tanggal_akhir' => $a->tanggal_akhir_perjanjian?->format('Y-m-d'),
                 'spk_id' => $a->surat_perjanjian_kerja_id,
@@ -133,7 +133,7 @@ class MitraApiController extends Controller
     {
         $mitra = $this->findMitra($id);
 
-        if (!$mitra) {
+        if (! $mitra) {
             return response()->json([
                 'status' => 'error',
                 'message' => "Mitra dengan identifier '{$id}' tidak ditemukan.",
@@ -162,7 +162,7 @@ class MitraApiController extends Controller
             'email.email' => 'Format email yang dimasukkan tidak valid.',
         ]);
 
-        $tahunKemitraan = (int)($request->input('tahun', now()->year));
+        $tahunKemitraan = (int) ($request->input('tahun', now()->year));
         $statusKemitraanInput = $request->input('status_kemitraan') ?? $request->input('status');
 
         // Normalisasi nomor WhatsApp
@@ -263,7 +263,7 @@ class MitraApiController extends Controller
         DB::beginTransaction();
         try {
             // Update tabel mitras
-            if (!empty($mitraUpdates)) {
+            if (! empty($mitraUpdates)) {
                 $mitra->update($mitraUpdates);
             }
 
@@ -337,8 +337,10 @@ class MitraApiController extends Controller
         $clean = trim($identifier);
 
         if (is_numeric($clean)) {
-            $byPk = Mitra::find((int)$clean);
-            if ($byPk) return $byPk;
+            $byPk = Mitra::find((int) $clean);
+            if ($byPk) {
+                return $byPk;
+            }
         }
 
         return Mitra::where('id_sobat', $clean)
@@ -352,13 +354,17 @@ class MitraApiController extends Controller
      */
     protected function normalizeWhatsappNumber(?string $raw): ?string
     {
-        if ($raw === null) return null;
+        if ($raw === null) {
+            return null;
+        }
 
         $digits = preg_replace('/[^0-9]/', '', trim($raw));
-        if (empty($digits)) return null;
+        if (empty($digits)) {
+            return null;
+        }
 
         if (str_starts_with($digits, '08')) {
-            $digits = '62' . substr($digits, 1);
+            $digits = '62'.substr($digits, 1);
         }
 
         return $digits;
@@ -389,7 +395,7 @@ class MitraApiController extends Controller
 
         $nama = $request->input('nama_1') ?? $request->input('nama');
         $nomorWa = $this->normalizeWhatsappNumber($request->input('nomor_wa'));
-        $tahun = (int)$request->input('tahun', now()->year);
+        $tahun = (int) $request->input('tahun', now()->year);
         $statusKemitraan = strtoupper($request->input('status_kemitraan', 'AKTIF'));
 
         DB::beginTransaction();
@@ -463,7 +469,7 @@ class MitraApiController extends Controller
     {
         $mitra = $this->findMitra($id);
 
-        if (!$mitra) {
+        if (! $mitra) {
             return response()->json([
                 'status' => 'error',
                 'message' => "Mitra dengan identifier '{$id}' tidak ditemukan.",
@@ -480,7 +486,7 @@ class MitraApiController extends Controller
         DB::beginTransaction();
         try {
             $mitraAttributes = $mitra->getAttributes();
-            $kemitraanData = $mitra->kemitraans->map(fn($k) => $k->getAttributes())->toArray();
+            $kemitraanData = $mitra->kemitraans->map(fn ($k) => $k->getAttributes())->toArray();
 
             $mitra->kemitraans()->delete();
             $mitra->delete();

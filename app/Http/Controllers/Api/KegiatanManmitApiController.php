@@ -8,10 +8,15 @@ use App\Models\ApiAuditLog;
 use App\Models\Honor;
 use App\Models\KegiatanManmit;
 use App\Models\Mitra;
+use App\Services\ApiAuditService;
+use App\Services\HonorAllocationService;
 use App\Services\HonorService;
+use App\Supports\Constants;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -31,29 +36,29 @@ class KegiatanManmitApiController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
-                  ->orWhere('id', 'like', "%{$search}%");
+                    ->orWhere('id', 'like', "%{$search}%");
             });
         }
 
         // 2. Filter Tahun
         if ($request->filled('tahun')) {
-            $year = (int)$request->input('tahun');
+            $year = (int) $request->input('tahun');
             $query->where(function ($q) use ($year) {
                 $q->whereYear('tgl_mulai_pelaksanaan', $year)
-                  ->orWhereYear('tgl_akhir_pelaksanaan', $year);
+                    ->orWhereYear('tgl_akhir_pelaksanaan', $year);
             });
         }
 
         // 3. Filter Bulan (Kegiatan yang aktif pada bulan target)
         if ($request->filled('bulan')) {
-            $bulan = (int)$request->input('bulan');
-            $tahun = (int)($request->input('tahun') ?? now()->year);
+            $bulan = (int) $request->input('bulan');
+            $tahun = (int) ($request->input('tahun') ?? now()->year);
             $startOfMonth = Carbon::create($tahun, $bulan, 1)->startOfMonth()->toDateString();
             $endOfMonth = Carbon::create($tahun, $bulan, 1)->endOfMonth()->toDateString();
 
             $query->where(function ($q) use ($startOfMonth, $endOfMonth) {
                 $q->where('tgl_mulai_pelaksanaan', '<=', $endOfMonth)
-                  ->where('tgl_akhir_pelaksanaan', '>=', $startOfMonth);
+                    ->where('tgl_akhir_pelaksanaan', '>=', $startOfMonth);
             });
         }
 
@@ -75,7 +80,7 @@ class KegiatanManmitApiController extends Controller
         $query->orderBy($sortBy, $sortOrder);
 
         // 7. Pagination
-        $perPage = min(max((int)($request->input('per_page') ?? $request->input('limit') ?? 20), 1), 100);
+        $perPage = min(max((int) ($request->input('per_page') ?? $request->input('limit') ?? 20), 1), 100);
         $paginated = $query->paginate($perPage);
 
         // 8. Compact / Token-Dense Mode (Hemat Token AI ~80%)
@@ -89,10 +94,10 @@ class KegiatanManmitApiController extends Controller
                     'jenis' => $keg->jenis_kegiatan,
                     'tgl_mulai' => $keg->tgl_mulai_pelaksanaan,
                     'tgl_akhir' => $keg->tgl_akhir_pelaksanaan,
-                    'honors' => $keg->honors->map(fn($h) => [
+                    'honors' => $keg->honors->map(fn ($h) => [
                         'id' => $h->id,
                         'jabatan' => $h->jabatan,
-                        'harga' => (float)$h->harga_per_satuan,
+                        'harga' => (float) $h->harga_per_satuan,
                         'satuan' => $h->satuan_honor,
                     ]),
                 ];
@@ -115,24 +120,50 @@ class KegiatanManmitApiController extends Controller
     }
 
     /**
-     * Daftar Mitra beserta status kemitraan dan indikator sisa plafon SBML.
-     * Dilengkapi pencarian fleksibel, batch lookup IDs, dan mode compact.
+     * Endpoint Direktori Mitra Statistik & Indikator Kesiapan Beban Kerja / Sisa SBML.
+     * Dilengkapi multi-filter demografis, wilayah, status kemitraan, sisa kuota SBML,
+     * serta evaluasi kesiapan penugasan spesifik berdasarkan honor_id dan target volume.
      */
     public function mitras(Request $request): JsonResponse
     {
-        $tahun = (int)$request->input('tahun', now()->year);
         $search = $request->input('q') ?? $request->input('search');
 
-        $query = Mitra::with(['kemitraans' => fn($q) => $q->where('tahun', $tahun)]);
+        // Resolusi Honor jika parameter honor_id disertakan
+        $honor = null;
+        $targetVolume = 1.0;
+        $totalHonor = 0.0;
+        if ($request->filled('honor_id')) {
+            $honorId = $request->input('honor_id');
+            $honor = Honor::with('kegiatanManmit')->find($honorId);
+            if (! $honor) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => "Honor dengan ID '{$honorId}' tidak ditemukan.",
+                ], 404);
+            }
+            $targetVolume = $request->filled('target') ? (float) $request->input('target') : 1.0;
+            $totalHonor = (float) $honor->harga_per_satuan * $targetVolume;
+        }
+
+        // Resolusi Tahun dan Bulan
+        $tahun = (int) $request->input('tahun', ($honor && $honor->tanggal_akhir_kegiatan)
+            ? Carbon::parse($honor->tanggal_akhir_kegiatan)->year
+            : now()->year);
+
+        $targetBulan = $request->filled('bulan')
+            ? (int) $request->input('bulan')
+            : (($honor && $honor->tanggal_akhir_kegiatan) ? Carbon::parse($honor->tanggal_akhir_kegiatan)->month : null);
+
+        $query = Mitra::with(['kemitraans' => fn ($q) => $q->where('tahun', $tahun)]);
 
         // 1. Batch ID / ID Sobat lookup (Fetch-Once, Process-Locally)
         if ($request->filled('ids')) {
             $rawIds = is_array($request->input('ids')) ? $request->input('ids') : explode(',', $request->input('ids'));
             $cleanIds = array_map('trim', array_filter($rawIds));
-            if (!empty($cleanIds)) {
+            if (! empty($cleanIds)) {
                 $query->where(function ($q) use ($cleanIds) {
                     $q->whereIn('id', $cleanIds)
-                      ->orWhereIn('id_sobat', $cleanIds);
+                        ->orWhereIn('id_sobat', $cleanIds);
                 });
             }
         }
@@ -141,20 +172,20 @@ class KegiatanManmitApiController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nama_1', 'like', "%{$search}%")
-                  ->orWhere('id_sobat', 'like', "%{$search}%")
-                  ->orWhere('nik', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('no_telp', 'like', "%{$search}%")
-                  ->orWhere('nomor_wa', 'like', "%{$search}%");
+                    ->orWhere('id_sobat', 'like', "%{$search}%")
+                    ->orWhere('nik', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('no_telp', 'like', "%{$search}%")
+                    ->orWhere('nomor_wa', 'like', "%{$search}%");
             });
         }
 
         // 3. Status Kemitraan Filter
         if ($request->filled('status')) {
             $status = strtoupper($request->input('status'));
-            $query->whereHas('kemitraans', fn($q) => $q->where('tahun', $tahun)->where('status', $status));
+            $query->whereHas('kemitraans', fn ($q) => $q->where('tahun', $tahun)->where('status', $status));
         } elseif ($request->boolean('aktif_only', true)) {
-            $query->whereHas('kemitraans', fn($q) => $q->where('tahun', $tahun)->where('status', 'AKTIF'));
+            $query->whereHas('kemitraans', fn ($q) => $q->where('tahun', $tahun)->where('status', 'AKTIF'));
         }
 
         // 4. Filter Wilayah Domisili (Kecamatan & Desa)
@@ -162,14 +193,14 @@ class KegiatanManmitApiController extends Controller
             $kec = $request->input('kecamatan');
             $query->where(function ($q) use ($kec) {
                 $q->where('kecamatan_domisili', 'like', "%{$kec}%")
-                  ->orWhere('alamat_kec', $kec);
+                    ->orWhere('alamat_kec', $kec);
             });
         }
         if ($request->filled('desa')) {
             $desa = $request->input('desa');
             $query->where(function ($q) use ($desa) {
                 $q->where('desa_domisili', 'like', "%{$desa}%")
-                  ->orWhere('alamat_desa', $desa);
+                    ->orWhere('alamat_desa', $desa);
             });
         }
 
@@ -179,12 +210,12 @@ class KegiatanManmitApiController extends Controller
             if (in_array($jk, ['L', 'LAKI-LAKI', 'PRIA'])) {
                 $query->where(function ($q) {
                     $q->where('jenis_kelamin', 'like', 'L%')
-                      ->orWhere('jenis_kelamin', 'PRIA');
+                        ->orWhere('jenis_kelamin', 'PRIA');
                 });
             } elseif (in_array($jk, ['P', 'PEREMPUAN', 'WANITA'])) {
                 $query->where(function ($q) {
                     $q->where('jenis_kelamin', 'like', 'P%')
-                      ->orWhere('jenis_kelamin', 'WANITA');
+                        ->orWhere('jenis_kelamin', 'WANITA');
                 });
             } else {
                 $query->where('jenis_kelamin', 'like', "%{$jk}%");
@@ -194,23 +225,22 @@ class KegiatanManmitApiController extends Controller
             $posisi = $request->input('posisi');
             $query->where(function ($q) use ($posisi) {
                 $q->where('posisi', 'like', "%{$posisi}%")
-                  ->orWhere('posisi_daftar', 'like', "%{$posisi}%");
+                    ->orWhere('posisi_daftar', 'like', "%{$posisi}%");
             });
         }
 
         // 6. Filter Penugasan di Bulan Tertentu (has_allocations: 1/0)
-        $targetBulan = $request->filled('bulan') ? (int)$request->input('bulan') : null;
         if ($request->filled('has_allocations') && $targetBulan) {
             $hasAlloc = $request->boolean('has_allocations');
             if ($hasAlloc) {
                 $query->whereHas('alokasiHonors', function ($q) use ($tahun, $targetBulan) {
                     $q->whereMonth('tanggal_mulai_perjanjian', $targetBulan)
-                      ->whereYear('tanggal_mulai_perjanjian', $tahun);
+                        ->whereYear('tanggal_mulai_perjanjian', $tahun);
                 });
             } else {
                 $query->whereDoesntHave('alokasiHonors', function ($q) use ($tahun, $targetBulan) {
                     $q->whereMonth('tanggal_mulai_perjanjian', $targetBulan)
-                      ->whereYear('tanggal_mulai_perjanjian', $tahun);
+                        ->whereYear('tanggal_mulai_perjanjian', $tahun);
                 });
             }
         }
@@ -229,71 +259,106 @@ class KegiatanManmitApiController extends Controller
         $sortOrder = strtolower($request->input('sort_order', 'asc')) === 'desc' ? 'desc' : 'asc';
         $query->orderBy($sortBy, $sortOrder);
 
-        // 8. Pagination
-        $perPage = min(max((int)($request->input('per_page') ?? $request->input('limit') ?? 20), 1), 100);
-        $paginated = $query->paginate($perPage);
+        $perPage = min(max((int) ($request->input('per_page') ?? $request->input('limit') ?? 20), 1), 100);
+        $page = (int) ($request->input('page') ?? 1);
 
-        // 9. Indikator Sisa SBML per Bulan (Opsional untuk AI Pre-selection)
-        $withSbml = $request->boolean('with_sbml', false) || $request->filled('bulan');
-
+        $withSbml = $request->boolean('with_sbml', false) || $targetBulan !== null;
         $isCompact = $request->boolean('compact', false) || $request->boolean('summary', false);
 
-        $items = collect($paginated->items())->map(function ($mitra) use ($tahun, $isCompact, $withSbml, $targetBulan) {
-            $kemitraan = $mitra->kemitraans->first();
-            $status = $kemitraan?->status ?? 'BELUM_TERDAFTAR';
+        // Kriteria filter dinamis yang membutuhkan pemrosesan in-memory (SBML / Eligibility)
+        $isReadyOnly = $request->boolean('ready_only') || $request->boolean('available_only');
+        $minSisa = $request->filled('min_sisa') ? (float) $request->input('min_sisa') : null;
+        $minSisaSurvei = $request->filled('min_sisa_survei') ? (float) $request->input('min_sisa_survei') : null;
+        $minSisaSensus = $request->filled('min_sisa_sensus') ? (float) $request->input('min_sisa_sensus') : null;
 
-            $row = [
-                'id' => $mitra->id,
-                'id_sobat' => $mitra->id_sobat,
-                'nik' => $mitra->nik,
-                'nama' => $mitra->nama_1,
-                'status_kemitraan' => $status,
-                'tahun_kemitraan' => $tahun,
+        $isJenisSensus = (strtolower((string) $request->input('jenis')) === 'sensus');
+
+        $hasDynamicFilter = ($isReadyOnly && ($honor || $targetBulan))
+            || $minSisa !== null
+            || $minSisaSurvei !== null
+            || $minSisaSensus !== null;
+
+        $rows = [];
+        if ($hasDynamicFilter) {
+            /** @var Collection<int, Mitra> $allCandidates */
+            $allCandidates = $query->get();
+
+            foreach ($allCandidates as $candidate) {
+                $row = $this->transformMitraRow($candidate, $tahun, $isCompact, $withSbml, $targetBulan, $honor, $targetVolume, $totalHonor);
+
+                // 1. Filter Kesiapan Spesifik Honor
+                if ($honor && $isReadyOnly) {
+                    if (! ($row['eligibility']['eligible'] ?? false)) {
+                        continue;
+                    }
+                } elseif ($isReadyOnly && $targetBulan) {
+                    // Filter ketersediaan umum SBML survei
+                    if (($row['sisa_sbml']['sisa_survei'] ?? 0) <= 0) {
+                        continue;
+                    }
+                }
+
+                // 2. Filter Batas Minimal Sisa SBML
+                if ($minSisa !== null) {
+                    $targetSisa = $isJenisSensus
+                        ? ($row['sisa_sbml']['sisa_sensus'] ?? 0)
+                        : ($row['sisa_sbml']['sisa_survei'] ?? 0);
+                    if ($targetSisa < $minSisa) {
+                        continue;
+                    }
+                }
+                if ($minSisaSurvei !== null && ($row['sisa_sbml']['sisa_survei'] ?? 0) < $minSisaSurvei) {
+                    continue;
+                }
+                if ($minSisaSensus !== null && ($row['sisa_sbml']['sisa_sensus'] ?? 0) < $minSisaSensus) {
+                    continue;
+                }
+
+                $rows[] = $row;
+            }
+
+            $totalFiltered = count($rows);
+            $slice = array_slice($rows, ($page - 1) * $perPage, $perPage);
+            $paginated = new LengthAwarePaginator(
+                $slice,
+                $totalFiltered,
+                $perPage,
+                $page,
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+            $items = $slice;
+        } else {
+            $paginated = $query->paginate($perPage);
+            $items = [];
+            foreach ($paginated->items() as $item) {
+                $items[] = $this->transformMitraRow($item, $tahun, $isCompact, $withSbml, $targetBulan, $honor, $targetVolume, $totalHonor);
+            }
+        }
+
+        $meta = [
+            'tahun' => $tahun,
+            'bulan' => $targetBulan,
+            'current_page' => $paginated->currentPage(),
+            'last_page' => $paginated->lastPage(),
+            'per_page' => $paginated->perPage(),
+            'total' => $paginated->total(),
+            'has_more' => $paginated->hasMorePages(),
+        ];
+
+        if ($honor) {
+            $meta['honor_query'] = [
+                'honor_id' => $honor->id,
+                'jabatan' => $honor->jabatan,
+                'target' => $targetVolume,
+                'satuan' => $honor->satuan_honor,
+                'beban_honor' => $totalHonor,
             ];
-
-            if ($withSbml && $targetBulan) {
-                $start = Carbon::create($tahun, $targetBulan, 1)->startOfMonth();
-                $end = Carbon::create($tahun, $targetBulan, 1)->endOfMonth();
-                $remaining = HonorService::getMitraRemainingBudget($mitra->id, $start, $end);
-                $row['sisa_sbml'] = [
-                    'bulan' => $targetBulan,
-                    'sisa_survei' => $remaining['min_survei'],
-                    'sisa_sensus' => $remaining['min_sensus'],
-                ];
-            }
-
-            if (!$isCompact) {
-                $row['email'] = $mitra->email;
-                $row['no_telp'] = $mitra->no_telp;
-                $row['nomor_wa'] = $mitra->nomor_wa;
-                $row['whatsapp_target'] = $mitra->whatsapp_target;
-                $row['whatsapp_url'] = $mitra->whatsapp_url;
-                $row['kecamatan'] = $mitra->kecamatan_domisili;
-                $row['desa'] = $mitra->desa_domisili;
-                $row['jenis_kelamin'] = $mitra->jenis_kelamin;
-                $row['posisi'] = $mitra->posisi ?? $mitra->posisi_daftar;
-                $row['created_at'] = $mitra->created_at;
-            }
-
-            return $row;
-        });
-
-        // 7. Filter Hanya yang Sisa SBML Masih Tersedia di Bulan Tersebut
-        if ($request->boolean('available_only', false) && $targetBulan) {
-            $items = $items->filter(fn($m) => ($m['sisa_sbml']['sisa_survei'] ?? 0) > 0)->values();
         }
 
         return response()->json([
             'status' => 'success',
             'data' => $items,
-            'meta' => [
-                'tahun' => $tahun,
-                'current_page' => $paginated->currentPage(),
-                'last_page' => $paginated->lastPage(),
-                'per_page' => $paginated->perPage(),
-                'total' => $paginated->total(),
-                'has_more' => $paginated->hasMorePages(),
-            ],
+            'meta' => $meta,
         ]);
     }
 
@@ -305,7 +370,7 @@ class KegiatanManmitApiController extends Controller
     public function renameId(string $id, Request $request): JsonResponse
     {
         $kegiatan = KegiatanManmit::find($id);
-        if (!$kegiatan) {
+        if (! $kegiatan) {
             return response()->json([
                 'status' => 'error',
                 'message' => "Kegiatan Manmit dengan ID '{$id}' tidak ditemukan.",
@@ -353,9 +418,9 @@ class KegiatanManmitApiController extends Controller
                 $oldHonorId = $honor->id;
                 if ($cascadeHonorIds) {
                     if (str_starts_with($oldHonorId, $id)) {
-                        $newHonorId = $newId . substr($oldHonorId, strlen($id));
+                        $newHonorId = $newId.substr($oldHonorId, strlen($id));
                     } else {
-                        $newHonorId = Str::upper($newId . '-' . $honor->jabatan . '-' . $honor->jenis_honor);
+                        $newHonorId = Str::upper($newId.'-'.$honor->jabatan.'-'.$honor->jenis_honor);
                     }
                 } else {
                     $newHonorId = $oldHonorId;
@@ -409,7 +474,7 @@ class KegiatanManmitApiController extends Controller
             $kegiatan->delete();
 
             // 5. Catat Audit Log
-            \App\Services\ApiAuditService::record(
+            ApiAuditService::record(
                 request: $request,
                 action: 'RENAME_KEGIATAN_ID',
                 targetModel: KegiatanManmit::class,
@@ -458,7 +523,7 @@ class KegiatanManmitApiController extends Controller
     {
         $kegiatan = KegiatanManmit::with('honors')->find($id);
 
-        if (!$kegiatan) {
+        if (! $kegiatan) {
             return response()->json([
                 'status' => 'error',
                 'message' => "Kegiatan Manmit dengan ID '{$id}' tidak ditemukan.",
@@ -476,11 +541,11 @@ class KegiatanManmitApiController extends Controller
                 'tgl_akhir_pelaksanaan' => $kegiatan->tgl_akhir_pelaksanaan,
                 'tgl_mulai_penawaran' => $kegiatan->tgl_mulai_penawaran,
                 'tgl_akhir_penawaran' => $kegiatan->tgl_akhir_penawaran,
-                'honors' => $kegiatan->honors->map(fn($h) => [
+                'honors' => $kegiatan->honors->map(fn ($h) => [
                     'id' => $h->id,
                     'jabatan' => $h->jabatan,
                     'jenis_honor' => $h->jenis_honor,
-                    'harga_per_satuan' => (float)$h->harga_per_satuan,
+                    'harga_per_satuan' => (float) $h->harga_per_satuan,
                     'satuan_honor' => $h->satuan_honor,
                     'tanggal_akhir_kegiatan' => $h->tanggal_akhir_kegiatan?->toDateString(),
                     'tanggal_pembayaran_maksimal' => $h->tanggal_pembayaran_maksimal?->toDateString(),
@@ -500,7 +565,7 @@ class KegiatanManmitApiController extends Controller
     {
         $kegiatan = KegiatanManmit::with('honors')->find($id);
 
-        if (!$kegiatan) {
+        if (! $kegiatan) {
             return response()->json([
                 'status' => 'error',
                 'message' => "Kegiatan Manmit dengan ID '{$id}' tidak ditemukan.",
@@ -537,17 +602,18 @@ class KegiatanManmitApiController extends Controller
                 ->whereNotNull('tanggal_akhir_kegiatan')
                 ->where(function ($query) use ($startCarbon, $endCarbon) {
                     $query->where('tanggal_akhir_kegiatan', '<', $startCarbon->toDateString())
-                          ->orWhere('tanggal_akhir_kegiatan', '>', $endCarbon->toDateString());
+                        ->orWhere('tanggal_akhir_kegiatan', '>', $endCarbon->toDateString());
                 })
                 ->get();
 
             if ($outOfRangeHonors->isNotEmpty()) {
-                $roles = $outOfRangeHonors->map(fn($h) => "{$h->jabatan} (" . Carbon::parse($h->tanggal_akhir_kegiatan)->format('d M Y') . ")")->implode(', ');
+                $roles = $outOfRangeHonors->map(fn ($h) => "{$h->jabatan} (".Carbon::parse($h->tanggal_akhir_kegiatan)->format('d M Y').')')->implode(', ');
+
                 return response()->json([
                     'status' => 'error',
                     'message' => "Rentang pelaksanaan baru ({$startCarbon->format('d M Y')} s/d {$endCarbon->format('d M Y')}) tidak mencakup tanggal akhir kegiatan dari honor: {$roles}. Harap sesuaikan tanggal honor terlebih dahulu atau perluas rentang kegiatan.",
                     'data' => [
-                        'conflicting_honors' => $outOfRangeHonors->map(fn($h) => [
+                        'conflicting_honors' => $outOfRangeHonors->map(fn ($h) => [
                             'id' => $h->id,
                             'jabatan' => $h->jabatan,
                             'tanggal_akhir_kegiatan' => $h->tanggal_akhir_kegiatan?->toDateString(),
@@ -570,20 +636,36 @@ class KegiatanManmitApiController extends Controller
         ];
 
         $updates = [];
-        if ($request->has('nama')) $updates['nama'] = $request->input('nama');
-        if ($request->has('tgl_mulai_pelaksanaan')) $updates['tgl_mulai_pelaksanaan'] = $request->input('tgl_mulai_pelaksanaan');
-        if ($request->has('tgl_akhir_pelaksanaan')) $updates['tgl_akhir_pelaksanaan'] = $request->input('tgl_akhir_pelaksanaan');
-        if ($request->has('tgl_mulai_penawaran')) $updates['tgl_mulai_penawaran'] = $request->input('tgl_mulai_penawaran');
-        if ($request->has('tgl_akhir_penawaran')) $updates['tgl_akhir_penawaran'] = $request->input('tgl_akhir_penawaran');
-        if ($request->has('jenis_kegiatan')) $updates['jenis_kegiatan'] = strtoupper($request->input('jenis_kegiatan'));
-        if ($request->has('frekuensi_kegiatan')) $updates['frekuensi_kegiatan'] = strtoupper($request->input('frekuensi_kegiatan'));
-        if ($request->has('template_kontrak')) $updates['template_kontrak'] = $request->input('template_kontrak');
+        if ($request->has('nama')) {
+            $updates['nama'] = $request->input('nama');
+        }
+        if ($request->has('tgl_mulai_pelaksanaan')) {
+            $updates['tgl_mulai_pelaksanaan'] = $request->input('tgl_mulai_pelaksanaan');
+        }
+        if ($request->has('tgl_akhir_pelaksanaan')) {
+            $updates['tgl_akhir_pelaksanaan'] = $request->input('tgl_akhir_pelaksanaan');
+        }
+        if ($request->has('tgl_mulai_penawaran')) {
+            $updates['tgl_mulai_penawaran'] = $request->input('tgl_mulai_penawaran');
+        }
+        if ($request->has('tgl_akhir_penawaran')) {
+            $updates['tgl_akhir_penawaran'] = $request->input('tgl_akhir_penawaran');
+        }
+        if ($request->has('jenis_kegiatan')) {
+            $updates['jenis_kegiatan'] = strtoupper($request->input('jenis_kegiatan'));
+        }
+        if ($request->has('frekuensi_kegiatan')) {
+            $updates['frekuensi_kegiatan'] = strtoupper($request->input('frekuensi_kegiatan'));
+        }
+        if ($request->has('template_kontrak')) {
+            $updates['template_kontrak'] = $request->input('template_kontrak');
+        }
 
         $kegiatan->update($updates);
 
         $stateAfter = array_merge($stateBefore, $updates);
 
-        \App\Services\ApiAuditService::record(
+        ApiAuditService::record(
             request: $request,
             action: 'UPDATE_KEGIATAN_MANMIT',
             targetModel: KegiatanManmit::class,
@@ -646,8 +728,8 @@ class KegiatanManmitApiController extends Controller
         // Tentukan ID kegiatan
         $id = $request->input('id');
         if (empty($id)) {
-            $extracted = \App\Supports\Constants::getTextInParentheses($request->input('nama'));
-            if (!empty(trim($extracted))) {
+            $extracted = Constants::getTextInParentheses($request->input('nama'));
+            if (! empty(trim($extracted))) {
                 $id = trim($extracted);
             } else {
                 $id = Str::upper(Str::slug($request->input('nama')));
@@ -667,13 +749,13 @@ class KegiatanManmitApiController extends Controller
         $endDate = Carbon::parse($request->input('tgl_akhir_pelaksanaan'));
 
         // Validasi tanggal_akhir_kegiatan untuk honor-honor jika disediakan
-        if (!empty($honorsInput)) {
+        if (! empty($honorsInput)) {
             foreach ($honorsInput as $idx => $hInput) {
                 $hDate = isset($hInput['tanggal_akhir_kegiatan']) ? Carbon::parse($hInput['tanggal_akhir_kegiatan']) : $endDate;
                 if ($hDate->lt($startDate) || $hDate->gt($endDate)) {
                     return response()->json([
                         'status' => 'error',
-                        'message' => "Honor ke-" . ($idx + 1) . " ({$hInput['jabatan']}) memiliki tanggal akhir kegiatan ({$hDate->format('d M Y')}) di luar rentang pelaksanaan kegiatan utama ({$startDate->format('d M Y')} s/d {$endDate->format('d M Y')}).",
+                        'message' => 'Honor ke-'.($idx + 1)." ({$hInput['jabatan']}) memiliki tanggal akhir kegiatan ({$hDate->format('d M Y')}) di luar rentang pelaksanaan kegiatan utama ({$startDate->format('d M Y')} s/d {$endDate->format('d M Y')}).",
                     ], 422);
                 }
             }
@@ -689,12 +771,12 @@ class KegiatanManmitApiController extends Controller
                 'tgl_mulai_penawaran' => $request->input('tgl_mulai_penawaran'),
                 'tgl_akhir_penawaran' => $request->input('tgl_akhir_penawaran'),
                 'jenis_kegiatan' => strtoupper($request->input('jenis_kegiatan', 'SURVEI')),
-                'frekuensi_kegiatan' => $request->input('frekuensi_kegiatan', \App\Supports\Constants::FREKUENSI_TAHUNAN),
+                'frekuensi_kegiatan' => $request->input('frekuensi_kegiatan', Constants::FREKUENSI_TAHUNAN),
                 'template_kontrak' => $request->input('template_kontrak'),
             ]);
 
             $createdHonors = [];
-            if (!empty($honorsInput)) {
+            if (! empty($honorsInput)) {
                 foreach ($honorsInput as $hInput) {
                     $jabatan = trim($hInput['jabatan']);
                     $jenisHonor = Str::upper(trim($hInput['jenis_honor']));
@@ -716,7 +798,7 @@ class KegiatanManmitApiController extends Controller
                         'jabatan' => $honor->jabatan,
                         'jenis_honor' => $honor->jenis_honor,
                         'satuan_honor' => $honor->satuan_honor,
-                        'harga_per_satuan' => (float)$honor->harga_per_satuan,
+                        'harga_per_satuan' => (float) $honor->harga_per_satuan,
                         'tanggal_akhir_kegiatan' => $honor->tanggal_akhir_kegiatan?->toDateString(),
                         'tanggal_pembayaran_maksimal' => $honor->tanggal_pembayaran_maksimal?->toDateString(),
                     ];
@@ -724,7 +806,7 @@ class KegiatanManmitApiController extends Controller
             }
 
             // Catat audit log
-            \App\Services\ApiAuditService::record(
+            ApiAuditService::record(
                 request: $request,
                 action: 'CREATE_KEGIATAN_MANMIT',
                 targetModel: KegiatanManmit::class,
@@ -779,7 +861,7 @@ class KegiatanManmitApiController extends Controller
     {
         $kegiatan = KegiatanManmit::with(['honors.alokasiHonors'])->find($id);
 
-        if (!$kegiatan) {
+        if (! $kegiatan) {
             return response()->json([
                 'status' => 'error',
                 'message' => "Kegiatan Manmit dengan ID '{$id}' tidak ditemukan.",
@@ -805,14 +887,14 @@ class KegiatanManmitApiController extends Controller
 
         DB::beginTransaction();
         try {
-            $honorsData = $kegiatan->honors->map(fn($h) => $h->getAttributes())->toArray();
+            $honorsData = $kegiatan->honors->map(fn ($h) => $h->getAttributes())->toArray();
             $kegiatanData = $kegiatan->getAttributes();
 
             // Hapus honor-honor anak terlebih dahulu
             $kegiatan->honors()->delete();
             $kegiatan->delete();
 
-            \App\Services\ApiAuditService::record(
+            ApiAuditService::record(
                 request: $request,
                 action: 'DELETE_KEGIATAN_MANMIT',
                 targetModel: KegiatanManmit::class,
@@ -840,5 +922,81 @@ class KegiatanManmitApiController extends Controller
                 'deleted_honors_count' => count($honorsData),
             ],
         ]);
+    }
+
+    /**
+     * Transform entitas Mitra menjadi format representasi API beserta sisa SBML dan kesiapan beban kerja.
+     *
+     * @return array<string, mixed>
+     */
+    private function transformMitraRow(
+        Mitra $mitra,
+        int $tahun,
+        bool $isCompact,
+        bool $withSbml,
+        ?int $targetBulan,
+        ?Honor $honor,
+        float $targetVolume,
+        float $totalHonor
+    ): array {
+        $kemitraan = $mitra->kemitraans->first();
+        $status = $kemitraan?->status ?? 'BELUM_TERDAFTAR';
+
+        $row = [
+            'id' => $mitra->id,
+            'id_sobat' => $mitra->id_sobat,
+            'nik' => $mitra->nik,
+            'nama' => $mitra->nama_1,
+            'status_kemitraan' => $status,
+            'tahun_kemitraan' => $tahun,
+        ];
+
+        $sisaSurvei = 0;
+        $sisaSensus = 0;
+        if ($withSbml && $targetBulan) {
+            $start = Carbon::create($tahun, $targetBulan, 1)->startOfMonth();
+            $end = Carbon::create($tahun, $targetBulan, 1)->endOfMonth();
+            $remaining = HonorService::getMitraRemainingBudget($mitra->id, $start, $end);
+            $sisaSurvei = $remaining['min_survei'] ?? $remaining['survei'] ?? 0;
+            $sisaSensus = $remaining['min_sensus'] ?? $remaining['sensus'] ?? 0;
+
+            $row['sisa_sbml'] = [
+                'bulan' => $targetBulan,
+                'sisa_survei' => $sisaSurvei,
+                'sisa_sensus' => $sisaSensus,
+            ];
+        }
+
+        // Indikator kesiapan spesifik jika honor_id diberikan
+        if ($honor) {
+            $eval = HonorAllocationService::validateEligibility($mitra, $honor, $targetVolume);
+            $jenisKegiatan = $honor->kegiatanManmit instanceof KegiatanManmit ? $honor->kegiatanManmit->jenis_kegiatan : null;
+            $row['eligibility'] = [
+                'eligible' => $eval['eligible'],
+                'message' => $eval['message'],
+                'honor_id' => $honor->id,
+                'jabatan' => $honor->jabatan,
+                'jenis_kegiatan' => $jenisKegiatan,
+                'target' => $targetVolume,
+                'satuan' => $honor->satuan_honor,
+                'harga_per_satuan' => (float) $honor->harga_per_satuan,
+                'beban_honor' => $totalHonor,
+            ];
+        }
+
+        if (! $isCompact) {
+            $row['email'] = $mitra->email;
+            $row['no_telp'] = $mitra->no_telp;
+            $row['nomor_wa'] = $mitra->nomor_wa;
+            $row['whatsapp_target'] = $mitra->whatsapp_target;
+            $row['whatsapp_url'] = $mitra->whatsapp_url;
+            $row['kecamatan'] = $mitra->kecamatan_domisili;
+            $row['desa'] = $mitra->desa_domisili;
+            $row['jenis_kelamin'] = $mitra->jenis_kelamin;
+            $row['posisi'] = $mitra->posisi ?? $mitra->posisi_daftar;
+            $row['created_at'] = $mitra->created_at;
+        }
+
+        return $row;
     }
 }
