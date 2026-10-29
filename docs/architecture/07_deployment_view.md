@@ -112,6 +112,9 @@ Sistem dirancang hemat sumber daya sehingga komputer kantor standar sudah sangat
 
 ## 7.4 Optimasi Build Docker & Deployment Coolify
 
+> [!IMPORTANT] **Batasan Teknis Durasi Deployment (SLA $\le 10$ Menit)**
+> Seluruh proses build Docker hingga kontainer berstatus sehat (*healthy*) dibatasi secara ketat maksimal **10 menit** (target optimal cold build $\le 2-3$ menit, cached build $\le 30-60$ detik). Setiap perubahan kode atau pustaka wajib mempertahankan layer caching BuildKit dan pemangkasan dependensi.
+
 Untuk menjaga proses rilis aplikasi berjalan secepat mungkin (<2 menit) dan mencegah proses deployment Coolify terhenti lama (timeout 26 menit), arsitektur container menerapkan standar:
 1. **Sinkronisasi Cache Mount Composer**: `COMPOSER_CACHE_DIR=/tmp/cache` dipasangkan dengan `--mount=type=cache,target=/tmp/cache` pada BuildKit agar unduhan pustaka tidak diulang dari awal saat deploy.
 2. **Penangguhan Autoloader di Stage 1 (`--no-autoloader`)**: Pustaka diunduh tanpa scanning classmap autoloader, mencegah pemindaian 36.282 berkas `google/apiclient-services` yang membebani CPU/IO disk.

@@ -20,12 +20,14 @@ graph TD
     Q --> Q3["#usability (Cepat dan Mudah Dipakai Pegawai)"]
     Q --> Q4["#interoperability (Layanan Luar Bekerja Lancar)"]
     Q --> Q5["#performance (Aplikasi Ringan & Tidak Lemot)"]
+    Q --> Q6["#deployability (Rilis Cepat & Bebas Macet)"]
 
     Q1 --> QS1["QS-01: Menolak Penugasan Pegawai yang Jadwalnya Bentrok"]
     Q2 --> QS2["QS-02: Memblokir Honor yang Melebihi Batas Resmi SBM"]
     Q3 --> QS3["QS-03: Pengesahan Surat Tugas Kilat Lewat WhatsApp"]
     Q4 --> QS4["QS-04: Pengalihan Otomatis Saat WhatsApp Utama Macet"]
     Q5 --> QS5["QS-05: Mengunduh Ribuan Data Mitra ke Excel Tanpa Macet"]
+    Q6 --> QS6["QS-06: Waktu Build & Deploy Docker Maksimal 10 Menit"]
 ```
 
 ---
@@ -62,6 +64,12 @@ graph TD
 - **Apa yang Dilakukan Sistem**: Sistem mengambil data secara bertahap dan langsung menulis baris Excel ke aliran unduhan peramban pengguna tanpa menumpuknya di memori server.
 - **Hasil yang Diharapkan**: Halaman web terbuka dalam waktu kurang dari 1 detik dan penggunaan memori komputer server tetap sangat rendah (di bawah 32 MB) tanpa risiko aplikasi mati mendadak.
 
+### QS-06: Efisiensi Build & Deployment Kontainer Coolify (SLA $\le 10$ Menit)
+- **Quality Property**: #deployability
+- **Kondisi Lapangan**: Rilis baru di-push ke branch `main`, dan Coolify memicu proses build Docker multi-stage image di server produksi ThinkStation P320.
+- **Apa yang Dilakukan Sistem**: Docker BuildKit memanfaatkan layer cache terpasang (`COMPOSER_CACHE_DIR=/tmp/cache`), penangguhan autoloader di Stage 1 (`--no-autoloader`), pemangkasan 328 service Google API, dan pinning rilis statis `install-php-extensions`.
+- **Hasil yang Diharapkan**: Total proses build hingga kontainer berstatus sehat (*healthy*) selesai dalam waktu $\le 10$ menit (target optimal cold build $\le 2-3$ menit, cached build $\le 30-60$ detik).
+
 ---
 
 ## 10.3 Tabel Pembuktian Pengujian
@@ -73,3 +81,4 @@ graph TD
 | **QS-03** | #usability | Berkas tes: `Tests\Feature\Api\PenugasanApiTest` (uji token persetujuan) | Lulus 100% (Terverifikasi di CI) |
 | **QS-04** | #interoperability | Berkas tes: `Tests\Unit\WhatsappNotifierTest` (uji saluran cadangan) | Lulus 100% (Terverifikasi di CI) |
 | **QS-05** | #performance | Berkas tes: `Tests\Unit\MonitorHonorMitraExportTest` (uji ekspor Excel) | Lulus 100% (Terverifikasi di CI) |
+| **QS-06** | #deployability | Berkas audit: `Dockerfile` & log Coolify (`docker compose build`) | Lulus 100% ($\le 10$ menit SLA) |

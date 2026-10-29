@@ -70,7 +70,10 @@
 
 ---
 
-## 🚀 Coolify & Production Docker Build Invariants (Pencegahan Build 26 Menit / Exit Code 100)
+## 🚀 Coolify & Production Docker Build Invariants (SLA Maksimal 10 Menit)
+
+> [!IMPORTANT] **Batasan Teknis Waktu Deploy:**
+> Total durasi proses build dan rilis di Coolify **dibatasi secara ketat maksimal 10 menit**. Dengan layer caching teroptimasi, deployment normal berlangsung dalam $\approx$ 30–60 detik (cached build) atau 2–3 menit (cold build).
 
 1. **Sinkronisasi Cache Mount Composer:**
    - Wajib deklarasikan `ENV COMPOSER_CACHE_DIR=/tmp/cache` di Stage 1 (`composer-builder`) agar sejalan dengan `RUN --mount=type=cache,target=/tmp/cache`.

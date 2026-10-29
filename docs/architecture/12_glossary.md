@@ -43,3 +43,4 @@ Seksi ini memuat penjelasan istilah sehari-hari yang sering digunakan di lingkun
 | **SAML 2.0 (Login Akun BPS)** | Standar masuk akun resmi instansi (rIDM). | Pegawai cukup login sekali menggunakan akun email/NIP resmi BPS untuk membuka sistem. |
 | **Opt-Out Notifikasi** | Pilihan menu bagi pegawai untuk menolak atau mematikan pesan WhatsApp tertentu. | Menjaga kenyamanan pegawai agar pesan otomatis di ponselnya tidak berlebihan. |
 | **Pengujian di Memori (In-Memory Testing)** | Menjalankan tes otomatis di ruang memori sementara yang terpisah. | Menjamin program bebas kesalahan tanpa risiko mengubah atau merusak data asli kantor. |
+| **SLA Deployment ($\le 10$ Menit)** | Batasan waktu maksimal proses rilis kontainer Docker baru di server kantor hingga siap dipakai. | Memastikan perbaikan program dan pembaruan fitur segera terpasang cepat tanpa downtime berkepanjangan. |

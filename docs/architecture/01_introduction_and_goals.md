@@ -56,6 +56,7 @@ Sasaran mutu sistem dirancang agar sistem benar-benar bermanfaat dan aman diguna
 | 3 | #usability | Mudah & Cepat Digunakan di HP Maupun Laptop | Pimpinan bisa menyetujui tugas dalam hitungan detik lewat WhatsApp; tampilan web rapi dan nyaman dibuka dari layar HP. |
 | 4 | #interoperability | Terhubung Aman dengan Layanan Lain | Masuk cukup pakai akun SSO BPS (rIDM), pesan terkirim lancar lewat WhatsApp, dan laporan dibantu AI secara aman. |
 | 5 | #performance | Cepat dan Ringan saat Mengunduh Data | Membuka ribuan data mitra dan mengunduh berkas Excel laporan tetap cepat tanpa membuat komputer kantor lemot atau macet. |
+| 6 | #deployability | Proses Rilis & Deploy Cepat ($\le 10$ Menit) | Pembaruan aplikasi dan perbaikan bug dapat dirilis ke server produksi tanpa proses build yang menggantung atau macet lama. |
 
 ---
 
