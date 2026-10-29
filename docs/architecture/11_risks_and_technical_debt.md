@@ -1,8 +1,8 @@
 # 11. Risiko dan Catatan Perbaikan (Risks and Technical Debt)
 
 > [!INFO] **Architecture Provenance & Freshness**
-> - **Verified Commit**: `54c7394` (branch: `main`)
-> - **Verified Timestamp**: `2026-10-29T09:42:00+07:00`
+> - **Verified Commit**: `e02307b` (branch: `main`)
+> - **Verified Timestamp**: `2026-10-29T12:40:00+07:00`
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
