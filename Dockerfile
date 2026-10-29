@@ -50,8 +50,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Binary PHP Extension Installer
-ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+# Binary PHP Extension Installer (Pinned version for deterministic BuildKit layer caching)
+ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/download/2.12.6/install-php-extensions /usr/local/bin/
 
 # Fast Binary Extension Installation
 RUN install-php-extensions \
