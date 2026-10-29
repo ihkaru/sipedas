@@ -1,4 +1,9 @@
-# Task Checklist
+# Task Checklist & Stack Guide
+
+> [!IMPORTANT] **Konvensi Nama & Identitas Aplikasi:**
+> - **Dokter V**: Nama resmi dari **keseluruhan aplikasi/platform** ini.
+> - **SiPEDAS**: Nama lama aplikasi yang sekarang telah menjadi **codename repositori** Git saja (`ihkaru/sipedas`).
+> - **Sipancong**: Hanyalah **codename modul pengajuan & verifikasi berkas pembayaran**.
 
 ## Tech Stack (Penting untuk riset dokumentasi)
 

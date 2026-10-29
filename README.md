@@ -2,6 +2,11 @@
 **Digitalisasi dan Otomatisasi Kelola Transaksi Keuangan Elektronik Real-time - Verifikasi**  
 *Kerangka Kerja Tata Kelola Penugasan, Perjalanan Dinas, dan Pembayaran Honor Mitra untuk Satuan Kerja BPS Kabupaten/Kota se-Indonesia.*
 
+> [!IMPORTANT] **Pedoman Naming & Identitas Aplikasi (Branding vs. Codename)**
+> - **Dokter V**: Nama resmi dari **keseluruhan aplikasi dan platform** ini (telah diterapkan pada UI, header, notifikasi WhatsApp, dan laporan resmi).
+> - **SiPEDAS**: Nama historis lama aplikasi yang sekarang **hanya dipertahankan sebagai codename repositori** Git saja (`ihkaru/sipedas`).
+> - **Sipancong**: **Bukan nama aplikasi**, melainkan **codename internal untuk modul pengajuan & verifikasi berkas pembayaran** (perjalanan dinas, transport lokal, honor survei/sensus).
+
 ---
 
 ## 📌 Fitur Utama

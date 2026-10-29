@@ -1,7 +1,9 @@
 # GEMINI.md — Architecture Standards, Development Protocol & Quality Gates
 
-> [!NOTE] **Repository Ground Truth**
-> - **Application**: DOKTER-V
+> [!NOTE] **Repository Ground Truth & Naming Taxonomy**
+> - **Official Application Name**: **Dokter V** — Nama resmi dari **keseluruhan aplikasi dan platform** ini.
+> - **Repository Codename**: **SiPEDAS** — Nama lama historis yang saat ini **hanya berfungsi sebagai codename repositori** Git (`ihkaru/sipedas`).
+> - **Module Codename**: **Sipancong** — Hanyalah **codename internal untuk modul alur pengajuan & verifikasi pembayaran** keuangan (`app/Models/Sipancong/`, rute pembayaran).
 > - **Domain**: Tata Kelola Penugasan, Perjalanan Dinas (SPPD), Verifikasi Berkas Pembayaran Keuangan, dan Pembayaran Honor Mitra Statistik (SBM 2026) di lingkungan Badan Pusat Statistik (BPS).
 > - **Framework Roadmap**: [docs/ROADMAP.md](docs/ROADMAP.md) | [Rencana Pelaksanaan Fase 2](docs/roadmap/phase-02/README.md)
 > - **Portability Contract**: File ini berkomitmen 100% portabel dan bebas dari referensi path lokal maupun kredensial mesin tertentu.

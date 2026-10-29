@@ -1,12 +1,18 @@
 # 1. Pengantar dan Tujuan (Introduction and Goals)
 
 > [!INFO] **Architecture Provenance & Freshness**
-> - **Verified Commit**: `4235153` (branch: `main`)
-> - **Verified Timestamp**: `2026-10-28T12:30:00+07:00`
+> - **Verified Commit**: `54c7394` (branch: `main`)
+> - **Verified Timestamp**: `2026-10-29T09:42:00+07:00`
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
 Dokumen ini menjelaskan rancangan dan cara kerja sistem **Dokter-V** (Digitalisasi dan Otomatisasi Kelola Transaksi Keuangan Elektronik Real-time - Verifikasi). Sistem ini menyatukan pengelolaan surat tugas dinas, pengelolaan honor mitra statistik, pemantauan dan verifikasi berkas pembayaran keuangan, serta pembuatan laporan perjalanan dinas yang dibantu kecerdasan buatan (**LPD AI**) yang dirancang portabel untuk dapat diadopsi oleh seluruh satuan kerja Badan Pusat Statistik (BPS) Kabupaten/Kota di Indonesia.
+
+> [!IMPORTANT] **Klarifikasi Identitas & Taksonomi Penamaan (Branding vs. Codename)**
+> Untuk mencegah kerancuan istilah:
+> 1. **Dokter V / Dokter-V**: Nama resmi dari **keseluruhan aplikasi dan platform** ini secara utuh.
+> 2. **SiPEDAS**: Nama historis lama aplikasi yang saat ini **hanya berfungsi sebagai codename repositori** kode sumber Git (`ihkaru/sipedas`).
+> 3. **Sipancong**: Hanyalah **codename internal untuk modul pengajuan dan verifikasi berkas pembayaran** keuangan (perjalanan dinas, transport lokal, honor survei/sensus).
 
 ---
 

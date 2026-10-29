@@ -1,8 +1,8 @@
 # 5. Bagian-Bagian Penyusun Sistem (Building Block View)
 
 > [!INFO] **Architecture Provenance & Freshness**
-> - **Verified Commit**: `4235153` (branch: `main`)
-> - **Verified Timestamp**: `2026-10-28T12:30:00+07:00`
+> - **Verified Commit**: `54c7394` (branch: `main`)
+> - **Verified Timestamp**: `2026-10-29T09:42:00+07:00`
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
@@ -86,7 +86,9 @@ graph TD
 - **Pencetak Kontrak (SPK) & BAST**: Membuat naskah kontrak kerja bulanan dan lembar serah terima hasil kerja yang bisa langsung dicetak dalam bentuk PDF resmi instansi.
 - **Layar Pantau Mitra**: Menampilkan dashboard yang menunjukkan mitra mana yang jadwalnya masih kosong, pas, atau terlalu padat, serta bisa diunduh ke Excel.
 
-### 3. Modul Verifikasi Keuangan (Verifikasi Keuangan)
+### 3. Modul Verifikasi Keuangan (Codename Modul: Sipancong)
+> [!NOTE]
+> Modul verifikasi pembayaran ini secara internal memiliki codename modul **Sipancong** (tercermin pada struktur namespace `app/Models/Sipancong/` dan rute redirect legacy). Sipancong bukan nama aplikasi, melainkan nama modul pembayaran di dalam sistem **Dokter-V**.
 - Lokasi kode: [`app/Filament/Resources/PengajuanResource.php`](file:///root/projects/sipedas/app/Filament/Resources/PengajuanResource.php) dan [`app/Models/Pengajuan.php`](file:///root/projects/sipedas/app/Models/Pengajuan.php).
 - **Jalur Berkas Berjenjang**: Memastikan berkas diperiksa langkah demi langkah. Bendahara memeriksa bukti fisik awal $\rightarrow$ PPSPM memeriksa ketersediaan anggaran DIPA $\rightarrow$ PPK menyetujui perintah bayar $\rightarrow$ Bendahara mencatat nomor bukti transfer bank.
 

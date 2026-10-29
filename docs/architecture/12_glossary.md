@@ -1,8 +1,8 @@
 # 12. Glosarium dan Istilah Penting (Glossary)
 
 > [!INFO] **Architecture Provenance & Freshness**
-> - **Verified Commit**: `4235153` (branch: `main`)
-> - **Verified Timestamp**: `2026-10-28T12:30:00+07:00`
+> - **Verified Commit**: `54c7394` (branch: `main`)
+> - **Verified Timestamp**: `2026-10-29T09:42:00+07:00`
 > - **Tracked Paths**: `app/`, `routes/`, `config/`, `database/`
 > - **Drift Status**: `verified`
 
@@ -14,6 +14,9 @@ Seksi ini memuat penjelasan istilah sehari-hari yang sering digunakan di lingkun
 
 | Istilah | Apa Artinya dalam Bahasa Sehari-hari? | Kegunaannya di Aplikasi |
 |:---|:---|:---|
+| **Dokter V** | Nama resmi dari keseluruhan aplikasi dan platform ini (Digitalisasi dan Otomatisasi Kelola Transaksi Keuangan Elektronik Real-time - Verifikasi). | Identitas utama sistem di tampilan web, header, surat dinas, dan pesan WhatsApp. |
+| **SiPEDAS** | Nama lama sistem di masa awal rilis yang kini sudah digantikan oleh Dokter V. | Hanya digunakan sebagai codename repositori kode sumber Git (`ihkaru/sipedas`). |
+| **Sipancong** | Nama sandi (codename internal) khusus untuk modul alur pengajuan dan verifikasi berkas pembayaran keuangan. | Bukan nama aplikasi; hanya merujuk pada modul pemeriksaan tagihan oleh bendahara, PPK, dan PPSPM. |
 | **Surat Tugas** | Surat perintah dinas resmi yang menyatakan bahwa seorang pegawai ditugaskan bekerja ke suatu tempat pada rentang tanggal tertentu. | Dibuat dan diajukan di modul penugasan, diverifikasi agar jadwalnya tidak bentrok, dan ditandatangani pimpinan. |
 | **Mitra Statistik** | Petugas lapangan non-pegawai (masyarakat umum) yang direkrut resmi oleh BPS untuk mendata sensus atau survei lapangan. | Orang yang menerima pembagian tugas sensus/survei dan mendapatkan honorarium. |
 | **SPK (Surat Perjanjian Kerja)** | Naskah kontrak kerja resmi antara BPS dengan mitra statistik yang mengatur berapa honor dan tugas yang harus dikerjakan. | Dicetak otomatis dari aplikasi. Untuk survei digabung per bulan, untuk sensus dibuat per kegiatan. |
