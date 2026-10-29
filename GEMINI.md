@@ -85,6 +85,12 @@ Aplikasi Dokter-V dirancang untuk dapat diadopsi oleh seluruh Satuan Kerja BPS K
 4. **Pencegahan Pembengkakan Storage (Storage Safety)**:
    - Konfigurasi log default menggunakan `LOG_STACK=daily` dengan `LOG_DAILY_DAYS=14`.
    - File log berukuran >50MB wajib dipangkas (*truncate*) otomatis melalui `docker-entrypoint.sh` saat container start dan melalui schedule harian di [routes/console.php](routes/console.php).
+5. **Optimalisasi Build Docker & Invarian Deployment Coolify (Pencegahan Timeout 26 Menit)**:
+   - **Sinkronisasi Cache Mount Composer**: `COMPOSER_CACHE_DIR=/tmp/cache` wajib dideklarasikan secara eksplisit di Stage 1 (`composer-builder`) agar sejalan dengan `--mount=type=cache,target=/tmp/cache`. Tanpa ini, Composer default ke `/root/.cache/composer` dan mengabaikan BuildKit cache (0% cache hit).
+   - **Penangguhan Autoloader di Stage 1 (`--no-autoloader`)**: Stage 1 murni mengunduh dan mengekstrak pustaka. Autoloader tidak boleh di-generate di Stage 1 karena `pre-autoload-dump` terlewati saat `--no-scripts` aktif, memicu pemindaian lambat ke 36.282 berkas `google/apiclient-services`. Autoloader tunggal teroptimasi di-generate pada Stage 5 (`prod`).
+   - **Pemangkasan 328 Service Google API**: Jalankan pemangkasan berkas di Stage 1 via `find vendor/google/apiclient-services/src -mindepth 1 -maxdepth 1 ! -name 'Sheets*' ! -name 'Drive*' -exec rm -rf {} +` agar vendor tetap ramping dan `composer dump-autoload` di Stage 5 tuntas dalam ~3 detik.
+   - **Ketahanan Jaringan & Exit Code 100 (`TransportException`)**: Gunakan fallback retry `|| (sleep 5 && composer install ...)` untuk mengatasi fluktuasi koneksi WAN saat mengunduh package dari GitHub/Packagist.
+   - **Pinning Statis `install-php-extensions`**: Wajib menggunakan rilis bertag statis (misal: `releases/download/2.12.6/install-php-extensions`), dilarang menggunakan URL `/releases/latest/` untuk mencegah pembatalan cache layer Docker saat Coolify melakukan build dengan `--pull`.
 
 ---
 

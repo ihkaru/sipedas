@@ -70,6 +70,22 @@
 
 ---
 
+## 🚀 Coolify & Production Docker Build Invariants (Pencegahan Build 26 Menit / Exit Code 100)
+
+1. **Sinkronisasi Cache Mount Composer:**
+   - Wajib deklarasikan `ENV COMPOSER_CACHE_DIR=/tmp/cache` di Stage 1 (`composer-builder`) agar sejalan dengan `RUN --mount=type=cache,target=/tmp/cache`.
+   - Tanpa env var ini, Composer menulis ke direktori default `/root/.cache/composer` sehingga BuildKit mount cache terabaikan dan setiap build selalu cold-download 100% dari internet.
+2. **Penangguhan Autoloader di Stage 1 (`--no-autoloader`):**
+   - Stage 1 dilarang men-generate classmap autoloader karena `--no-scripts` mem-bypass `pre-autoload-dump` (`Google\Task\Composer::cleanup`), menyisakan 36.282 file `google/apiclient-services` yang membebani I/O disk hingga belasan menit.
+   - Pangkas segera 328 service Google API via `find vendor/google/apiclient-services/src ...` di Stage 1.
+3. **Ketahanan Fluktuasi Jaringan & Exit Code 100 (`TransportException`):**
+   - Exit code 100 di Composer 2.7.5+ adalah `TransportException` (kegagalan unduhan HTTP).
+   - Selalu sertakan retry fallback: `(composer install ... || (sleep 5 && composer install ...))`.
+4. **Pinning Versi Statis `install-php-extensions`:**
+   - Gunakan versi rilis statis (`releases/download/2.12.6/install-php-extensions`), jangan gunakan `/releases/latest/` agar layer ekstensi PHP 100% permanen ter-cache saat Coolify melakukan build `--pull`.
+
+---
+
 - [x] Fix "Attempt to read property 'email' on null" in `Penugasan::canKumpulkan` <!-- id: 0 -->
 - [x] Create Custom Landing Page Resource with Premium Ace Editor <!-- id: 100 -->
 - [x] Sycned with GitHub repository <!-- id: 101 -->
