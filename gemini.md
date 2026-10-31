@@ -5,19 +5,17 @@
 > - **SiPEDAS**: Nama lama aplikasi yang sekarang telah menjadi **codename repositori** Git saja (`ihkaru/sipedas`).
 > - **Sipancong**: Hanyalah **codename modul pengajuan & verifikasi berkas pembayaran**.
 
-## Tech Stack (Penting untuk riset dokumentasi)
+## Tech Stack & Dependency Manifests
 
-| Komponen | Versi | Catatan |
-|---|---|---|
-| **Filament** | **v3.3.33** (`^3.2`) | Selalu cari dokumentasi **Filament v3**, bukan v2 atau v4 |
-| **Laravel** | **v11.x / v13.x** | Framework PHP utama |
-| **PHP** | **8.4.24** | Runtime di dalam container Docker |
-| **Laravel Octane** | **^2.3** | Server: FrankenPHP (bukan Swoole/RoadRunner) |
-| **Livewire** | **v3.x** | Komponen reaktif (bundled dengan Filament v3) |
-| **Tailwind CSS** | **v3.x** | Filament v3 hanya support Tailwind v3, **bukan v4** |
-| **Vite** | **v5.x** | Bundler frontend |
+Versi pustaka dan framework dikelola secara terpusat melalui berkas manifest (*Single Source of Truth*). Jangan mengasumsikan versi statis—selalu rujuk berkas berikut:
 
-> **⚠️ Penting saat riset internet:** Selalu tambahkan kata kunci `filament v3` atau `filament 3.x` saat mencari dokumentasi. Banyak hasil pencarian menampilkan Filament v2 (API sangat berbeda) atau Filament v4 (masih beta/berubah).
+| Layer | Komponen Utama | Sumber Rujukan Versi (*Manifest*) | Catatan Arsitektural |
+|---|---|---|---|
+| **Backend & Admin** | Laravel Framework, Filament Admin, Livewire, Laravel Octane | [`composer.json`](composer.json) & [`composer.lock`](composer.lock) | Octane berjalan di atas **FrankenPHP** (bukan Swoole/RoadRunner). |
+| **Frontend & Styles** | Tailwind CSS, Vite Bundler, PostCSS | [`package.json`](package.json) | Menyesuaikan kompatibilitas theme Filament. |
+| **Container & Runtime** | PHP Runtime, MySQL, Redis | [`docker/Dockerfile`](docker/Dockerfile) & [`docker-compose.dev.yml`](docker-compose.dev.yml) | PHP 8.4 via Docker. Port 8000 host adalah Coolify. |
+
+> **⚠️ Penting saat riset dokumentasi eksternal:** Sebelum mencari referensi API (terutama **Filament** dan **Laravel**), periksa versi major aktif di [`composer.json`](composer.json) terlebih dahulu agar tidak mengimplementasikan API usang atau API versi lama.
 
 ---
 
