@@ -2,10 +2,8 @@
 # Optimized for Coolify & FrankenPHP Worker Mode
 services:
     app:
-        build:
-            context: .
-            target: prod
-        image: sikendis-app:latest
+        image: ghcr.io/ihkaru/sipedas:${IMAGE_TAG:-latest}
+        pull_policy: always
         restart: unless-stopped
         # Production Traefik & SSL Labels
         labels:
