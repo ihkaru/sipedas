@@ -152,7 +152,6 @@ class PengajuanResource extends Resource
                 ])->link()->label("Aksi"),
             ], position: RecordActionsPosition::BeforeColumns)
             ->columns([
-                // Kolom-kolom Anda tidak perlu diubah, sudah benar
                 TextColumn::make('posisiDokumen.nama')
                     ->label("Posisi Dokumen")
                     ->badge()
@@ -164,25 +163,113 @@ class PengajuanResource extends Resource
                         'Selesai' => 'success',
                         default => 'gray',
                     })
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('nomor_pengajuan')
                     ->label("No")
                     ->sortable(query: fn($query, $direction) => $query->orderBy(DB::raw('CAST(nomor_pengajuan AS UNSIGNED)'), $direction))
-                    ->searchable(),
-                TextColumn::make("uraian_pengajuan")->sortable()->searchable()->label("Uraian")->limit(30)->tooltip(fn($state) => $state),
-                TextColumn::make('penanggungJawab.panggilan')->label("Pj.")->sortable()->searchable(),
-                TextColumn::make('pegawai.panggilan')->label("Pengaju")->sortable()->searchable(),
-                TextColumn::make('statusPengajuanPpk.nama')->label("PPK")->badge()->sortable(),
-                TextColumn::make('statusPengajuanPpspm.nama')->label("PPSPM")->badge()->sortable(),
-                TextColumn::make('statusPengajuanBendahara.nama')->label("Bdh.")->badge()->sortable(),
-                TextColumn::make('statusPembayaran.nama')->label("Bayar")->badge()->sortable(),
-                TextColumn::make('nominal_pengajuan')->label("Nominal")->numeric(locale: 'id_ID')->sortable()->searchable(),
-                TextColumn::make('updated_at')->label("Last Update")->since()->sortable(),
-                TextColumn::make('created_at')->label("Diajukan Pada")->date()->sortable(),
+                    ->searchable(isIndividual: true)
+                    ->toggleable(),
+                TextColumn::make('nomor_form_pembayaran')
+                    ->label("No. FP")
+                    ->searchable(isIndividual: true)
+                    ->sortable()
+                    ->toggleable(),
+                TextColumn::make('nomor_detail_fa')
+                    ->label("Detail FA")
+                    ->searchable(isIndividual: true)
+                    ->sortable()
+                    ->toggleable(),
+                TextColumn::make("uraian_pengajuan")
+                    ->sortable()
+                    ->searchable(isIndividual: true)
+                    ->label("Uraian")
+                    ->limit(30)
+                    ->tooltip(fn($state) => $state)
+                    ->toggleable(),
+                TextColumn::make('penanggungJawab.panggilan')
+                    ->label("Pj.")
+                    ->sortable()
+                    ->searchable(isIndividual: true)
+                    ->toggleable(),
+                TextColumn::make('pegawai.panggilan')
+                    ->label("Pengaju")
+                    ->sortable()
+                    ->searchable(isIndividual: true)
+                    ->toggleable(),
+                TextColumn::make('statusPengajuanPpk.nama')
+                    ->label("PPK")
+                    ->badge()
+                    ->sortable()
+                    ->toggleable(),
+                TextColumn::make('statusPengajuanPpspm.nama')
+                    ->label("PPSPM")
+                    ->badge()
+                    ->sortable()
+                    ->toggleable(),
+                TextColumn::make('statusPengajuanBendahara.nama')
+                    ->label("Bdh.")
+                    ->badge()
+                    ->sortable()
+                    ->toggleable(),
+                TextColumn::make('statusPembayaran.nama')
+                    ->label("Bayar")
+                    ->badge()
+                    ->sortable()
+                    ->toggleable(),
+                TextColumn::make('nominal_pengajuan')
+                    ->label("Nominal")
+                    ->numeric(locale: 'id_ID')
+                    ->sortable()
+                    ->searchable(isIndividual: true)
+                    ->toggleable(),
+                TextColumn::make('updated_at')
+                    ->label("Last Update")
+                    ->since()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('created_at')
+                    ->label("Diajukan Pada")
+                    ->date()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->recordUrl(null)
             ->filters([
-                // ... Filters
+                SelectFilter::make('posisi_dokumen_id')
+                    ->label('Posisi Dokumen')
+                    ->relationship('posisiDokumen', 'nama')
+                    ->preload(),
+                SelectFilter::make('nip_penanggung_jawab')
+                    ->label('Penanggung Jawab')
+                    ->relationship('penanggungJawab', 'nama')
+                    ->searchable()
+                    ->preload(),
+                SelectFilter::make('nip_pengaju')
+                    ->label('Pengaju')
+                    ->relationship('pegawai', 'nama')
+                    ->searchable()
+                    ->preload(),
+                SelectFilter::make('status_pengajuan_ppk_id')
+                    ->label('Status PPK')
+                    ->relationship('statusPengajuanPpk', 'nama')
+                    ->preload(),
+                SelectFilter::make('status_pengajuan_ppspm_id')
+                    ->label('Status PPSPM')
+                    ->relationship('statusPengajuanPpspm', 'nama')
+                    ->preload(),
+                SelectFilter::make('status_pengajuan_bendahara_id')
+                    ->label('Status Bendahara')
+                    ->relationship('statusPengajuanBendahara', 'nama')
+                    ->preload(),
+                SelectFilter::make('status_pembayaran_id')
+                    ->label('Status Pembayaran')
+                    ->relationship('statusPembayaran', 'nama')
+                    ->preload(),
+                SelectFilter::make('sub_fungsi_id')
+                    ->label('Sub Fungsi')
+                    ->relationship('subfungsi', 'nama')
+                    ->preload(),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
