@@ -40,6 +40,8 @@ class PengajuanExport implements FromQuery, WithHeadings, ShouldAutoSize, WithMa
     public function headings(): array {
         return [
             'No. Pengajuan',
+            'No. FP',
+            'Detail FA',
             'Tanggal Pengajuan',
             'Uraian Pengajuan',
             'Nominal',
@@ -66,6 +68,8 @@ class PengajuanExport implements FromQuery, WithHeadings, ShouldAutoSize, WithMa
     public function map($pengajuan): array {
         return [
             $pengajuan->nomor_pengajuan,
+            $pengajuan->nomor_form_pembayaran ?? '-',
+            $pengajuan->nomor_detail_fa ?? '-',
             $pengajuan->created_at?->format('d/m/Y'),
             $pengajuan->uraian_pengajuan,
             $pengajuan->nominal_pengajuan,
