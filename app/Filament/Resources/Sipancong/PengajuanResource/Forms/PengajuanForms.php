@@ -13,9 +13,11 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Support\HtmlString;
 
@@ -315,23 +317,41 @@ class PengajuanForms
             $noteField = "catatan_checklist_{$key}";
             $triggers = $config['note_triggers'];
 
-            $components[] = Select::make($statusField)
-                ->label($config['label'])
-                ->options($config['options'])
-                ->default($config['default'])
-                ->live()
-                ->required();
+            $components[] = Group::make([
+                ToggleButtons::make($statusField)
+                    ->label($config['label'])
+                    ->options($config['options'])
+                    ->colors([
+                        'SESUAI' => 'success',
+                        'ADA_SESUAI' => 'success',
+                        'PERLU_PERBAIKAN' => 'warning',
+                        'TIDAK_ADA' => 'danger',
+                    ])
+                    ->icons([
+                        'SESUAI' => 'heroicon-o-check-circle',
+                        'ADA_SESUAI' => 'heroicon-o-check-circle',
+                        'PERLU_PERBAIKAN' => 'heroicon-o-exclamation-triangle',
+                        'TIDAK_ADA' => 'heroicon-o-x-circle',
+                    ])
+                    ->inline()
+                    ->default($config['default'])
+                    ->live()
+                    ->required(),
 
-            $components[] = Textarea::make($noteField)
-                ->label("Catatan {$config['label']}")
-                ->rows(2)
-                ->placeholder("Jelaskan bagian {$config['label']} yang perlu diperbaiki...")
-                ->visible(fn (Get $get): bool => in_array($get($statusField), $triggers, true))
-                ->required(fn (Get $get): bool => in_array($get($statusField), $triggers, true));
+                Textarea::make($noteField)
+                    ->label("Catatan {$config['label']}")
+                    ->rows(2)
+                    ->placeholder("Jelaskan bagian {$config['label']} yang perlu diperbaiki...")
+                    ->visible(fn (Get $get): bool => in_array($get($statusField), $triggers, true))
+                    ->required(fn (Get $get): bool => in_array($get($statusField), $triggers, true)),
+            ])
+                ->columns(1)
+                ->columnSpan(1);
         }
 
         return [
             Fieldset::make('Checklist Kelengkapan & Kesesuaian Dokumen')
+                ->columns(['default' => 1, 'md' => 2])
                 ->schema($components)
                 ->columnSpanFull(),
         ];
