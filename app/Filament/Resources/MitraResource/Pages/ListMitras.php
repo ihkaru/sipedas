@@ -4,6 +4,9 @@ namespace App\Filament\Resources\MitraResource\Pages;
 
 use App\Filament\Resources\MitraResource;
 use App\Imports\MitraImport;
+use App\Models\Kemitraan;
+use App\Models\Mitra;
+use App\Services\KemitraanCarryOverService;
 use Filament\Actions;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -37,6 +40,38 @@ class ListMitras extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
+
+            Actions\Action::make('rekonsiliasiPraRekrutmen')
+                ->label('Rekonsiliasi Pra-Rekrutmen')
+                ->icon('heroicon-o-shield-check')
+                ->color('warning')
+                ->visible(fn (): bool => Kemitraan::query()->where('status_rekrutmen', Kemitraan::REKRUTMEN_BELUM)->exists())
+                ->form([
+                    TextInput::make('tahun')
+                        ->label('Tahun Kemitraan yang Direkonsiliasi')
+                        ->numeric()
+                        ->required()
+                        ->default((int) date('Y') + 1)
+                        ->minValue(2020),
+                    TextInput::make('alasan')
+                        ->label('Catatan Penonaktifan')
+                        ->default('Dinonaktifkan pasca-rekrutmen resmi (tidak tercatat lulus pada KEPKA).'),
+                ])
+                ->requiresConfirmation()
+                ->modalHeading('Nonaktifkan Sisa Mitra Pra-Rekrutmen?')
+                ->modalDescription('Aksi ini akan mengubah status semua mitra yang masih bertanda "Belum Lulus Rekrutmen" pada tahun terpilih menjadi TIDAK_AKTIF (TIDAK_LULUS). Histori SPK pelatihan yang sudah terbit tetap aman.')
+                ->action(function (array $data) {
+                    $affected = app(KemitraanCarryOverService::class)->reconcileNonVerified(
+                        (int) $data['tahun'],
+                        $data['alasan'] ?? null
+                    );
+
+                    Notification::make()
+                        ->title('Rekonsiliasi Selesai')
+                        ->body("{$affected} mitra pra-rekrutmen tahun {$data['tahun']} telah ditandai TIDAK_AKTIF (Tidak Lulus).")
+                        ->success()
+                        ->send();
+                }),
 
             Actions\ActionGroup::make([
                 Actions\Action::make('importMitra')
@@ -72,6 +107,12 @@ class ListMitras extends ListRecords
                             ])
                             ->required()
                             ->default('AKTIF'),
+                        Select::make('status_rekrutmen')
+                            ->label('Status Rekrutmen')
+                            ->options(Kemitraan::statusRekrutmenOptions())
+                            ->required()
+                            ->default(Kemitraan::REKRUTMEN_TERVERIFIKASI)
+                            ->helperText('Impor KEPKA resmi akan otomatis memverifikasi mitra pra-rekrutmen yang lulus.'),
                         FileUpload::make('attachment')
                             ->label('File Excel (.xlsx)')
                             ->required()
@@ -119,8 +160,12 @@ class ListMitras extends ListRecords
                             // 1. Dapatkan path relatif file dari disk yang ditentukan
                             $filePath = $data['attachment'];
 
-                            // 2. Buat instance Importer dengan melemparkan data tahun dan status
-                            $importer = new MitraImport($data['tahun'], $data['status']);
+                            // 2. Buat instance Importer dengan melemparkan data tahun, status, dan status rekrutmen
+                            $importer = new MitraImport(
+                                (int) $data['tahun'],
+                                (string) $data['status'],
+                                (string) ($data['status_rekrutmen'] ?? Kemitraan::REKRUTMEN_TERVERIFIKASI)
+                            );
 
                             // 3. Panggil Excel::import dengan 3 argumen
                             Excel::import($importer, $filePath, 'local');
@@ -158,62 +203,89 @@ class ListMitras extends ListRecords
      */
     public function getTabs(): array
     {
-        $currentYear = date('Y');
+        $currentYear = (int) date('Y');
+        $nextYear = $currentYear + 1;
 
-        return [
+        $tabs = [
             // Tab untuk menampilkan semua mitra tanpa filter
             'all' => Tab::make('Semua Mitra'),
-
-            // Tab untuk tahun berjalan (dinamis)
-            (string)$currentYear => Tab::make("Aktif {$currentYear}")
-                ->modifyQueryUsing(
-                    fn(Builder $query) =>
-                    $query->whereHas(
-                        'kemitraans',
-                        fn(Builder $q) =>
-                        $q->where('tahun', $currentYear)->where('status', 'AKTIF')
-                    )
-                )
-                ->badge(
-                    \App\Models\Mitra::query()
-                        ->whereHas('kemitraans', fn(Builder $q) => $q->where('tahun', $currentYear)->where('status', 'AKTIF'))
-                        ->count()
-                )
-                ->icon('heroicon-o-calendar-days'),
-
-            // Tab untuk tahun sebelumnya (dinamis)
-            (string)($currentYear - 1) => Tab::make("Aktif " . ($currentYear - 1))
-                ->modifyQueryUsing(
-                    fn(Builder $query) =>
-                    $query->whereHas(
-                        'kemitraans',
-                        fn(Builder $q) =>
-                        $q->where('tahun', ($currentYear - 1))->where('status', 'AKTIF')
-                    )
-                )
-                ->badge(
-                    \App\Models\Mitra::query()
-                        ->whereHas('kemitraans', fn(Builder $q) => $q->where('tahun', ($currentYear - 1))->where('status', 'AKTIF'))
-                        ->count()
-                )
-                ->icon('heroicon-o-calendar'),
-
-            // Tab khusus untuk melihat semua yang di-blacklist
-            'blacklisted' => Tab::make('Blacklisted')
-                ->modifyQueryUsing(
-                    fn(Builder $query) =>
-                    $query->whereHas(
-                        'kemitraans',
-                        fn(Builder $q) =>
-                        $q->where('status', 'BLACKLISTED')
-                    )
-                )
-                ->badge(
-                    \App\Models\Mitra::query()
-                        ->whereHas('kemitraans', fn(Builder $q) => $q->where('status', 'BLACKLISTED'))
-                        ->count()
-                )
-                ->icon('heroicon-o-no-symbol'),
         ];
+
+        $nextYearCount = Mitra::query()
+            ->whereHas('kemitraans', fn (Builder $q) => $q->where('tahun', $nextYear)->where('status', 'AKTIF'))
+            ->count();
+
+        if ($nextYearCount > 0) {
+            $tabs[(string) $nextYear] = Tab::make("Aktif {$nextYear}")
+                ->modifyQueryUsing(
+                    fn (Builder $query) => $query->whereHas(
+                        'kemitraans',
+                        fn (Builder $q) => $q->where('tahun', $nextYear)->where('status', 'AKTIF')
+                    )
+                )
+                ->badge($nextYearCount)
+                ->icon('heroicon-o-sparkles');
+        }
+
+        $tabs[(string) $currentYear] = Tab::make("Aktif {$currentYear}")
+            ->modifyQueryUsing(
+                fn (Builder $query) => $query->whereHas(
+                    'kemitraans',
+                    fn (Builder $q) => $q->where('tahun', $currentYear)->where('status', 'AKTIF')
+                )
+            )
+            ->badge(
+                Mitra::query()
+                    ->whereHas('kemitraans', fn (Builder $q) => $q->where('tahun', $currentYear)->where('status', 'AKTIF'))
+                    ->count()
+            )
+            ->icon('heroicon-o-calendar-days');
+
+        $tabs[(string) ($currentYear - 1)] = Tab::make('Aktif ' . ($currentYear - 1))
+            ->modifyQueryUsing(
+                fn (Builder $query) => $query->whereHas(
+                    'kemitraans',
+                    fn (Builder $q) => $q->where('tahun', ($currentYear - 1))->where('status', 'AKTIF')
+                )
+            )
+            ->badge(
+                Mitra::query()
+                    ->whereHas('kemitraans', fn (Builder $q) => $q->where('tahun', ($currentYear - 1))->where('status', 'AKTIF'))
+                    ->count()
+            )
+            ->icon('heroicon-o-calendar');
+
+        $belumRekrutmenCount = Mitra::query()
+            ->whereHas('kemitraans', fn (Builder $q) => $q->where('status_rekrutmen', Kemitraan::REKRUTMEN_BELUM))
+            ->count();
+
+        if ($belumRekrutmenCount > 0) {
+            $tabs['belum_rekrutmen'] = Tab::make('Belum Rekrutmen')
+                ->modifyQueryUsing(
+                    fn (Builder $query) => $query->whereHas(
+                        'kemitraans',
+                        fn (Builder $q) => $q->where('status_rekrutmen', Kemitraan::REKRUTMEN_BELUM)
+                    )
+                )
+                ->badge($belumRekrutmenCount)
+                ->badgeColor('warning')
+                ->icon('heroicon-o-exclamation-triangle');
+        }
+
+        $tabs['blacklisted'] = Tab::make('Blacklisted')
+            ->modifyQueryUsing(
+                fn (Builder $query) => $query->whereHas(
+                    'kemitraans',
+                    fn (Builder $q) => $q->where('status', 'BLACKLISTED')
+                )
+            )
+            ->badge(
+                Mitra::query()
+                    ->whereHas('kemitraans', fn (Builder $q) => $q->where('status', 'BLACKLISTED'))
+                    ->count()
+            )
+            ->icon('heroicon-o-no-symbol');
+
+        return $tabs;
     }
 }

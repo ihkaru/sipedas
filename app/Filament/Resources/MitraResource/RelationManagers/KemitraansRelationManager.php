@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\MitraResource\RelationManagers;
 
+use App\Models\Kemitraan;
 use Filament\Forms;
 use Filament\Schemas\Schema;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -29,6 +30,18 @@ class KemitraansRelationManager extends RelationManager
                     ])
                     ->required()
                     ->default('AKTIF'),
+
+                Forms\Components\Select::make('status_rekrutmen')
+                    ->label('Status Rekrutmen')
+                    ->options(Kemitraan::statusRekrutmenOptions())
+                    ->required()
+                    ->default(Kemitraan::REKRUTMEN_TERVERIFIKASI),
+
+                Forms\Components\Textarea::make('catatan')
+                    ->label('Catatan')
+                    ->rows(2)
+                    ->columnSpanFull()
+                    ->placeholder('Misal: Carry-over dari tahun sebelumnya untuk SPK Pelatihan'),
             ]);
     }
 
@@ -46,6 +59,24 @@ class KemitraansRelationManager extends RelationManager
                         'TIDAK_AKTIF' => 'warning',
                         'BLACKLISTED' => 'danger',
                     }),
+                Tables\Columns\TextColumn::make('status_rekrutmen')
+                    ->label('Status Rekrutmen')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        Kemitraan::REKRUTMEN_BELUM => 'Belum Lulus Rekrutmen',
+                        Kemitraan::REKRUTMEN_TIDAK_LULUS => 'Tidak Lulus',
+                        default => 'Terverifikasi',
+                    })
+                    ->color(fn (?string $state): string => match ($state) {
+                        Kemitraan::REKRUTMEN_BELUM => 'warning',
+                        Kemitraan::REKRUTMEN_TIDAK_LULUS => 'danger',
+                        default => 'success',
+                    }),
+                Tables\Columns\TextColumn::make('catatan')
+                    ->label('Catatan')
+                    ->limit(50)
+                    ->tooltip(fn (?string $state): ?string => $state)
+                    ->placeholder('-'),
             ])
             ->headerActions([
                 \Filament\Actions\CreateAction::make(),

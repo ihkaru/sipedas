@@ -12,14 +12,19 @@ class MitraImport implements ToModel, WithHeadingRow, WithUpserts
 {
     private int $tahun;
     private string $status;
+    private string $statusRekrutmen;
 
     /**
-     * Terima tahun dan status dari Filament Action.
+     * Terima tahun, status, dan status rekrutmen dari Filament Action.
      */
-    public function __construct(int $tahun, string $status)
-    {
+    public function __construct(
+        int $tahun,
+        string $status,
+        string $statusRekrutmen = Kemitraan::REKRUTMEN_TERVERIFIKASI
+    ) {
         $this->tahun = $tahun;
         $this->status = $status;
+        $this->statusRekrutmen = $statusRekrutmen;
     }
 
     /**
@@ -93,14 +98,21 @@ class MitraImport implements ToModel, WithHeadingRow, WithUpserts
 
         // Langkah 2: Setelah Mitra berhasil dibuat/diupdate, kelola data Kemitraan-nya.
         if ($mitra) {
+            $kemitraanData = [
+                'status' => $this->status,
+                'status_rekrutmen' => $this->statusRekrutmen,
+            ];
+
+            if ($this->statusRekrutmen === Kemitraan::REKRUTMEN_TERVERIFIKASI) {
+                $kemitraanData['catatan'] = null;
+            }
+
             Kemitraan::updateOrCreate(
                 [
                     'mitra_id' => $mitra->id,
                     'tahun' => $this->tahun,
                 ],
-                [
-                    'status' => $this->status,
-                ]
+                $kemitraanData
             );
         }
 

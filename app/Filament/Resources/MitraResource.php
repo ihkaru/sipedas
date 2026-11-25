@@ -5,9 +5,12 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\MitraResource\Pages;
 use App\Filament\Resources\MitraResource\RelationManagers;
 use App\Filament\Resources\MitraResource\RelationManagers\KemitraansRelationManager;
+use App\Models\Kemitraan;
 use App\Models\Mitra;
+use App\Services\KemitraanCarryOverService;
 use App\Exports\MitraExport;
 use Filament\Forms;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -282,6 +285,32 @@ class MitraResource extends Resource {
                             $q->where('status', $data['value']);
                         });
                     }),
+
+                SelectFilter::make('tahun_kemitraan')
+                    ->label('Tahun Kemitraan')
+                    ->options(function (): array {
+                        $currentYear = (int) date('Y');
+                        $years = range($currentYear + 1, max(2024, $currentYear - 2));
+                        return array_combine(array_map('strval', $years), array_map('strval', $years));
+                    })
+                    ->query(function (Builder $query, array $data): Builder {
+                        if (empty($data['value'])) {
+                            return $query;
+                        }
+
+                        return $query->whereHas('kemitraans', fn (Builder $q) => $q->where('tahun', (int) $data['value']));
+                    }),
+
+                SelectFilter::make('status_rekrutmen')
+                    ->label('Status Rekrutmen')
+                    ->options(Kemitraan::statusRekrutmenOptions())
+                    ->query(function (Builder $query, array $data): Builder {
+                        if (empty($data['value'])) {
+                            return $query;
+                        }
+
+                        return $query->whereHas('kemitraans', fn (Builder $q) => $q->where('status_rekrutmen', $data['value']));
+                    }),
                 SelectFilter::make('kecamatan')
                     ->label('Filter Kecamatan')
                     ->searchable()
@@ -349,6 +378,58 @@ class MitraResource extends Resource {
             ])
             ->bulkActions([
                 \Filament\Actions\BulkActionGroup::make([
+                    BulkAction::make('carry_over_kemitraan')
+                        ->label('Salin ke Kemitraan Tahun Berikutnya')
+                        ->icon('heroicon-o-arrow-right-circle')
+                        ->color('warning')
+                        ->form([
+                            Forms\Components\TextInput::make('tahun_asal')
+                                ->label('Tahun Asal')
+                                ->numeric()
+                                ->required()
+                                ->default((int) date('Y'))
+                                ->minValue(2020),
+                            Forms\Components\TextInput::make('tahun_tujuan')
+                                ->label('Tahun Tujuan')
+                                ->numeric()
+                                ->required()
+                                ->default((int) date('Y') + 1)
+                                ->minValue(2020),
+                            Forms\Components\Select::make('status_rekrutmen')
+                                ->label('Status Rekrutmen Tahun Tujuan')
+                                ->options(Kemitraan::statusRekrutmenOptions())
+                                ->required()
+                                ->default(Kemitraan::REKRUTMEN_BELUM)
+                                ->helperText('Pilih "Belum Lulus Rekrutmen" jika mitra disalin sementara untuk kebutuhan SPK Pelatihan sebelum KEPKA resmi terbit.'),
+                            Forms\Components\Textarea::make('catatan')
+                                ->label('Catatan Kemitraan')
+                                ->rows(2)
+                                ->default(fn (): string => sprintf(
+                                    'Carry-over dari %d untuk SPK Pelatihan — belum lulus rekrutmen mitra %d.',
+                                    (int) date('Y'),
+                                    (int) date('Y') + 1
+                                )),
+                        ])
+                        ->requiresConfirmation()
+                        ->modalHeading('Salin Mitra Terpilih ke Tahun Berikutnya')
+                        ->modalDescription('Mitra terpilih akan didaftarkan pada tahun tujuan dengan status AKTIF agar dapat dibuatkan SPK Pelatihan, disertai penanda status rekrutmen.')
+                        ->action(function (Collection $records, array $data) {
+                            $result = app(KemitraanCarryOverService::class)->carryOver(
+                                $records,
+                                (int) $data['tahun_asal'],
+                                (int) $data['tahun_tujuan'],
+                                (string) $data['status_rekrutmen'],
+                                $data['catatan'] ?? null
+                            );
+
+                            Notification::make()
+                                ->title('Carry-over Kemitraan Selesai')
+                                ->body("Berhasil ditambahkan: {$result['created']} mitra. Dilewati (sudah terdaftar): {$result['skipped_existing']}. Dilewati (blacklisted): {$result['skipped_blacklisted']}.")
+                                ->success()
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
+
                     \Filament\Actions\DeleteBulkAction::make(),
                     BulkAction::make('export_selected')
                         ->label('Export Terpilih')

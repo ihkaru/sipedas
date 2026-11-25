@@ -125,13 +125,39 @@ class Mitra extends Model
                 return '<span class="fi-badge fi-color-gray" style="--c-50:var(--gray-50); --c-400:var(--gray-400); --c-600:var(--gray-600);">Belum Ada</span>';
             }
             return $this->kemitraans->map(function ($kemitraan) {
-                $color = match ($kemitraan->status) {
-                    'AKTIF' => 'success',
-                    'TIDAK_AKTIF' => 'warning',
-                    'BLACKLISTED' => 'danger',
-                    default => 'gray'
+                /** @var Kemitraan $kemitraan */
+                $rekrutmen = $kemitraan->status_rekrutmen ?? Kemitraan::REKRUTMEN_TERVERIFIKASI;
+
+                $color = match (true) {
+                    $kemitraan->status === Kemitraan::STATUS_BLACKLISTED => 'danger',
+                    $rekrutmen === Kemitraan::REKRUTMEN_BELUM => 'warning',
+                    $rekrutmen === Kemitraan::REKRUTMEN_TIDAK_LULUS => 'danger',
+                    $kemitraan->status === Kemitraan::STATUS_AKTIF => 'success',
+                    $kemitraan->status === Kemitraan::STATUS_TIDAK_AKTIF => 'warning',
+                    default => 'gray',
                 };
-                return sprintf('<span class="fi-badge fi-color-%s" style="--c-50:var(--%s-50); --c-400:var(--%s-400); --c-600:var(--%s-600);">%s: %s</span>', $color, $color, $color, $color, $kemitraan->tahun, $kemitraan->status);
+
+                $suffix = match ($rekrutmen) {
+                    Kemitraan::REKRUTMEN_BELUM => ' (Belum Rekrutmen)',
+                    Kemitraan::REKRUTMEN_TIDAK_LULUS => ' (Tidak Lulus)',
+                    default => '',
+                };
+
+                $titleAttr = $kemitraan->catatan
+                    ? sprintf(' title="%s"', e($kemitraan->catatan))
+                    : '';
+
+                return sprintf(
+                    '<span class="fi-badge fi-color-%s"%s style="--c-50:var(--%s-50); --c-400:var(--%s-400); --c-600:var(--%s-600);">%s: %s%s</span>',
+                    $color,
+                    $titleAttr,
+                    $color,
+                    $color,
+                    $color,
+                    e((string) $kemitraan->tahun),
+                    e((string) $kemitraan->status),
+                    e($suffix)
+                );
             })->implode(' ');
         });
     }

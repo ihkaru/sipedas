@@ -103,6 +103,7 @@ class AlokasiHonorRelationManager extends RelationManager
                                             $selectedMitraIds = collect($get('alokasi_data'))->pluck('mitra_id')->toArray();
 
                                             return \App\Models\Mitra::query()
+                                                ->with(['kemitraans' => fn ($q) => $q->where('tahun', $year)])
                                                 ->whereHas('kemitraans', function ($query) use ($year) {
                                                     $query->where('tahun', $year)
                                                         ->where('status', 'AKTIF');
@@ -114,7 +115,7 @@ class AlokasiHonorRelationManager extends RelationManager
                                                 })
                                                 ->limit(50)
                                                 ->get()
-                                                ->mapWithKeys(function ($mitra) use ($honor, $isSensus) {
+                                                ->mapWithKeys(function ($mitra) use ($honor, $isSensus, $year) {
                                                     $startOfMonth = \Carbon\Carbon::parse($honor->tanggal_akhir_kegiatan)->startOfMonth();
                                                     $endOfMonth = \Carbon\Carbon::parse($honor->tanggal_akhir_kegiatan)->endOfMonth();
 
@@ -136,6 +137,12 @@ class AlokasiHonorRelationManager extends RelationManager
                                                     $surveiText = number_format($rem['survei'] / 1000, 0) . 'rb';
                                                     
                                                     $label = "({$mitra->id_sobat}) {$mitra->nama_1} [Sisa S: Rp {$sensusText} | V: Rp {$surveiText}]";
+
+                                                    /** @var \App\Models\Kemitraan|null $kemitraanTahun */
+                                                    $kemitraanTahun = $mitra->kemitraans->firstWhere('tahun', $year);
+                                                    if ($kemitraanTahun instanceof \App\Models\Kemitraan && $kemitraanTahun->isBelumRekrutmen()) {
+                                                        $label .= " [⚠️ BELUM REKRUTMEN {$year}]";
+                                                    }
                                                     
                                                     if (!$res['eligible']) {
                                                         $label .= " [❌ TIDAK LAYAK: {$res['message']}]";
