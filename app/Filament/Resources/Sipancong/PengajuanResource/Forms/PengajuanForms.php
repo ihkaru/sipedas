@@ -161,6 +161,7 @@ class PengajuanForms
 
             Fieldset::make('Hasil Pemeriksaan PPK')
                 ->schema([
+                    ...self::checklistPemeriksaanFields(),
                     Select::make("status_pengajuan_ppk_id")
                         ->label("Status Pemeriksaan")
                         ->preload()
@@ -168,9 +169,9 @@ class PengajuanForms
                         ->live()
                         ->required(),
                     Textarea::make("catatan_ppk")
-                        ->label("Catatan")
-                        ->helperText("Wajib diisi jika status Ditolak atau Disetujui dengan Catatan.")
-                        ->required(fn(Get $get) => in_array($get('status_pengajuan_ppk_id'), [Constants::STATUS_DITOLAK, Constants::STATUS_DISETUJUI_DENGAN_CATATAN])),
+                        ->label("Catatan Tambahan / Kesimpulan PPK")
+                        ->helperText("Otomatis digabung dengan rincian perbaikan checklist. Wajib diisi jika status Ditolak/Disetujui dengan Catatan tanpa rincian checklist.")
+                        ->required(fn(Get $get) => self::isSummaryNoteRequired($get, 'status_pengajuan_ppk_id')),
                 ]),
         ];
     }
@@ -194,6 +195,7 @@ class PengajuanForms
 
             Fieldset::make('Hasil Pemeriksaan PPSPM')
                 ->schema([
+                    ...self::checklistPemeriksaanFields(),
                     Select::make("status_pengajuan_ppspm_id")
                         ->label("Status Pemeriksaan")
                         ->preload()
@@ -201,9 +203,9 @@ class PengajuanForms
                         ->live()
                         ->required(),
                     Textarea::make("catatan_ppspm")
-                        ->label("Catatan")
-                        ->helperText("Wajib diisi jika status Ditolak atau Disetujui dengan Catatan.")
-                        ->required(fn(Get $get) => in_array($get('status_pengajuan_ppspm_id'), [Constants::STATUS_DITOLAK, Constants::STATUS_DISETUJUI_DENGAN_CATATAN])),
+                        ->label("Catatan Tambahan / Kesimpulan PPSPM")
+                        ->helperText("Otomatis digabung dengan rincian perbaikan checklist. Wajib diisi jika status Ditolak/Disetujui dengan Catatan tanpa rincian checklist.")
+                        ->required(fn(Get $get) => self::isSummaryNoteRequired($get, 'status_pengajuan_ppspm_id')),
                 ]),
         ];
     }
@@ -228,6 +230,7 @@ class PengajuanForms
 
             Fieldset::make('Hasil Verifikasi Bendahara')
                 ->schema([
+                    ...self::checklistPemeriksaanFields(),
                     Select::make("status_pengajuan_bendahara_id")
                         ->label("Status Verifikasi")
                         ->preload()
@@ -235,11 +238,124 @@ class PengajuanForms
                         ->live()
                         ->required(),
                     Textarea::make("catatan_bendahara")
-                        ->label("Catatan")
-                        ->helperText("Wajib diisi jika status Ditolak atau Disetujui dengan Catatan.")
-                        ->required(fn(Get $get) => in_array($get('status_pengajuan_bendahara_id'), [Constants::STATUS_DITOLAK, Constants::STATUS_DISETUJUI_DENGAN_CATATAN])),
+                        ->label("Catatan Tambahan / Kesimpulan Bendahara")
+                        ->helperText("Otomatis digabung dengan rincian perbaikan checklist. Wajib diisi jika status Ditolak/Disetujui dengan Catatan tanpa rincian checklist.")
+                        ->required(fn(Get $get) => self::isSummaryNoteRequired($get, 'status_pengajuan_bendahara_id')),
                 ]),
         ];
+    }
+
+    /**
+     * Daftar definisi item checklist pemeriksaan dokumen pembayaran.
+     *
+     * @return array<string, array{label: string, options: array<string, string>, default: string, note_triggers: list<string>}>
+     */
+    public static function checklistItemDefinitions(): array
+    {
+        $standardOptions = [
+            'SESUAI' => 'Sesuai',
+            'PERLU_PERBAIKAN' => 'Perlu Perbaikan',
+        ];
+
+        return [
+            'kak' => [
+                'label' => 'KAK',
+                'options' => $standardOptions,
+                'default' => 'SESUAI',
+                'note_triggers' => ['PERLU_PERBAIKAN'],
+            ],
+            'nominatif' => [
+                'label' => 'Nominatif',
+                'options' => $standardOptions,
+                'default' => 'SESUAI',
+                'note_triggers' => ['PERLU_PERBAIKAN'],
+            ],
+            'fp' => [
+                'label' => 'FP',
+                'options' => $standardOptions,
+                'default' => 'SESUAI',
+                'note_triggers' => ['PERLU_PERBAIKAN'],
+            ],
+            'bukti_pengeluaran' => [
+                'label' => 'Bukti Pengeluaran',
+                'options' => $standardOptions,
+                'default' => 'SESUAI',
+                'note_triggers' => ['PERLU_PERBAIKAN'],
+            ],
+            'sk' => [
+                'label' => 'SK',
+                'options' => [
+                    'ADA_SESUAI' => 'Ada & Sesuai',
+                    'TIDAK_ADA' => 'Tidak Ada',
+                    'PERLU_PERBAIKAN' => 'Perlu Perbaikan',
+                ],
+                'default' => 'ADA_SESUAI',
+                'note_triggers' => ['TIDAK_ADA', 'PERLU_PERBAIKAN'],
+            ],
+            'bukti_lainnya' => [
+                'label' => 'Bukti Pendukung Lainnya',
+                'options' => $standardOptions,
+                'default' => 'SESUAI',
+                'note_triggers' => ['PERLU_PERBAIKAN'],
+            ],
+        ];
+    }
+
+    /**
+     * Membangun komponen checklist reaktif untuk semua pemeriksa (PPK, PPSPM, Bendahara).
+     *
+     * @return array<int, \Filament\Schemas\Components\Component>
+     */
+    private static function checklistPemeriksaanFields(): array
+    {
+        $components = [];
+
+        foreach (self::checklistItemDefinitions() as $key => $config) {
+            $statusField = "checklist_{$key}";
+            $noteField = "catatan_checklist_{$key}";
+            $triggers = $config['note_triggers'];
+
+            $components[] = Select::make($statusField)
+                ->label($config['label'])
+                ->options($config['options'])
+                ->default($config['default'])
+                ->live()
+                ->required();
+
+            $components[] = Textarea::make($noteField)
+                ->label("Catatan {$config['label']}")
+                ->rows(2)
+                ->placeholder("Jelaskan bagian {$config['label']} yang perlu diperbaiki...")
+                ->visible(fn (Get $get): bool => in_array($get($statusField), $triggers, true))
+                ->required(fn (Get $get): bool => in_array($get($statusField), $triggers, true));
+        }
+
+        return [
+            Fieldset::make('Checklist Kelengkapan & Kesesuaian Dokumen')
+                ->schema($components)
+                ->columnSpanFull(),
+        ];
+    }
+
+    private static function isSummaryNoteRequired(Get $get, string $statusField): bool
+    {
+        $requiresNote = in_array(
+            $get($statusField),
+            [Constants::STATUS_DITOLAK, Constants::STATUS_DISETUJUI_DENGAN_CATATAN],
+            true
+        );
+
+        if (! $requiresNote) {
+            return false;
+        }
+
+        foreach (self::checklistItemDefinitions() as $key => $config) {
+            if (in_array($get("checklist_{$key}"), $config['note_triggers'], true)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

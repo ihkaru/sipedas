@@ -12,9 +12,11 @@ use App\Models\Penugasan;
 use App\Supports\Constants;
 use App\Supports\TanggalMerah;
 use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Illuminate\Database\Eloquent\Collection;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
@@ -1269,6 +1271,33 @@ class PenugasanResource extends Resource
             ])
             ->bulkActions([
                 BulkActionGroup::make([
+                    BulkAction::make('bulk_setujui')
+                        ->label('Setujui Terpilih')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Setujui Surat Tugas Terpilih')
+                        ->modalDescription('Semua pengajuan surat tugas terpilih yang memenuhi syarat persetujuan Anda akan disetujui sekaligus. Pengajuan yang bukan wewenang Anda atau sudah diproses akan dilewati.')
+                        ->action(function (Collection $records) {
+                            $approved = 0;
+                            $skipped = 0;
+
+                            foreach ($records as $record) {
+                                /** @var Penugasan $record */
+                                if ($record->canSetujui() && $record->setujui()) {
+                                    $approved++;
+                                } else {
+                                    $skipped++;
+                                }
+                            }
+
+                            Notification::make()
+                                ->title("Persetujuan Massal Selesai")
+                                ->body("Berhasil disetujui: {$approved} pengajuan." . ($skipped > 0 ? " Dilewati: {$skipped} pengajuan." : ''))
+                                ->color($approved > 0 ? 'success' : 'warning')
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
                     DeleteBulkAction::make(),
                 ]),
             ]);

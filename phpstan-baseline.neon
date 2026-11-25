@@ -253,6 +253,12 @@ parameters:
 			path: app/Filament/Resources/MitraResource/Pages/ListMitras.php
 
 		-
+			message: '#^Parameter \#1 \$mitras of method App\\Services\\KemitraanCarryOverService\:\:carryOver\(\) expects Illuminate\\Support\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>, Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Mitra\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filament/Resources/MitraResource/Pages/ListMitras.php
+
+		-
 			message: '#^Match expression does not handle remaining value\: string$#'
 			identifier: match.unhandled
 			count: 1
@@ -289,34 +295,10 @@ parameters:
 			path: app/Filament/Resources/PenugasanResource/Widgets/PenugasanDisetujuiTable.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\RiwayatPengajuan\:\:\$jumlah\.$#'
-			identifier: property.notFound
-			count: 8
-			path: app/Filament/Resources/PenugasanResource/Widgets/StatusSuratTugasAndaChart.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>jumlah" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 8
-			path: app/Filament/Resources/PenugasanResource/Widgets/StatusSuratTugasAndaChart.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>nip" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Filament/Resources/PenugasanResource/Widgets/StatusSuratTugasAndaChart.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\RiwayatPengajuan\:\:\$jumlah\.$#'
-			identifier: property.notFound
-			count: 8
-			path: app/Filament/Resources/PenugasanResource/Widgets/StatusSuratTugasChart.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>jumlah" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 8
-			path: app/Filament/Resources/PenugasanResource/Widgets/StatusSuratTugasChart.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
@@ -646,18 +628,6 @@ parameters:
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
 			count: 3
-			path: app/Http/Controllers/Api/KegiatanManmitApiController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Mitra\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/KegiatanManmitApiController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:filter\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
 			path: app/Http/Controllers/Api/KegiatanManmitApiController.php
 
 		-
@@ -1184,18 +1154,6 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Mitra\:\:\$whatsapp_target\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Mitra.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Mitra.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tahun\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Models/Mitra.php

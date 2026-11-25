@@ -559,6 +559,11 @@ class PengajuanServices {
                 $data['posisi_dokumen_id'] = Constants::POSISI_PENGAJU;
             }
 
+            $structuredNote = self::buildStructuredChecklistNotes($role, $data);
+            if ($structuredNote !== null) {
+                $data["catatan_{$role}"] = $structuredNote;
+            }
+
             $allowedAttributes = [
                 'posisi_dokumen_id',
                 $statusField,
@@ -572,6 +577,45 @@ class PengajuanServices {
         } catch (Throwable $th) {
             Notification::make()->danger()->title("Gagal menyimpan hasil pemeriksaan: " . $th->getMessage())->send();
         }
+    }
+
+    /**
+     * Merangkum hasil checklist dokumen (KAK, Nominatif, FP, Bukti Pengeluaran, SK, Bukti Lainnya)
+     * beserta catatan tambahan pemeriksa menjadi satu teks terstruktur.
+     */
+    public static function buildStructuredChecklistNotes(string $role, array $data): ?string
+    {
+        $checklistLines = [];
+        $definitions = \App\Filament\Resources\Sipancong\PengajuanResource\Forms\PengajuanForms::checklistItemDefinitions();
+
+        foreach ($definitions as $key => $config) {
+            $status = $data["checklist_{$key}"] ?? null;
+            if (! $status || ! in_array($status, $config['note_triggers'], true)) {
+                continue;
+            }
+
+            $statusLabel = $config['options'][$status] ?? $status;
+            $itemNote = trim((string) ($data["catatan_checklist_{$key}"] ?? ''));
+            $checklistLines[] = $itemNote !== ''
+                ? "- {$config['label']} ({$statusLabel}): {$itemNote}"
+                : "- {$config['label']} ({$statusLabel})";
+        }
+
+        $generalNote = trim((string) ($data["catatan_{$role}"] ?? ''));
+
+        if ($checklistLines === [] && $generalNote === '') {
+            return null;
+        }
+
+        $parts = [];
+        if ($checklistLines !== []) {
+            $parts[] = "Rincian Checklist:\n" . implode("\n", $checklistLines);
+        }
+        if ($generalNote !== '') {
+            $parts[] = $checklistLines !== [] ? "Catatan Tambahan: {$generalNote}" : $generalNote;
+        }
+
+        return implode("\n\n", $parts);
     }
 
     public static function pemeriksaanPpk(array $data, Pengajuan $record) {

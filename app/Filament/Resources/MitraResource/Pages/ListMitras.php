@@ -10,6 +10,7 @@ use App\Services\KemitraanCarryOverService;
 use Filament\Actions;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Placeholder;
@@ -40,6 +41,82 @@ class ListMitras extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
+
+            Actions\Action::make('carryOverMitraHeader')
+                ->label('Carry-Over Mitra ' . ((int) date('Y') + 1))
+                ->icon('heroicon-o-arrow-right-circle')
+                ->color('warning')
+                ->form([
+                    Select::make('mitra_ids')
+                        ->label('Pilih Mitra yang Mengikuti Pelatihan / Carry-Over')
+                        ->multiple()
+                        ->searchable()
+                        ->required()
+                        ->getSearchResultsUsing(function (string $search): array {
+                            return Mitra::query()
+                                ->where(function (Builder $q) use ($search) {
+                                    $q->where('nama_1', 'like', "%{$search}%")
+                                        ->orWhere('id_sobat', 'like', "%{$search}%");
+                                })
+                                ->limit(50)
+                                ->get()
+                                ->mapWithKeys(fn (Mitra $m): array => [
+                                    $m->id => "({$m->id_sobat}) {$m->nama_1}",
+                                ])
+                                ->toArray();
+                        })
+                        ->getOptionLabelsUsing(function (array $values): array {
+                            return Mitra::query()
+                                ->whereIn('id', $values)
+                                ->get()
+                                ->mapWithKeys(fn (Mitra $m): array => [
+                                    $m->id => "({$m->id_sobat}) {$m->nama_1}",
+                                ])
+                                ->toArray();
+                        })
+                        ->helperText('Tips: Anda juga bisa mencentang beberapa mitra langsung di tabel lalu memilih "Aksi Massal → Salin ke Kemitraan Tahun Berikutnya".'),
+                    TextInput::make('tahun_asal')
+                        ->label('Tahun Asal')
+                        ->numeric()
+                        ->required()
+                        ->default((int) date('Y'))
+                        ->minValue(2020),
+                    TextInput::make('tahun_tujuan')
+                        ->label('Tahun Tujuan')
+                        ->numeric()
+                        ->required()
+                        ->default((int) date('Y') + 1)
+                        ->minValue(2020),
+                    Select::make('status_rekrutmen')
+                        ->label('Status Rekrutmen Tahun Tujuan')
+                        ->options(Kemitraan::statusRekrutmenOptions())
+                        ->required()
+                        ->default(Kemitraan::REKRUTMEN_BELUM),
+                    Textarea::make('catatan')
+                        ->label('Catatan Kemitraan')
+                        ->rows(2)
+                        ->default(fn (): string => sprintf(
+                            'Carry-over dari %d untuk SPK Pelatihan — belum lulus rekrutmen mitra %d.',
+                            (int) date('Y'),
+                            (int) date('Y') + 1
+                        )),
+                ])
+                ->action(function (array $data) {
+                    $mitras = Mitra::query()->whereIn('id', $data['mitra_ids'] ?? [])->get();
+                    $result = app(KemitraanCarryOverService::class)->carryOver(
+                        $mitras,
+                        (int) $data['tahun_asal'],
+                        (int) $data['tahun_tujuan'],
+                        (string) $data['status_rekrutmen'],
+                        $data['catatan'] ?? null
+                    );
+
+                    Notification::make()
+                        ->title('Carry-over Kemitraan Selesai')
+                        ->body("Berhasil ditambahkan: {$result['created']} mitra. Dilewati (sudah terdaftar): {$result['skipped_existing']}. Dilewati (blacklisted): {$result['skipped_blacklisted']}.")
+                        ->success()
+                        ->send();
+                }),
 
             Actions\Action::make('rekonsiliasiPraRekrutmen')
                 ->label('Rekonsiliasi Pra-Rekrutmen')
