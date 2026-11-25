@@ -153,18 +153,33 @@ class HonorAllocationServiceTest extends TestCase
         $this->assertNotEquals($alokasi1->surat_bast_id, $alokasi2->surat_bast_id);
     }
 
-    public function test_mitra_ineligibility_on_sensus_schedule_overlap(): void
+    public function test_mitra_ineligibility_on_double_sensus_schedule_overlap(): void
     {
         $mitra = $this->createMitra('61044444', 'Bambang Pamungkas', 2026, 'AKTIF');
-        $honorSensus = $this->createKegiatanAndHonor('KEG-SENSUS-1', 'HON-SENSUS-1', 'SENSUS', '2026-07-20', 2000000);
-        $honorLain = $this->createKegiatanAndHonor('KEG-SURV-JULI', 'HON-SURV-JULI', 'SURVEI', '2026-07-25', 100000);
+        $honorSensus1 = $this->createKegiatanAndHonor('KEG-SENSUS-1', 'HON-SENSUS-1', 'SENSUS', '2026-07-20', 2000000);
+        $honorSensus2 = $this->createKegiatanAndHonor('KEG-SENSUS-2', 'HON-SENSUS-2', 'SENSUS', '2026-07-25', 1000000);
 
-        // Alokasikan ke sensus berhasil
-        HonorAllocationService::allocate($mitra->id, $honorSensus->id, 1.0);
+        // Alokasikan ke sensus pertama berhasil
+        HonorAllocationService::allocate($mitra->id, $honorSensus1->id, 1.0);
 
-        // Alokasikan ke kegiatan lain di bulan yang sama (Juli 2026) harus gagal karena bentrok dengan sensus
+        // Alokasikan ke kegiatan sensus lain di periode beririsan harus gagal karena bentrok sesama sensus
         $this->expectException(ValidationException::class);
-        HonorAllocationService::allocate($mitra->id, $honorLain->id, 5.0);
+        HonorAllocationService::allocate($mitra->id, $honorSensus2->id, 1.0);
+    }
+
+    public function test_sensus_and_survei_can_coexist_within_sbml_limit(): void
+    {
+        $mitra = $this->createMitra('61046666', 'Firman Utina', 2026, 'AKTIF');
+        $honorSensus = $this->createKegiatanAndHonor('KEG-SENSUS-CO', 'HON-SENSUS-CO', 'SENSUS', '2026-07-20', 2000000);
+        $honorSurvei = $this->createKegiatanAndHonor('KEG-SURV-CO', 'HON-SURV-CO', 'SURVEI', '2026-07-25', 500000);
+
+        // Alokasikan ke sensus
+        $alokasi1 = HonorAllocationService::allocate($mitra->id, $honorSensus->id, 1.0);
+        $this->assertNotNull($alokasi1->id);
+
+        // Alokasikan ke survei di bulan yang sama (total honor 2.5jt <= SBML Sensus 4.694jt & Survei 3.353jt) -> Berhasil
+        $alokasi2 = HonorAllocationService::allocate($mitra->id, $honorSurvei->id, 1.0);
+        $this->assertNotNull($alokasi2->id);
     }
 
     public function test_mitra_ineligibility_on_sbml_limit_exceeded(): void
