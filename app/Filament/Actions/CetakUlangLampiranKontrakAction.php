@@ -84,6 +84,15 @@ class CetakUlangLampiranKontrakAction
                     ->required()
                     ->live(),
 
+                Select::make('format')
+                    ->label('Format Output')
+                    ->options([
+                        'pdf' => 'File PDF (.pdf) — Siap Unduh / Print',
+                        'html' => 'Tampilan Cetak Browser (HTML)',
+                    ])
+                    ->default('pdf')
+                    ->required(),
+
                 Placeholder::make('preview_ringkasan')
                     ->label('Pratinjau Dokumen')
                     ->content(function (Get $get): HtmlString {
@@ -132,11 +141,17 @@ class CetakUlangLampiranKontrakAction
                     return;
                 }
 
-                $url = route('cetak.kontrak.lampiran', [
+                $params = [
                     'tahun' => $tahun,
                     'bulan' => $bulan,
                     'jenis_kegiatan' => $jenis,
-                ]);
+                ];
+
+                if (($data['format'] ?? 'pdf') === 'pdf') {
+                    $params['format'] = 'pdf';
+                }
+
+                $url = route('cetak.kontrak.lampiran', $params);
 
                 if (is_object($livewire) && method_exists($livewire, 'js')) {
                     $livewire->js('window.open('.Js::from($url).', "_blank")');

@@ -6,6 +6,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>LAMPIRAN PERJANJIAN KERJA - {{ $namaBulan }} {{ $tahun }}</title>
     @php
+        $isPdf = $isPdf ?? false;
         $number = \Illuminate\Support\Number::class;
         $bil = \Terbilang::class;
         $istilahJabatan = [
@@ -15,6 +16,11 @@
         ];
     @endphp
     <style type="text/css">
+        @page {
+            size: a4 landscape;
+            margin: 1.5cm;
+        }
+
         @media print {
             .pagebreak {
                 page-break-before: always;
@@ -29,15 +35,19 @@
             }
         }
 
+        .pagebreak {
+            page-break-before: always;
+        }
+
         * {
             margin: 0;
             padding: 0;
             text-indent: 0;
-            font-family: "Bookman Old Style", serif;
+            font-family: {{ $isPdf ? '"DejaVu Serif", serif' : '"Bookman Old Style", serif' }};
         }
 
         body {
-            padding-top: 64px;
+            padding-top: {{ $isPdf ? '0' : '64px' }};
         }
 
         .print-toolbar {
@@ -127,17 +137,28 @@
 </head>
 
 <body>
-    <div class="print-toolbar no-print">
-        <div class="print-toolbar-meta">
-            <strong>Cetak Ulang Lampiran Kontrak</strong> &mdash;
-            Periode: <strong>{{ $namaBulan }} {{ $tahun }}</strong> |
-            Filter: <strong>{{ $labelJenisKegiatan }}</strong> |
-            Total: <strong>{{ $lampiranGroups->count() }} Lampiran SPK</strong>
+    @if (! $isPdf)
+        <div class="print-toolbar no-print">
+            <div class="print-toolbar-meta">
+                <strong>Cetak Ulang Lampiran Kontrak</strong> &mdash;
+                Periode: <strong>{{ $namaBulan }} {{ $tahun }}</strong> |
+                Filter: <strong>{{ $labelJenisKegiatan }}</strong> |
+                Total: <strong>{{ $lampiranGroups->count() }} Lampiran SPK</strong>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <a
+                    href="{{ route('cetak.kontrak.lampiran', ['tahun' => $tahun, 'bulan' => $bulan, 'jenis_kegiatan' => $jenisKegiatan, 'format' => 'pdf', 'download' => 1]) }}"
+                    class="print-toolbar-btn"
+                    style="background: #16a34a; text-decoration: none;"
+                >
+                    Unduh PDF
+                </a>
+                <button type="button" class="print-toolbar-btn" onclick="window.print()">
+                    Cetak / Print (Ctrl+P)
+                </button>
+            </div>
         </div>
-        <button type="button" class="print-toolbar-btn" onclick="window.print()">
-            Cetak / Print (Ctrl+P)
-        </button>
-    </div>
+    @endif
 
     @foreach ($lampiranGroups as $group)
         @php
@@ -148,18 +169,20 @@
             $jenisKegiatan = $group['jenis_kegiatan'];
         @endphp
 
-        <div class="screen-lampiran-badge no-print">
-            Lampiran {{ $loop->iteration }}/{{ $loop->count }} &bull;
-            {{ $mitra?->nama_1 ?? 'Mitra Tidak Diketahui' }} &bull;
-            {{ $jenisKegiatan }}
-        </div>
+        @if (! $isPdf)
+            <div class="screen-lampiran-badge no-print">
+                Lampiran {{ $loop->iteration }}/{{ $loop->count }} &bull;
+                {{ $mitra?->nama_1 ?? 'Mitra Tidak Diketahui' }} &bull;
+                {{ $jenisKegiatan }}
+            </div>
+        @endif
 
         <p class="s4" style="padding-top: 4pt; padding-left: 5pt; text-indent: 0pt; text-align: left;">Lampiran 1.
             SPK Nomor {{ $kontrak->nomor_surat_perjanjian_kerja }}</p>
         <br><br>
         <h1 style="text-indent: 0pt; text-align: center;">Daftar Kegiatan</h1>
         <p style="text-indent: 0pt; text-align: left"><br /></p>
-        <table style="border-collapse: collapse; margin-left: 6.17pt" cellspacing="0">
+        <table style="border-collapse: collapse; width: 100%;" cellspacing="0">
             <tr style="height: 20pt;">
                 <td style="border: 1pt solid black;">
                     <p class="s5" style="padding: 5pt; text-align:center">No</p>

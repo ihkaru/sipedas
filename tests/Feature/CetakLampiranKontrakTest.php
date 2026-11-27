@@ -208,6 +208,43 @@ class CetakLampiranKontrakTest extends TestCase
             ->assertSee('Tidak ada data lampiran kontrak');
     }
 
+    public function test_http_endpoint_streams_and_downloads_real_pdf_for_all_mitra_in_month(): void
+    {
+        $mitraA = $this->createMitra('61040021', 'Dedi Kurniawan');
+        $mitraB = $this->createMitra('61040022', 'Eka Putri');
+
+        $honorSurvei = $this->createHonor('SRV-PDF', '(SRV-PDF) Survei Industri Mikro', 'SURVEI', 'HON-SRV-PDF', '2026-10-29', 120000);
+        $spkA = $this->createSpk(201, '2026-10-01');
+        $spkB = $this->createSpk(202, '2026-10-01');
+
+        $this->createAlokasi($mitraA, $honorSurvei, $spkA, 2);
+        $this->createAlokasi($mitraB, $honorSurvei, $spkB, 3);
+
+        $streamResponse = $this->get(route('cetak.kontrak.lampiran', [
+            'tahun' => 2026,
+            'bulan' => 10,
+            'jenis_kegiatan' => 'SURVEI',
+            'format' => 'pdf',
+        ]));
+
+        $streamResponse->assertOk();
+        $streamResponse->assertHeader('content-type', 'application/pdf');
+        $this->assertStringStartsWith('%PDF-', $streamResponse->getContent());
+
+        $downloadResponse = $this->get(route('cetak.kontrak.lampiran', [
+            'tahun' => 2026,
+            'bulan' => 10,
+            'jenis_kegiatan' => 'SURVEI',
+            'format' => 'pdf',
+            'download' => 1,
+        ]));
+
+        $downloadResponse->assertOk();
+        $downloadResponse->assertHeader('content-type', 'application/pdf');
+        $this->assertStringContainsString('attachment;', (string) $downloadResponse->headers->get('content-disposition'));
+        $this->assertStringStartsWith('%PDF-', $downloadResponse->getContent());
+    }
+
     public function test_filament_reusable_action_can_be_constructed(): void
     {
         $action = CetakUlangLampiranKontrakAction::make();

@@ -10,6 +10,7 @@ use App\Models\Penugasan;
 use App\Models\Plh;
 use App\Services\LampiranKontrakService;
 use App\Supports\Constants;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
@@ -192,14 +193,27 @@ class PdfController extends Controller {
             ->locale('id')
             ->translatedFormat('F');
 
-        return response(view('kontrak.lampiran_pdf', [
+        $viewData = [
             'lampiranGroups' => $lampiranGroups,
             'tahun' => $tahun,
             'bulan' => $bulan,
             'namaBulan' => $namaBulan,
             'jenisKegiatan' => $jenisKegiatan,
             'labelJenisKegiatan' => LampiranKontrakService::jenisKegiatanLabel($jenisKegiatan),
-        ])->render());
+            'isPdf' => $request->input('format') === 'pdf',
+        ];
+
+        if ($request->input('format') === 'pdf') {
+            $filename = sprintf('Lampiran_SPK_%s_%s_%d.pdf', strtolower($jenisKegiatan), str_replace(' ', '_', $namaBulan), $tahun);
+            $pdf = Pdf::loadView('kontrak.lampiran_pdf', $viewData)
+                ->setPaper('a4', 'landscape');
+
+            return $request->boolean('download')
+                ? $pdf->download($filename)
+                : $pdf->stream($filename);
+        }
+
+        return response(view('kontrak.lampiran_pdf', $viewData)->render());
     }
 
     public function cetakBast() {
