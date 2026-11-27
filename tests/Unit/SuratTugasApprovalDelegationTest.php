@@ -420,11 +420,15 @@ class SuratTugasApprovalDelegationTest extends TestCase
             return str_contains($request->body(), '6281399887766');
         });
 
-        // 4. Submitter & Personil must receive approval notification citing 'Sistem (Otomatis)'
+        // 4. Personil must receive approval notification citing 'Sistem (Otomatis)', but Submitter does NOT by default
         Http::assertSent(function ($request) {
             return str_contains($request->body(), 'Surat Tugas Disetujui') &&
                    str_contains($request->body(), 'Sistem (Otomatis)') &&
-                   (str_contains($request->body(), '6281234567899') || str_contains($request->body(), '6281122334455'));
+                   str_contains($request->body(), '6281122334455');
+        });
+        Http::assertNotSent(function ($request) {
+            return str_contains($request->body(), 'Surat Tugas Disetujui') &&
+                   str_contains($request->body(), '6281234567899');
         });
     }
 
@@ -524,8 +528,8 @@ class SuratTugasApprovalDelegationTest extends TestCase
             'nama_kegiatan' => 'Supervisi Lapangan',
             'level_tujuan' => Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
             'lokasi' => 'Kecamatan Anjongan',
-            'tanggal_mulai' => now()->addDay()->toDateString(),
-            'tanggal_selesai' => now()->addDay()->toDateString(),
+            'tanggal_mulai' => now()->nextWeekday()->toDateString(),
+            'tanggal_selesai' => now()->nextWeekday()->toDateString(),
             'jenis_petugas' => 'PEGAWAI',
             'apakah_sppd' => 1, // SPPD!
             'nips' => [$pegawaiSubmitter->nip],
@@ -546,6 +550,182 @@ class SuratTugasApprovalDelegationTest extends TestCase
             return str_contains($request->body(), 'Pengajuan Surat Tugas Baru') &&
                    str_contains($request->body(), '6285346332883') &&
                    str_contains($request->body(), 'Persetujuan Cepat (1-Klik)');
+        });
+    }
+
+    public function test_auto_approved_self_assignment_sends_no_whatsapp_to_pengaju(): void
+    {
+        Http::fake([
+            '*' => Http::response(['status' => 'success'], 200),
+        ]);
+
+        config(['services.whatsapp.aina.api_key' => 'test-api-key']);
+        Setting::updateOrCreate(['key' => 'whatsapp_notification_enabled'], ['value' => '1']);
+        Setting::updateOrCreate(['key' => 'st_approval_mode'], ['value' => 'delegasi_ppspm']);
+        Setting::updateOrCreate(['key' => 'st_non_sppd_mode'], ['value' => 'auto_approve_silent']);
+        Setting::where('key', 'whatsapp_notify_st_auto_approve_pengaju')->delete();
+
+        $pegawaiSelf = Pegawai::factory()->create([
+            'nip' => '199801012022032005',
+            'nama' => 'Self Submitter',
+            'panggilan' => 'Kak Self',
+            'nomor_wa' => '081234567800',
+        ]);
+        $userSelf = User::factory()->create(['email' => $pegawaiSelf->email]);
+        $userSelf->assignRole('pegawai');
+
+        $this->actingAs($userSelf);
+
+        $kegiatan = Kegiatan::factory()->create(['id' => 998883, 'nama' => 'Penyusunan Publikasi']);
+
+        $dataPengajuan = [
+            'nama_kegiatan' => 'Penyusunan Publikasi',
+            'level_tujuan' => Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
+            'lokasi' => 'Kantor BPS',
+            'tanggal_mulai' => now()->addDay()->toDateString(),
+            'tanggal_selesai' => now()->addDay()->toDateString(),
+            'jenis_petugas' => 'PEGAWAI',
+            'apakah_sppd' => 0, // Non-SPPD
+            'nips' => [$pegawaiSelf->nip],
+            'mitras' => [],
+        ];
+
+        $success = Penugasan::ajukan($dataPengajuan);
+        $this->assertTrue($success);
+
+        // Self-submitter must NOT receive any disetujui WhatsApp message
+        Http::assertNotSent(function ($request) {
+            return str_contains($request->body(), 'Surat Tugas Disetujui') &&
+                   str_contains($request->body(), '6281234567800');
+        });
+    }
+
+    public function test_auto_approved_notifies_pengaju_when_setting_explicitly_enabled(): void
+    {
+        Http::fake([
+            '*' => Http::response(['status' => 'success'], 200),
+        ]);
+
+        config(['services.whatsapp.aina.api_key' => 'test-api-key']);
+        Setting::updateOrCreate(['key' => 'whatsapp_notification_enabled'], ['value' => '1']);
+        Setting::updateOrCreate(['key' => 'st_approval_mode'], ['value' => 'delegasi_ppspm']);
+        Setting::updateOrCreate(['key' => 'st_non_sppd_mode'], ['value' => 'auto_approve_silent']);
+        Setting::updateOrCreate(['key' => 'whatsapp_notify_st_auto_approve_pengaju'], ['value' => '1']);
+
+        $pegawaiPengaju = Pegawai::factory()->create([
+            'nip' => '199801012022032006',
+            'nama' => 'Pengaju Task',
+            'panggilan' => 'Kak Pengaju',
+            'nomor_wa' => '081234567801',
+        ]);
+        $userPengaju = User::factory()->create(['email' => $pegawaiPengaju->email]);
+        $userPengaju->assignRole('pegawai');
+
+        $pegawaiTertugas = Pegawai::factory()->create([
+            'nip' => '199801012022032007',
+            'nama' => 'Tertugas Task',
+            'panggilan' => 'Bg Tertugas',
+            'nomor_wa' => '081234567802',
+        ]);
+
+        $this->actingAs($userPengaju);
+
+        $kegiatan = Kegiatan::factory()->create(['id' => 998884, 'nama' => 'Briefing Petugas']);
+
+        $dataPengajuan = [
+            'nama_kegiatan' => 'Briefing Petugas',
+            'level_tujuan' => Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
+            'lokasi' => 'Aula BPS',
+            'tanggal_mulai' => now()->addDay()->toDateString(),
+            'tanggal_selesai' => now()->addDay()->toDateString(),
+            'jenis_petugas' => 'PEGAWAI',
+            'apakah_sppd' => 0, // Non-SPPD
+            'nips' => [$pegawaiTertugas->nip],
+            'mitras' => [],
+        ];
+
+        $success = Penugasan::ajukan($dataPengajuan);
+        $this->assertTrue($success);
+
+        // When setting is enabled, BOTH pengaju and personil receive WhatsApp messages
+        Http::assertSent(function ($request) {
+            return str_contains($request->body(), 'Surat Tugas Disetujui') &&
+                   str_contains($request->body(), '6281234567801');
+        });
+        Http::assertSent(function ($request) {
+            return str_contains($request->body(), 'Surat Tugas Disetujui') &&
+                   str_contains($request->body(), '6281234567802');
+        });
+    }
+
+    public function test_manual_approved_surat_tugas_always_notifies_pengaju(): void
+    {
+        Http::fake([
+            '*' => Http::response(['status' => 'success'], 200),
+        ]);
+
+        config(['services.whatsapp.aina.api_key' => 'test-api-key']);
+        Setting::updateOrCreate(['key' => 'whatsapp_notification_enabled'], ['value' => '1']);
+        Setting::updateOrCreate(['key' => 'st_approval_mode'], ['value' => 'ppspm_only']);
+        Setting::where('key', 'whatsapp_notify_st_auto_approve_pengaju')->delete();
+
+        $kasubbagNip = '198008112005021004';
+        $pegawaiKasubbag = Pegawai::factory()->create([
+            'nip' => $kasubbagNip,
+            'nama' => 'Muhammad Adwin, S.Mn.',
+            'panggilan' => 'Bg Adwin',
+            'nomor_wa' => '085346332883',
+        ]);
+        $userKasubbag = User::factory()->create(['email' => $pegawaiKasubbag->email]);
+        $userKasubbag->assignRole('ppspm');
+
+        $pegawaiPengaju = Pegawai::factory()->create([
+            'nip' => '199801012022032008',
+            'nama' => 'Pengaju SPPD',
+            'panggilan' => 'Kak Pengaju SPPD',
+            'nomor_wa' => '081234567803',
+        ]);
+        $userPengaju = User::factory()->create(['email' => $pegawaiPengaju->email]);
+        $userPengaju->assignRole('pegawai');
+
+        $pegawaiTertugas = Pegawai::factory()->create([
+            'nip' => '199801012022032009',
+            'nama' => 'Petugas SPPD',
+            'panggilan' => 'Bg Petugas',
+            'nomor_wa' => '081234567804',
+        ]);
+
+        $this->actingAs($userPengaju);
+
+        $kegiatan = Kegiatan::factory()->create(['id' => 998885, 'nama' => 'Pendataan SPPD Khusus']);
+
+        $dataPengajuan = [
+            'nama_kegiatan' => 'Pendataan SPPD Khusus',
+            'level_tujuan' => Constants::LEVEL_PENUGASAN_TANPA_LOKASI,
+            'lokasi' => 'Kecamatan Siantan',
+            'tanggal_mulai' => now()->nextWeekday()->toDateString(),
+            'tanggal_selesai' => now()->nextWeekday()->toDateString(),
+            'jenis_petugas' => 'PEGAWAI',
+            'apakah_sppd' => 1, // SPPD -> requires manual approval
+            'nips' => [$pegawaiTertugas->nip],
+            'mitras' => [],
+        ];
+
+        $success = Penugasan::ajukan($dataPengajuan);
+        $this->assertTrue($success);
+
+        $penugasan = Penugasan::where('nip', $pegawaiTertugas->nip)->latest('id')->first();
+        $this->actingAs($userKasubbag);
+        $penugasan->setujui();
+
+        // Manual approval MUST notify pengaju (Kak Pengaju SPPD) and personil (Bg Petugas)
+        Http::assertSent(function ($request) {
+            return str_contains($request->body(), 'Surat Tugas Disetujui') &&
+                   str_contains($request->body(), '6281234567803');
+        });
+        Http::assertSent(function ($request) {
+            return str_contains($request->body(), 'Surat Tugas Disetujui') &&
+                   str_contains($request->body(), '6281234567804');
         });
     }
 }

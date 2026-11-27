@@ -316,18 +316,28 @@ class SuratTugasNotificationService
             $authUser = auth()->user();
             $authPegawai = $authUser?->pegawai;
 
+            $isAutoApproved = false;
+
             if (! empty($approverName)) {
                 $namaPenyetuju = $approverName;
+                if ($approverName === 'Sistem (Otomatis)') {
+                    $isAutoApproved = true;
+                }
             } elseif (
-                Setting::where('key', 'st_approval_mode')->value('value') === 'auto_approve' ||
+                Setting::get('st_approval_mode', 'delegasi_ppspm') === 'auto_approve' ||
                 ($penugasan->jenis_surat_tugas === Constants::NON_SPPD && in_array(Setting::get('st_non_sppd_mode', 'auto_approve_notify'), ['auto_approve_notify', 'auto_approve_silent']))
             ) {
                 $namaPenyetuju = 'Sistem (Otomatis)';
+                $isAutoApproved = true;
             } elseif ($authUser && Penugasan::isUserApprover($authUser, $penugasan->plh_id)) {
                 $namaPenyetuju = $authPegawai ? ($authPegawai->panggilan ?? $authPegawai->nama) : 'Penyetuju';
             } else {
                 $namaPenyetuju = 'Penyetuju (Otoritas Satker)';
             }
+
+            // Apakah notifikasi ke pengaju perlu diabaikan pada persetujuan otomatis?
+            $notifyPengajuOnAuto = (bool) Setting::get('whatsapp_notify_st_auto_approve_pengaju', false);
+            $skipPengaju = $isAutoApproved && ! $notifyPengajuOnAuto;
 
             $namaKegiatan = $penugasan->kegiatan ? $penugasan->kegiatan->nama : 'Kegiatan Dinas';
             $namaTertugas = ! empty($penugasan->nip)
@@ -347,15 +357,26 @@ class SuratTugasNotificationService
             // Kumpulkan nomor WA tujuan (Pengaju dan Personil tertugas jika berbeda)
             $targets = collect();
 
-            if ($penugasan->pengaju && ! empty($penugasan->pengaju->nomor_wa)) {
-                $targets->put($penugasan->pengaju->nomor_wa, $penugasan->pengaju->panggilan ?? $penugasan->pengaju->nama);
+            $pengajuWa = $penugasan->pengaju?->nomor_wa;
+            if (! $skipPengaju && ! empty($pengajuWa)) {
+                $targets->put($pengajuWa, $penugasan->pengaju->panggilan ?? $penugasan->pengaju->nama);
             }
 
             $personilPegawai = $penugasan->pegawai;
             $personilMitra = $penugasan->mitra;
             $personilWa = ! empty($penugasan->nip) ? $personilPegawai?->nomor_wa : $personilMitra?->nomor_wa;
-            if (! empty($personilWa) && ! $targets->has($personilWa)) {
-                $targets->put($personilWa, $personilPegawai ? ($personilPegawai->panggilan ?? $namaTertugas) : $namaTertugas);
+
+            if (! empty($personilWa)) {
+                $isSelfAssigned = ! empty($penugasan->nip_pengaju) && ! empty($penugasan->nip) && ($penugasan->nip_pengaju === $penugasan->nip);
+                $isSamePhoneAsPengaju = ! empty($pengajuWa) && (
+                    WhatsappNotifier::normalizeAinaRecipient($pengajuWa) === WhatsappNotifier::normalizeAinaRecipient($personilWa)
+                );
+
+                if ($skipPengaju && ($isSelfAssigned || $isSamePhoneAsPengaju)) {
+                    // Jangan kirim ke personil jika merupakan pengaju itu sendiri pada penugasan auto-approved
+                } elseif (! $targets->has($personilWa)) {
+                    $targets->put($personilWa, $personilPegawai ? ($personilPegawai->panggilan ?? $namaTertugas) : $namaTertugas);
+                }
             }
 
             foreach ($targets as $targetWa => $namaPenerima) {

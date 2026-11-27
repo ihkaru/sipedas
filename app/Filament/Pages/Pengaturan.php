@@ -46,6 +46,7 @@ class Pengaturan extends Page implements HasForms
             'st_non_sppd_mode' => $settings['st_non_sppd_mode'] ?? config('satker.defaults.st_non_sppd_mode', 'auto_approve_notify'),
             'whatsapp_notify_st_baru' => isset($settings['whatsapp_notify_st_baru']) ? (bool) $settings['whatsapp_notify_st_baru'] : true,
             'whatsapp_notify_st_disetujui' => isset($settings['whatsapp_notify_st_disetujui']) ? (bool) $settings['whatsapp_notify_st_disetujui'] : true,
+            'whatsapp_notify_st_auto_approve_pengaju' => isset($settings['whatsapp_notify_st_auto_approve_pengaju']) ? (bool) $settings['whatsapp_notify_st_auto_approve_pengaju'] : (bool) config('satker.defaults.st_auto_approve_notify_pengaju', false),
             'whatsapp_notify_st_revisi' => isset($settings['whatsapp_notify_st_revisi']) ? (bool) $settings['whatsapp_notify_st_revisi'] : true,
             'whatsapp_notify_st_ditolak' => isset($settings['whatsapp_notify_st_ditolak']) ? (bool) $settings['whatsapp_notify_st_ditolak'] : true,
             'whatsapp_notify_st_tembusan_kepala' => isset($settings['whatsapp_notify_st_tembusan_kepala']) ? (bool) $settings['whatsapp_notify_st_tembusan_kepala'] : false,
@@ -127,6 +128,11 @@ class Pengaturan extends Page implements HasForms
                                     Toggle::make('whatsapp_notify_st_disetujui')
                                         ->label('Surat Tugas Disetujui (ke Pengaju & Pegawai)')
                                         ->helperText('Kirim WhatsApp ke pengaju saat surat tugas telah disetujui.')
+                                        ->live(),
+
+                                    Toggle::make('whatsapp_notify_st_auto_approve_pengaju')
+                                        ->label('Kirim WhatsApp ke Pengaju saat Disetujui Otomatis')
+                                        ->helperText('Jika dinonaktifkan (default), surat tugas yang disetujui otomatis oleh sistem (seperti Non-SPPD atau mode bypass) tidak akan dikirimkan ke pengaju untuk menghindari notifikasi berlebih.')
                                         ->live(),
 
                                     Toggle::make('whatsapp_notify_st_revisi')

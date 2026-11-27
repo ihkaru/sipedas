@@ -597,7 +597,9 @@ class Penugasan extends Model
             $isNonSppdAuto = ($this->jenis_surat_tugas === Constants::NON_SPPD && in_array($nonSppdMode, ['auto_approve_notify', 'auto_approve_silent']));
 
             $approverLabel = null;
-            if ($approvalMode === 'auto_approve' || $isNonSppdAuto || $mode_langsung) {
+            if ($approvalMode === 'auto_approve' || $isNonSppdAuto) {
+                $approverLabel = 'Sistem (Otomatis)';
+            } elseif ($mode_langsung) {
                 $authUser = auth()->user();
                 if (! $authUser || ! self::isUserApprover($authUser, $this->plh_id)) {
                     $approverLabel = 'Sistem (Otomatis)';

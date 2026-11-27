@@ -34,6 +34,7 @@ class Setting extends Model
             'st_approval_mode' => config('satker.defaults.st_approval_mode', $default ?? 'delegasi_ppspm'),
             'st_non_sppd_mode' => config('satker.defaults.st_non_sppd_mode', $default ?? 'auto_approve_notify'),
             'whatsapp_notify_st_tembusan_kepala' => config('satker.defaults.st_tembusan_kepala', $default ?? true),
+            'whatsapp_notify_st_auto_approve_pengaju' => config('satker.defaults.st_auto_approve_notify_pengaju', $default ?? false),
             'ppk_instant_auto_approve' => config('satker.defaults.ppk_instant_auto_approve', $default ?? false),
             default => $default,
         };

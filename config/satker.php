@@ -94,6 +94,7 @@ return [
         'st_approval_mode' => env('ST_APPROVAL_MODE', 'delegasi_ppspm'),
         'st_non_sppd_mode' => env('ST_NON_SPPD_MODE', 'auto_approve_notify'),
         'st_tembusan_kepala' => env('WHATSAPP_NOTIFY_ST_TEMBUSAN_KEPALA', true),
+        'st_auto_approve_notify_pengaju' => env('WHATSAPP_NOTIFY_ST_AUTO_APPROVE_PENGAJU', false),
         'ppk_instant_auto_approve' => env('PPK_INSTANT_AUTO_APPROVE', false),
     ],
 
