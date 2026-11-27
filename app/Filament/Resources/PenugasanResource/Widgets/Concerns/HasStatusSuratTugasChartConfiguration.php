@@ -41,7 +41,10 @@ trait HasStatusSuratTugasChartConfiguration
         Constants::STATUS_PENGAJUAN_DICAIRKAN => '#14b8a6',
     ];
 
-    protected ?string $maxHeight = '300px';
+    protected function getMaxHeight(): ?string
+    {
+        return '300px';
+    }
 
     protected function getType(): string
     {
