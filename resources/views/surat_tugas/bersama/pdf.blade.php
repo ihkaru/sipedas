@@ -24,15 +24,77 @@
     <title>SPPD</title>
     <meta name="author" content="Afif;OpenTBS 1.9.12" />
     <style type="text/css">
+        @page {
+            size: A4 portrait;
+            margin: 15mm;
+        }
+
+        @page landscape-page {
+            size: A4 landscape;
+            margin: 12mm 15mm;
+        }
+
+        .landscape {
+            page: landscape-page;
+            width: 100%;
+        }
+
+        .portrait {
+            page: auto;
+        }
+
+        .lampiran-header {
+            margin-left: auto;
+            width: 240pt;
+            text-align: left;
+            margin-bottom: 10pt;
+        }
+
+        .lampiran-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .lampiran-table thead {
+            display: table-header-group;
+        }
+
+        .lampiran-table tbody {
+            display: table-row-group;
+        }
+
+        .lampiran-table tr {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .lampiran-table th,
+        .lampiran-table td {
+            border: 1pt solid black;
+            padding: 5pt 6pt;
+            vertical-align: middle;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .lampiran-signature {
+            margin-top: 16pt;
+            margin-left: auto;
+            width: 240pt;
+            text-align: center;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
         @media print {
             .pagebreak {
                 page-break-before: always;
+                break-before: page;
             }
 
-            /* page-break-after works, as well */
             body {
                 background: none;
-                -ms-zoom: 1.665;
             }
 
             div.portrait,
@@ -44,8 +106,9 @@
             }
 
             div.landscape {
-                transform: rotate(270deg) translate(-250mm, 0);
-                transform-origin: 0 0;
+                page: landscape-page;
+                break-before: page;
+                page-break-before: always;
             }
         }
 
@@ -810,320 +873,105 @@
         NIP. <span style="color: #1f1f1f">{{ $plhAktifSaatPengajuan->nip }}</span>
     </p>
     @if (count($penugasans) > 1)
-        <div class="pagebreak"></div>
         <div class="landscape">
-            <p style="text-indent: 0pt; text-align: left"><br /></p>
-            <p
-                style="
-            padding-top: 5pt;
-            padding-left: 450pt;
-            width: 500px;
-            text-indent: 0pt;
-            text-align: left;
-        ">
-                Lampiran
-            </p>
-            <p
-                style="
-            width: 500px;
-            padding-left: 450pt;
-            text-indent: 0pt;
-            line-height: 12pt;
-            text-align: left;
-        ">
-                Nomor : {{ $penugasans->first()->suratTugas->nomor_surat_tugas }}
-            </p>
-            <p
-                style="
-            padding-left: 450pt;
-            width: 500px;
-            text-indent: 0pt;
-            line-height: 12pt;
-            text-align: left;
-        ">
-                Tanggal : {{ $c::parse($penugasans->first()->tgl_pengajuan_tugas)->translatedFormat('d F Y') }}
-            </p>
-            <p style="text-indent: 0pt; text-align: left"><br /></p>
-            <table style="border-collapse: collapse; margin-left: 25pt" cellspacing="0">
-                <tr style="height: 35pt">
-                    <td
-                        style="
-                width: 26pt;
-                border-top-style: solid;
-                border-top-width: 1pt;
-                border-left-style: solid;
-                border-left-width: 1pt;
-                border-bottom-style: solid;
-                border-bottom-width: 1pt;
-                border-right-style: solid;
-                border-right-width: 1pt;
-            ">
-                        <p style="text-indent: 0pt; text-align: left"><br /></p>
-                        <p class="s1"
-                            style="
-                padding-left: 5pt;
-                padding-right: 4pt;
-                text-indent: 0pt;
-                text-align: center;
-                ">
-                            No
-                        </p>
-                    </td>
-                    <td
-                        style="
-                width: 199pt;
-                border-top-style: solid;
-                border-top-width: 1pt;
-                border-left-style: solid;
-                border-left-width: 1pt;
-                border-bottom-style: solid;
-                border-bottom-width: 1pt;
-                border-right-style: solid;
-                border-right-width: 1pt;
-            ">
-                        <p style="text-indent: 0pt; text-align: left"><br /></p>
-                        <p class="s1"
-                            style="
-                padding-left: 7pt;
-                padding-right: 7pt;
-                text-indent: 0pt;
-                text-align: center;
-                width: 200px;
-                ">
-                            Nama
-                        </p>
-                    </td>
-                    <td
-                        style="
-                width: 135pt;
-                border-top-style: solid;
-                border-top-width: 1pt;
-                border-left-style: solid;
-                border-left-width: 1pt;
-                border-bottom-style: solid;
-                border-bottom-width: 1pt;
-                border-right-style: solid;
-                border-right-width: 1pt;
-            ">
-                        <p style="text-indent: 0pt; text-align: left"><br /></p>
-                        <p class="s1"
-                            style="
-                padding-left: 11pt;
-                padding-right: 11pt;
-                text-indent: 0pt;
-                text-align: center;
-                ">
-                            {{ $labelIdentitasBersama }}
-                        </p>
-                    </td>
-                    <td
-                        style="
-                width: 116pt;
-                border-top-style: solid;
-                border-top-width: 1pt;
-                border-left-style: solid;
-                border-left-width: 1pt;
-                border-bottom-style: solid;
-                border-bottom-width: 1pt;
-                border-right-style: solid;
-                border-right-width: 1pt;
-            ">
-                        <p style="text-indent: 0pt; text-align: left"><br /></p>
-                        <p class="s1"
-                            style="
-                padding-left: 8pt;
-                padding-right: 8pt;
-                text-indent: 0pt;
-                text-align: center;
-                ">
-                            Pangkat/Gol
-                        </p>
-                    </td>
-                    <td
-                        style="
-                width: 209pt;
-                border-top-style: solid;
-                border-top-width: 1pt;
-                border-left-style: solid;
-                border-left-width: 1pt;
-                border-bottom-style: solid;
-                border-bottom-width: 1pt;
-                border-right-style: solid;
-                border-right-width: 1pt;
-            ">
-                        <p style="text-indent: 0pt; text-align: left"><br /></p>
-                        <p class="s1"
-                            style="
-                padding-left: 17pt;
-                padding-right: 17pt;
-                text-indent: 0pt;
-                text-align: center;
-                width: 250px;
-                ">
-                            Jabatan
-                        </p>
-                    </td>
-                </tr>
-                @foreach ($penugasans as $penugasan)
-                    <tr style="height: 27pt">
-                        <td
-                            style="
-                    width: 26pt;
-                    border-top-style: solid;
-                    border-top-width: 1pt;
-                    border-left-style: solid;
-                    border-left-width: 1pt;
-                    border-bottom-style: solid;
-                    border-bottom-width: 1pt;
-                    border-right-style: solid;
-                    border-right-width: 1pt;
-                ">
-                            <p class="s2"
-                                style="
-                    padding-top: 7pt;
-                    padding-left: 5pt;
-                    padding-right: 4pt;
-                    text-indent: 0pt;
-                    text-align: center;
-                    ">
-                                {{ $loop->index + 1 }}.
-                            </p>
-                        </td>
-                        <td
-                            style="
-                    width: 199pt;
-                    border-top-style: solid;
-                    border-top-width: 1pt;
-                    border-left-style: solid;
-                    border-left-width: 1pt;
-                    border-bottom-style: solid;
-                    border-bottom-width: 1pt;
-                    border-right-style: solid;
-                    border-right-width: 1pt;
-                ">
-                            <p class="s2"
-                                style="
-                    padding-top: 7pt;
-                    padding-left: 7pt;
-                    padding-right: 7pt;
-                    text-indent: 0pt;
-                    text-align: center;
-                    ">
-                                {{ $penugasan?->pegawai?->nama ?? $penugasan?->mitra->nama_1 }}
-                            </p>
-                        </td>
-                        <td
-                            style="
-                    width: 135pt;
-                    border-top-style: solid;
-                    border-top-width: 1pt;
-                    border-left-style: solid;
-                    border-left-width: 1pt;
-                    border-bottom-style: solid;
-                    border-bottom-width: 1pt;
-                    border-right-style: solid;
-                    border-right-width: 1pt;
-                ">
-                            <p class="s2"
-                                style="
-                    padding-top: 7pt;
-                    padding-left: 11pt;
-                    padding-right: 11pt;
-                    text-indent: 0pt;
-                    text-align: center;
-                    ">
-                                {{ $penugasan->nip ?? $penugasan->id_sobat }}
-                            </p>
-                        </td>
-                        <td
-                            style="
-                    width: 116pt;
-                    border-top-style: solid;
-                    border-top-width: 1pt;
-                    border-left-style: solid;
-                    border-left-width: 1pt;
-                    border-bottom-style: solid;
-                    border-bottom-width: 1pt;
-                    border-right-style: solid;
-                    border-right-width: 1pt;
-                ">
-                            <p class="s2"
-                                style="
-                    padding-top: 7pt;
-                    padding-left: 8pt;
-                    padding-right: 8pt;
-                    text-indent: 0pt;
-                    text-align: center;
-                    ">
-                                {{ $penugasan->isMitra ? '-' : $penugasan->pegawai->pangkat_golongan }}
-                            </p>
-                        </td>
-                        <td
-                            style="
-                    width: 209pt;
-                    border-top-style: solid;
-                    border-top-width: 1pt;
-                    border-left-style: solid;
-                    border-left-width: 1pt;
-                    border-bottom-style: solid;
-                    border-bottom-width: 1pt;
-                    border-right-style: solid;
-                    border-right-width: 1pt;
-                ">
-                            <p class="s2"
-                                style="
-                    padding-top: 7pt;
-                    padding-left: 17pt;
-                    padding-right: 17pt;
-                    text-indent: 0pt;
-                    text-align: center;
-                    ">
-                                {{ $penugasan->isMitra ? $cons::JABATAN_MITRA : $penugasan->pegawai->jabatan }}
-                            </p>
-                        </td>
+            <div class="lampiran-header">
+                <p style="padding-top: 5pt; text-indent: 0pt; text-align: left;">
+                    Lampiran
+                </p>
+                <p style="text-indent: 0pt; line-height: 12pt; text-align: left;">
+                    Nomor : {{ $penugasans->first()->suratTugas->nomor_surat_tugas }}
+                </p>
+                <p style="text-indent: 0pt; line-height: 12pt; text-align: left;">
+                    Tanggal : {{ $c::parse($penugasans->first()->tgl_pengajuan_tugas)->translatedFormat('d F Y') }}
+                </p>
+            </div>
+            <table class="lampiran-table" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">
+                            <p class="s1" style="text-align: center;">No</p>
+                        </th>
+                        <th style="width: 28%;">
+                            <p class="s1" style="text-align: center;">Nama</p>
+                        </th>
+                        <th style="width: 20%;">
+                            <p class="s1" style="text-align: center;">{{ $labelIdentitasBersama }}</p>
+                        </th>
+                        <th style="width: 17%;">
+                            <p class="s1" style="text-align: center;">Pangkat/Gol</p>
+                        </th>
+                        <th style="width: 30%;">
+                            <p class="s1" style="text-align: center;">Jabatan</p>
+                        </th>
                     </tr>
-                @endforeach
+                </thead>
+                <tbody>
+                    @foreach ($penugasans as $penugasan)
+                        <tr>
+                            <td>
+                                <p class="s2" style="text-align: center;">
+                                    {{ $loop->iteration }}.
+                                </p>
+                            </td>
+                            <td>
+                                <p class="s2" style="text-align: left;">
+                                    {{ $penugasan?->pegawai?->nama ?? $penugasan?->mitra?->nama_1 }}
+                                </p>
+                            </td>
+                            <td>
+                                <p class="s2" style="text-align: center;">
+                                    {{ $penugasan->nip ?? $penugasan->id_sobat }}
+                                </p>
+                            </td>
+                            <td>
+                                <p class="s2" style="text-align: center;">
+                                    {{ $penugasan->isMitra ? '-' : ($penugasan->pegawai?->pangkat_golongan ?? '-') }}
+                                </p>
+                            </td>
+                            <td>
+                                <p class="s2" style="text-align: center;">
+                                    {{ $penugasan->isMitra ? $cons::JABATAN_MITRA : ($penugasan->pegawai?->jabatan ?? '-') }}
+                                </p>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
             </table>
-            <p style="text-indent: 0pt; text-align: left"><br /></p>
-            <p style="padding-left: 500px;width: 500px; text-indent: 0pt; text-align: center">
-                {{ ucwords(strtolower($namaSatkerTanpaLevelAdministrasi)) }},
-                {{ $c::parse($penugasans->first()->tgl_pengajuan_tugas)->translatedFormat('d F Y') }}
-            </p>
-            <p style="text-indent: 0pt; text-align: left"><br /></p>
-            <p style="padding-left: 500px; width: 500px;text-indent: 0pt; text-align: center">
-                @if ($peng::key('ID_PLH_DEFAULT')->nilai != $plhAktifSaatPengajuan->nip)
-                    @if ($plhAktifSaatPengajuan->jabatan == $cons::JABATAN_KASUBBAG)
-                        Badan Pusat Statistik <br /> {{ ucwords(strtolower($namaSatker)) }}
-                        <br>
-                        {{ $cons::JABATAN_KASUBBAG }}
+            <div class="lampiran-signature">
+                <p style="text-indent: 0pt; text-align: center;">
+                    {{ ucwords(strtolower($namaSatkerTanpaLevelAdministrasi)) }},
+                    {{ $c::parse($penugasans->first()->tgl_pengajuan_tugas)->translatedFormat('d F Y') }}
+                </p>
+                <p style="text-indent: 0pt; text-align: left;"><br /></p>
+                <p style="text-indent: 0pt; text-align: center;">
+                    @if ($peng::key('ID_PLH_DEFAULT')->nilai != $plhAktifSaatPengajuan->nip)
+                        @if ($plhAktifSaatPengajuan->jabatan == $cons::JABATAN_KASUBBAG)
+                            Badan Pusat Statistik <br /> {{ ucwords(strtolower($namaSatker)) }}
+                            <br>
+                            {{ $cons::JABATAN_KASUBBAG }}
+                        @else
+                            Plh. Kepala Badan Pusat Statistik<br /> {{ ucwords(strtolower($namaSatker)) }}
+                        @endif
                     @else
-                        Plh. Kepala Badan Pusat Statistik<br /> {{ ucwords(strtolower($namaSatker)) }}
+                        Kepala Badan Pusat Statistik <br>{{ ucwords(strtolower($namaSatker)) }}
                     @endif
-                @else
-                    Kepala Badan Pusat Statistik <br>{{ ucwords(strtolower($namaSatker)) }}
-                @endif
-            </p>
-            <p style="text-indent: 0pt; text-align: left"><br /><br /></p>
-            <p class="s3"
-                style="
-              padding-top: 9pt;
-              padding-left: 500px;
-              width: 500px;
-              text-indent: 0pt;
-              text-align: center;
-            ">
-                {{ $plhAktifSaatPengajuan->nama }}
-            </p>
-            <p style="padding-left: 500px; width: 500px; text-indent: 0pt; text-align: center">
-                NIP. <span style="color: #1f1f1f">{{ $plhAktifSaatPengajuan->nip }}</span>
-            </p>
+                </p>
+                <p style="text-indent: 0pt; text-align: left;"><br /><br /></p>
+                <p class="s3" style="padding-top: 9pt; text-indent: 0pt; text-align: center;">
+                    {{ $plhAktifSaatPengajuan->nama }}
+                </p>
+                <p style="text-indent: 0pt; text-align: center;">
+                    NIP. <span style="color: #1f1f1f">{{ $plhAktifSaatPengajuan->nip }}</span>
+                </p>
+            </div>
         </div>
 
-        @foreach ($penugasans as $penugasan)
-            @if ($penugasans->first()->jenis_surat_tugas == $cons::NON_SPPD)
-                @break
-            @endif
-            <div class="pagebreak"></div>
+        @if ($penugasans->first()->jenis_surat_tugas != $cons::NON_SPPD)
+            <div class="portrait">
+            @foreach ($penugasans as $penugasan)
+                @if (! $loop->first)
+                    <div class="pagebreak"></div>
+                @endif
             <p style="text-indent: 0pt; text-align: left"><br /></p>
             <div style="display: flex;">
                 <div style="max-width: 300px; display: flex">
@@ -2766,6 +2614,8 @@
                 </table>
             @endif
         @endforeach
+            </div>
+        @endif
     @endif
 </body>
 
