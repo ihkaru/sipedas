@@ -5,6 +5,33 @@
             [x-cloak] {
                 display: none !important;
             }
+            .laporan-perjadin-page input[type='text'],
+            .laporan-perjadin-page input[type='date'],
+            .laporan-perjadin-page textarea {
+                border: 1px solid #d1d5db;
+                border-radius: 0.75rem;
+                padding: 0.4rem 0.65rem;
+                font-size: 0.75rem;
+                line-height: 1.25rem;
+                background-color: #ffffff;
+                color: #111827;
+                outline: none;
+                box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+                transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            }
+            .dark .laporan-perjadin-page input[type='text'],
+            .dark .laporan-perjadin-page input[type='date'],
+            .dark .laporan-perjadin-page textarea {
+                border-color: #374151;
+                background-color: #1f2937;
+                color: #ffffff;
+            }
+            .laporan-perjadin-page input[type='text']:focus,
+            .laporan-perjadin-page input[type='date']:focus,
+            .laporan-perjadin-page textarea:focus {
+                border-color: #0d9488 !important;
+                box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.25) !important;
+            }
             /* F4 Paper Sheet Screen & Print Styling */
             .f4-sheet-preview {
                 width: 215mm;

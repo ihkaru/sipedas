@@ -11,7 +11,10 @@ class StatusSuratTugasChart extends ChartWidget
     use HasStatusSuratTugasChartConfiguration;
 
     protected ?string $heading = 'Jumlah Status Surat Tugas';
+
     protected string $color = 'primary';
+
+    public ?string $filter = 'tahun_ini';
 
     public static function canView(): bool
     {
@@ -20,7 +23,10 @@ class StatusSuratTugasChart extends ChartWidget
 
     protected function getData(): array
     {
-        $statusCounts = RiwayatPengajuan::query()
+        $query = RiwayatPengajuan::query();
+        $this->applyPeriodFilter($query);
+
+        $statusCounts = $query
             ->selectRaw('status, count(status) as jumlah')
             ->groupBy('status')
             ->pluck('jumlah', 'status');

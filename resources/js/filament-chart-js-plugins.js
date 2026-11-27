@@ -1,7 +1,10 @@
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 
 window.filamentChartJsPlugins ??= [];
-window.filamentChartJsPlugins.push(ChartDataLabels);
+
+if (! window.filamentChartJsPlugins.some((plugin) => plugin?.id === ChartDataLabels.id)) {
+    window.filamentChartJsPlugins.push(ChartDataLabels);
+}
 
 // Safeguard: Ensure Livewire endpoints never use plain HTTP when site is served over HTTPS
 if (typeof window !== 'undefined') {

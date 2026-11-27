@@ -22,7 +22,8 @@ class DashboardStatusSuratTugasChartTest extends TestCase
 
     public function test_chart_configuration_trait_provides_bar_type_and_raw_js_options(): void
     {
-        $dummy = new class {
+        $dummy = new class
+        {
             use HasStatusSuratTugasChartConfiguration;
 
             public function exposeOptions(): RawJs
@@ -53,16 +54,19 @@ class DashboardStatusSuratTugasChartTest extends TestCase
         $this->assertStringContainsString("align: 'top'", $jsString);
         $this->assertStringContainsString('offset: 4', $jsString);
         $this->assertStringContainsString('val > 0', $jsString);
-        $this->assertStringContainsString("formatter: (value) => (value > 0 ? value : '')", $jsString);
+        $this->assertStringContainsString("toLocaleString('id-ID')", $jsString);
 
         // Verify dynamic theme adaptation
         $this->assertStringContainsString("classList.contains('dark')", $jsString);
         $this->assertStringContainsString('#cbd5e1', $jsString);
         $this->assertStringContainsString('#334155', $jsString);
 
-        // Verify scale headroom (grace) so labels above bars are not clipped
-        $this->assertStringContainsString("grace: '12%'", $jsString);
+        // Verify scale headroom (grace) and NO stepSize: 1 (which causes grid collapse on large counts)
+        $this->assertStringContainsString("grace: '15%'", $jsString);
         $this->assertStringContainsString('beginAtZero: true', $jsString);
+        $this->assertStringContainsString('precision: 0', $jsString);
+        $this->assertStringContainsString('maxTicksLimit: 6', $jsString);
+        $this->assertStringNotContainsString('stepSize: 1', $jsString);
 
         // Verify modern aesthetics
         $this->assertStringContainsString('borderRadius: 6', $jsString);
@@ -71,7 +75,8 @@ class DashboardStatusSuratTugasChartTest extends TestCase
 
     public function test_format_chart_data_maps_all_eight_statuses_correctly(): void
     {
-        $dummy = new class {
+        $dummy = new class
+        {
             use HasStatusSuratTugasChartConfiguration;
 
             public function exposeFormat(array $counts): array
@@ -105,8 +110,25 @@ class DashboardStatusSuratTugasChartTest extends TestCase
         $dataset = $chartData['datasets'][0];
         $this->assertSame('Status Surat Tugas', $dataset['label']);
         $this->assertSame([5, 0, 0, 0, 18, 0, 0, 2], $dataset['data']);
+        $this->assertCount(8, $dataset['backgroundColor']);
         $this->assertSame(6, $dataset['borderRadius']);
-        $this->assertSame(48, $dataset['maxBarThickness']);
+        $this->assertSame(44, $dataset['maxBarThickness']);
+    }
+
+    public function test_panel_provider_does_not_inject_tailwind_v3_or_duplicate_chart_plugins(): void
+    {
+        $providerContent = file_get_contents(app_path('Providers/Filament/APanelProvider.php'));
+        $pluginJsContent = file_get_contents(resource_path('js/filament-chart-js-plugins.js'));
+
+        $this->assertNotFalse($providerContent);
+        $this->assertNotFalse($pluginJsContent);
+
+        // Filament v5 uses Tailwind v4 internally; injecting Tailwind v3 app.css breaks chart frames
+        $this->assertStringNotContainsString('resources/css/app.css', $providerContent);
+        // Plugin is already registered via FilamentAsset in AppServiceProvider
+        $this->assertStringNotContainsString('resources/js/filament-chart-js-plugins.js', $providerContent);
+        // Plugin registration must be idempotent for SPA navigation
+        $this->assertStringContainsString('ChartDataLabels.id', $pluginJsContent);
     }
 
     public function test_status_surat_tugas_chart_can_view_authorization(): void
@@ -132,7 +154,7 @@ class DashboardStatusSuratTugasChartTest extends TestCase
 
     public function test_status_surat_tugas_anda_chart_runs_safely_when_unauthenticated(): void
     {
-        $widget = new StatusSuratTugasAndaChart();
+        $widget = new StatusSuratTugasAndaChart;
 
         $reflection = new \ReflectionClass($widget);
         $method = $reflection->getMethod('getData');
@@ -183,7 +205,7 @@ class DashboardStatusSuratTugasChartTest extends TestCase
         $createPenugasanWithStatus(Constants::STATUS_PENGAJUAN_DISETUJUI);
         $createPenugasanWithStatus(Constants::STATUS_PENGAJUAN_DICAIRKAN);
 
-        $widget = new StatusSuratTugasChart();
+        $widget = new StatusSuratTugasChart;
 
         $reflection = new \ReflectionClass($widget);
         $method = $reflection->getMethod('getData');
@@ -243,7 +265,7 @@ class DashboardStatusSuratTugasChartTest extends TestCase
 
         $this->actingAs($userA);
 
-        $widget = new StatusSuratTugasAndaChart();
+        $widget = new StatusSuratTugasAndaChart;
         $reflection = new \ReflectionClass($widget);
         $method = $reflection->getMethod('getData');
         $method->setAccessible(true);
