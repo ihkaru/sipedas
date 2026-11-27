@@ -127,8 +127,11 @@ class DashboardStatusSuratTugasChartTest extends TestCase
         $this->assertStringNotContainsString('resources/css/app.css', $providerContent);
         // Plugin is already registered via FilamentAsset in AppServiceProvider
         $this->assertStringNotContainsString('resources/js/filament-chart-js-plugins.js', $providerContent);
-        // Plugin registration must be idempotent for SPA navigation
-        $this->assertStringContainsString('ChartDataLabels.id', $pluginJsContent);
+        // Must NOT import external chartjs-plugin-datalabels (duplicate Chart.js breaks instanceof BarElement)
+        $this->assertStringNotContainsString("from 'chartjs-plugin-datalabels'", $pluginJsContent);
+        // Self-contained plugin registration must define id: 'datalabels' and remain idempotent for SPA navigation
+        $this->assertStringContainsString("id: 'datalabels'", $pluginJsContent);
+        $this->assertStringContainsString('datalabelsPlugin.id', $pluginJsContent);
     }
 
     public function test_status_surat_tugas_chart_can_view_authorization(): void
