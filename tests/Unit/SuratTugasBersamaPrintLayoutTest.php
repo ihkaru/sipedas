@@ -17,17 +17,18 @@ class SuratTugasBersamaPrintLayoutTest extends TestCase
         $this->assertStringNotContainsString('rotate(270deg)', $content);
         $this->assertStringNotContainsString('translate(-250mm', $content);
 
-        // Must use true CSS Paged Media named landscape page for multi-page pagination
+        // Must use true CSS Paged Media named landscape page without locking to A4 so both A4 and F4 work
         $this->assertStringContainsString('@page landscape-page', $content);
-        $this->assertStringContainsString('size: A4 landscape', $content);
+        $this->assertStringContainsString('size: landscape;', $content);
         $this->assertStringContainsString('page: landscape-page', $content);
 
-        // Must wrap lampiran table header in <thead> with repeating header group and row/signature break protection
+        // Must wrap lampiran table header in <thead> with repeating header group and keep tail rows + signature together
         $this->assertStringContainsString('display: table-header-group', $content);
         $this->assertStringContainsString('break-inside: avoid', $content);
         $this->assertStringContainsString('<table class="lampiran-table"', $content);
         $this->assertStringContainsString('<thead>', $content);
-        $this->assertStringContainsString('<tbody>', $content);
+        $this->assertStringContainsString('<tbody class="lampiran-tail-group">', $content);
+        $this->assertStringContainsString('<tr class="lampiran-signature-row">', $content);
         $this->assertStringContainsString('class="lampiran-signature"', $content);
     }
 }

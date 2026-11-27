@@ -25,12 +25,12 @@
     <meta name="author" content="Afif;OpenTBS 1.9.12" />
     <style type="text/css">
         @page {
-            size: A4 portrait;
+            size: portrait;
             margin: 15mm;
         }
 
         @page landscape-page {
-            size: A4 landscape;
+            size: landscape;
             margin: 12mm 15mm;
         }
 
@@ -64,6 +64,11 @@
             display: table-row-group;
         }
 
+        .lampiran-table tbody.lampiran-tail-group {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
         .lampiran-table tr {
             break-inside: avoid;
             page-break-inside: avoid;
@@ -72,14 +77,25 @@
         .lampiran-table th,
         .lampiran-table td {
             border: 1pt solid black;
-            padding: 5pt 6pt;
+            padding: 4.5pt 6pt;
             vertical-align: middle;
             word-wrap: break-word;
             overflow-wrap: break-word;
         }
 
+        .lampiran-table tr.lampiran-signature-row {
+            break-before: avoid;
+            page-break-before: avoid;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .lampiran-table td.lampiran-signature-cell {
+            border: none !important;
+            padding: 14pt 0 0 0;
+        }
+
         .lampiran-signature {
-            margin-top: 16pt;
             margin-left: auto;
             width: 240pt;
             text-align: center;
@@ -905,12 +921,51 @@
                         </th>
                     </tr>
                 </thead>
-                <tbody>
-                    @foreach ($penugasans as $penugasan)
+                @php
+                    $totalPetugas = $penugasans->count();
+                    $tailCount = $totalPetugas > 3 ? 2 : $totalPetugas;
+                    $mainPenugasans = $penugasans->slice(0, $totalPetugas - $tailCount)->values();
+                    $tailPenugasans = $penugasans->slice($totalPetugas - $tailCount)->values();
+                @endphp
+                @if ($mainPenugasans->isNotEmpty())
+                    <tbody>
+                        @foreach ($mainPenugasans as $penugasan)
+                            <tr>
+                                <td>
+                                    <p class="s2" style="text-align: center;">
+                                        {{ $loop->iteration }}.
+                                    </p>
+                                </td>
+                                <td>
+                                    <p class="s2" style="text-align: left;">
+                                        {{ $penugasan?->pegawai?->nama ?? $penugasan?->mitra?->nama_1 }}
+                                    </p>
+                                </td>
+                                <td>
+                                    <p class="s2" style="text-align: center;">
+                                        {{ $penugasan->nip ?? $penugasan->id_sobat }}
+                                    </p>
+                                </td>
+                                <td>
+                                    <p class="s2" style="text-align: center;">
+                                        {{ $penugasan->isMitra ? '-' : ($penugasan->pegawai?->pangkat_golongan ?? '-') }}
+                                    </p>
+                                </td>
+                                <td>
+                                    <p class="s2" style="text-align: center;">
+                                        {{ $penugasan->isMitra ? $cons::JABATAN_MITRA : ($penugasan->pegawai?->jabatan ?? '-') }}
+                                    </p>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                @endif
+                <tbody class="lampiran-tail-group">
+                    @foreach ($tailPenugasans as $penugasan)
                         <tr>
                             <td>
                                 <p class="s2" style="text-align: center;">
-                                    {{ $loop->iteration }}.
+                                    {{ $mainPenugasans->count() + $loop->iteration }}.
                                 </p>
                             </td>
                             <td>
@@ -935,35 +990,39 @@
                             </td>
                         </tr>
                     @endforeach
+                    <tr class="lampiran-signature-row">
+                        <td colspan="5" class="lampiran-signature-cell">
+                            <div class="lampiran-signature">
+                                <p style="text-indent: 0pt; text-align: center;">
+                                    {{ ucwords(strtolower($namaSatkerTanpaLevelAdministrasi)) }},
+                                    {{ $c::parse($penugasans->first()->tgl_pengajuan_tugas)->translatedFormat('d F Y') }}
+                                </p>
+                                <p style="text-indent: 0pt; text-align: left;"><br /></p>
+                                <p style="text-indent: 0pt; text-align: center;">
+                                    @if ($peng::key('ID_PLH_DEFAULT')->nilai != $plhAktifSaatPengajuan->nip)
+                                        @if ($plhAktifSaatPengajuan->jabatan == $cons::JABATAN_KASUBBAG)
+                                            Badan Pusat Statistik <br /> {{ ucwords(strtolower($namaSatker)) }}
+                                            <br>
+                                            {{ $cons::JABATAN_KASUBBAG }}
+                                        @else
+                                            Plh. Kepala Badan Pusat Statistik<br /> {{ ucwords(strtolower($namaSatker)) }}
+                                        @endif
+                                    @else
+                                        Kepala Badan Pusat Statistik <br>{{ ucwords(strtolower($namaSatker)) }}
+                                    @endif
+                                </p>
+                                <p style="text-indent: 0pt; text-align: left;"><br /><br /></p>
+                                <p class="s3" style="padding-top: 9pt; text-indent: 0pt; text-align: center;">
+                                    {{ $plhAktifSaatPengajuan->nama }}
+                                </p>
+                                <p style="text-indent: 0pt; text-align: center;">
+                                    NIP. <span style="color: #1f1f1f">{{ $plhAktifSaatPengajuan->nip }}</span>
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
-            <div class="lampiran-signature">
-                <p style="text-indent: 0pt; text-align: center;">
-                    {{ ucwords(strtolower($namaSatkerTanpaLevelAdministrasi)) }},
-                    {{ $c::parse($penugasans->first()->tgl_pengajuan_tugas)->translatedFormat('d F Y') }}
-                </p>
-                <p style="text-indent: 0pt; text-align: left;"><br /></p>
-                <p style="text-indent: 0pt; text-align: center;">
-                    @if ($peng::key('ID_PLH_DEFAULT')->nilai != $plhAktifSaatPengajuan->nip)
-                        @if ($plhAktifSaatPengajuan->jabatan == $cons::JABATAN_KASUBBAG)
-                            Badan Pusat Statistik <br /> {{ ucwords(strtolower($namaSatker)) }}
-                            <br>
-                            {{ $cons::JABATAN_KASUBBAG }}
-                        @else
-                            Plh. Kepala Badan Pusat Statistik<br /> {{ ucwords(strtolower($namaSatker)) }}
-                        @endif
-                    @else
-                        Kepala Badan Pusat Statistik <br>{{ ucwords(strtolower($namaSatker)) }}
-                    @endif
-                </p>
-                <p style="text-indent: 0pt; text-align: left;"><br /><br /></p>
-                <p class="s3" style="padding-top: 9pt; text-indent: 0pt; text-align: center;">
-                    {{ $plhAktifSaatPengajuan->nama }}
-                </p>
-                <p style="text-indent: 0pt; text-align: center;">
-                    NIP. <span style="color: #1f1f1f">{{ $plhAktifSaatPengajuan->nip }}</span>
-                </p>
-            </div>
         </div>
 
         @if ($penugasans->first()->jenis_surat_tugas != $cons::NON_SPPD)
