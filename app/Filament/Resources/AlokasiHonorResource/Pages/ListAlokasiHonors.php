@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\AlokasiHonorResource\Pages;
 
+use App\Filament\Actions\CetakUlangLampiranKontrakAction;
 use App\Filament\Resources\AlokasiHonorResource;
 use App\Imports\AlokasiHonorImport;
 use Filament\Actions;
@@ -18,6 +19,8 @@ class ListAlokasiHonors extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            CetakUlangLampiranKontrakAction::make(),
+
             Actions\ActionGroup::make([
                 Actions\Action::make('importAlokasi')
                     ->label('Impor Alokasi dari Excel')

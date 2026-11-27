@@ -34,4 +34,20 @@ class CetakRouteTest extends TestCase
 
         $this->assertStringContainsString('/cetak/kontrak', $url);
     }
+
+    public function test_cetak_lampiran_kontrak_route_is_defined(): void
+    {
+        $this->assertTrue(Route::has('cetak.kontrak.lampiran'), 'Route [cetak.kontrak.lampiran] must be registered in routes/web.php');
+
+        $url = route('cetak.kontrak.lampiran', [
+            'tahun' => 2026,
+            'bulan' => 10,
+            'jenis_kegiatan' => 'SURVEI',
+        ]);
+
+        $this->assertStringContainsString('/cetak/kontrak/lampiran', $url);
+        $this->assertStringContainsString('tahun=2026', $url);
+        $this->assertStringContainsString('bulan=10', $url);
+        $this->assertStringContainsString('jenis_kegiatan=SURVEI', $url);
+    }
 }

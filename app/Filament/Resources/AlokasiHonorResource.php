@@ -2,18 +2,18 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Actions\CetakUlangLampiranKontrakAction;
 use App\Filament\Resources\AlokasiHonorResource\Pages;
-use App\Filament\Resources\AlokasiHonorResource\RelationManagers;
 use App\Models\AlokasiHonor;
-use App\Models\Honor;
+use App\Services\LampiranKontrakService;
 use Filament\Forms;
-use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class AlokasiHonorResource extends Resource
 {
@@ -40,6 +40,13 @@ class AlokasiHonorResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('mitra.nama_1')->label('Nama Mitra')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('honor.kegiatanManmit.nama')->label('Kegiatan')->searchable()->sortable()->wrap(),
+                Tables\Columns\TextColumn::make('honor.kegiatanManmit.jenis_kegiatan')
+                    ->label('Jenis')
+                    ->badge()
+                    ->color(fn (?string $state): string => match ($state) {
+                        LampiranKontrakService::JENIS_SENSUS => 'warning',
+                        default => 'success',
+                    }),
                 Tables\Columns\TextColumn::make('honor.jabatan')->label('Jabatan')->badge(),
                 Tables\Columns\TextColumn::make('honor.tanggal_akhir_kegiatan')->date()->label('Tanggal Akhir Kegiatan')->sortable()->badge(),
                 Tables\Columns\TextColumn::make('total_honor')->money('IDR')->sortable(),
@@ -48,7 +55,58 @@ class AlokasiHonorResource extends Resource
                 Tables\Columns\TextColumn::make('updated_at')->dateTime('d M Y')->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('honor.tanggal_akhir_kegiatan', 'desc')
-            ->filters([])
+            ->filters([
+                Filter::make('periode_akhir_kegiatan')
+                    ->label('Periode Akhir Kegiatan')
+                    ->form([
+                        Forms\Components\Select::make('bulan')
+                            ->label('Bulan')
+                            ->options(CetakUlangLampiranKontrakAction::monthOptions())
+                            ->placeholder('Semua Bulan'),
+                        Forms\Components\Select::make('tahun')
+                            ->label('Tahun')
+                            ->options(CetakUlangLampiranKontrakAction::yearOptions())
+                            ->placeholder('Semua Tahun'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                ! empty($data['tahun']),
+                                fn (Builder $q): Builder => $q->whereHas(
+                                    'honor',
+                                    fn (Builder $h): Builder => $h->whereYear('tanggal_akhir_kegiatan', (int) $data['tahun'])
+                                )
+                            )
+                            ->when(
+                                ! empty($data['bulan']),
+                                fn (Builder $q): Builder => $q->whereHas(
+                                    'honor',
+                                    fn (Builder $h): Builder => $h->whereMonth('tanggal_akhir_kegiatan', (int) $data['bulan'])
+                                )
+                            );
+                    }),
+
+                SelectFilter::make('jenis_kegiatan')
+                    ->label('Jenis Kegiatan')
+                    ->options([
+                        LampiranKontrakService::JENIS_SURVEI => 'Survei',
+                        LampiranKontrakService::JENIS_SENSUS => 'Sensus',
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        if (empty($data['value'])) {
+                            return $query;
+                        }
+
+                        if ($data['value'] === LampiranKontrakService::JENIS_SENSUS) {
+                            return $query->whereHas('honor.kegiatanManmit', fn (Builder $q): Builder => $q->where('jenis_kegiatan', LampiranKontrakService::JENIS_SENSUS));
+                        }
+
+                        return $query->whereHas('honor.kegiatanManmit', function (Builder $q): void {
+                            $q->where('jenis_kegiatan', '!=', LampiranKontrakService::JENIS_SENSUS)
+                                ->orWhereNull('jenis_kegiatan');
+                        });
+                    }),
+            ])
             ->actions([
                 \Filament\Actions\ViewAction::make(),
                 \Filament\Actions\DeleteAction::make(),

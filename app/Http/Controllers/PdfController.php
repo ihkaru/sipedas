@@ -8,9 +8,10 @@ use App\Models\Pegawai;
 use App\Models\Pengaturan;
 use App\Models\Penugasan;
 use App\Models\Plh;
+use App\Services\LampiranKontrakService;
 use App\Supports\Constants;
-use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class PdfController extends Controller {
     public function cetakPenugasan($id) {
@@ -170,6 +171,37 @@ class PdfController extends Controller {
 
         return response($renderedHtml);
     }
+
+    public function cetakLampiranKontrak(Request $request)
+    {
+        $tahun = (int) $request->input('tahun');
+        $bulan = (int) $request->input('bulan');
+        $jenisKegiatan = LampiranKontrakService::normalizeJenisKegiatan($request->input('jenis_kegiatan'));
+
+        if ($tahun < 2000 || $tahun > 2100 || $bulan < 1 || $bulan > 12) {
+            abort(400, 'Parameter tahun dan bulan (1-12) yang valid diperlukan.');
+        }
+
+        $lampiranGroups = LampiranKontrakService::getGroupedLampiran($tahun, $bulan, $jenisKegiatan);
+
+        if ($lampiranGroups->isEmpty()) {
+            return response('Tidak ada data lampiran kontrak yang memiliki nomor SPK pada periode dan filter yang dipilih.');
+        }
+
+        $namaBulan = Carbon::create($tahun, $bulan, 1)
+            ->locale('id')
+            ->translatedFormat('F');
+
+        return response(view('kontrak.lampiran_pdf', [
+            'lampiranGroups' => $lampiranGroups,
+            'tahun' => $tahun,
+            'bulan' => $bulan,
+            'namaBulan' => $namaBulan,
+            'jenisKegiatan' => $jenisKegiatan,
+            'labelJenisKegiatan' => LampiranKontrakService::jenisKegiatanLabel($jenisKegiatan),
+        ])->render());
+    }
+
     public function cetakBast() {
         $tahun = request('tahun') ?? now()->year;
         $bulan = request('bulan') ?? now()->month;

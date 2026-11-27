@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Exports\MonitorHonorMitraExport;
+use App\Filament\Actions\CetakUlangLampiranKontrakAction;
 use App\Models\AlokasiHonor;
 use App\Models\MasterSls;
 use App\Models\Mitra;
@@ -283,6 +284,12 @@ class MonitorHonorMitra extends Page implements HasTable
             ])
             ->filtersLayout(FiltersLayout::AboveContent)
             ->headerActions([
+                CetakUlangLampiranKontrakAction::make(
+                    defaultMonth: fn (): int => (int) ($this->tableFilters['periode']['month'] ?? now()->month),
+                    defaultYear: fn (): int => (int) ($this->tableFilters['periode']['year'] ?? now()->year),
+                    label: 'Cetak Lampiran Kontrak',
+                ),
+
                 Action::make('export_excel')
                     ->label('Export Excel Perencanaan')
                     ->icon('heroicon-o-arrow-down-tray')
