@@ -115,16 +115,19 @@ class DashboardStatusSuratTugasChartTest extends TestCase
         $this->assertSame(44, $dataset['maxBarThickness']);
     }
 
-    public function test_panel_provider_does_not_inject_tailwind_v3_or_duplicate_chart_plugins(): void
+    public function test_panel_provider_loads_app_css_safely_without_duplicating_chart_plugins(): void
     {
         $providerContent = file_get_contents(app_path('Providers/Filament/APanelProvider.php'));
         $pluginJsContent = file_get_contents(resource_path('js/filament-chart-js-plugins.js'));
+        $tailwindConfigContent = file_get_contents(base_path('tailwind.config.js'));
 
         $this->assertNotFalse($providerContent);
         $this->assertNotFalse($pluginJsContent);
+        $this->assertNotFalse($tailwindConfigContent);
 
-        // Filament v5 uses Tailwind v4 internally; injecting Tailwind v3 app.css breaks chart frames
-        $this->assertStringNotContainsString('resources/css/app.css', $providerContent);
+        // Custom Blade pages (e.g. /laporan-perjadin) require app.css utilities; preflight must stay disabled to protect Filament v5
+        $this->assertStringContainsString('resources/css/app.css', $providerContent);
+        $this->assertStringContainsString('preflight: false', $tailwindConfigContent);
         // Plugin is already registered via FilamentAsset in AppServiceProvider
         $this->assertStringNotContainsString('resources/js/filament-chart-js-plugins.js', $providerContent);
         // Must NOT import external chartjs-plugin-datalabels (duplicate Chart.js breaks instanceof BarElement)

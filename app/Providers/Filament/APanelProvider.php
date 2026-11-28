@@ -82,6 +82,10 @@ class APanelProvider extends PanelProvider {
                 DispatchServingFilamentEvent::class,
             ])
             ->renderHook(
+                \Filament\View\PanelsRenderHook::HEAD_END,
+                fn (): string => \Illuminate\Support\Facades\Blade::render("@vite('resources/css/app.css')")
+            )
+            ->renderHook(
                 \Filament\View\PanelsRenderHook::SCRIPTS_AFTER,
                 fn (): string => '<script>
                     if (window.location.protocol === "https:" && window.livewireScriptConfig) {
